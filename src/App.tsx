@@ -1,11 +1,8 @@
-import { Button, Checkbox, Input, List, PageHeader } from "antd";
+import { Button, Input, List, PageHeader } from "antd";
 import React, { useState } from "react";
 import "./App.css";
-
-interface ShoppingListItem {
-  name: string;
-  checked: boolean;
-}
+import { ShoppingListItem } from "./ShoppingListItem";
+import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
 
 function ShoppingListApp() {
   const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
@@ -25,30 +22,19 @@ function ShoppingListApp() {
       <List
         dataSource={shoppingList}
         renderItem={(item) => {
-          return (
-            <List.Item
-              key={item.name}
-              style={{
-                textDecoration: item.checked ? "line-through" : "none",
-              }}
-            >
-              <Checkbox
-                style={{ marginRight: "1em" }}
-                value={item.checked}
-                onChange={(event) => {
-                  const newList = shoppingList.map((e) => {
-                    if (item.name === e.name) {
-                      return { ...e, checked: event.target.checked };
-                    }
-                    return e;
-                  });
-
-                  setShoppingList(newList);
-                }}
-              />
-              {item.name}
-            </List.Item>
-          );
+          return (<ShoppingListItemComponent 
+            item={item}
+            onItemCheckedChange={(checked) => {
+              const newList = shoppingList.map((e) => {
+                if (item.name === e.name) {
+                  return { ...e, checked: checked };
+                }
+                return e;
+              });
+  
+              setShoppingList(newList);
+            }}
+          />)
         }}
       />
       <div>
