@@ -1,26 +1,44 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { Button, Input, List, PageHeader } from "antd";
+import React, { useState } from "react";
+import "./App.css";
 
-function App() {
+function ShoppingListApp() {
+  const [shoppingList, setShoppingList] = useState<string[]>([]);
+  const [newItem, setNewItem] = useState<string>("");
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <PageHeader title="Einkaufsliste">
+      <List
+        dataSource={shoppingList}
+        renderItem={(item) => {
+          return <List.Item key={item}>{item}</List.Item>;
+        }}
+      />
+      <div>
+        <div style={{ display: "inline-block", width: "80%" }}>
+          <Input
+            value={newItem}
+            onChange={(event) => setNewItem(event.target.value)}
+          />
+        </div>
+        <div
+          style={{ display: "inline-block", width: "20%", paddingLeft: "10px" }}
         >
-          Learn React
-        </a>
-      </header>
-    </div>
+          <Button
+            type="primary"
+            style={{ width: "100%" }}
+            disabled={newItem === ""}
+            onClick={() => {
+              setShoppingList([...shoppingList, newItem]);
+              setNewItem("");
+            }}
+          >
+            Hinzufügen
+          </Button>
+        </div>
+      </div>
+    </PageHeader>
   );
 }
 
-export default App;
+export default ShoppingListApp;
