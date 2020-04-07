@@ -1,24 +1,62 @@
-import { Button, Input, List, PageHeader } from "antd";
+import { Button, Checkbox, Input, List, PageHeader } from "antd";
 import React, { useState } from "react";
 import "./App.css";
 
+interface ShoppingListItem {
+  name: string;
+  checked: boolean;
+}
+
 function ShoppingListApp() {
-  const [shoppingList, setShoppingList] = useState<string[]>([]);
-  const [newItem, setNewItem] = useState<string>("");
+  const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
+  const [newItemName, setNewItemName] = useState<string>("");
+
+  const createNewItem = () => {
+    if (newItemName === "") {
+      return;
+    }
+
+    setShoppingList([...shoppingList, { name: newItemName, checked: false }]);
+    setNewItemName("");
+  };
 
   return (
     <PageHeader title="Einkaufsliste">
       <List
         dataSource={shoppingList}
         renderItem={(item) => {
-          return <List.Item key={item}>{item}</List.Item>;
+          return (
+            <List.Item
+              key={item.name}
+              style={{
+                textDecoration: item.checked ? "line-through" : "none",
+              }}
+            >
+              <Checkbox
+                style={{ marginRight: "1em" }}
+                value={item.checked}
+                onChange={(event) => {
+                  const newList = shoppingList.map((e) => {
+                    if (item.name === e.name) {
+                      return { ...e, checked: event.target.checked };
+                    }
+                    return e;
+                  });
+
+                  setShoppingList(newList);
+                }}
+              />
+              {item.name}
+            </List.Item>
+          );
         }}
       />
       <div>
         <div style={{ display: "inline-block", width: "80%" }}>
           <Input
-            value={newItem}
-            onChange={(event) => setNewItem(event.target.value)}
+            value={newItemName}
+            onChange={(event) => setNewItemName(event.target.value)}
+            onPressEnter={createNewItem}
           />
         </div>
         <div
@@ -27,11 +65,8 @@ function ShoppingListApp() {
           <Button
             type="primary"
             style={{ width: "100%" }}
-            disabled={newItem === ""}
-            onClick={() => {
-              setShoppingList([...shoppingList, newItem]);
-              setNewItem("");
-            }}
+            disabled={newItemName === ""}
+            onClick={createNewItem}
           >
             Hinzufügen
           </Button>
