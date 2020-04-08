@@ -5,10 +5,6 @@ import { ShoppingListItem } from "./ShoppingListItem";
 import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
 
 function ShoppingListApp() {
-  fetch("shoppingList")
-    .then((response) => response.json())
-    .then((data) => console.log(data));
-
   const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
   const [newItemName, setNewItemName] = useState<string>("");
 

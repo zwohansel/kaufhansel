@@ -12,23 +12,19 @@
     "@types/react-dom": "^16.9.0",
     "antd": "^4.1.1",
     "babel-plugin-import": "^1.13.0",
-    "concurrently": "^5.1.0",
     "customize-cra": "^0.9.1",
     "less": "^3.11.1",
     "less-loader": "^5.0.0",
     "react": "^16.13.1",
-    "react-app-rewired": "^2.1.5",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
     "typescript": "~3.7.2"
   },
   "scripts": {
-    "client": "react-app-rewired start",
-    "build": "react-app-rewired build",
-    "test": "react-app-rewired test",
-    "eject": "react-app-rewired eject",
-    "server": "node src/server.js",
-    "start": "concurrently \"yarn run server\" \"yarn run client\""
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": "react-app"
