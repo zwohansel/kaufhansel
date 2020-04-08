@@ -19,7 +19,7 @@ export function ShoppingListItemComponent(
     >
       <Checkbox
         style={{ marginRight: "1em" }}
-        value={props.item.checked}
+        checked={props.item.checked}
         onChange={(event) =>
           props.onItemCheckedChange(event.target.checked)
         }
