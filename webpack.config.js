@@ -8,9 +8,28 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.(js|jsx)$/,
+        test: /\.(js|jsx|tsx?)$/,
         exclude: /node_modules/,
-        use: "babel-loader",
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: [
+              "@babel/preset-env",
+              "@babel/preset-react",
+              "@babel/preset-typescript",
+            ],
+            plugins: [
+              [
+                "import",
+                {
+                  libraryName: "antd",
+                  libraryDirectory: "es",
+                  style: "css",
+                },
+              ],
+            ],
+          },
+        },
       },
       {
         test: /\.html$/,
@@ -25,6 +44,10 @@ module.exports = {
         test: /\.js$/,
         use: ["source-map-loader"],
         enforce: "pre",
+      },
+      {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader"],
       },
     ],
   },
