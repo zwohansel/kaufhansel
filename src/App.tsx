@@ -5,6 +5,10 @@ import { ShoppingListItem } from "./ShoppingListItem";
 import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
 
 function ShoppingListApp() {
+  fetch("shoppingList")
+    .then((response) => response.json())
+    .then((data) => console.log(data));
+
   const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
   const [newItemName, setNewItemName] = useState<string>("");
 
@@ -22,19 +26,21 @@ function ShoppingListApp() {
       <List
         dataSource={shoppingList}
         renderItem={(item) => {
-          return (<ShoppingListItemComponent 
-            item={item}
-            onItemCheckedChange={(checked) => {
-              const newList = shoppingList.map((e) => {
-                if (item.name === e.name) {
-                  return { ...e, checked: checked };
-                }
-                return e;
-              });
-  
-              setShoppingList(newList);
-            }}
-          />)
+          return (
+            <ShoppingListItemComponent
+              item={item}
+              onItemCheckedChange={(checked) => {
+                const newList = shoppingList.map((e) => {
+                  if (item.name === e.name) {
+                    return { ...e, checked: checked };
+                  }
+                  return e;
+                });
+
+                setShoppingList(newList);
+              }}
+            />
+          );
         }}
       />
       <div>
