@@ -3,6 +3,7 @@ const CopyWebPackPlugin = require("copy-webpack-plugin");
 const path = require("path");
 
 module.exports = {
+  target: "web",
   entry: "./src/index.tsx",
   devtool: "inline-source-map",
   module: {
