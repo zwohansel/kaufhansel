@@ -3,7 +3,7 @@ import { AddressInfo } from "net";
 
 const app = express();
 
-app.get("/shoppingList", function (req, res) {
+app.get("/api/shoppingList", function (req, res) {
   const data = [
     { name: "Kaffee", checked: false },
     { name: "Skyr", checked: true },

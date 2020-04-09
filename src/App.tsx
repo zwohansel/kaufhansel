@@ -1,5 +1,5 @@
 import { Button, Input, List, PageHeader } from "antd";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import { ShoppingListItem } from "./ShoppingListItem";
 import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
@@ -7,6 +7,12 @@ import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
 function ShoppingListApp() {
   const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
   const [newItemName, setNewItemName] = useState<string>("");
+
+  useEffect(() => {
+    fetch("api/shoppingList")
+      .then((response) => response.json())
+      .then((data) => setShoppingList(data));
+  });
 
   const createNewItem = () => {
     if (newItemName === "") {
