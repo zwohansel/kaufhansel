@@ -1,4 +1,4 @@
-import { Button, Input, List, PageHeader } from "antd";
+import { Button, Input, List, notification, PageHeader } from "antd";
 import React, { useEffect, useState } from "react";
 import "./App.css";
 import { CheckedStateRequest } from "./CheckedStateRequest";
@@ -12,6 +12,12 @@ function ShoppingListApp() {
   useEffect(() => {
     (async () => {
       const response = await fetch("api/shoppingList");
+
+      if (!response.ok) {
+        showError();
+        return;
+      }
+
       const data = await response.json();
       setShoppingList(data);
     })();
@@ -32,10 +38,22 @@ function ShoppingListApp() {
       },
     });
 
+    if (!response.ok) {
+      showError();
+      return;
+    }
+
     const newItemFromServer = await response.json();
 
     setShoppingList([...shoppingList, newItemFromServer]);
     setNewItemName("");
+  };
+
+  const showError = () => {
+    notification.error({
+      message: "NOOOOOOOO!!!!!",
+      description: "Did not work :(",
+    });
   };
 
   return (
@@ -71,6 +89,8 @@ function ShoppingListApp() {
                   });
 
                   setShoppingList(newList);
+                } else {
+                  showError();
                 }
               }}
             />
