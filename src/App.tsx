@@ -1,6 +1,7 @@
 import { Button, Input, List, PageHeader } from "antd";
 import React, { useEffect, useState } from "react";
 import "./App.css";
+import { CheckedStateRequest } from "./CheckedStateRequest";
 import { ShoppingListItem } from "./ShoppingListItem";
 import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
 
@@ -45,15 +46,32 @@ function ShoppingListApp() {
           return (
             <ShoppingListItemComponent
               item={item}
-              onItemCheckedChange={(checked) => {
-                const newList = shoppingList.map((e) => {
-                  if (item.id === e.id) {
-                    return { ...e, checked: checked };
-                  }
-                  return e;
-                });
+              onItemCheckedChange={async (checked) => {
+                const request: CheckedStateRequest = {
+                  state: checked,
+                };
 
-                setShoppingList(newList);
+                const response = await fetch(
+                  `api/shoppingListItem/${item.id}/changeCheckedState`,
+                  {
+                    method: "PUT",
+                    body: JSON.stringify(request),
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                  }
+                );
+
+                if (response.ok) {
+                  const newList = shoppingList.map((e) => {
+                    if (item.id === e.id) {
+                      return { ...e, checked: checked };
+                    }
+                    return e;
+                  });
+
+                  setShoppingList(newList);
+                }
               }}
             />
           );

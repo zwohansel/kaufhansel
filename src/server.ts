@@ -1,8 +1,8 @@
 import bodyParser from "body-parser";
 import express from "express";
 import { AddressInfo } from "net";
-import { ShoppingListItem } from "./ShoppingListItem";
 import { CheckedStateRequest } from "./CheckedStateRequest";
+import { ShoppingListItem } from "./ShoppingListItem";
 
 const app = express();
 
