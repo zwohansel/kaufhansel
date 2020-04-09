@@ -9,30 +9,31 @@ function ShoppingListApp() {
   const [newItemName, setNewItemName] = useState<string>("");
 
   useEffect(() => {
-    fetch("api/shoppingList")
-      .then((response) => response.json())
-      .then((data) => setShoppingList(data));
+    (async () => {
+      const response = await fetch("api/shoppingList");
+      const data = await response.json();
+      setShoppingList(data);
+    })();
   }, []);
 
-  const createNewItem = () => {
+  const createNewItem = async () => {
     if (newItemName === "") {
       return;
     }
 
     const newItem: ShoppingListItem = { name: newItemName, checked: false };
 
-    fetch("api/shoppingListItem", {
+    const response = await fetch("api/shoppingListItem", {
       method: "POST",
       body: JSON.stringify(newItem),
       headers: {
         "Content-Type": "application/json",
       },
-    })
-      .then((response) => response.json())
-      .then((newItemFromServer) =>
-        setShoppingList([...shoppingList, newItemFromServer])
-      );
+    });
 
+    const newItemFromServer = await response.json();
+
+    setShoppingList([...shoppingList, newItemFromServer]);
     setNewItemName("");
   };
 
