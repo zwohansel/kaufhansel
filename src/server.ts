@@ -16,7 +16,7 @@ app.get("/api/shoppingList", (req, res) => {
 app.post("/api/shoppingListItem", (req, res) => {
   const item: ShoppingListItem = req.body;
   data.push(item);
-  res.send(item);
+  res.status(201).send(item);
 });
 
 var server = app.listen(8081, () => {
