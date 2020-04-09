@@ -1,5 +1,5 @@
 import { Button, Input, List, PageHeader } from "antd";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import { ShoppingListItem } from "./ShoppingListItem";
 import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
@@ -12,14 +12,27 @@ function ShoppingListApp() {
     fetch("api/shoppingList")
       .then((response) => response.json())
       .then((data) => setShoppingList(data));
-  });
+  }, []);
 
   const createNewItem = () => {
     if (newItemName === "") {
       return;
     }
 
-    setShoppingList([...shoppingList, { name: newItemName, checked: false }]);
+    const newItem: ShoppingListItem = { name: newItemName, checked: false };
+
+    fetch("api/shoppingListItem", {
+      method: "POST",
+      body: JSON.stringify(newItem),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((newItemFromServer) =>
+        setShoppingList([...shoppingList, newItemFromServer])
+      );
+
     setNewItemName("");
   };
 

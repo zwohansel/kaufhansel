@@ -49,6 +49,7 @@
   },
   "dependencies": {
     "antd": "^4.1.1",
+    "body-parser": "^1.19.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
   }
