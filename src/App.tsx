@@ -47,7 +47,7 @@ function ShoppingListApp() {
               item={item}
               onItemCheckedChange={(checked) => {
                 const newList = shoppingList.map((e) => {
-                  if (item.name === e.name) {
+                  if (item.id === e.id) {
                     return { ...e, checked: checked };
                   }
                   return e;

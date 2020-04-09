@@ -9,12 +9,16 @@ app.use(bodyParser.json());
 
 const data: ShoppingListItem[] = [];
 
+let counter = 1;
+
 app.get("/api/shoppingList", (req, res) => {
   res.send(data);
 });
 
 app.post("/api/shoppingListItem", (req, res) => {
   const item: ShoppingListItem = req.body;
+  item.id = counter;
+  counter++;
   data.push(item);
   res.status(201).send(item);
 });

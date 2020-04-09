@@ -12,7 +12,7 @@ export function ShoppingListItemComponent(
 ) {
   return (
     <List.Item
-      key={props.item.name}
+      key={props.item.id}
       style={{
         textDecoration: props.item.checked ? "line-through" : "none",
       }}
