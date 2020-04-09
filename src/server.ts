@@ -2,6 +2,7 @@ import bodyParser from "body-parser";
 import express from "express";
 import { AddressInfo } from "net";
 import { ShoppingListItem } from "./ShoppingListItem";
+import { CheckedStateRequest } from "./CheckedStateRequest";
 
 const app = express();
 
@@ -21,6 +22,24 @@ app.post("/api/shoppingListItem", (req, res) => {
   counter++;
   data.push(item);
   res.status(201).send(item);
+});
+
+app.put("/api/shoppingListItem/:id/changeCheckedState", (req, res) => {
+  const id: number = parseInt(req.params.id, 10);
+  const stateRequest: CheckedStateRequest = req.body;
+
+  if (typeof stateRequest.state !== "boolean") {
+    res.sendStatus(400);
+    return;
+  }
+
+  const item = data.find((e) => e.id === id);
+  if (item) {
+    item.checked = stateRequest.state === true;
+    res.sendStatus(204);
+  } else {
+    res.sendStatus(404);
+  }
 });
 
 var server = app.listen(8081, () => {
