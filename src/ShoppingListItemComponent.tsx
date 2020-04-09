@@ -1,4 +1,4 @@
-import { List, Checkbox } from "antd";
+import { Checkbox, List } from "antd";
 import React from "react";
 import { ShoppingListItem } from "./ShoppingListItem";
 
@@ -14,15 +14,13 @@ export function ShoppingListItemComponent(
     <List.Item
       key={props.item.id}
       style={{
-        textDecoration: props.item.checked ? "line-through" : "none",
+        textDecoration: props.item.checked ? "line-through" : "none"
       }}
     >
       <Checkbox
         style={{ marginRight: "1em" }}
         checked={props.item.checked}
-        onChange={(event) =>
-          props.onItemCheckedChange(event.target.checked)
-        }
+        onChange={(event) => props.onItemCheckedChange(event.target.checked)}
       />
       {props.item.name}
     </List.Item>

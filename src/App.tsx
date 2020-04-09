@@ -34,8 +34,8 @@ function ShoppingListApp() {
       method: "POST",
       body: JSON.stringify(newItem),
       headers: {
-        "Content-Type": "application/json",
-      },
+        "Content-Type": "application/json"
+      }
     });
 
     if (!response.ok) {
@@ -52,7 +52,7 @@ function ShoppingListApp() {
   const showError = () => {
     notification.error({
       message: "NOOOOOOOO!!!!!",
-      description: "Did not work :(",
+      description: "Did not work :("
     });
   };
 
@@ -66,7 +66,7 @@ function ShoppingListApp() {
               item={item}
               onItemCheckedChange={async (checked) => {
                 const request: CheckedStateRequest = {
-                  state: checked,
+                  state: checked
                 };
 
                 const response = await fetch(
@@ -75,8 +75,8 @@ function ShoppingListApp() {
                     method: "PUT",
                     body: JSON.stringify(request),
                     headers: {
-                      "Content-Type": "application/json",
-                    },
+                      "Content-Type": "application/json"
+                    }
                   }
                 );
 
