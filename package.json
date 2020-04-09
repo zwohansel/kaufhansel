@@ -7,7 +7,8 @@
     "client": "webpack --config webpack.front.config.js --mode production",
     "server": "webpack --config webpack.back.config.js --mode production",
     "start:client": "webpack-dev-server --config webpack.front.config.js --open --mode development",
-    "start": "yarn server && node build/server.js & yarn start:client"
+    "start:server": "node build/server.js",
+    "start": "yarn server && yarn start:server & yarn start:client"
   },
   "repository": {
     "type": "git",
