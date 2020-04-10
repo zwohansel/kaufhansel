@@ -2,20 +2,20 @@ module.exports = {
   env: {
     browser: true,
     es6: true,
-    node: true,
+    node: true
   },
   extends: ["standard", "plugin:react/recommended", "prettier"],
   globals: {
     Atomics: "readonly",
-    SharedArrayBuffer: "readonly",
+    SharedArrayBuffer: "readonly"
   },
   parser: "@typescript-eslint/parser",
   parserOptions: {
     ecmaFeatures: {
-      jsx: true,
+      jsx: true
     },
     ecmaVersion: 2018,
-    sourceType: "module",
+    sourceType: "module"
   },
   plugins: ["react", "@typescript-eslint"],
   rules: {
@@ -23,6 +23,11 @@ module.exports = {
     quotes: ["error", "double"],
     "space-before-function-paren": "off",
     "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": "error",
+    "@typescript-eslint/no-unused-vars": "error"
   },
+  settings: {
+    react: {
+      version: "detect"
+    }
+  }
 };

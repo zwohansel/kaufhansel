@@ -9,13 +9,19 @@ module.exports = {
       {
         test: /\.ts$/,
         use: "ts-loader",
-        exclude: /node_modules/,
+        exclude: /node_modules/
       },
-    ],
+      {
+        enforce: "pre",
+        test: /\.(js|tsx?)$/,
+        exclude: /node_modules/,
+        loader: "eslint-loader"
+      }
+    ]
   },
   output: {
     path: path.resolve(__dirname, "build"),
-    filename: "server.js",
+    filename: "server.js"
   },
-  externals: [nodeExternals()],
+  externals: [nodeExternals()]
 };

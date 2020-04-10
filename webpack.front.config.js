@@ -17,7 +17,7 @@ module.exports = {
             presets: [
               "@babel/preset-env",
               "@babel/preset-react",
-              "@babel/preset-typescript",
+              "@babel/preset-typescript"
             ],
             plugins: [
               [
@@ -25,52 +25,58 @@ module.exports = {
                 {
                   libraryName: "antd",
                   libraryDirectory: "es",
-                  style: "css",
-                },
-              ],
-            ],
-          },
-        },
+                  style: "css"
+                }
+              ]
+            ]
+          }
+        }
       },
       {
         test: /\.html$/,
-        use: "html-loader",
+        use: "html-loader"
       },
       {
         test: /\.tsx?$/,
         use: "ts-loader",
-        exclude: /node_modules/,
+        exclude: /node_modules/
       },
       {
         test: /\.js$/,
         use: ["source-map-loader"],
-        enforce: "pre",
+        enforce: "pre"
       },
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader"],
+        use: ["style-loader", "css-loader"]
       },
-    ],
+      {
+        enforce: "pre",
+        test: /\.(js|tsx?)$/,
+        exclude: /node_modules/,
+        loader: "eslint-loader"
+      }
+    ]
   },
   resolve: {
-    extensions: [".tsx", ".ts", ".js"],
+    extensions: [".tsx", ".ts", ".js"]
   },
   plugins: [
     new HtmlWebPackPlugin({
       template: "./public/index.html",
-      filename: "./index.html",
+      filename: "./index.html"
     }),
-    new CopyWebPackPlugin([{ from: "public" }]),
+    new CopyWebPackPlugin([{ from: "public" }])
   ],
   output: {
     path: path.resolve(__dirname, "build"),
-    filename: "main.js",
+    filename: "main.js"
   },
   devServer: {
     contentBase: path.join(__dirname, "public"),
     proxy: {
-      "/api": "http://localhost:8081",
-    },
+      "/api": "http://localhost:8081"
+    }
   },
   optimization: {
     splitChunks: {
@@ -78,9 +84,9 @@ module.exports = {
         commons: {
           test: /[\\/]node_modules[\\/]/,
           name: "vendors",
-          chunks: "all",
-        },
-      },
-    },
-  },
+          chunks: "all"
+        }
+      }
+    }
+  }
 };
