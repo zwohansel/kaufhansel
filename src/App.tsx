@@ -1,4 +1,5 @@
 import { Button, Input, List, notification, PageHeader } from "antd";
+import produce from "immer";
 import React, { useEffect, useState } from "react";
 import "./App.css";
 import { CheckedStateRequest } from "./CheckedStateRequest";
@@ -45,7 +46,11 @@ function ShoppingListApp() {
 
     const newItemFromServer = await response.json();
 
-    setShoppingList([...shoppingList, newItemFromServer]);
+    const newShoppingList = produce(shoppingList, (draft) => {
+      draft.push(newItemFromServer);
+    });
+
+    setShoppingList(newShoppingList);
     setNewItemName("");
   };
 
@@ -81,11 +86,12 @@ function ShoppingListApp() {
                 );
 
                 if (response.ok) {
-                  const newList = shoppingList.map((e) => {
-                    if (item._id === e._id) {
-                      return { ...e, checked: checked };
+                  const newList = produce(shoppingList, (draft) => {
+                    const checkedItem = draft.find((e) => e._id === item._id);
+
+                    if (checkedItem) {
+                      checkedItem.checked = checked;
                     }
-                    return e;
                   });
 
                   setShoppingList(newList);
