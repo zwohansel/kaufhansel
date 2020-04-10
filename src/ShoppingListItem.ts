@@ -1,5 +1,5 @@
 export interface ShoppingListItem {
-  id?: number;
+  _id?: string;
   name: string;
   checked: boolean;
 }

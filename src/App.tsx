@@ -70,7 +70,7 @@ function ShoppingListApp() {
                 };
 
                 const response = await fetch(
-                  `api/shoppingListItem/${item.id}/changeCheckedState`,
+                  `api/shoppingListItem/${item._id}/changeCheckedState`,
                   {
                     method: "PUT",
                     body: JSON.stringify(request),
@@ -82,7 +82,7 @@ function ShoppingListApp() {
 
                 if (response.ok) {
                   const newList = shoppingList.map((e) => {
-                    if (item.id === e.id) {
+                    if (item._id === e._id) {
                       return { ...e, checked: checked };
                     }
                     return e;

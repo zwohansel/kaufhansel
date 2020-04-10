@@ -7,8 +7,8 @@
     "client": "webpack --config webpack.front.config.js --mode production",
     "server": "webpack --config webpack.back.config.js --mode production",
     "start:client": "webpack-dev-server --config webpack.front.config.js --open --mode development",
-    "start:server": "node build/server.js",
-    "start": "yarn server && yarn start:server & yarn start:client",
+    "start:server": "yarn server && node build/server.js",
+    "start": "yarn start:server & yarn start:client",
     "build": "yarn server && yarn client"
   },
   "repository": {
@@ -28,6 +28,7 @@
     "@babel/preset-react": "^7.9.4",
     "@babel/preset-typescript": "^7.9.0",
     "@types/express": "^4.17.5",
+    "@types/mongodb": "^3.5.5",
     "@types/react": "^16.9.32",
     "@types/react-dom": "^16.9.6",
     "@typescript-eslint/eslint-plugin": "^2.27.0",
@@ -62,6 +63,7 @@
   "dependencies": {
     "antd": "^4.1.1",
     "body-parser": "^1.19.0",
+    "mongodb": "^3.5.5",
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
   }
