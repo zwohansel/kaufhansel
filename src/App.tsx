@@ -67,7 +67,7 @@ function ShoppingListApp() {
   const shoppingList =
     data && data.shoppingListItems ? data.shoppingListItems : [];
 
-  const [createItem] = useMutation<
+  const [createItem, { loading: creatingItem }] = useMutation<
     SingleShoppingListItemData,
     { name: string }
   >(
@@ -109,7 +109,7 @@ function ShoppingListApp() {
       return;
     }
 
-    createItem({ variables: { name: newItemName } });
+    await createItem({ variables: { name: newItemName } });
 
     setNewItemName("");
   };
@@ -140,6 +140,7 @@ function ShoppingListApp() {
             value={newItemName}
             onChange={(event) => setNewItemName(event.target.value)}
             onPressEnter={createNewItem}
+            disabled={creatingItem}
           />
         </div>
         <div
@@ -150,6 +151,7 @@ function ShoppingListApp() {
             style={{ width: "100%" }}
             disabled={newItemName === ""}
             onClick={createNewItem}
+            loading={creatingItem}
           >
             Hinzufügen
           </Button>

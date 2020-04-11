@@ -1,4 +1,4 @@
-import { ApolloServer } from "apollo-server";
+import { ApolloServer, UserInputError } from "apollo-server";
 import { ObjectID } from "mongodb";
 import mongoose from "mongoose";
 import typeDefs from "./schema.graphql";
@@ -63,6 +63,13 @@ const ShoppingListItemModel = mongoose.model<ShoppingListItemDocument>(
               { checked: state },
               { new: true }
             );
+
+            if (!item) {
+              throw new UserInputError(
+                `The item with ID ${id} is not present.`
+              );
+            }
+
             return item;
           }
         }
@@ -70,7 +77,7 @@ const ShoppingListItemModel = mongoose.model<ShoppingListItemDocument>(
     });
 
     server.listen().then(({ url }) => {
-      console.log("[ROCKET] Server ready at: ", url);
+      console.log("Server ready 🚀 at: ", url);
     });
   } catch (err) {
     console.error("An error occured: ", err);
