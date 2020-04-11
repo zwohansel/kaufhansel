@@ -1,64 +1,85 @@
-import { Button, Input, List, notification, PageHeader } from "antd";
-import produce from "immer";
-import React, { useEffect, useState } from "react";
+import { useMutation, useQuery } from "@apollo/react-hooks";
+import { Button, Input, List, PageHeader } from "antd";
+import { gql } from "apollo-boost";
+import React, { useState } from "react";
 import "./App.css";
 import { ShoppingListItem } from "./ShoppingListItem";
 import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
 
 function ShoppingListApp() {
-  const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
+  // const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
   const [newItemName, setNewItemName] = useState<string>("");
 
-  useEffect(() => {
-    (async () => {
-      const response = await fetch("api/shoppingList");
-
-      if (!response.ok) {
-        showError();
-        return;
+  const GET_ITEMS = gql`
+    {
+      shoppingListItems {
+        _id
+        name
+        checked
       }
+    }
+  `;
 
-      const data = await response.json();
-      setShoppingList(data);
-    })();
-  }, []);
+  const { data, loading } = useQuery(GET_ITEMS);
+
+  const shoppingList: ShoppingListItem[] = loading
+    ? []
+    : data.shoppingListItems;
+
+  const [createItem] = useMutation(
+    gql`
+      mutation createShoppingListItem($name: String!) {
+        createShoppingListItem(name: $name) {
+          _id
+          name
+          checked
+        }
+      }
+    `,
+    {
+      update(cache, { data: { createShoppingListItem } }) {
+        const data = cache.readQuery({ query: GET_ITEMS }) as any;
+
+        console.log(createShoppingListItem);
+
+        cache.writeQuery({
+          query: GET_ITEMS,
+          data: {
+            shoppingListItems: data.shoppingListItems.concat(
+              createShoppingListItem
+            )
+          }
+        });
+      }
+    }
+  );
+
+  const [setItemCheckedState] = useMutation(gql`
+    mutation setItemCheckedState($id: ID!, $state: Boolean!) {
+      changeShoppingListItemCheckedState(id: $id, state: $state) {
+        _id
+        name
+        checked
+      }
+    }
+  `);
 
   const createNewItem = async () => {
     if (newItemName === "") {
       return;
     }
 
-    const newItem: ShoppingListItem = { name: newItemName, checked: false };
+    createItem({ variables: { name: newItemName } });
 
-    const response = await fetch("api/shoppingListItem", {
-      method: "POST",
-      body: JSON.stringify(newItem),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
-
-    if (!response.ok) {
-      showError();
-      return;
-    }
-
-    const newItemFromServer = await response.json();
-
-    const newShoppingList = produce(shoppingList, (draft) => {
-      draft.push(newItemFromServer);
-    });
-
-    setShoppingList(newShoppingList);
     setNewItemName("");
   };
 
-  const showError = () => {
-    notification.error({
-      message: "NOOOOOOOO!!!!!",
-      description: "Did not work :("
-    });
-  };
+  // const showError = () => {
+  //   notification.error({
+  //     message: "NOOOOOOOO!!!!!",
+  //     description: "Did not work :("
+  //   });
+  // };
 
   return (
     <PageHeader title="Einkaufsliste">
@@ -69,34 +90,12 @@ function ShoppingListApp() {
             <ShoppingListItemComponent
               item={item}
               onItemCheckedChange={async (checked) => {
-                const request = {
-                  state: checked
-                };
-
-                const response = await fetch(
-                  `api/shoppingListItem/${item._id}/changeCheckedState`,
-                  {
-                    method: "PUT",
-                    body: JSON.stringify(request),
-                    headers: {
-                      "Content-Type": "application/json"
-                    }
+                setItemCheckedState({
+                  variables: {
+                    id: item._id,
+                    state: checked
                   }
-                );
-
-                if (response.ok) {
-                  const newList = produce(shoppingList, (draft) => {
-                    const checkedItem = draft.find((e) => e._id === item._id);
-
-                    if (checkedItem) {
-                      checkedItem.checked = checked;
-                    }
-                  });
-
-                  setShoppingList(newList);
-                } else {
-                  showError();
-                }
+                });
               }}
             />
           );
