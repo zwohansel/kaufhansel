@@ -1,10 +1,17 @@
 import { useMutation, useQuery } from "@apollo/react-hooks";
-import { Button, Input, List, PageHeader } from "antd";
-import { gql } from "apollo-boost";
+import { Button, Input, List, notification, PageHeader } from "antd";
+import { ApolloError, gql, MutationUpdaterFn } from "apollo-boost";
 import React, { useState } from "react";
 import "./App.css";
 import { ShoppingListItem } from "./ShoppingListItem";
 import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
+
+function showApolloError(error: ApolloError) {
+  notification.error({
+    message: error.name,
+    description: error.message
+  });
+}
 
 const GET_ITEMS = gql`
   {
@@ -15,6 +22,32 @@ const GET_ITEMS = gql`
     }
   }
 `;
+
+const updateShoppingListItems: MutationUpdaterFn<SingleShoppingListItemData> = (
+  cache,
+  { data }
+) => {
+  if (!data?.createShoppingListItem) {
+    return;
+  }
+
+  const queryData = cache.readQuery<ShoppingListItemsData>({
+    query: GET_ITEMS
+  });
+
+  if (!queryData?.shoppingListItems) {
+    return;
+  }
+
+  cache.writeQuery<ShoppingListItemsData>({
+    query: GET_ITEMS,
+    data: {
+      shoppingListItems: queryData.shoppingListItems.concat(
+        data.createShoppingListItem
+      )
+    }
+  });
+};
 
 interface ShoppingListItemsData {
   shoppingListItems: ShoppingListItem[];
@@ -27,7 +60,9 @@ interface SingleShoppingListItemData {
 function ShoppingListApp() {
   const [newItemName, setNewItemName] = useState<string>("");
 
-  const { data } = useQuery<ShoppingListItemsData>(GET_ITEMS);
+  const { data } = useQuery<ShoppingListItemsData>(GET_ITEMS, {
+    onError: showApolloError
+  });
 
   const shoppingList =
     data && data.shoppingListItems ? data.shoppingListItems : [];
@@ -46,39 +81,28 @@ function ShoppingListApp() {
       }
     `,
     {
-      update(cache, { data }) {
-        if (data?.createShoppingListItem) {
-          const queryData = cache.readQuery<ShoppingListItemsData>({
-            query: GET_ITEMS
-          });
-
-          if (queryData?.shoppingListItems) {
-            cache.writeQuery<ShoppingListItemsData>({
-              query: GET_ITEMS,
-              data: {
-                shoppingListItems: queryData.shoppingListItems.concat(
-                  data.createShoppingListItem
-                )
-              }
-            });
-          }
-        }
-      }
+      onError: showApolloError,
+      update: updateShoppingListItems
     }
   );
 
   const [setItemCheckedState] = useMutation<
     SingleShoppingListItemData,
     { id: string; state: boolean }
-  >(gql`
-    mutation setItemCheckedState($id: ID!, $state: Boolean!) {
-      changeShoppingListItemCheckedState(id: $id, state: $state) {
-        _id
-        name
-        checked
+  >(
+    gql`
+      mutation setItemCheckedState($id: ID!, $state: Boolean!) {
+        changeShoppingListItemCheckedState(id: $id, state: $state) {
+          _id
+          name
+          checked
+        }
       }
+    `,
+    {
+      onError: showApolloError
     }
-  `);
+  );
 
   const createNewItem = async () => {
     if (newItemName === "") {
@@ -89,13 +113,6 @@ function ShoppingListApp() {
 
     setNewItemName("");
   };
-
-  // const showError = () => {
-  //   notification.error({
-  //     message: "NOOOOOOOO!!!!!",
-  //     description: "Did not work :("
-  //   });
-  // };
 
   return (
     <PageHeader title="Einkaufsliste">
