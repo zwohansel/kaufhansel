@@ -55,7 +55,7 @@ const ShoppingListItemModel = mongoose.model<ShoppingListItemDocument>(
       res.status(201).send(insertedItem);
     });
 
-    app.put(
+    app.put( // TODO
       "/api/shoppingListItem/:id/changeCheckedState",
       async (req, res) => {
         const itemId: ObjectID = ObjectID.createFromHexString(req.params.id);
