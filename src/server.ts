@@ -73,10 +73,8 @@ const ShoppingListItemModel = mongoose.model<ShoppingListItemDocument>(
             return item;
           },
           deleteShoppingListItem: async (_parent, { id }) => {
-            const deletedItem = await ShoppingListItemModel.findByIdAndDelete(
-              id
-            );
-            return deletedItem;
+            await ShoppingListItemModel.findByIdAndDelete(id);
+            return id;
           }
         }
       }

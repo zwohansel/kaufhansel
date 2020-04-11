@@ -54,7 +54,7 @@ const updateShoppingListItems: MutationUpdaterFn<CreateShoppingListItemData> = (
 };
 
 interface DeleteShoppingListItemData {
-  deleteShoppingListItem: ShoppingListItem;
+  deleteShoppingListItem: string;
 }
 
 const deleteShoppingListItem: MutationUpdaterFn<DeleteShoppingListItemData> = (
@@ -77,7 +77,7 @@ const deleteShoppingListItem: MutationUpdaterFn<DeleteShoppingListItemData> = (
     query: GET_ITEMS,
     data: {
       shoppingListItems: queryData.shoppingListItems.filter(
-        (e) => e._id !== data.deleteShoppingListItem._id
+        (e) => e._id !== data.deleteShoppingListItem
       )
     }
   });
@@ -137,16 +137,12 @@ function ShoppingListApp() {
   );
 
   const [deleteItem] = useMutation<
-    {
-      deleteShoppingListItem: ShoppingListItem;
-    },
+    DeleteShoppingListItemData,
     { id: string }
   >(
     gql`
       mutation deleteItem($id: ID!) {
-        deleteShoppingListItem(id: $id) {
-          _id
-        }
+        deleteShoppingListItem(id: $id)
       }
     `,
     {

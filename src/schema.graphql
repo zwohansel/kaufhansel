@@ -10,6 +10,9 @@ type Query {
 
 type Mutation {
   createShoppingListItem(name: String!): ShoppingListItem!
-  changeShoppingListItemCheckedState(id: ID!, state: Boolean!): ShoppingListItem!
-  deleteShoppingListItem(id: ID!): ShoppingListItem
+  changeShoppingListItemCheckedState(
+    id: ID!
+    state: Boolean!
+  ): ShoppingListItem!
+  deleteShoppingListItem(id: ID!): ID!
 }
