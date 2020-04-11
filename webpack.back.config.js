@@ -16,6 +16,11 @@ module.exports = {
         test: /\.(js|tsx?)$/,
         exclude: /node_modules/,
         loader: "eslint-loader"
+      },
+      {
+        test: /\.(graphql|gql)$/,
+        exclude: /node_modules/,
+        loader: "graphql-tag/loader"
       }
     ]
   },

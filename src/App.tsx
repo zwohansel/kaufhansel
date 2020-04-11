@@ -2,7 +2,6 @@ import { Button, Input, List, notification, PageHeader } from "antd";
 import produce from "immer";
 import React, { useEffect, useState } from "react";
 import "./App.css";
-import { CheckedStateRequest } from "./CheckedStateRequest";
 import { ShoppingListItem } from "./ShoppingListItem";
 import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
 
@@ -70,7 +69,7 @@ function ShoppingListApp() {
             <ShoppingListItemComponent
               item={item}
               onItemCheckedChange={async (checked) => {
-                const request: CheckedStateRequest = {
+                const request = {
                   state: checked
                 };
 

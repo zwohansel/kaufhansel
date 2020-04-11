@@ -1,10 +1,8 @@
-import bodyParser from "body-parser";
-import express from "express";
-import { ObjectID } from "mongodb";
 import mongoose from "mongoose";
-import { AddressInfo } from "net";
-import { CheckedStateRequest } from "./CheckedStateRequest";
 import { ShoppingListItem, ShoppingListItemBase } from "./ShoppingListItem";
+import { ApolloServer } from "apollo-server";
+import typeDefs from "./schema.graphql";
+import { ObjectID } from "mongodb";
 
 const ShoppintListItemSchema = new mongoose.Schema({
   name: String,
@@ -22,10 +20,6 @@ const ShoppingListItemModel = mongoose.model<ShoppingListItemDocument>(
 
 (async () => {
   try {
-    const app = express();
-
-    app.use(bodyParser.json());
-
     const mongooseDb = await mongoose.connect("mongodb://localhost:27017", {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -44,51 +38,41 @@ const ShoppingListItemModel = mongoose.model<ShoppingListItemDocument>(
       console.error.bind(console, "connection error")
     );
 
-    app.get("/api/shoppingList", async (req, res) => {
-      const shoppingListItems: ShoppingListItem[] = await ShoppingListItemModel.find().exec();
-      res.send(shoppingListItems);
-    });
-
-    app.post("/api/shoppingListItem", async (req, res) => {
-      const item: ShoppingListItem = req.body;
-      const insertedItem = await ShoppingListItemModel.create(item);
-      res.status(201).send(insertedItem);
-    });
-
-    app.put( // TODO
-      "/api/shoppingListItem/:id/changeCheckedState",
-      async (req, res) => {
-        const itemId: ObjectID = ObjectID.createFromHexString(req.params.id);
-        const stateRequest: CheckedStateRequest = req.body;
-
-        if (typeof stateRequest.state !== "boolean") {
-          res.sendStatus(400);
-          return;
-        }
-
-        const item = await ShoppingListItemModel.updateOne(
-          { _id: itemId },
-          { checked: stateRequest.state === true }
-        );
-
-        if (item) {
-          res.sendStatus(204);
-        } else {
-          res.sendStatus(404);
+    const server = new ApolloServer({
+      typeDefs,
+      resolvers: {
+        Query: {
+          shoppingListItems: async () => {
+            const shoppingListItems: ShoppingListItem[] = await ShoppingListItemModel.find().exec();
+            return shoppingListItems;
+          }
+        },
+        Mutation: {
+          createShoppingListItem: async (_parent, { name }) => {
+            const item: ShoppingListItem = { name: name, checked: false };
+            const insertedItem = await ShoppingListItemModel.create(item);
+            return insertedItem;
+          },
+          changeShoppingListItemCheckedState: async (
+            _parent,
+            { state, id }
+          ) => {
+            const itemId: ObjectID = ObjectID.createFromHexString(id);
+            const item = await ShoppingListItemModel.findOneAndUpdate(
+              { _id: itemId },
+              { checked: state },
+              { new: true }
+            );
+            return item;
+          }
         }
       }
-    );
-
-    const server = app.listen(8081, () => {
-      const serverInfo = server.address() as AddressInfo;
-      if (server !== null) {
-        const host = serverInfo.address;
-        const port = serverInfo.port;
-        console.log("Example app listening at http://%s:%s", host, port);
-      } else {
-        console.log("Could not start server");
-      }
     });
+
+    server.listen().then(({ url }) => {
+      console.log("[ROCKET] Server ready at: ", url);
+    });
+
   } catch (err) {
     console.error("An error occured: ", err);
     process.exit();
