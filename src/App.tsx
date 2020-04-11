@@ -23,7 +23,11 @@ const GET_ITEMS = gql`
   }
 `;
 
-const updateShoppingListItems: MutationUpdaterFn<SingleShoppingListItemData> = (
+interface CreateShoppingListItemData {
+  createShoppingListItem: ShoppingListItem;
+}
+
+const updateShoppingListItems: MutationUpdaterFn<CreateShoppingListItemData> = (
   cache,
   { data }
 ) => {
@@ -49,12 +53,38 @@ const updateShoppingListItems: MutationUpdaterFn<SingleShoppingListItemData> = (
   });
 };
 
-interface ShoppingListItemsData {
-  shoppingListItems: ShoppingListItem[];
+interface DeleteShoppingListItemData {
+  deleteShoppingListItem: ShoppingListItem;
 }
 
-interface SingleShoppingListItemData {
-  createShoppingListItem: ShoppingListItem;
+const deleteShoppingListItem: MutationUpdaterFn<DeleteShoppingListItemData> = (
+  cache,
+  { data }
+) => {
+  if (!data?.deleteShoppingListItem) {
+    return;
+  }
+
+  const queryData = cache.readQuery<ShoppingListItemsData>({
+    query: GET_ITEMS
+  });
+
+  if (!queryData?.shoppingListItems) {
+    return;
+  }
+
+  cache.writeQuery<ShoppingListItemsData>({
+    query: GET_ITEMS,
+    data: {
+      shoppingListItems: queryData.shoppingListItems.filter(
+        (e) => e._id !== data.deleteShoppingListItem._id
+      )
+    }
+  });
+};
+
+interface ShoppingListItemsData {
+  shoppingListItems: ShoppingListItem[];
 }
 
 function ShoppingListApp() {
@@ -68,7 +98,7 @@ function ShoppingListApp() {
     data && data.shoppingListItems ? data.shoppingListItems : [];
 
   const [createItem, { loading: creatingItem }] = useMutation<
-    SingleShoppingListItemData,
+    CreateShoppingListItemData,
     { name: string }
   >(
     gql`
@@ -87,7 +117,9 @@ function ShoppingListApp() {
   );
 
   const [setItemCheckedState] = useMutation<
-    SingleShoppingListItemData,
+    {
+      changeShoppingListItemCheckedState: ShoppingListItem;
+    },
     { id: string; state: boolean }
   >(
     gql`
@@ -101,6 +133,25 @@ function ShoppingListApp() {
     `,
     {
       onError: showApolloError
+    }
+  );
+
+  const [deleteItem] = useMutation<
+    {
+      deleteShoppingListItem: ShoppingListItem;
+    },
+    { id: string }
+  >(
+    gql`
+      mutation deleteItem($id: ID!) {
+        deleteShoppingListItem(id: $id) {
+          _id
+        }
+      }
+    `,
+    {
+      onError: showApolloError,
+      update: deleteShoppingListItem
     }
   );
 
@@ -122,11 +173,18 @@ function ShoppingListApp() {
           return (
             <ShoppingListItemComponent
               item={item}
-              onItemCheckedChange={async (checked) => {
+              onItemCheckedChange={(checked) => {
                 setItemCheckedState({
                   variables: {
                     id: item._id,
                     state: checked
+                  }
+                });
+              }}
+              onItemDeleted={() => {
+                deleteItem({
+                  variables: {
+                    id: item._id
                   }
                 });
               }}
