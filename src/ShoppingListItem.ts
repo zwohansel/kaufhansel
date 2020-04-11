@@ -4,5 +4,5 @@ export interface ShoppingListItemBase {
 }
 
 export interface ShoppingListItem extends ShoppingListItemBase {
-  _id?: string;
+  _id: string;
 }

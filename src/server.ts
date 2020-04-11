@@ -1,8 +1,8 @@
-import mongoose from "mongoose";
-import { ShoppingListItem, ShoppingListItemBase } from "./ShoppingListItem";
 import { ApolloServer } from "apollo-server";
-import typeDefs from "./schema.graphql";
 import { ObjectID } from "mongodb";
+import mongoose from "mongoose";
+import typeDefs from "./schema.graphql";
+import { ShoppingListItem, ShoppingListItemBase } from "./ShoppingListItem";
 
 const ShoppintListItemSchema = new mongoose.Schema({
   name: String,
@@ -49,7 +49,7 @@ const ShoppingListItemModel = mongoose.model<ShoppingListItemDocument>(
         },
         Mutation: {
           createShoppingListItem: async (_parent, { name }) => {
-            const item: ShoppingListItem = { name: name, checked: false };
+            const item: ShoppingListItemBase = { name: name, checked: false };
             const insertedItem = await ShoppingListItemModel.create(item);
             return insertedItem;
           },
@@ -72,7 +72,6 @@ const ShoppingListItemModel = mongoose.model<ShoppingListItemDocument>(
     server.listen().then(({ url }) => {
       console.log("[ROCKET] Server ready at: ", url);
     });
-
   } catch (err) {
     console.error("An error occured: ", err);
     process.exit();

@@ -6,27 +6,36 @@ import "./App.css";
 import { ShoppingListItem } from "./ShoppingListItem";
 import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
 
+const GET_ITEMS = gql`
+  {
+    shoppingListItems {
+      _id
+      name
+      checked
+    }
+  }
+`;
+
+interface ShoppingListItemsData {
+  shoppingListItems: ShoppingListItem[];
+}
+
+interface SingleShoppingListItemData {
+  createShoppingListItem: ShoppingListItem;
+}
+
 function ShoppingListApp() {
-  // const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
   const [newItemName, setNewItemName] = useState<string>("");
 
-  const GET_ITEMS = gql`
-    {
-      shoppingListItems {
-        _id
-        name
-        checked
-      }
-    }
-  `;
+  const { data } = useQuery<ShoppingListItemsData>(GET_ITEMS);
 
-  const { data, loading } = useQuery(GET_ITEMS);
+  const shoppingList =
+    data && data.shoppingListItems ? data.shoppingListItems : [];
 
-  const shoppingList: ShoppingListItem[] = loading
-    ? []
-    : data.shoppingListItems;
-
-  const [createItem] = useMutation(
+  const [createItem] = useMutation<
+    SingleShoppingListItemData,
+    { name: string }
+  >(
     gql`
       mutation createShoppingListItem($name: String!) {
         createShoppingListItem(name: $name) {
@@ -37,24 +46,31 @@ function ShoppingListApp() {
       }
     `,
     {
-      update(cache, { data: { createShoppingListItem } }) {
-        const data = cache.readQuery({ query: GET_ITEMS }) as any;
+      update(cache, { data }) {
+        if (data?.createShoppingListItem) {
+          const queryData = cache.readQuery<ShoppingListItemsData>({
+            query: GET_ITEMS
+          });
 
-        console.log(createShoppingListItem);
-
-        cache.writeQuery({
-          query: GET_ITEMS,
-          data: {
-            shoppingListItems: data.shoppingListItems.concat(
-              createShoppingListItem
-            )
+          if (queryData?.shoppingListItems) {
+            cache.writeQuery<ShoppingListItemsData>({
+              query: GET_ITEMS,
+              data: {
+                shoppingListItems: queryData.shoppingListItems.concat(
+                  data.createShoppingListItem
+                )
+              }
+            });
           }
-        });
+        }
       }
     }
   );
 
-  const [setItemCheckedState] = useMutation(gql`
+  const [setItemCheckedState] = useMutation<
+    SingleShoppingListItemData,
+    { id: string; state: boolean }
+  >(gql`
     mutation setItemCheckedState($id: ID!, $state: Boolean!) {
       changeShoppingListItemCheckedState(id: $id, state: $state) {
         _id
