@@ -4,7 +4,12 @@ module.exports = {
     es6: true,
     node: true
   },
-  extends: ["standard", "plugin:react/recommended", "prettier"],
+  extends: [
+    "standard",
+    "plugin:react/recommended",
+    "prettier",
+    "plugin:jest/recommended"
+  ],
   globals: {
     Atomics: "readonly",
     SharedArrayBuffer: "readonly"
@@ -17,7 +22,7 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: "module"
   },
-  plugins: ["react", "@typescript-eslint"],
+  plugins: ["react", "@typescript-eslint", "jest"],
   rules: {
     semi: "off",
     quotes: ["error", "double"],
