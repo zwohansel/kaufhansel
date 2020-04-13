@@ -4,7 +4,8 @@ const path = require("path");
 
 module.exports = {
   target: "web",
-  entry: "./src/index.tsx",
+  context: path.resolve(__dirname, "./src/client"),
+  entry: "./index.tsx",
   devtool: "inline-source-map",
   module: {
     rules: [

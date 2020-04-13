@@ -3,7 +3,8 @@ const path = require("path");
 
 module.exports = {
   target: "node",
-  entry: "./src/server.ts",
+  context: path.resolve(__dirname, "./src/server"),
+  entry: "./main.ts",
   module: {
     rules: [
       {
@@ -26,7 +27,10 @@ module.exports = {
   },
   output: {
     path: path.resolve(__dirname, "build"),
-    filename: "server.js"
+    filename: "main.js"
+  },
+  resolve: {
+    extensions: [".ts", ".js"]
   },
   externals: [nodeExternals()]
 };

@@ -1,7 +1,7 @@
 import { DeleteFilled } from "@ant-design/icons";
 import { Button, Checkbox, List } from "antd";
 import React from "react";
-import { ShoppingListItem } from "./ShoppingListItem";
+import { ShoppingListItem } from "../shared/ShoppingListItem";
 
 export interface ShoppingListItemComponentProps {
   item: ShoppingListItem;

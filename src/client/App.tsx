@@ -10,7 +10,7 @@ import {
 import { ApolloError, gql, MutationUpdaterFn } from "apollo-boost";
 import React, { useState } from "react";
 import "./App.css";
-import { ShoppingListItem } from "./ShoppingListItem";
+import { ShoppingListItem } from "../shared/ShoppingListItem";
 import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
 import { DeleteFilled } from "@ant-design/icons";
 import { DataProxy } from "apollo-cache";

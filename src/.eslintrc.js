@@ -28,7 +28,9 @@ module.exports = {
     quotes: ["error", "double"],
     "space-before-function-paren": "off",
     "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": "error"
+    "@typescript-eslint/no-unused-vars": "error",
+    "no-useless-constructor": "off",
+    "@typescript-eslint/no-useless-constructor": "error"
   },
   settings: {
     react: {

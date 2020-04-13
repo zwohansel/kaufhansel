@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "test": "npx jest",
-    "client": "webpack --config webpack.front.config.js --mode production",
-    "server": "webpack --config webpack.back.config.js --mode production",
-    "start:client": "webpack-dev-server --config webpack.front.config.js --open --mode development",
+    "test:client": "npx jest --config jest.client.config.js",
+    "test:server": "npx jest --config jest.server.config.js --detectOpenHandles",
+    "test": "yarn test:client && yarn test:server",
+    "client": "webpack --config webpack.client.config.js --mode production",
+    "server": "webpack --config webpack.server.config.js --mode production",
+    "start:client": "webpack-dev-server --config webpack.client.config.js --open --mode development",
     "start:server": "yarn server && node build/server.js",
     "start": "yarn start:server & yarn start:client",
     "build": "yarn server && yarn client"
