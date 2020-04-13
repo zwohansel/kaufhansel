@@ -4,11 +4,17 @@ import typeDefs from "./schema.graphql";
 
 (async () => {
   try {
+    console.log("Connecting to database...");
     const database = await Database.create("mongodb://localhost:27017");
 
-    process.on("SIGINT", () => {
-      console.log("Close DB connection");
-      database.close().finally(() => process.exit());
+    process.on("SIGINT", async () => {
+      console.log("\nClosing DB connection...");
+      try {
+        await database.close();
+      } finally {
+        console.log("Shutting down...");
+        process.exit();
+      }
     });
 
     const server = new ApolloServer({
@@ -34,9 +40,11 @@ import typeDefs from "./schema.graphql";
       }
     });
 
-    server.listen().then(({ url }) => {
-      console.log("Server ready 🚀 at: ", url);
-    });
+    const serverInfo = await server.listen();
+    console.log(`
+🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀
+            Server ready at: ${serverInfo.url}
+🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀`);
   } catch (err) {
     console.error("An error occured: ", err);
     process.exit();

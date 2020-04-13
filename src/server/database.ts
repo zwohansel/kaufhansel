@@ -10,11 +10,10 @@ const ShoppintListItemSchema = new mongoose.Schema({
 interface ShoppingListItemDocument extends ShoppingListItemBase, mongoose.Document {}
 
 export default class Database {
-  private model: Model<ShoppingListItemDocument>;
-
   public static async create(mongoDbAddress: string): Promise<Database> {
     const database = await mongoose.connect(mongoDbAddress, {
       useUnifiedTopology: true,
+      useNewUrlParser: true,
       connectTimeoutMS: 5000,
       serverSelectionTimeoutMS: 5000,
       dbName: "shopping_list"
@@ -24,6 +23,8 @@ export default class Database {
 
     return new Database(database);
   }
+
+  private model: Model<ShoppingListItemDocument>;
 
   private constructor(private database: Mongoose) {
     this.model = database.model<ShoppingListItemDocument>("shopping_list_item", ShoppintListItemSchema);

@@ -9,7 +9,7 @@
     "client": "webpack --config webpack.client.config.js --mode production",
     "server": "webpack --config webpack.server.config.js --mode production",
     "start:client": "webpack-dev-server --config webpack.client.config.js --open --mode development",
-    "start:server": "yarn server && node build/server.js",
+    "start:server": "yarn server && node build/server/main.js",
     "start": "yarn start:server & yarn start:client",
     "build": "yarn server && yarn client"
   },
