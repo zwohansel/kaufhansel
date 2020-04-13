@@ -1,7 +1,7 @@
 import { ObjectID } from "mongodb";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { ShoppingListItem } from "../shared/ShoppingListItem";
-import Database from "./database";
+import Database from "./Database";
 
 let mongodb: MongoMemoryServer;
 let database: Database;

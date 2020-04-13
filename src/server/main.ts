@@ -1,5 +1,5 @@
 import { ApolloServer, UserInputError } from "apollo-server";
-import Database from "./database";
+import Database from "./Database";
 import typeDefs from "./schema.graphql";
 
 (async () => {
