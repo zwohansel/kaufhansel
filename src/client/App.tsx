@@ -195,7 +195,7 @@ function ShoppingListApp() {
         }}
       />
       <div>
-        <div style={{ display: "inline-block", width: "75%" }}>
+        <div style={{ display: "inline-block", width: "70%" }}>
           <Input
             value={newItemName}
             onChange={event => setNewItemName(event.target.value)}
@@ -214,10 +214,17 @@ function ShoppingListApp() {
             Hinzufügen
           </Button>
         </div>
-        <div style={{ display: "inline-block", width: "5%", paddingLeft: "10px" }}>
-          <Popconfirm title="Einkaufsliste leeren?" onConfirm={() => clearList({})} okText="Ja" cancelText="Nein">
-            <Button style={{ width: "100%" }} danger>
-              <DeleteFilled />
+        <div style={{ display: "inline-block", width: "10%", paddingLeft: "10px" }}>
+          <Popconfirm
+            title="Wollen Sie die Einkaufsliste wirklich leeren?"
+            onConfirm={() => clearList({})}
+            okText="Ja"
+            cancelText="Nein"
+            icon={<DeleteFilled style={{ color: "#555555" }} />}
+            okType="danger"
+          >
+            <Button style={{ width: "100%" }} danger type="primary">
+              Liste leeren
             </Button>
           </Popconfirm>
         </div>

@@ -35,7 +35,10 @@ import typeDefs from "./schema.graphql";
             return item;
           },
           deleteShoppingListItem: (_parent, { id }) => database.deleteShoppingListItem(id),
-          clearShoppingList: () => database.clearShoppingList()
+          clearShoppingList: async () => {
+            await database.clearShoppingList();
+            return true;
+          }
         }
       }
     });
