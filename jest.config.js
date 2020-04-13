@@ -18,7 +18,7 @@ module.exports = {
   clearMocks: true,
 
   // Indicates whether the coverage information should be collected while executing the test
-  // collectCoverage: false,
+  collectCoverage: true,
 
   // An array of glob patterns indicating a set of files for which coverage information should be collected
   // collectCoverageFrom: undefined,
@@ -75,7 +75,7 @@ module.exports = {
   // moduleNameMapper: {},
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
-  // modulePathIgnorePatterns: [],
+  modulePathIgnorePatterns: ["node_modules"],
 
   // Activates notifications for test results
   // notify: false,
@@ -137,7 +137,7 @@ module.exports = {
   testMatch: ["**/?(*.)+(test).[tj]s?(x)"],
 
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
-  testPathIgnorePatterns: ["/node_modules/"],
+  testPathIgnorePatterns: ["/node_modules/"]
 
   // The regexp pattern or array of patterns that Jest uses to detect test files
   // testRegex: [],
