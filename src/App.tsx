@@ -1,10 +1,19 @@
 import { useMutation, useQuery } from "@apollo/react-hooks";
-import { Button, Input, List, notification, PageHeader } from "antd";
+import {
+  Button,
+  Input,
+  List,
+  notification,
+  PageHeader,
+  Popconfirm
+} from "antd";
 import { ApolloError, gql, MutationUpdaterFn } from "apollo-boost";
 import React, { useState } from "react";
 import "./App.css";
 import { ShoppingListItem } from "./ShoppingListItem";
 import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
+import { DeleteFilled } from "@ant-design/icons";
+import { DataProxy } from "apollo-cache";
 
 function showApolloError(error: ApolloError) {
   notification.error({
@@ -83,6 +92,15 @@ const deleteShoppingListItem: MutationUpdaterFn<DeleteShoppingListItemData> = (
   });
 };
 
+const clearShoppingList = (cache: DataProxy) => {
+  cache.writeQuery<ShoppingListItemsData>({
+    query: GET_ITEMS,
+    data: {
+      shoppingListItems: []
+    }
+  });
+};
+
 interface ShoppingListItemsData {
   shoppingListItems: ShoppingListItem[];
 }
@@ -136,10 +154,7 @@ function ShoppingListApp() {
     }
   );
 
-  const [deleteItem] = useMutation<
-    DeleteShoppingListItemData,
-    { id: string }
-  >(
+  const [deleteItem] = useMutation<DeleteShoppingListItemData, { id: string }>(
     gql`
       mutation deleteItem($id: ID!) {
         deleteShoppingListItem(id: $id)
@@ -148,6 +163,18 @@ function ShoppingListApp() {
     {
       onError: showApolloError,
       update: deleteShoppingListItem
+    }
+  );
+
+  const [clearList] = useMutation<{}, {}>(
+    gql`
+      mutation clearList {
+        clearShoppingList
+      }
+    `,
+    {
+      onError: showApolloError,
+      update: clearShoppingList
     }
   );
 
@@ -189,7 +216,7 @@ function ShoppingListApp() {
         }}
       />
       <div>
-        <div style={{ display: "inline-block", width: "80%" }}>
+        <div style={{ display: "inline-block", width: "75%" }}>
           <Input
             value={newItemName}
             onChange={(event) => setNewItemName(event.target.value)}
@@ -209,6 +236,20 @@ function ShoppingListApp() {
           >
             Hinzufügen
           </Button>
+        </div>
+        <div
+          style={{ display: "inline-block", width: "5%", paddingLeft: "10px" }}
+        >
+          <Popconfirm
+            title="Einkaufsliste leeren?"
+            onConfirm={() => clearList({})}
+            okText="Ja"
+            cancelText="Nein"
+          >
+            <Button style={{ width: "100%" }} danger>
+              <DeleteFilled />
+            </Button>
+          </Popconfirm>
         </div>
       </div>
     </PageHeader>

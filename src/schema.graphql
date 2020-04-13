@@ -15,4 +15,5 @@ type Mutation {
     state: Boolean!
   ): ShoppingListItem!
   deleteShoppingListItem(id: ID!): ID!
+  clearShoppingList: Boolean!
 }

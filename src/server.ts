@@ -75,6 +75,10 @@ const ShoppingListItemModel = mongoose.model<ShoppingListItemDocument>(
           deleteShoppingListItem: async (_parent, { id }) => {
             await ShoppingListItemModel.findByIdAndDelete(id);
             return id;
+          },
+          clearShoppingList: async () => {
+            await ShoppingListItemModel.collection.drop();
+            return true;
           }
         }
       }
