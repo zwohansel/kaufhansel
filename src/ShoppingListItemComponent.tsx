@@ -1,12 +1,12 @@
-import { Checkbox, List, Button } from "antd";
+import { DeleteFilled } from "@ant-design/icons";
+import { Button, Checkbox, List } from "antd";
 import React from "react";
 import { ShoppingListItem } from "./ShoppingListItem";
-import { DeleteFilled } from "@ant-design/icons";
 
 export interface ShoppingListItemComponentProps {
   item: ShoppingListItem;
   onItemCheckedChange: (checked: boolean) => void;
-  onItemDeleted:() => void;
+  onItemDeleted: () => void;
 }
 
 export function ShoppingListItemComponent(
@@ -25,7 +25,10 @@ export function ShoppingListItemComponent(
         onChange={(event) => props.onItemCheckedChange(event.target.checked)}
       />
       {props.item.name}
-      <Button style={{ float: "right", border: "0px" }} onClick={props.onItemDeleted}>
+      <Button
+        style={{ float: "right", border: "0px" }}
+        onClick={props.onItemDeleted}
+      >
         <DeleteFilled />
       </Button>
     </List.Item>
