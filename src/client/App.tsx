@@ -1,19 +1,12 @@
-import { useMutation, useQuery } from "@apollo/react-hooks";
-import {
-  Button,
-  Input,
-  List,
-  notification,
-  PageHeader,
-  Popconfirm
-} from "antd";
-import { ApolloError, gql, MutationUpdaterFn } from "apollo-boost";
-import React, { useState } from "react";
-import "./App.css";
-import { ShoppingListItem } from "../shared/ShoppingListItem";
-import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
 import { DeleteFilled } from "@ant-design/icons";
+import { useMutation, useQuery } from "@apollo/react-hooks";
+import { Button, Input, List, notification, PageHeader, Popconfirm } from "antd";
+import { ApolloError, gql, MutationUpdaterFn } from "apollo-boost";
 import { DataProxy } from "apollo-cache";
+import React, { useState } from "react";
+import { ShoppingListItem } from "../shared/ShoppingListItem";
+import "./App.css";
+import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
 
 function showApolloError(error: ApolloError) {
   notification.error({
@@ -36,10 +29,7 @@ interface CreateShoppingListItemData {
   createShoppingListItem: ShoppingListItem;
 }
 
-const updateShoppingListItems: MutationUpdaterFn<CreateShoppingListItemData> = (
-  cache,
-  { data }
-) => {
+const updateShoppingListItems: MutationUpdaterFn<CreateShoppingListItemData> = (cache, { data }) => {
   if (!data?.createShoppingListItem) {
     return;
   }
@@ -55,9 +45,7 @@ const updateShoppingListItems: MutationUpdaterFn<CreateShoppingListItemData> = (
   cache.writeQuery<ShoppingListItemsData>({
     query: GET_ITEMS,
     data: {
-      shoppingListItems: queryData.shoppingListItems.concat(
-        data.createShoppingListItem
-      )
+      shoppingListItems: queryData.shoppingListItems.concat(data.createShoppingListItem)
     }
   });
 };
@@ -66,10 +54,7 @@ interface DeleteShoppingListItemData {
   deleteShoppingListItem: string;
 }
 
-const deleteShoppingListItem: MutationUpdaterFn<DeleteShoppingListItemData> = (
-  cache,
-  { data }
-) => {
+const deleteShoppingListItem: MutationUpdaterFn<DeleteShoppingListItemData> = (cache, { data }) => {
   if (!data?.deleteShoppingListItem) {
     return;
   }
@@ -85,9 +70,7 @@ const deleteShoppingListItem: MutationUpdaterFn<DeleteShoppingListItemData> = (
   cache.writeQuery<ShoppingListItemsData>({
     query: GET_ITEMS,
     data: {
-      shoppingListItems: queryData.shoppingListItems.filter(
-        (e) => e._id !== data.deleteShoppingListItem
-      )
+      shoppingListItems: queryData.shoppingListItems.filter(e => e._id !== data.deleteShoppingListItem)
     }
   });
 };
@@ -112,13 +95,9 @@ function ShoppingListApp() {
     onError: showApolloError
   });
 
-  const shoppingList =
-    data && data.shoppingListItems ? data.shoppingListItems : [];
+  const shoppingList = data && data.shoppingListItems ? data.shoppingListItems : [];
 
-  const [createItem, { loading: creatingItem }] = useMutation<
-    CreateShoppingListItemData,
-    { name: string }
-  >(
+  const [createItem, { loading: creatingItem }] = useMutation<CreateShoppingListItemData, { name: string }>(
     gql`
       mutation createShoppingListItem($name: String!) {
         createShoppingListItem(name: $name) {
@@ -192,11 +171,11 @@ function ShoppingListApp() {
     <PageHeader title="Einkaufsliste">
       <List
         dataSource={shoppingList}
-        renderItem={(item) => {
+        renderItem={item => {
           return (
             <ShoppingListItemComponent
               item={item}
-              onItemCheckedChange={(checked) => {
+              onItemCheckedChange={checked => {
                 setItemCheckedState({
                   variables: {
                     id: item._id,
@@ -219,14 +198,12 @@ function ShoppingListApp() {
         <div style={{ display: "inline-block", width: "75%" }}>
           <Input
             value={newItemName}
-            onChange={(event) => setNewItemName(event.target.value)}
+            onChange={event => setNewItemName(event.target.value)}
             onPressEnter={createNewItem}
             disabled={creatingItem}
           />
         </div>
-        <div
-          style={{ display: "inline-block", width: "20%", paddingLeft: "10px" }}
-        >
+        <div style={{ display: "inline-block", width: "20%", paddingLeft: "10px" }}>
           <Button
             type="primary"
             style={{ width: "100%" }}
@@ -237,15 +214,8 @@ function ShoppingListApp() {
             Hinzufügen
           </Button>
         </div>
-        <div
-          style={{ display: "inline-block", width: "5%", paddingLeft: "10px" }}
-        >
-          <Popconfirm
-            title="Einkaufsliste leeren?"
-            onConfirm={() => clearList({})}
-            okText="Ja"
-            cancelText="Nein"
-          >
+        <div style={{ display: "inline-block", width: "5%", paddingLeft: "10px" }}>
+          <Popconfirm title="Einkaufsliste leeren?" onConfirm={() => clearList({})} okText="Ja" cancelText="Nein">
             <Button style={{ width: "100%" }} danger>
               <DeleteFilled />
             </Button>

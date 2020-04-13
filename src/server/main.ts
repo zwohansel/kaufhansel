@@ -1,6 +1,6 @@
 import { ApolloServer, UserInputError } from "apollo-server";
-import typeDefs from "./schema.graphql";
 import Database from "./database";
+import typeDefs from "./schema.graphql";
 
 (async () => {
   try {
@@ -18,27 +18,17 @@ import Database from "./database";
           shoppingListItems: () => database.getShoppingListItems()
         },
         Mutation: {
-          createShoppingListItem: (_parent, { name }) =>
-            database.createShoppingListItem(name),
-          changeShoppingListItemCheckedState: async (
-            _parent,
-            { state, id }
-          ) => {
-            const item = await database.setShoppingListItemCheckedState(
-              id,
-              state
-            );
+          createShoppingListItem: (_parent, { name }) => database.createShoppingListItem(name),
+          changeShoppingListItemCheckedState: async (_parent, { state, id }) => {
+            const item = await database.setShoppingListItemCheckedState(id, state);
 
             if (!item) {
-              throw new UserInputError(
-                `The item with ID ${id} is not present.`
-              );
+              throw new UserInputError(`The item with ID ${id} is not present.`);
             }
 
             return item;
           },
-          deleteShoppingListItem: (_parent, { id }) =>
-            database.deleteShoppingListItem(id),
+          deleteShoppingListItem: (_parent, { id }) => database.deleteShoppingListItem(id),
           clearShoppingList: () => database.clearShoppingList()
         }
       }

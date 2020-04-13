@@ -1,18 +1,13 @@
 import { ObjectID } from "mongodb";
 import mongoose, { Model, Mongoose } from "mongoose";
-import {
-  ShoppingListItem,
-  ShoppingListItemBase
-} from "../shared/ShoppingListItem";
+import { ShoppingListItem, ShoppingListItemBase } from "../shared/ShoppingListItem";
 
 const ShoppintListItemSchema = new mongoose.Schema({
   name: String,
   checked: Boolean
 });
 
-interface ShoppingListItemDocument
-  extends ShoppingListItemBase,
-    mongoose.Document {}
+interface ShoppingListItemDocument extends ShoppingListItemBase, mongoose.Document {}
 
 export default class Database {
   private model: Model<ShoppingListItemDocument>;
@@ -25,19 +20,13 @@ export default class Database {
       dbName: "shopping_list"
     });
 
-    database.connection.on(
-      "error",
-      console.error.bind(console, "connection error")
-    );
+    database.connection.on("error", console.error.bind(console, "connection error"));
 
     return new Database(database);
   }
 
   private constructor(private database: Mongoose) {
-    this.model = database.model<ShoppingListItemDocument>(
-      "shopping_list_item",
-      ShoppintListItemSchema
-    );
+    this.model = database.model<ShoppingListItemDocument>("shopping_list_item", ShoppintListItemSchema);
   }
 
   public getShoppingListItems(): Promise<ShoppingListItem[]> {
@@ -49,16 +38,9 @@ export default class Database {
     return this.model.create(item);
   }
 
-  public async setShoppingListItemCheckedState(
-    id: string,
-    state: boolean
-  ): Promise<ShoppingListItem | null> {
+  public async setShoppingListItemCheckedState(id: string, state: boolean): Promise<ShoppingListItem | null> {
     const itemId: ObjectID = ObjectID.createFromHexString(id);
-    return await this.model.findOneAndUpdate(
-      { _id: itemId },
-      { checked: state },
-      { new: true }
-    );
+    return await this.model.findOneAndUpdate({ _id: itemId }, { checked: state }, { new: true });
   }
 
   public async deleteShoppingListItem(id: string): Promise<string> {

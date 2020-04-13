@@ -9,9 +9,7 @@ export interface ShoppingListItemComponentProps {
   onItemDeleted: () => void;
 }
 
-export function ShoppingListItemComponent(
-  props: ShoppingListItemComponentProps
-) {
+export function ShoppingListItemComponent(props: ShoppingListItemComponentProps) {
   return (
     <List.Item
       key={props.item._id}
@@ -22,13 +20,10 @@ export function ShoppingListItemComponent(
       <Checkbox
         style={{ marginRight: "1em" }}
         checked={props.item.checked}
-        onChange={(event) => props.onItemCheckedChange(event.target.checked)}
+        onChange={event => props.onItemCheckedChange(event.target.checked)}
       />
       {props.item.name}
-      <Button
-        style={{ float: "right", border: "0px" }}
-        onClick={props.onItemDeleted}
-      >
+      <Button style={{ float: "right", border: "0px" }} onClick={props.onItemDeleted}>
         <DeleteFilled />
       </Button>
     </List.Item>
