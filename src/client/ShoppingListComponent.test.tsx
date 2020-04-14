@@ -72,7 +72,7 @@ it("shopping list with items", async () => {
   expect(item2).toBeInTheDocument();
 });
 
-it("teste was", async () => {
+it("create shopping list item", async () => {
   const element = render(
     <MockedProvider
       mocks={[
