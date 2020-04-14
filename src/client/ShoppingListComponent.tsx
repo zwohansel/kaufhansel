@@ -5,7 +5,6 @@ import { ApolloError, gql, MutationUpdaterFn } from "apollo-boost";
 import { DataProxy } from "apollo-cache";
 import React, { useState } from "react";
 import { ShoppingListItem } from "../shared/ShoppingListItem";
-import "./App.css";
 import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
 
 function showApolloError(error: ApolloError) {
@@ -88,7 +87,7 @@ interface ShoppingListItemsData {
   shoppingListItems: ShoppingListItem[];
 }
 
-function ShoppingListApp() {
+function ShoppingListComponent() {
   const [newItemName, setNewItemName] = useState<string>("");
 
   const { data, loading: loadingShoppingListItems } = useQuery<ShoppingListItemsData>(GET_ITEMS, {
@@ -235,4 +234,4 @@ function ShoppingListApp() {
   );
 }
 
-export default ShoppingListApp;
+export default ShoppingListComponent;
