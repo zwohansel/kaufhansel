@@ -50,7 +50,7 @@ export default class Database {
   }
 
   public async clearShoppingList(): Promise<void> {
-    await this.model.collection.drop();
+    await this.model.deleteMany({});
   }
 
   public close(): Promise<void> {

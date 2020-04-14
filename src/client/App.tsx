@@ -1,6 +1,6 @@
 import { DeleteFilled } from "@ant-design/icons";
 import { useMutation, useQuery } from "@apollo/react-hooks";
-import { Button, Input, List, notification, PageHeader, Popconfirm } from "antd";
+import { Button, Input, List, notification, PageHeader, Popconfirm, Spin } from "antd";
 import { ApolloError, gql, MutationUpdaterFn } from "apollo-boost";
 import { DataProxy } from "apollo-cache";
 import React, { useState } from "react";
@@ -91,7 +91,7 @@ interface ShoppingListItemsData {
 function ShoppingListApp() {
   const [newItemName, setNewItemName] = useState<string>("");
 
-  const { data } = useQuery<ShoppingListItemsData>(GET_ITEMS, {
+  const { data, loading: loadingShoppingListItems } = useQuery<ShoppingListItemsData>(GET_ITEMS, {
     onError: showApolloError
   });
 
@@ -169,31 +169,33 @@ function ShoppingListApp() {
 
   return (
     <PageHeader title="Einkaufsliste">
-      <List
-        dataSource={shoppingList}
-        renderItem={item => {
-          return (
-            <ShoppingListItemComponent
-              item={item}
-              onItemCheckedChange={checked => {
-                setItemCheckedState({
-                  variables: {
-                    id: item._id,
-                    state: checked
-                  }
-                });
-              }}
-              onItemDeleted={() => {
-                deleteItem({
-                  variables: {
-                    id: item._id
-                  }
-                });
-              }}
-            />
-          );
-        }}
-      />
+      <Spin spinning={loadingShoppingListItems} tip="Wird aktualisiert...">
+        <List
+          dataSource={shoppingList}
+          renderItem={item => {
+            return (
+              <ShoppingListItemComponent
+                item={item}
+                onItemCheckedChange={checked => {
+                  setItemCheckedState({
+                    variables: {
+                      id: item._id,
+                      state: checked
+                    }
+                  });
+                }}
+                onItemDeleted={() => {
+                  deleteItem({
+                    variables: {
+                      id: item._id
+                    }
+                  });
+                }}
+              />
+            );
+          }}
+        />
+      </Spin>
       <div>
         <div style={{ display: "inline-block", width: "70%" }}>
           <Input
