@@ -14,7 +14,7 @@ function showApolloError(error: ApolloError) {
   });
 }
 
-const GET_ITEMS = gql`
+export const GET_ITEMS = gql`
   {
     shoppingListItems {
       _id
@@ -24,7 +24,17 @@ const GET_ITEMS = gql`
   }
 `;
 
-interface CreateShoppingListItemData {
+export const CREATE_ITEM = gql`
+  mutation createShoppingListItem($name: String!) {
+    createShoppingListItem(name: $name) {
+      _id
+      name
+      checked
+    }
+  }
+`;
+
+export interface CreateShoppingListItemData {
   createShoppingListItem: ShoppingListItem;
 }
 
@@ -83,7 +93,7 @@ const clearShoppingList = (cache: DataProxy) => {
   });
 };
 
-interface ShoppingListItemsData {
+export interface ShoppingListItemsData {
   shoppingListItems: ShoppingListItem[];
 }
 
@@ -97,15 +107,7 @@ function ShoppingListComponent() {
   const shoppingList = data && data.shoppingListItems ? data.shoppingListItems : [];
 
   const [createItem, { loading: creatingItem }] = useMutation<CreateShoppingListItemData, { name: string }>(
-    gql`
-      mutation createShoppingListItem($name: String!) {
-        createShoppingListItem(name: $name) {
-          _id
-          name
-          checked
-        }
-      }
-    `,
+    CREATE_ITEM,
     {
       onError: showApolloError,
       update: updateShoppingListItems
