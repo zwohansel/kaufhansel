@@ -12,11 +12,7 @@ test("render unchecked shopping list item", () => {
   };
 
   const element = render(
-    <ShoppingListItemComponent
-      item={item}
-      onItemCheckedChange={() => {}}
-      onItemDeleted={() => {}}
-    />
+    <ShoppingListItemComponent item={item} onItemCheckedChange={() => {}} onItemDeleted={() => {}} />
   );
   const itemText = element.getByText(/My Test Item/i);
   expect(itemText).toBeInTheDocument();
@@ -38,11 +34,7 @@ test("render checked shopping list item", () => {
   };
 
   const element = render(
-    <ShoppingListItemComponent
-      item={item}
-      onItemCheckedChange={() => {}}
-      onItemDeleted={() => {}}
-    />
+    <ShoppingListItemComponent item={item} onItemCheckedChange={() => {}} onItemDeleted={() => {}} />
   );
 
   const checkBox = element.getByRole("checkbox");
@@ -59,11 +51,7 @@ test("click unchecked checkbox", () => {
   const handleItemChecked = jest.fn();
 
   const element = render(
-    <ShoppingListItemComponent
-      item={item}
-      onItemCheckedChange={handleItemChecked}
-      onItemDeleted={() => {}}
-    />
+    <ShoppingListItemComponent item={item} onItemCheckedChange={handleItemChecked} onItemDeleted={() => {}} />
   );
 
   const checkBox = element.getByRole("checkbox");
@@ -82,11 +70,7 @@ test("click checked checkbox", () => {
   const handleItemChecked = jest.fn();
 
   const element = render(
-    <ShoppingListItemComponent
-      item={item}
-      onItemCheckedChange={handleItemChecked}
-      onItemDeleted={() => {}}
-    />
+    <ShoppingListItemComponent item={item} onItemCheckedChange={handleItemChecked} onItemDeleted={() => {}} />
   );
 
   const checkBox = element.getByRole("checkbox");
@@ -105,11 +89,7 @@ test("click delete button", () => {
   const handleItemDeleted = jest.fn();
 
   const element = render(
-    <ShoppingListItemComponent
-      item={item}
-      onItemCheckedChange={() => {}}
-      onItemDeleted={handleItemDeleted}
-    />
+    <ShoppingListItemComponent item={item} onItemCheckedChange={() => {}} onItemDeleted={handleItemDeleted} />
   );
 
   const deleteBtn = element.getByRole("button");

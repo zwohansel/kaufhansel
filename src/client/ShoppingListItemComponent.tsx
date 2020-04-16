@@ -23,8 +23,8 @@ export function ShoppingListItemComponent(props: ShoppingListItemComponentProps)
         onChange={event => props.onItemCheckedChange(event.target.checked)}
       />
       {props.item.name}
-      <Button style={{ float: "right", border: "0px" }} onClick={props.onItemDeleted}>
-        <DeleteFilled />
+      <Button style={{ float: "right", border: "0px" }} onClick={props.onItemDeleted} data-testid="delete-item-btn">
+        <DeleteFilled alt={"Eintrag entfernen"} />
       </Button>
     </List.Item>
   );

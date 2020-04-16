@@ -2,7 +2,6 @@ import { DeleteFilled } from "@ant-design/icons";
 import { useMutation, useQuery } from "@apollo/react-hooks";
 import { Button, Input, List, notification, PageHeader, Popconfirm, Spin } from "antd";
 import { ApolloError, gql, MutationUpdaterFn } from "apollo-boost";
-import { DataProxy } from "apollo-cache";
 import React, { useState } from "react";
 import { ShoppingListItem } from "../shared/ShoppingListItem";
 import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
@@ -59,7 +58,13 @@ const updateShoppingListItems: MutationUpdaterFn<CreateShoppingListItemData> = (
   });
 };
 
-interface DeleteShoppingListItemData {
+export const DELETE_ITEM = gql`
+  mutation deleteItem($id: ID!) {
+    deleteShoppingListItem(id: $id)
+  }
+`;
+
+export interface DeleteShoppingListItemData {
   deleteShoppingListItem: string;
 }
 
@@ -84,14 +89,45 @@ const deleteShoppingListItem: MutationUpdaterFn<DeleteShoppingListItemData> = (c
   });
 };
 
-const clearShoppingList = (cache: DataProxy) => {
-  cache.writeQuery<ShoppingListItemsData>({
-    query: GET_ITEMS,
-    data: {
-      shoppingListItems: []
+export const SET_ITEM_CHECKED_STATE = gql`
+  mutation setItemCheckedState($id: ID!, $state: Boolean!) {
+    changeShoppingListItemCheckedState(id: $id, state: $state) {
+      _id
+      name
+      checked
     }
-  });
+  }
+`;
+
+export interface SetItemCheckedStateData {
+  changeShoppingListItemCheckedState: ShoppingListItem;
+}
+
+export interface SetItemCheckedStateVariables {
+  id: string;
+  state: boolean;
+}
+
+const clearShoppingList: MutationUpdaterFn<ClearShoppingListData> = (cache, { data }) => {
+  if (data?.clearShoppingList) {
+    cache.writeQuery<ShoppingListItemsData>({
+      query: GET_ITEMS,
+      data: {
+        shoppingListItems: []
+      }
+    });
+  }
 };
+
+export const CLEAR_LIST = gql`
+  mutation clearList {
+    clearShoppingList
+  }
+`;
+
+export interface ClearShoppingListData {
+  clearShoppingList: boolean;
+}
 
 export interface ShoppingListItemsData {
   shoppingListItems: ShoppingListItem[];
@@ -114,49 +150,22 @@ function ShoppingListComponent() {
     }
   );
 
-  const [setItemCheckedState] = useMutation<
-    {
-      changeShoppingListItemCheckedState: ShoppingListItem;
-    },
-    { id: string; state: boolean }
-  >(
-    gql`
-      mutation setItemCheckedState($id: ID!, $state: Boolean!) {
-        changeShoppingListItemCheckedState(id: $id, state: $state) {
-          _id
-          name
-          checked
-        }
-      }
-    `,
+  const [setItemCheckedState] = useMutation<SetItemCheckedStateData, SetItemCheckedStateVariables>(
+    SET_ITEM_CHECKED_STATE,
     {
       onError: showApolloError
     }
   );
 
-  const [deleteItem] = useMutation<DeleteShoppingListItemData, { id: string }>(
-    gql`
-      mutation deleteItem($id: ID!) {
-        deleteShoppingListItem(id: $id)
-      }
-    `,
-    {
-      onError: showApolloError,
-      update: deleteShoppingListItem
-    }
-  );
+  const [deleteItem] = useMutation<DeleteShoppingListItemData, { id: string }>(DELETE_ITEM, {
+    onError: showApolloError,
+    update: deleteShoppingListItem
+  });
 
-  const [clearList] = useMutation<{}, {}>(
-    gql`
-      mutation clearList {
-        clearShoppingList
-      }
-    `,
-    {
-      onError: showApolloError,
-      update: clearShoppingList
-    }
-  );
+  const [clearList] = useMutation<ClearShoppingListData, {}>(CLEAR_LIST, {
+    onError: showApolloError,
+    update: clearShoppingList
+  });
 
   const createNewItem = async () => {
     if (newItemName === "") {
