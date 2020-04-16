@@ -1,7 +1,8 @@
 import { DeleteFilled } from "@ant-design/icons";
 import { useMutation, useQuery } from "@apollo/react-hooks";
 import { Button, Input, List, notification, PageHeader, Popconfirm, Spin } from "antd";
-import { ApolloError, gql, MutationUpdaterFn } from "apollo-boost";
+import { ApolloError, gql } from "apollo-boost";
+import produce from "immer";
 import React, { useState } from "react";
 import { ShoppingListItem } from "../shared/ShoppingListItem";
 import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
@@ -37,27 +38,6 @@ export interface CreateShoppingListItemData {
   createShoppingListItem: ShoppingListItem;
 }
 
-const updateShoppingListItems: MutationUpdaterFn<CreateShoppingListItemData> = (cache, { data }) => {
-  if (!data?.createShoppingListItem) {
-    return;
-  }
-
-  const queryData = cache.readQuery<ShoppingListItemsData>({
-    query: GET_ITEMS
-  });
-
-  if (!queryData?.shoppingListItems) {
-    return;
-  }
-
-  cache.writeQuery<ShoppingListItemsData>({
-    query: GET_ITEMS,
-    data: {
-      shoppingListItems: queryData.shoppingListItems.concat(data.createShoppingListItem)
-    }
-  });
-};
-
 export const DELETE_ITEM = gql`
   mutation deleteItem($id: ID!) {
     deleteShoppingListItem(id: $id)
@@ -67,27 +47,6 @@ export const DELETE_ITEM = gql`
 export interface DeleteShoppingListItemData {
   deleteShoppingListItem: string;
 }
-
-const deleteShoppingListItem: MutationUpdaterFn<DeleteShoppingListItemData> = (cache, { data }) => {
-  if (!data?.deleteShoppingListItem) {
-    return;
-  }
-
-  const queryData = cache.readQuery<ShoppingListItemsData>({
-    query: GET_ITEMS
-  });
-
-  if (!queryData?.shoppingListItems) {
-    return;
-  }
-
-  cache.writeQuery<ShoppingListItemsData>({
-    query: GET_ITEMS,
-    data: {
-      shoppingListItems: queryData.shoppingListItems.filter(e => e._id !== data.deleteShoppingListItem)
-    }
-  });
-};
 
 export const SET_ITEM_CHECKED_STATE = gql`
   mutation setItemCheckedState($id: ID!, $state: Boolean!) {
@@ -108,17 +67,6 @@ export interface SetItemCheckedStateVariables {
   state: boolean;
 }
 
-const clearShoppingList: MutationUpdaterFn<ClearShoppingListData> = (cache, { data }) => {
-  if (data?.clearShoppingList) {
-    cache.writeQuery<ShoppingListItemsData>({
-      query: GET_ITEMS,
-      data: {
-        shoppingListItems: []
-      }
-    });
-  }
-};
-
 export const CLEAR_LIST = gql`
   mutation clearList {
     clearShoppingList
@@ -134,37 +82,52 @@ export interface ShoppingListItemsData {
 }
 
 function ShoppingListComponent() {
+  const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
   const [newItemName, setNewItemName] = useState<string>("");
 
-  const { data, loading: loadingShoppingListItems } = useQuery<ShoppingListItemsData>(GET_ITEMS, {
-    onError: showApolloError
+  const { loading: loadingShoppingListItems } = useQuery<ShoppingListItemsData>(GET_ITEMS, {
+    onError: showApolloError,
+    onCompleted: data => setShoppingList(data.shoppingListItems)
   });
-
-  const shoppingList = data && data.shoppingListItems ? data.shoppingListItems : [];
 
   const [createItem, { loading: creatingItem }] = useMutation<CreateShoppingListItemData, { name: string }>(
     CREATE_ITEM,
     {
       onError: showApolloError,
-      update: updateShoppingListItems
+      onCompleted: data =>
+        setShoppingList(produce((draft: ShoppingListItem[]) => draft.concat(data.createShoppingListItem)))
     }
   );
 
   const [setItemCheckedState] = useMutation<SetItemCheckedStateData, SetItemCheckedStateVariables>(
     SET_ITEM_CHECKED_STATE,
     {
-      onError: showApolloError
+      onError: showApolloError,
+      onCompleted: data =>
+        setShoppingList(
+          produce((draft: ShoppingListItem[]) =>
+            draft.map(item => {
+              if (item._id === data.changeShoppingListItemCheckedState._id) {
+                return data.changeShoppingListItemCheckedState;
+              }
+              return item;
+            })
+          )
+        )
     }
   );
 
   const [deleteItem] = useMutation<DeleteShoppingListItemData, { id: string }>(DELETE_ITEM, {
     onError: showApolloError,
-    update: deleteShoppingListItem
+    onCompleted: data =>
+      setShoppingList(
+        produce((draft: ShoppingListItem[]) => draft.filter(item => item._id !== data.deleteShoppingListItem))
+      )
   });
 
   const [clearList] = useMutation<ClearShoppingListData, {}>(CLEAR_LIST, {
     onError: showApolloError,
-    update: clearShoppingList
+    onCompleted: () => setShoppingList([])
   });
 
   const createNewItem = async () => {

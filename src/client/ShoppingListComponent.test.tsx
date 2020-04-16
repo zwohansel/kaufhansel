@@ -171,7 +171,6 @@ it("remove shopping list item", async () => {
 
 it("set item checked state", async () => {
   const testItem: ShoppingListItem = { _id: "id_1", name: "Margarine", checked: false };
-  (testItem as any).__typename = "ShoppingListItem"; // Required for this test... see below
 
   const element = render(
     <MockedProvider
@@ -179,7 +178,7 @@ it("set item checked state", async () => {
         createShoppingListItemsQueryTestData([testItem]),
         createShoppingListItemToggleItemCheckedStateTestData(testItem)
       ]}
-      addTypename={true} // Otherwise the GET_ITEMS query is not updated
+      addTypename={false}
     >
       <ShoppingListComponent />
     </MockedProvider>
