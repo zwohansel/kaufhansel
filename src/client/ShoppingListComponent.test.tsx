@@ -1,7 +1,8 @@
 import { MockedProvider, MockedResponse } from "@apollo/react-testing";
 import "@testing-library/jest-dom";
-import { fireEvent, render, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, waitFor } from "@testing-library/react";
 import React from "react";
+import wait from "waait";
 import { ShoppingListItem } from "../shared/ShoppingListItem";
 import ShoppingListComponent, {
   ClearShoppingListData,
@@ -97,6 +98,8 @@ it("empty shopping list", async () => {
     </MockedProvider>
   );
 
+  await act(wait);
+
   const itemText = await element.findByText(/No Data/);
   expect(itemText).toBeInTheDocument();
 });
@@ -115,6 +118,8 @@ it("shopping list with items", async () => {
       <ShoppingListComponent />
     </MockedProvider>
   );
+
+  await act(wait);
 
   const item1 = await element.findByText(/Seife/);
   expect(item1).toBeInTheDocument();
@@ -135,6 +140,8 @@ it("create shopping list item", async () => {
       <ShoppingListComponent />
     </MockedProvider>
   );
+
+  await act(wait);
 
   const input = element.getByRole("textbox");
   fireEvent.change(input, { target: { value: "Margarine" } });
@@ -162,6 +169,8 @@ it("remove shopping list item", async () => {
     </MockedProvider>
   );
 
+  await act(wait);
+
   const button = await element.findByTestId("delete-item-btn");
   fireEvent.click(button);
 
@@ -183,6 +192,8 @@ it("set item checked state", async () => {
       <ShoppingListComponent />
     </MockedProvider>
   );
+
+  await act(wait);
 
   const checkbox = await element.findByRole("checkbox");
 
@@ -210,6 +221,8 @@ it("clear shopping list", async () => {
       <ShoppingListComponent />
     </MockedProvider>
   );
+
+  await act(wait);
 
   const item = await element.findByText(/Seife/);
   expect(item).toBeInTheDocument();
