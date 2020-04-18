@@ -1,14 +1,38 @@
 package de.hanselmann.shoppinglist.model;
 
+import org.springframework.data.annotation.Id;
+
 public class ShoppingListItem {
-	private final String id;
-	private final String name;
+
+	@Id
+	private String id;
+	private String name;
 	private boolean checked;
 
-	public ShoppingListItem(String id, String name) {
-		this.id = id;
+	public ShoppingListItem() {
+		this(null);
+	}
+	
+	public ShoppingListItem(String name) {
+		this.id = null;
 		this.name = name;
 		this.checked = false;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public boolean isChecked() {
@@ -17,14 +41,6 @@ public class ShoppingListItem {
 
 	public void setChecked(boolean checked) {
 		this.checked = checked;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public String getName() {
-		return name;
 	}
 
 }
