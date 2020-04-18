@@ -72,7 +72,7 @@ module.exports = {
   devServer: {
     contentBase: path.join(__dirname, "public"),
     proxy: {
-      "/api": "http://localhost:8081"
+      "/graphql": "http://localhost:8080/"
     }
   },
   optimization: {

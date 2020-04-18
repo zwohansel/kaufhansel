@@ -1,0 +1,19 @@
+type ShoppingListItem {
+  name: String!
+  checked: Boolean
+  _id: ID
+}
+
+type Query {
+  shoppingListItems: [ShoppingListItem!]!
+}
+
+type Mutation {
+  createShoppingListItem(name: String!): ShoppingListItem!
+  changeShoppingListItemCheckedState(
+    id: ID!
+    state: Boolean!
+  ): ShoppingListItem!
+  deleteShoppingListItem(id: ID!): ID!
+  clearShoppingList: Boolean!
+}
