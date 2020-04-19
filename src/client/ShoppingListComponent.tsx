@@ -117,6 +117,24 @@ function ShoppingListComponent() {
     }
   );
 
+  const setItemAssignee = (shoppingListItemId: string, assignee: string) => {
+    console.log("SET ASSIGNEE", shoppingListItemId, ": ", assignee);
+    setShoppingList(
+      produce((draft: ShoppingListItem[]) =>
+        draft.map(item => {
+          if (item._id === shoppingListItemId) {
+            return { ...item, assignee: assignee };
+          }
+          return item;
+        })
+      )
+    );
+  };
+
+  const assigneeCandidates: string[] = Array.from(
+    new Set(shoppingList.map(item => item.assignee || "").filter(assignee => assignee !== "")).values()
+  );
+
   const [deleteItem] = useMutation<DeleteShoppingListItemData, { id: string }>(DELETE_ITEM, {
     onError: showApolloError,
     onCompleted: data =>
@@ -149,6 +167,7 @@ function ShoppingListComponent() {
             return (
               <ShoppingListItemComponent
                 item={item}
+                assigneeCandidates={assigneeCandidates}
                 onItemCheckedChange={checked => {
                   setItemCheckedState({
                     variables: {
@@ -163,6 +182,9 @@ function ShoppingListComponent() {
                       id: item._id
                     }
                   });
+                }}
+                onItemAssigneeChange={assignee => {
+                  setItemAssignee(item._id, assignee);
                 }}
               />
             );
