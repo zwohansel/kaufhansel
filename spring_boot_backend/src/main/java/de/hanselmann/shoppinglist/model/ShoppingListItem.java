@@ -2,45 +2,53 @@ package de.hanselmann.shoppinglist.model;
 
 import org.springframework.data.annotation.Id;
 
+import io.leangen.graphql.annotations.GraphQLId;
+import io.leangen.graphql.annotations.GraphQLNonNull;
+import io.leangen.graphql.annotations.GraphQLQuery;
+
 public class ShoppingListItem {
 
-	@Id
-	private String id;
-	private String name;
-	private boolean checked;
+    @Id
+    private String id;
+    private String name;
+    private Boolean checked;
 
-	public ShoppingListItem() {
-		this(null);
-	}
-	
-	public ShoppingListItem(String name) {
-		this.id = null;
-		this.name = name;
-		this.checked = false;
-	}
+    public ShoppingListItem() {
+        this(null);
+    }
 
-	public String getId() {
-		return id;
-	}
+    public ShoppingListItem(String name) {
+        this.id = null;
+        this.name = name;
+        this.checked = false;
+    }
 
-	public void setId(String id) {
-		this.id = id;
-	}
+    @GraphQLQuery(name = "_id")
+    @GraphQLId
+    public String getId() {
+        return id;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public void setId(String id) {
+        this.id = id;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    @GraphQLQuery(name = "name")
+    public @GraphQLNonNull String getName() {
+        return name;
+    }
 
-	public boolean isChecked() {
-		return checked;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public void setChecked(boolean checked) {
-		this.checked = checked;
-	}
+    @GraphQLQuery(name = "checked")
+    public Boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(Boolean checked) {
+        this.checked = checked;
+    }
 
 }
