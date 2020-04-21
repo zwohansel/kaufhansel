@@ -1,5 +1,5 @@
 import { DeleteFilled } from "@ant-design/icons";
-import { Button, Checkbox, List, AutoComplete } from "antd";
+import { AutoComplete, Button, Checkbox, List } from "antd";
 import React, { useState } from "react";
 import { ShoppingListItem } from "../shared/ShoppingListItem";
 import { unique } from "../shared/utils";
@@ -53,7 +53,9 @@ export function ShoppingListItemComponent(props: ShoppingListItemComponentProps)
         onBlur={selectNewAssignee}
         placeholder={"Wer kauf das?"}
         style={{ width: 200 }}
-        dataSource={assigneeCandidates}
+        options={assigneeCandidates.map(value => {
+          return { value };
+        })}
         bordered={false}
         size={"small"}
       ></AutoComplete>
