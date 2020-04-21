@@ -12,6 +12,7 @@ public class ShoppingListItem {
     private String id;
     private String name;
     private Boolean checked;
+    private String assignee;
 
     public ShoppingListItem() {
         this(null);
@@ -21,6 +22,7 @@ public class ShoppingListItem {
         this.id = null;
         this.name = name;
         this.checked = false;
+        this.assignee = "";
     }
 
     @GraphQLQuery(name = "_id")
@@ -50,5 +52,16 @@ public class ShoppingListItem {
     public void setChecked(Boolean checked) {
         this.checked = checked;
     }
+
+    @GraphQLQuery(name = "assignee")
+	public @GraphQLNonNull String getAssignee() {
+		return assignee;
+	}
+
+	public void setAssignee(String assignee) {
+		this.assignee = assignee;
+	}
+    
+    
 
 }

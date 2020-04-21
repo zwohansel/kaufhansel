@@ -38,14 +38,23 @@ public class ShoppingListService {
     }
 
     @GraphQLMutation
-    public @GraphQLNonNull ShoppingListItem changeShoppingListItemCheckedState(
+    public @GraphQLNonNull ShoppingListItem updateShoppingListItem(
             @GraphQLNonNull @GraphQLId @GraphQLArgument(name = "id") String id,
-            @GraphQLNonNull @GraphQLArgument(name = "state") boolean state) {
+            @GraphQLArgument(name = "state") Boolean state,
+            @GraphQLArgument(name = "assignee") String assignee) {
 
         final ShoppingListItem item = shoppingListRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException(
                         MessageFormat.format("There is no item with ID {0} in the shopping list.", id)));
-        item.setChecked(state);
+        
+        if (state != null) {
+        	item.setChecked(state);
+        }
+        
+        if (assignee != null) {
+        	item.setAssignee(assignee);
+        }
+        
         shoppingListRepository.save(item);
         return item;
     }

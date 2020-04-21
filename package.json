@@ -4,14 +4,11 @@
   "description": "",
   "scripts": {
     "test:client": "npx jest --config jest.client.config.js",
-    "test:server": "npx jest --config jest.server.config.js --detectOpenHandles",
-    "test": "yarn test:client && yarn test:server",
+    "test": "yarn test:client",
     "client": "webpack --config webpack.client.config.js --mode production",
-    "server": "webpack --config webpack.server.config.js --mode production",
     "start:client": "webpack-dev-server --config webpack.client.config.js --open --mode development",
-    "start:server": "yarn server && node build/server/main.js",
-    "start": "yarn start:server & yarn start:client",
-    "build": "yarn server && yarn client"
+    "start": "yarn start:client",
+    "build": "yarn client"
   },
   "repository": {
     "type": "git",
@@ -35,7 +32,6 @@
     "@testing-library/react": "^10.0.2",
     "@types/graphql": "^14.5.0",
     "@types/jest": "^25.2.1",
-    "@types/mongodb": "^3.5.5",
     "@types/react": "^16.9.32",
     "@types/react-dom": "^16.9.6",
     "@typescript-eslint/eslint-plugin": "^2.27.0",
@@ -58,12 +54,10 @@
     "html-loader": "^1.1.0",
     "html-webpack-plugin": "^4.0.4",
     "jest": "^25.3.0",
-    "mongodb-memory-server": "^6.5.2",
     "source-map-loader": "^0.2.4",
     "style-loader": "^1.1.3",
     "ts-jest": "^25.3.1",
     "ts-loader": "^6.2.2",
-    "ts-node": "^8.8.2",
     "ts-node-dev": "^1.0.0-pre.44",
     "typescript": "^3.8.3",
     "waait": "^1.0.5",
@@ -78,11 +72,8 @@
     "@types/mongoose": "^5.7.10",
     "antd": "^4.1.1",
     "apollo-boost": "^0.4.7",
-    "apollo-server": "^2.12.0",
     "graphql": "^15.0.0",
     "immer": "^6.0.3",
-    "mongodb": "^3.5.5",
-    "mongoose": "^5.9.7",
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
   }

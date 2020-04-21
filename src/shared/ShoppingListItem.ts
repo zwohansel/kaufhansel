@@ -1,7 +1,7 @@
 export interface ShoppingListItemBase {
   name: string;
   checked: boolean;
-  assignee?: string;
+  assignee: string;
 }
 
 export interface ShoppingListItem extends ShoppingListItemBase {

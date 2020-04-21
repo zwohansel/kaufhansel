@@ -8,7 +8,8 @@ test("render unchecked shopping list item", () => {
   const item: ShoppingListItem = {
     _id: "1",
     name: "My Test Item",
-    checked: false
+    checked: false,
+    assignee: ""
   };
 
   const element = render(
@@ -36,7 +37,8 @@ test("render checked shopping list item", () => {
   const item: ShoppingListItem = {
     _id: "1",
     name: "My Test Item",
-    checked: true
+    checked: true,
+    assignee: ""
   };
 
   const element = render(
@@ -57,7 +59,8 @@ test("click unchecked checkbox", () => {
   const item: ShoppingListItem = {
     _id: "1",
     name: "My Test Item",
-    checked: false
+    checked: false,
+    assignee: ""
   };
 
   const handleItemChecked = jest.fn();
@@ -82,7 +85,8 @@ test("click checked checkbox", () => {
   const item: ShoppingListItem = {
     _id: "1",
     name: "My Test Item",
-    checked: true
+    checked: true,
+    assignee: ""
   };
 
   const handleItemChecked = jest.fn();
@@ -107,7 +111,8 @@ test("click delete button", () => {
   const item: ShoppingListItem = {
     _id: "1",
     name: "My Test Item",
-    checked: false
+    checked: false,
+    assignee: ""
   };
 
   const handleItemDeleted = jest.fn();

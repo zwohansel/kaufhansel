@@ -20,6 +20,7 @@ export const GET_ITEMS = gql`
       _id
       name
       checked
+      assignee
     }
   }
 `;
@@ -30,6 +31,7 @@ export const CREATE_ITEM = gql`
       _id
       name
       checked
+      assignee
     }
   }
 `;
@@ -48,23 +50,25 @@ export interface DeleteShoppingListItemData {
   deleteShoppingListItem: string;
 }
 
-export const SET_ITEM_CHECKED_STATE = gql`
-  mutation setItemCheckedState($id: ID!, $state: Boolean!) {
-    changeShoppingListItemCheckedState(id: $id, state: $state) {
+export const UPDATEM_ITEM = gql`
+  mutation updateItem($id: ID!, $state: Boolean, $assignee: String) {
+    updateShoppingListItem(id: $id, state: $state, assignee: $assignee) {
       _id
       name
       checked
+      assignee
     }
   }
 `;
 
-export interface SetItemCheckedStateData {
-  changeShoppingListItemCheckedState: ShoppingListItem;
+export interface UpdateItemData {
+  updateShoppingListItem: ShoppingListItem;
 }
 
-export interface SetItemCheckedStateVariables {
+export interface UpdateItemVariables {
   id: string;
-  state: boolean;
+  state?: boolean;
+  assignee?: string;
 }
 
 export const CLEAR_LIST = gql`
@@ -99,41 +103,22 @@ function ShoppingListComponent() {
     }
   );
 
-  const [setItemCheckedState] = useMutation<SetItemCheckedStateData, SetItemCheckedStateVariables>(
-    SET_ITEM_CHECKED_STATE,
-    {
-      onError: showApolloError,
-      onCompleted: data =>
-        setShoppingList(
-          produce((draft: ShoppingListItem[]) =>
-            draft.map(item => {
-              if (item._id === data.changeShoppingListItemCheckedState._id) {
-                return data.changeShoppingListItemCheckedState;
-              }
-              return item;
-            })
-          )
+  const [updateItem] = useMutation<UpdateItemData, UpdateItemVariables>(UPDATEM_ITEM, {
+    onError: showApolloError,
+    onCompleted: data =>
+      setShoppingList(
+        produce((draft: ShoppingListItem[]) =>
+          draft.map(item => {
+            if (item._id === data.updateShoppingListItem._id) {
+              return data.updateShoppingListItem;
+            }
+            return item;
+          })
         )
-    }
-  );
-
-  const setItemAssignee = (shoppingListItemId: string, assignee: string) => {
-    console.log("SET ASSIGNEE", shoppingListItemId, ": ", assignee);
-    setShoppingList(
-      produce((draft: ShoppingListItem[]) =>
-        draft.map(item => {
-          if (item._id === shoppingListItemId) {
-            return { ...item, assignee: assignee };
-          }
-          return item;
-        })
       )
-    );
-  };
+  });
 
-  const assigneeCandidates: string[] = Array.from(
-    new Set(shoppingList.map(item => item.assignee || "").filter(assignee => assignee !== "")).values()
-  );
+  const assigneeCandidates: string[] = shoppingList.map(item => item.assignee);
 
   const [deleteItem] = useMutation<DeleteShoppingListItemData, { id: string }>(DELETE_ITEM, {
     onError: showApolloError,
@@ -169,7 +154,7 @@ function ShoppingListComponent() {
                 item={item}
                 assigneeCandidates={assigneeCandidates}
                 onItemCheckedChange={checked => {
-                  setItemCheckedState({
+                  updateItem({
                     variables: {
                       id: item._id,
                       state: checked
@@ -184,7 +169,12 @@ function ShoppingListComponent() {
                   });
                 }}
                 onItemAssigneeChange={assignee => {
-                  setItemAssignee(item._id, assignee);
+                  updateItem({
+                    variables: {
+                      id: item._id,
+                      assignee: assignee
+                    }
+                  });
                 }}
               />
             );

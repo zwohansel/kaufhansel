@@ -1,7 +1,8 @@
 import { DeleteFilled } from "@ant-design/icons";
 import { Button, Checkbox, List, AutoComplete } from "antd";
-import React from "react";
+import React, { useState } from "react";
 import { ShoppingListItem } from "../shared/ShoppingListItem";
+import { unique } from "../shared/utils";
 
 export interface ShoppingListItemComponentProps {
   item: ShoppingListItem;
@@ -12,6 +13,17 @@ export interface ShoppingListItemComponentProps {
 }
 
 export function ShoppingListItemComponent(props: ShoppingListItemComponentProps) {
+  const [newAssigneeName, setNewAssigneeName] = useState(props.item.assignee);
+
+  const assigneeCandidates = unique(props.assigneeCandidates.filter(e => e.startsWith(newAssigneeName) && e !== ""));
+
+  const selectNewAssignee = () => {
+    if (newAssigneeName !== props.item.assignee) {
+      console.log(newAssigneeName, " ", props.item.assignee);
+      props.onItemAssigneeChange(newAssigneeName);
+    }
+  };
+
   return (
     <List.Item
       key={props.item._id}
@@ -26,17 +38,25 @@ export function ShoppingListItemComponent(props: ShoppingListItemComponentProps)
       />
       {props.item.name}
 
+      {props.item.assignee ? " kauft" : ""}
+
       <AutoComplete
-        value={props.item.assignee}
-        onChange={props.onItemAssigneeChange}
-        onSelect={props.onItemAssigneeChange}
+        defaultActiveFirstOption={true}
+        value={newAssigneeName}
+        onChange={setNewAssigneeName}
+        onSelect={selectNewAssignee}
+        onInputKeyDown={event => {
+          if (event.keyCode === 13) {
+            event.currentTarget.blur();
+          }
+        }}
+        onBlur={selectNewAssignee}
         placeholder={"Wer kauf das?"}
         style={{ width: 200 }}
-        options={props.assigneeCandidates.map(candidate => {
-          return { value: candidate };
-        })}
+        dataSource={assigneeCandidates}
+        bordered={false}
+        size={"small"}
       ></AutoComplete>
-
       <Button style={{ float: "right", border: "0px" }} onClick={props.onItemDeleted} data-testid="delete-item-btn">
         <DeleteFilled alt={"Eintrag entfernen"} />
       </Button>

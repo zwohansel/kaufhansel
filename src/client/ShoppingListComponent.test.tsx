@@ -12,9 +12,9 @@ import ShoppingListComponent, {
   DeleteShoppingListItemData,
   DELETE_ITEM,
   GET_ITEMS,
-  SetItemCheckedStateData,
-  SetItemCheckedStateVariables,
-  SET_ITEM_CHECKED_STATE,
+  UpdateItemData,
+  UpdateItemVariables,
+  UPDATEM_ITEM,
   ShoppingListItemsData
 } from "./ShoppingListComponent";
 
@@ -62,12 +62,12 @@ function createShoppingListItemDeleteMutationTestData(id: string) {
 }
 
 function createShoppingListItemToggleItemCheckedStateTestData(item: ShoppingListItem) {
-  const variables: SetItemCheckedStateVariables = { id: item._id, state: !item.checked };
-  const data: SetItemCheckedStateData = { changeShoppingListItemCheckedState: { ...item, checked: !item.checked } };
+  const variables: UpdateItemVariables = { id: item._id, state: !item.checked };
+  const data: UpdateItemData = { updateShoppingListItem: { ...item, checked: !item.checked } };
 
   const mock: MockedResponse = {
     request: {
-      query: SET_ITEM_CHECKED_STATE,
+      query: UPDATEM_ITEM,
       variables
     },
     result: {
@@ -109,8 +109,8 @@ it("shopping list with items", async () => {
     <MockedProvider
       mocks={[
         createShoppingListItemsQueryTestData([
-          { _id: "id_1", name: "Seife", checked: false },
-          { _id: "id_2", name: "Klopapier", checked: false }
+          { _id: "id_1", name: "Seife", checked: false, assignee: "" },
+          { _id: "id_2", name: "Klopapier", checked: false, assignee: "" }
         ])
       ]}
       addTypename={false}
@@ -133,7 +133,7 @@ it("create shopping list item", async () => {
     <MockedProvider
       mocks={[
         createShoppingListItemsQueryTestData([]),
-        createShoppingListItemCreateMutationTestData({ _id: "id_1", name: "Margarine", checked: false })
+        createShoppingListItemCreateMutationTestData({ _id: "id_1", name: "Margarine", checked: false, assignee: "" })
       ]}
       addTypename={false}
     >
@@ -160,7 +160,7 @@ it("remove shopping list item", async () => {
   const element = render(
     <MockedProvider
       mocks={[
-        createShoppingListItemsQueryTestData([{ _id: "id_1", name: "Margarine", checked: false }]),
+        createShoppingListItemsQueryTestData([{ _id: "id_1", name: "Margarine", checked: false, assignee: "" }]),
         createShoppingListItemDeleteMutationTestData("id_1")
       ]}
       addTypename={false}
@@ -179,7 +179,7 @@ it("remove shopping list item", async () => {
 });
 
 it("set item checked state", async () => {
-  const testItem: ShoppingListItem = { _id: "id_1", name: "Margarine", checked: false };
+  const testItem: ShoppingListItem = { _id: "id_1", name: "Margarine", checked: false, assignee: "" };
 
   const element = render(
     <MockedProvider
@@ -211,8 +211,8 @@ it("clear shopping list", async () => {
     <MockedProvider
       mocks={[
         createShoppingListItemsQueryTestData([
-          { _id: "id_1", name: "Seife", checked: false },
-          { _id: "id_2", name: "Klopapier", checked: false }
+          { _id: "id_1", name: "Seife", checked: false, assignee: "" },
+          { _id: "id_2", name: "Klopapier", checked: false, assignee: "" }
         ]),
         createShoppingListClearTestData()
       ]}
