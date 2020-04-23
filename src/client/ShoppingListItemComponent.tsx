@@ -19,7 +19,6 @@ export function ShoppingListItemComponent(props: ShoppingListItemComponentProps)
 
   const selectNewAssignee = () => {
     if (newAssigneeName !== props.item.assignee) {
-      console.log(newAssigneeName, " ", props.item.assignee);
       props.onItemAssigneeChange(newAssigneeName);
     }
   };
@@ -47,7 +46,7 @@ export function ShoppingListItemComponent(props: ShoppingListItemComponentProps)
         onSelect={selectNewAssignee}
         onInputKeyDown={event => {
           if (event.keyCode === 13) {
-            event.currentTarget.blur();
+            selectNewAssignee();
           }
         }}
         onBlur={selectNewAssignee}

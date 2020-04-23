@@ -131,3 +131,144 @@ test("click delete button", () => {
   fireEvent.click(deleteBtn);
   expect(handleItemDeleted).toBeCalledTimes(1);
 });
+
+test("render assignee", () => {
+  const item: ShoppingListItem = {
+    _id: "1",
+    name: "My Test Item",
+    checked: false,
+    assignee: "Mooncake"
+  };
+
+  const element = render(
+    <ShoppingListItemComponent
+      item={item}
+      assigneeCandidates={[]}
+      onItemCheckedChange={() => {}}
+      onItemDeleted={() => {}}
+      onItemAssigneeChange={() => {}}
+    />
+  );
+
+  const assigneeInput = element.getByDisplayValue("Mooncake");
+
+  expect(assigneeInput).toBeInTheDocument();
+});
+
+test("set assignee after focus lost", () => {
+  const item: ShoppingListItem = {
+    _id: "1",
+    name: "My Test Item",
+    checked: false,
+    assignee: ""
+  };
+
+  const handleAssigneeChange = jest.fn();
+
+  const element = render(
+    <ShoppingListItemComponent
+      item={item}
+      assigneeCandidates={[]}
+      onItemCheckedChange={() => {}}
+      onItemDeleted={() => {}}
+      onItemAssigneeChange={handleAssigneeChange}
+    />
+  );
+
+  const assigneeInput = element.getByRole("combobox");
+
+  fireEvent.change(assigneeInput, { target: { value: "Mooncookie" } });
+  fireEvent.blur(assigneeInput);
+
+  expect(handleAssigneeChange).toBeCalledWith("Mooncookie");
+});
+
+test("set assignee after enter pressed", () => {
+  const item: ShoppingListItem = {
+    _id: "1",
+    name: "My Test Item",
+    checked: false,
+    assignee: ""
+  };
+
+  const handleAssigneeChange = jest.fn();
+
+  const element = render(
+    <ShoppingListItemComponent
+      item={item}
+      assigneeCandidates={[]}
+      onItemCheckedChange={() => {}}
+      onItemDeleted={() => {}}
+      onItemAssigneeChange={handleAssigneeChange}
+    />
+  );
+
+  const assigneeInput = element.getByRole("combobox");
+
+  fireEvent.change(assigneeInput, { target: { value: "Mooncookie" } });
+  assigneeInput.focus();
+  fireEvent.keyDown(assigneeInput, { key: "Enter", keyCode: 13, charCode: 13 });
+
+  expect(handleAssigneeChange).toBeCalledWith("Mooncookie");
+});
+
+test("do not set assignee if unchanged", () => {
+  const item: ShoppingListItem = {
+    _id: "1",
+    name: "My Test Item",
+    checked: false,
+    assignee: "Mooncookie"
+  };
+
+  const handleAssigneeChange = jest.fn();
+
+  const element = render(
+    <ShoppingListItemComponent
+      item={item}
+      assigneeCandidates={[]}
+      onItemCheckedChange={() => {}}
+      onItemDeleted={() => {}}
+      onItemAssigneeChange={handleAssigneeChange}
+    />
+  );
+
+  const assigneeInput = element.getByRole("combobox");
+
+  fireEvent.change(assigneeInput, { target: { value: "Mooncookie" } });
+  assigneeInput.focus();
+  fireEvent.keyDown(assigneeInput, { key: "Enter", keyCode: 13, charCode: 13 });
+
+  expect(handleAssigneeChange).not.toBeCalled();
+});
+
+test("render assignee candidates as options", async () => {
+  const item: ShoppingListItem = {
+    _id: "1",
+    name: "My Test Item",
+    checked: false,
+    assignee: ""
+  };
+
+  const handleAssigneeChange = jest.fn();
+
+  const element = render(
+    <ShoppingListItemComponent
+      item={item}
+      assigneeCandidates={["Mooncake", "Mooncookie"]}
+      onItemCheckedChange={() => {}}
+      onItemDeleted={() => {}}
+      onItemAssigneeChange={handleAssigneeChange}
+    />
+  );
+
+  const assigneeInput = element.getByRole("combobox");
+
+  assigneeInput.focus();
+  fireEvent.mouseDown(assigneeInput);
+
+  const mooncakeOption = await element.findByRole("option", { name: "Mooncake" });
+  expect(mooncakeOption).toBeInTheDocument();
+
+  const mooncookieOption = await element.findByRole("option", { name: "Mooncookie" });
+  expect(mooncookieOption).toBeInTheDocument();
+});
