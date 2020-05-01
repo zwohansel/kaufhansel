@@ -4,6 +4,7 @@ import { ApolloError } from "apollo-boost";
 import produce from "immer";
 import React, { useState } from "react";
 import { ShoppingListItem } from "../shared/ShoppingListItem";
+import { groupBy } from "../shared/utils";
 import EditableShoppingListComponent from "./EditableShoppingListComponent";
 import {
   ClearShoppingListData,
@@ -19,7 +20,6 @@ import {
   UPDATEM_ITEM
 } from "./GraphQLDefinitions";
 import ShoppingListComponent from "./ShoppingListComponent";
-import { groupBy } from "../shared/utils";
 
 const { TabPane } = Tabs;
 
@@ -76,13 +76,13 @@ function ShoppingListBoard() {
     await createItem({ variables: { name } });
   };
 
-  const assigneeShoppingLists = Array.from(
-    groupBy(
-      shoppingList,
-      item => item.assignee,
-      item => item
-    ).entries()
+  const itemsGroupedByAssignee = groupBy(
+    shoppingList,
+    item => item.assignee,
+    item => item
   );
+
+  const assigneeShoppingLists = Array.from(itemsGroupedByAssignee.entries());
 
   const handleItemCheckedStateChange = (item: ShoppingListItem, checked: boolean) => {
     updateItem({
@@ -101,10 +101,50 @@ function ShoppingListBoard() {
     });
   };
 
+  const [activeTabKey, setActiveTabKey] = useState("main");
+
+  const getActiveShoppingList = () => {
+    const assigneeList = itemsGroupedByAssignee.get(activeTabKey);
+
+    if (assigneeList) {
+      return assigneeList;
+    }
+
+    return shoppingList;
+  };
+
+  const createSubTitle = () => {
+    const activeList = getActiveShoppingList();
+
+    const itemsToBuy = activeList.filter(item => !item.checked).length;
+
+    const isMainTab = activeTabKey === "main";
+
+    if (itemsToBuy === 0) {
+      if (isMainTab) {
+        return "Wow... ihr habt alles gekauft.";
+      }
+      return "Wow... du hast schon alles gekauft.";
+    }
+
+    if (itemsToBuy === 1) {
+      if (isMainTab) {
+        return "Nur noch ein Produkt muss gekauft werden. Ihr schafft das!";
+      }
+      return "Nur noch ein Produkt muss gekauft werden. Du schaffst das!";
+    }
+
+    if (isMainTab) {
+      return `Ihr müsst noch ${activeList.filter(item => !item.checked).length} Produkte kaufen.`;
+    }
+
+    return `Du musst noch ${activeList.filter(item => !item.checked).length} Produkte kaufen.`;
+  };
+
   return (
-    <PageHeader title="Einkaufsliste">
+    <PageHeader title="Einkaufsliste" subTitle={createSubTitle()}>
       <Spin spinning={loadingShoppingListItems} tip="Wird aktualisiert...">
-        <Tabs defaultActiveKey="main">
+        <Tabs defaultActiveKey="main" activeKey={activeTabKey} onChange={setActiveTabKey}>
           <TabPane tab="Gesamte Einkaufsliste" key="main">
             <EditableShoppingListComponent
               shoppingList={shoppingList}
