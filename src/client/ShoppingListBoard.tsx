@@ -1,6 +1,6 @@
 import React from "react";
 import { Tabs, PageHeader } from "antd";
-import ShoppingListComponent from "./ShoppingListComponent";
+import EditableShoppingListComponent from "./EditableShoppingListComponent";
 import ShoppingListListComponent from "./ShoppingListListComponent";
 
 const { TabPane } = Tabs;
@@ -10,7 +10,7 @@ function ShoppingListBoard() {
     <PageHeader title="Einkaufsliste">
       <Tabs defaultActiveKey="main">
         <TabPane tab="Gesamte Einkaufsliste" key="main">
-          <ShoppingListComponent />
+          <EditableShoppingListComponent />
         </TabPane>
         <TabPane tab="Tab 2" key="tab2">
           <ShoppingListListComponent

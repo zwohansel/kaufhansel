@@ -16,7 +16,7 @@ import ShoppingListComponent, {
   UpdateItemVariables,
   UPDATEM_ITEM,
   ShoppingListItemsData
-} from "./ShoppingListComponent";
+} from "./EditableShoppingListComponent";
 
 function createShoppingListItemsQueryTestData(items: ShoppingListItem[]) {
   const shoppingListItemsData: ShoppingListItemsData = { shoppingListItems: items };
