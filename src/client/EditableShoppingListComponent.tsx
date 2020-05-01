@@ -5,7 +5,7 @@ import { ApolloError, gql } from "apollo-boost";
 import produce from "immer";
 import React, { useState } from "react";
 import { ShoppingListItem } from "../shared/ShoppingListItem";
-import ShoppingListListComponent from "./ShoppingListListComponent";
+import ShoppingListListComponent from "./ShoppingListComponent";
 
 function showApolloError(error: ApolloError) {
   notification.error({

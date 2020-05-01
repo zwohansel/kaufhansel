@@ -1,7 +1,7 @@
 import React from "react";
 import { Tabs, PageHeader } from "antd";
 import EditableShoppingListComponent from "./EditableShoppingListComponent";
-import ShoppingListListComponent from "./ShoppingListListComponent";
+import ShoppingListComponent from "./ShoppingListComponent";
 
 const { TabPane } = Tabs;
 
@@ -13,7 +13,7 @@ function ShoppingListBoard() {
           <EditableShoppingListComponent />
         </TabPane>
         <TabPane tab="Tab 2" key="tab2">
-          <ShoppingListListComponent
+          <ShoppingListComponent
             shoppingList={[]}
             assigneeCandidates={[]}
             onItemAssigneeChange={() => {}}
