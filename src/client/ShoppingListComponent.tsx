@@ -1,9 +1,9 @@
-import React from "react";
 import { List } from "antd";
-import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
+import React from "react";
 import { ShoppingListItem } from "../shared/ShoppingListItem";
+import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
 
-export interface ShoppingListListComponentProps {
+export interface ShoppingListComponentProps {
   assigneeCandidates: string[];
   shoppingList: ShoppingListItem[];
   onItemCheckedChange: (item: ShoppingListItem, checked: boolean) => void;
@@ -11,7 +11,7 @@ export interface ShoppingListListComponentProps {
   onItemAssigneeChange: (item: ShoppingListItem, assignee: string) => void;
 }
 
-function ShoppingListListComponent(props: ShoppingListListComponentProps) {
+function ShoppingListComponent(props: ShoppingListComponentProps) {
   return (
     <List
       dataSource={props.shoppingList}
@@ -30,4 +30,4 @@ function ShoppingListListComponent(props: ShoppingListListComponentProps) {
   );
 }
 
-export default ShoppingListListComponent;
+export default ShoppingListComponent;

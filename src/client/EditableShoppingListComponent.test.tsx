@@ -4,7 +4,7 @@ import { act, fireEvent, render, waitFor } from "@testing-library/react";
 import React from "react";
 import wait from "waait";
 import { ShoppingListItem } from "../shared/ShoppingListItem";
-import ShoppingListComponent, {
+import EditableShoppingListComponent, {
   ClearShoppingListData,
   CLEAR_LIST,
   CreateShoppingListItemData,
@@ -12,10 +12,10 @@ import ShoppingListComponent, {
   DeleteShoppingListItemData,
   DELETE_ITEM,
   GET_ITEMS,
+  ShoppingListItemsData,
   UpdateItemData,
   UpdateItemVariables,
-  UPDATEM_ITEM,
-  ShoppingListItemsData
+  UPDATEM_ITEM
 } from "./EditableShoppingListComponent";
 
 function createShoppingListItemsQueryTestData(items: ShoppingListItem[]) {
@@ -94,7 +94,7 @@ function createShoppingListClearTestData() {
 it("empty shopping list", async () => {
   const element = render(
     <MockedProvider mocks={[createShoppingListItemsQueryTestData([])]} addTypename={false}>
-      <ShoppingListComponent />
+      <EditableShoppingListComponent />
     </MockedProvider>
   );
 
@@ -115,7 +115,7 @@ it("shopping list with items", async () => {
       ]}
       addTypename={false}
     >
-      <ShoppingListComponent />
+      <EditableShoppingListComponent />
     </MockedProvider>
   );
 
@@ -137,7 +137,7 @@ it("create shopping list item", async () => {
       ]}
       addTypename={false}
     >
-      <ShoppingListComponent />
+      <EditableShoppingListComponent />
     </MockedProvider>
   );
 
@@ -165,7 +165,7 @@ it("remove shopping list item", async () => {
       ]}
       addTypename={false}
     >
-      <ShoppingListComponent />
+      <EditableShoppingListComponent />
     </MockedProvider>
   );
 
@@ -189,7 +189,7 @@ it("set item checked state", async () => {
       ]}
       addTypename={false}
     >
-      <ShoppingListComponent />
+      <EditableShoppingListComponent />
     </MockedProvider>
   );
 
@@ -218,7 +218,7 @@ it("clear shopping list", async () => {
       ]}
       addTypename={false}
     >
-      <ShoppingListComponent />
+      <EditableShoppingListComponent />
     </MockedProvider>
   );
 

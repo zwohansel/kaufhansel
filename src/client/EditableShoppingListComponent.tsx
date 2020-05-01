@@ -5,7 +5,7 @@ import { ApolloError, gql } from "apollo-boost";
 import produce from "immer";
 import React, { useState } from "react";
 import { ShoppingListItem } from "../shared/ShoppingListItem";
-import ShoppingListListComponent from "./ShoppingListComponent";
+import ShoppingListComponent from "./ShoppingListComponent";
 
 function showApolloError(error: ApolloError) {
   notification.error({
@@ -85,7 +85,7 @@ export interface ShoppingListItemsData {
   shoppingListItems: ShoppingListItem[];
 }
 
-function ShoppingListComponent() {
+function EditableShoppingListComponent() {
   const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
   const [newItemName, setNewItemName] = useState<string>("");
 
@@ -146,7 +146,7 @@ function ShoppingListComponent() {
   return (
     <div>
       <Spin spinning={loadingShoppingListItems} tip="Wird aktualisiert...">
-        <ShoppingListListComponent
+        <ShoppingListComponent
           shoppingList={shoppingList}
           assigneeCandidates={assigneeCandidates}
           onItemAssigneeChange={(item, assignee) => {
@@ -213,4 +213,4 @@ function ShoppingListComponent() {
   );
 }
 
-export default ShoppingListComponent;
+export default EditableShoppingListComponent;
