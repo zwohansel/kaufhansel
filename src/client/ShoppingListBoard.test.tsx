@@ -4,7 +4,7 @@ import { act, fireEvent, render, waitFor } from "@testing-library/react";
 import React from "react";
 import wait from "waait";
 import { ShoppingListItem } from "../shared/ShoppingListItem";
-import EditableShoppingListComponent, {
+import {
   ClearShoppingListData,
   CLEAR_LIST,
   CreateShoppingListItemData,
@@ -16,7 +16,8 @@ import EditableShoppingListComponent, {
   UpdateItemData,
   UpdateItemVariables,
   UPDATEM_ITEM
-} from "./EditableShoppingListComponent";
+} from "./GraphQLDefinitions";
+import ShoppingListBoard from "./ShoppingListBoard";
 
 function createShoppingListItemsQueryTestData(items: ShoppingListItem[]) {
   const shoppingListItemsData: ShoppingListItemsData = { shoppingListItems: items };
@@ -94,7 +95,7 @@ function createShoppingListClearTestData() {
 it("empty shopping list", async () => {
   const element = render(
     <MockedProvider mocks={[createShoppingListItemsQueryTestData([])]} addTypename={false}>
-      <EditableShoppingListComponent />
+      <ShoppingListBoard />
     </MockedProvider>
   );
 
@@ -115,7 +116,7 @@ it("shopping list with items", async () => {
       ]}
       addTypename={false}
     >
-      <EditableShoppingListComponent />
+      <ShoppingListBoard />
     </MockedProvider>
   );
 
@@ -137,7 +138,7 @@ it("create shopping list item", async () => {
       ]}
       addTypename={false}
     >
-      <EditableShoppingListComponent />
+      <ShoppingListBoard />
     </MockedProvider>
   );
 
@@ -165,7 +166,7 @@ it("remove shopping list item", async () => {
       ]}
       addTypename={false}
     >
-      <EditableShoppingListComponent />
+      <ShoppingListBoard />
     </MockedProvider>
   );
 
@@ -189,7 +190,7 @@ it("set item checked state", async () => {
       ]}
       addTypename={false}
     >
-      <EditableShoppingListComponent />
+      <ShoppingListBoard />
     </MockedProvider>
   );
 
@@ -218,7 +219,7 @@ it("clear shopping list", async () => {
       ]}
       addTypename={false}
     >
-      <EditableShoppingListComponent />
+      <ShoppingListBoard />
     </MockedProvider>
   );
 
