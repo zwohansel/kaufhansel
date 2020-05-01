@@ -102,7 +102,7 @@ it("empty shopping list", async () => {
   await act(wait);
 
   const itemText = await element.findByText(/No Data/);
-  expect(itemText).toBeInTheDocument();
+  expect(itemText).toBeVisible();
 });
 
 it("shopping list with items", async () => {
@@ -123,10 +123,10 @@ it("shopping list with items", async () => {
   await act(wait);
 
   const item1 = await element.findByText(/Seife/);
-  expect(item1).toBeInTheDocument();
+  expect(item1).toBeVisible();
 
   const item2 = await element.findByText(/Klopapier/);
-  expect(item2).toBeInTheDocument();
+  expect(item2).toBeVisible();
 });
 
 it("create shopping list item", async () => {
@@ -154,7 +154,7 @@ it("create shopping list item", async () => {
   await waitFor(() => expect(input).toHaveValue(""));
 
   const item1 = await element.findByText(/Margarine/);
-  expect(item1).toBeInTheDocument();
+  expect(item1).toBeVisible();
 });
 
 it("remove shopping list item", async () => {
@@ -176,7 +176,7 @@ it("remove shopping list item", async () => {
   fireEvent.click(button);
 
   const itemText = await element.findByText(/No Data/);
-  expect(itemText).toBeInTheDocument();
+  expect(itemText).toBeVisible();
 });
 
 it("set item checked state", async () => {
@@ -226,7 +226,7 @@ it("clear shopping list", async () => {
   await act(wait);
 
   const item = await element.findByText(/Seife/);
-  expect(item).toBeInTheDocument();
+  expect(item).toBeVisible();
 
   const clearAllBtn = element.getByRole("button", { name: "Liste leeren" });
   fireEvent.click(clearAllBtn);
@@ -235,5 +235,29 @@ it("clear shopping list", async () => {
   fireEvent.click(confirmBtn);
 
   const itemText = await element.findByText(/No Data/);
-  expect(itemText).toBeInTheDocument();
+  expect(itemText).toBeVisible();
+});
+
+it("create tab for each assignee", async () => {
+  const element = render(
+    <MockedProvider
+      mocks={[
+        createShoppingListItemsQueryTestData([
+          { _id: "id_1", name: "Seife", checked: false, assignee: "Claus" },
+          { _id: "id_2", name: "Klopapier", checked: false, assignee: "Michael" }
+        ])
+      ]}
+      addTypename={false}
+    >
+      <ShoppingListBoard />
+    </MockedProvider>
+  );
+
+  await act(wait);
+
+  const clausTab = element.getByRole("tab", { name: "Claus" });
+  expect(clausTab).toBeVisible();
+
+  const michaelTab = element.getByRole("tab", { name: "Michael" });
+  expect(michaelTab).toBeVisible();
 });

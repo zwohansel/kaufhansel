@@ -46,15 +46,15 @@ public class ShoppingListService {
         final ShoppingListItem item = shoppingListRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException(
                         MessageFormat.format("There is no item with ID {0} in the shopping list.", id)));
-        
+
         if (state != null) {
-        	item.setChecked(state);
+            item.setChecked(state);
         }
-        
+
         if (assignee != null) {
-        	item.setAssignee(assignee);
+            item.setAssignee(assignee);
         }
-        
+
         shoppingListRepository.save(item);
         return item;
     }

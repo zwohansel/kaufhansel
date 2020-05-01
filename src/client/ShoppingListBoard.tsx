@@ -109,9 +109,9 @@ function ShoppingListBoard() {
               onCreateNewItem={createNewItem}
             />
           </TabPane>
-          <TabPane tab="Tab 2" key="tab2">
+          <TabPane tab="Claus" key="tab2">
             <ShoppingListComponent
-              shoppingList={[]}
+              shoppingList={shoppingList}
               assigneeCandidates={[]}
               onItemAssigneeChange={() => {}}
               onItemCheckedChange={() => {}}
