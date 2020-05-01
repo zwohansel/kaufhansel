@@ -1,11 +1,11 @@
 import { DeleteFilled } from "@ant-design/icons";
 import { useMutation, useQuery } from "@apollo/react-hooks";
-import { Button, Input, List, notification, PageHeader, Popconfirm, Spin } from "antd";
+import { Button, Input, notification, Popconfirm, Spin } from "antd";
 import { ApolloError, gql } from "apollo-boost";
 import produce from "immer";
 import React, { useState } from "react";
 import { ShoppingListItem } from "../shared/ShoppingListItem";
-import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
+import ShoppingListListComponent from "./ShoppingListListComponent";
 
 function showApolloError(error: ApolloError) {
   notification.error({
@@ -144,40 +144,33 @@ function ShoppingListComponent() {
   };
 
   return (
-    <PageHeader title="Einkaufsliste">
+    <div>
       <Spin spinning={loadingShoppingListItems} tip="Wird aktualisiert...">
-        <List
-          dataSource={shoppingList}
-          renderItem={item => {
-            return (
-              <ShoppingListItemComponent
-                item={item}
-                assigneeCandidates={assigneeCandidates}
-                onItemCheckedChange={checked => {
-                  updateItem({
-                    variables: {
-                      id: item._id,
-                      state: checked
-                    }
-                  });
-                }}
-                onItemDeleted={() => {
-                  deleteItem({
-                    variables: {
-                      id: item._id
-                    }
-                  });
-                }}
-                onItemAssigneeChange={assignee => {
-                  updateItem({
-                    variables: {
-                      id: item._id,
-                      assignee: assignee
-                    }
-                  });
-                }}
-              />
-            );
+        <ShoppingListListComponent
+          shoppingList={shoppingList}
+          assigneeCandidates={assigneeCandidates}
+          onItemAssigneeChange={(item, assignee) => {
+            updateItem({
+              variables: {
+                id: item._id,
+                assignee: assignee
+              }
+            });
+          }}
+          onItemCheckedChange={(item, checked) => {
+            updateItem({
+              variables: {
+                id: item._id,
+                state: checked
+              }
+            });
+          }}
+          onItemDeleted={item => {
+            deleteItem({
+              variables: {
+                id: item._id
+              }
+            });
           }}
         />
       </Spin>
@@ -216,7 +209,7 @@ function ShoppingListComponent() {
           </Popconfirm>
         </div>
       </div>
-    </PageHeader>
+    </div>
   );
 }
 

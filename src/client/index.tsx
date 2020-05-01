@@ -3,7 +3,7 @@ import ApolloClient from "apollo-boost";
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import ShoppingListComponent from "./ShoppingListComponent";
+import ShoppingListBoard from "./ShoppingListBoard";
 
 const client = new ApolloClient({
   uri: "/graphql"
@@ -12,7 +12,7 @@ const client = new ApolloClient({
 ReactDOM.render(
   <React.StrictMode>
     <ApolloProvider client={client}>
-      <ShoppingListComponent />
+      <ShoppingListBoard />
     </ApolloProvider>
   </React.StrictMode>,
   document.getElementById("root")
