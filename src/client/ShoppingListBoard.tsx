@@ -19,6 +19,7 @@ import {
   UPDATEM_ITEM
 } from "./GraphQLDefinitions";
 import ShoppingListComponent from "./ShoppingListComponent";
+import { groupBy } from "../shared/utils";
 
 const { TabPane } = Tabs;
 
@@ -75,6 +76,31 @@ function ShoppingListBoard() {
     await createItem({ variables: { name } });
   };
 
+  const assigneeShoppingLists = Array.from(
+    groupBy(
+      shoppingList,
+      item => item.assignee,
+      item => item
+    ).entries()
+  );
+
+  const handleItemCheckedStateChange = (item: ShoppingListItem, checked: boolean) => {
+    updateItem({
+      variables: {
+        id: item._id,
+        state: checked
+      }
+    });
+  };
+
+  const handleItemDeleted = (item: ShoppingListItem) => {
+    deleteItem({
+      variables: {
+        id: item._id
+      }
+    });
+  };
+
   return (
     <PageHeader title="Einkaufsliste">
       <Spin spinning={loadingShoppingListItems} tip="Wird aktualisiert...">
@@ -90,34 +116,24 @@ function ShoppingListBoard() {
                   }
                 });
               }}
-              onItemCheckedChange={(item, checked) => {
-                updateItem({
-                  variables: {
-                    id: item._id,
-                    state: checked
-                  }
-                });
-              }}
-              onItemDeleted={item => {
-                deleteItem({
-                  variables: {
-                    id: item._id
-                  }
-                });
-              }}
+              onItemCheckedChange={handleItemCheckedStateChange}
+              onItemDeleted={handleItemDeleted}
               onDeleteAllItems={() => clearList()}
               onCreateNewItem={createNewItem}
             />
           </TabPane>
-          <TabPane tab="Claus" key="tab2">
-            <ShoppingListComponent
-              shoppingList={shoppingList}
-              assigneeCandidates={[]}
-              onItemAssigneeChange={() => {}}
-              onItemCheckedChange={() => {}}
-              onItemDeleted={() => {}}
-            />
-          </TabPane>
+
+          {assigneeShoppingLists.map(([assignee, assigneeShoppingList]) => {
+            return (
+              <TabPane tab={assignee} key={assignee}>
+                <ShoppingListComponent
+                  shoppingList={assigneeShoppingList}
+                  onItemCheckedChange={handleItemCheckedStateChange}
+                  onItemDeleted={handleItemDeleted}
+                />
+              </TabPane>
+            );
+          })}
         </Tabs>
       </Spin>
     </PageHeader>

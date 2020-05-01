@@ -4,11 +4,11 @@ import { ShoppingListItem } from "../shared/ShoppingListItem";
 import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
 
 export interface ShoppingListComponentProps {
-  assigneeCandidates: string[];
+  assigneeCandidates?: string[];
   shoppingList: ShoppingListItem[];
   onItemCheckedChange: (item: ShoppingListItem, checked: boolean) => void;
   onItemDeleted: (item: ShoppingListItem) => void;
-  onItemAssigneeChange: (item: ShoppingListItem, assignee: string) => void;
+  onItemAssigneeChange?: (item: ShoppingListItem, assignee: string) => void;
 }
 
 function ShoppingListComponent(props: ShoppingListComponentProps) {
@@ -22,7 +22,11 @@ function ShoppingListComponent(props: ShoppingListComponentProps) {
             assigneeCandidates={props.assigneeCandidates}
             onItemCheckedChange={checked => props.onItemCheckedChange(item, checked)}
             onItemDeleted={() => props.onItemDeleted(item)}
-            onItemAssigneeChange={assignee => props.onItemAssigneeChange(item, assignee)}
+            onItemAssigneeChange={assignee => {
+              if (props.onItemAssigneeChange) {
+                props.onItemAssigneeChange(item, assignee);
+              }
+            }}
           />
         );
       }}

@@ -6,19 +6,21 @@ import { unique } from "../shared/utils";
 
 export interface ShoppingListItemComponentProps {
   item: ShoppingListItem;
-  assigneeCandidates: string[];
+  assigneeCandidates?: string[];
   onItemCheckedChange: (checked: boolean) => void;
   onItemDeleted: () => void;
-  onItemAssigneeChange: (assignee: string) => void;
+  onItemAssigneeChange?: (assignee: string) => void;
 }
 
 export function ShoppingListItemComponent(props: ShoppingListItemComponentProps) {
   const [newAssigneeName, setNewAssigneeName] = useState(props.item.assignee);
 
-  const assigneeCandidates = unique(props.assigneeCandidates.filter(e => e.startsWith(newAssigneeName) && e !== ""));
+  const assigneeCandidates = props.assigneeCandidates
+    ? unique(props.assigneeCandidates.filter(e => e.startsWith(newAssigneeName) && e !== ""))
+    : [];
 
   const selectNewAssignee = () => {
-    if (newAssigneeName !== props.item.assignee) {
+    if (props.onItemAssigneeChange && newAssigneeName !== props.item.assignee) {
       props.onItemAssigneeChange(newAssigneeName);
     }
   };
@@ -37,27 +39,28 @@ export function ShoppingListItemComponent(props: ShoppingListItemComponentProps)
       />
       {props.item.name}
 
-      {props.item.assignee ? " kauft" : ""}
-
-      <AutoComplete
-        defaultActiveFirstOption={true}
-        value={newAssigneeName}
-        onChange={setNewAssigneeName}
-        onSelect={selectNewAssignee}
-        onInputKeyDown={event => {
-          if (event.keyCode === 13) {
-            selectNewAssignee();
-          }
-        }}
-        onBlur={selectNewAssignee}
-        placeholder={"Wer kauf das?"}
-        style={{ width: 200 }}
-        options={assigneeCandidates.map(value => {
-          return { value };
-        })}
-        bordered={false}
-        size={"small"}
-      ></AutoComplete>
+      {props.assigneeCandidates && props.item.assignee ? " kauft" : ""}
+      {props.assigneeCandidates && (
+        <AutoComplete
+          defaultActiveFirstOption={true}
+          value={newAssigneeName}
+          onChange={setNewAssigneeName}
+          onSelect={selectNewAssignee}
+          onInputKeyDown={event => {
+            if (event.keyCode === 13) {
+              selectNewAssignee();
+            }
+          }}
+          onBlur={selectNewAssignee}
+          placeholder={"Wer kauf das?"}
+          style={{ width: 200 }}
+          options={assigneeCandidates.map(value => {
+            return { value };
+          })}
+          bordered={false}
+          size={"small"}
+        ></AutoComplete>
+      )}
       <Button style={{ float: "right", border: "0px" }} onClick={props.onItemDeleted} data-testid="delete-item-btn">
         <DeleteFilled alt={"Eintrag entfernen"} />
       </Button>

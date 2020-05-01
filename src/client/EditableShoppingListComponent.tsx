@@ -1,5 +1,5 @@
 import { DeleteFilled } from "@ant-design/icons";
-import { Button, Input, Popconfirm } from "antd";
+import { Button, Input, Popconfirm, Affix } from "antd";
 import React, { useState } from "react";
 import { ShoppingListItem } from "../shared/ShoppingListItem";
 import ShoppingListComponent from "./ShoppingListComponent";
@@ -39,41 +39,43 @@ function EditableShoppingListComponent(props: EditableShoppingListComponentProps
         onItemCheckedChange={props.onItemCheckedChange}
         onItemDeleted={props.onItemDeleted}
       />
-      <div>
-        <div style={{ display: "inline-block", width: "70%" }}>
-          <Input
-            value={newItemName}
-            onChange={event => setNewItemName(event.target.value)}
-            onPressEnter={createNewItem}
-            disabled={creatingItem}
-          />
-        </div>
-        <div style={{ display: "inline-block", width: "20%", paddingLeft: "10px" }}>
-          <Button
-            type="primary"
-            style={{ width: "100%" }}
-            disabled={newItemName === ""}
-            onClick={createNewItem}
-            loading={creatingItem}
-          >
-            Hinzufügen
-          </Button>
-        </div>
-        <div style={{ display: "inline-block", width: "10%", paddingLeft: "10px" }}>
-          <Popconfirm
-            title="Wollen Sie die Einkaufsliste wirklich leeren?"
-            onConfirm={props.onDeleteAllItems}
-            okText="Ja"
-            cancelText="Nein"
-            icon={<DeleteFilled style={{ color: "#555555" }} />}
-            okType="danger"
-          >
-            <Button style={{ width: "100%" }} danger type="primary">
-              Liste leeren
+      <Affix offsetBottom={0}>
+        <div style={{ paddingTop: "10px", paddingBottom: "10px", background: "white", borderTop: "1px solid #f0f0f0" }}>
+          <div style={{ display: "inline-block", width: "70%" }}>
+            <Input
+              value={newItemName}
+              onChange={event => setNewItemName(event.target.value)}
+              onPressEnter={createNewItem}
+              disabled={creatingItem}
+            />
+          </div>
+          <div style={{ display: "inline-block", width: "20%", paddingLeft: "10px" }}>
+            <Button
+              type="primary"
+              style={{ width: "100%" }}
+              disabled={newItemName === ""}
+              onClick={createNewItem}
+              loading={creatingItem}
+            >
+              Hinzufügen
             </Button>
-          </Popconfirm>
+          </div>
+          <div style={{ display: "inline-block", width: "10%", paddingLeft: "10px" }}>
+            <Popconfirm
+              title="Wollen Sie die Einkaufsliste wirklich leeren?"
+              onConfirm={props.onDeleteAllItems}
+              okText="Ja"
+              cancelText="Nein"
+              icon={<DeleteFilled style={{ color: "#555555" }} />}
+              okType="danger"
+            >
+              <Button style={{ width: "100%" }} danger type="primary">
+                Liste leeren
+              </Button>
+            </Popconfirm>
+          </div>
         </div>
-      </div>
+      </Affix>
     </div>
   );
 }
