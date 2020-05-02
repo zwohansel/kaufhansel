@@ -1,6 +1,6 @@
 import { List } from "antd";
 import React from "react";
-import { ShoppingListItem } from "../shared/ShoppingListItem";
+import { ShoppingListItem } from "./ShoppingListItem";
 import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
 
 export interface ShoppingListComponentProps {

@@ -3,8 +3,6 @@ import { notification, PageHeader, Spin, Tabs } from "antd";
 import { ApolloError } from "apollo-boost";
 import produce from "immer";
 import React, { useState } from "react";
-import { ShoppingListItem } from "../shared/ShoppingListItem";
-import { groupBy } from "../shared/utils";
 import EditableShoppingListComponent from "./EditableShoppingListComponent";
 import {
   ClearShoppingListData,
@@ -20,6 +18,8 @@ import {
   UPDATEM_ITEM
 } from "./GraphQLDefinitions";
 import ShoppingListComponent from "./ShoppingListComponent";
+import { ShoppingListItem } from "./ShoppingListItem";
+import { groupBy } from "./utils";
 
 const { TabPane } = Tabs;
 

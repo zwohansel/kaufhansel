@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
 import { fireEvent, render } from "@testing-library/react";
 import React from "react";
-import { ShoppingListItem } from "../shared/ShoppingListItem";
+import { ShoppingListItem } from "./ShoppingListItem";
 import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
 
 test("render unchecked shopping list item", () => {

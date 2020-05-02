@@ -1,8 +1,8 @@
 import { DeleteFilled } from "@ant-design/icons";
 import { AutoComplete, Button, Checkbox, List } from "antd";
 import React, { useState } from "react";
-import { ShoppingListItem } from "../shared/ShoppingListItem";
-import { unique } from "../shared/utils";
+import { ShoppingListItem } from "./ShoppingListItem";
+import { unique } from "./utils";
 
 export interface ShoppingListItemComponentProps {
   item: ShoppingListItem;

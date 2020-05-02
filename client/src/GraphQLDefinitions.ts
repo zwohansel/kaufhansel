@@ -1,5 +1,5 @@
 import { gql } from "apollo-boost";
-import { ShoppingListItem } from "../shared/ShoppingListItem";
+import { ShoppingListItem } from "./ShoppingListItem";
 
 export const GET_ITEMS = gql`
   {

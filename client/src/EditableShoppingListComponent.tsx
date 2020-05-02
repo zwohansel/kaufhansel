@@ -1,8 +1,8 @@
 import { DeleteFilled } from "@ant-design/icons";
-import { Button, Input, Popconfirm, Affix } from "antd";
+import { Affix, Button, Input, Popconfirm } from "antd";
 import React, { useState } from "react";
-import { ShoppingListItem } from "../shared/ShoppingListItem";
 import ShoppingListComponent from "./ShoppingListComponent";
+import { ShoppingListItem } from "./ShoppingListItem";
 
 export interface EditableShoppingListComponentProps {
   shoppingList: ShoppingListItem[];

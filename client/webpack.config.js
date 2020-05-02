@@ -4,7 +4,7 @@ const path = require("path");
 
 module.exports = {
   target: "web",
-  context: path.resolve(__dirname, "./src/client"),
+  context: path.resolve(__dirname, "./src"),
   entry: "./index.tsx",
   devtool: "inline-source-map",
   module: {
@@ -66,7 +66,7 @@ module.exports = {
     new CopyWebPackPlugin([{ from: "public" }])
   ],
   output: {
-    path: path.resolve(__dirname, "build/client"),
+    path: path.resolve(__dirname, "build/"),
     filename: "main.js"
   },
   devServer: {

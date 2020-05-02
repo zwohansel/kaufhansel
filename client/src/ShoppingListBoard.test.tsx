@@ -3,7 +3,6 @@ import "@testing-library/jest-dom";
 import { act, fireEvent, render, waitFor } from "@testing-library/react";
 import React from "react";
 import wait from "waait";
-import { ShoppingListItem } from "../shared/ShoppingListItem";
 import {
   ClearShoppingListData,
   CLEAR_LIST,
@@ -18,6 +17,7 @@ import {
   UPDATEM_ITEM
 } from "./GraphQLDefinitions";
 import ShoppingListBoard from "./ShoppingListBoard";
+import { ShoppingListItem } from "./ShoppingListItem";
 
 function createShoppingListItemsQueryTestData(items: ShoppingListItem[]) {
   const shoppingListItemsData: ShoppingListItemsData = { shoppingListItems: items };
