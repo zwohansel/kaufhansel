@@ -1,0 +1,25 @@
+task startBackend {
+	doFirst {
+		println("Start backend...")
+		ext.backend_process = new ProcessBuilder()
+			.directory(projectDir)
+			.command("./gradlew", "bootRun")
+			.inheritIO()
+			.start()
+	}
+}
+
+task stopBackend {
+	doFirst {
+		if (tasks.startBackend.backend_process != null) {
+			println("Stopping backend...")
+			tasks.startBackend.backend_process.destroy()
+		}
+	}
+}
+
+task run {
+	dependsOn startBackend
+	dependsOn ':frontend:runFrontEnd'
+	finalizedBy stopBackend
+}

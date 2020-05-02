@@ -1,0 +1,35 @@
+task assemble(type: Exec) {
+	inputs.file("yarn.lock")
+	inputs.file("package.json")
+	inputs.file("webpack.config.js")
+	inputs.file("tsconfig.json")
+	inputs.dir("src")
+	outputs.dir("build/")
+
+	commandLine "yarn", "build"
+}
+
+task test(type: Exec) {
+	inputs.file("yarn.lock")
+	inputs.file("package.json")
+	inputs.file("jest.config.js")
+	inputs.file("tsconfig.json")
+	inputs.dir("src")
+
+	commandLine "yarn", "test"
+}
+
+task build {
+	dependsOn test
+	dependsOn assemble
+}
+
+task runFrontEnd(type: Exec) {
+	inputs.file("yarn.lock")
+	inputs.file("package.json")
+	inputs.file("webpack.config.js")
+	inputs.file("tsconfig.json")
+	inputs.dir("src")
+
+	commandLine "yarn", "start"
+}

@@ -71,6 +71,7 @@ module.exports = {
   },
   devServer: {
     contentBase: path.join(__dirname, "public"),
+    port: 8081,
     proxy: {
       "/graphql": "http://localhost:8080/"
     }
