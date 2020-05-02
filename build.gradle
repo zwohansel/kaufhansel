@@ -1,25 +1,18 @@
-task startBackend {
-	doFirst {
-		println("Start backend...")
-		ext.backend_process = new ProcessBuilder()
-			.directory(projectDir)
-			.command("./gradlew", "bootRun")
-			.inheritIO()
-			.start()
-	}
+plugins {
+	id 'com.github.psxpaul.execfork' version '0.1.13'
 }
 
-task stopBackend {
-	doFirst {
-		if (tasks.startBackend.backend_process != null) {
-			println("Stopping backend...")
-			tasks.startBackend.backend_process.destroy()
-		}
-	}
+task runBackEnd {
+	dependsOn ':backend:bootRun'
+}
+
+task runFrontEnd(type: com.github.psxpaul.task.ExecFork) {
+	executable = 'yarn'
+	args = [ 'start' ]
+	workingDir = "$projectDir/frontend"
 }
 
 task run {
-	dependsOn startBackend
-	dependsOn ':frontend:runFrontEnd'
-	finalizedBy stopBackend
+	dependsOn runFrontEnd
+	dependsOn ':backend:bootRun'
 }
