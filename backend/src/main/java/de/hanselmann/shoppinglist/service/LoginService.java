@@ -1,0 +1,51 @@
+package de.hanselmann.shoppinglist.service;
+
+import java.util.Arrays;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+import io.leangen.graphql.annotations.GraphQLArgument;
+import io.leangen.graphql.annotations.GraphQLMutation;
+import io.leangen.graphql.annotations.GraphQLNonNull;
+import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
+
+@Service
+@GraphQLApi
+public class LoginService {
+
+    private final HttpServletRequest request;
+
+    @Autowired
+    public LoginService(HttpServletRequest request) {
+        this.request = request;
+    }
+
+    @GraphQLMutation
+    public @GraphQLNonNull String login(
+            @GraphQLNonNull @GraphQLArgument(name = "username") String username,
+            @GraphQLNonNull @GraphQLArgument(name = "password") String password) {
+        Authentication auth = new UsernamePasswordAuthenticationToken(username, password,
+                Arrays.asList(new SimpleGrantedAuthority("ROLE_SHOPPER")));
+
+        if (username.equals("root") && password.equals("admin")) {
+            SecurityContext securityContext = SecurityContextHolder.getContext();
+            securityContext.setAuthentication(auth);
+            HttpSession session = request.getSession();
+            session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
+            return session.getId();
+        }
+
+        throw new AuthenticationCredentialsNotFoundException("Invalid password or username.");
+    }
+
+}
