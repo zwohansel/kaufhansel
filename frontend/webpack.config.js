@@ -70,10 +70,15 @@ module.exports = {
     filename: "main.js"
   },
   devServer: {
+    https: true,
     contentBase: path.join(__dirname, "public"),
     port: 8081,
     proxy: {
-      "/graphql": "http://localhost:8080/"
+      "/graphql": {
+        target: "https://localhost:8080/",
+        secure: false,
+        changeOrigin: true
+      }
     }
   },
   optimization: {
