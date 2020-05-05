@@ -1,6 +1,12 @@
 import { gql } from "apollo-boost";
 import { ShoppingListItem } from "./ShoppingListItem";
 
+interface GraphQlResponse<T> {
+  success: boolean;
+  message: string;
+  data?: T;
+}
+
 export const GET_ITEMS = gql`
   {
     shoppingListItems {
@@ -11,6 +17,10 @@ export const GET_ITEMS = gql`
     }
   }
 `;
+
+export interface ShoppingListItemsData {
+  shoppingListItems: ShoppingListItem[];
+}
 
 export const CREATE_ITEM = gql`
   mutation createShoppingListItem($name: String!) {
@@ -68,6 +78,20 @@ export interface ClearShoppingListData {
   clearShoppingList: boolean;
 }
 
-export interface ShoppingListItemsData {
-  shoppingListItems: ShoppingListItem[];
+export const LOGIN = gql`
+  mutation login($username: String!, $password: String!) {
+    login(username: $username, password: $password) {
+      success
+      message
+    }
+  }
+`;
+
+export interface LoginData {
+  login: GraphQlResponse<void>;
+}
+
+export interface LoginVariables {
+  username: string;
+  password: string;
 }

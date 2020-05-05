@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import de.hanselmann.shoppinglist.model.GraphQlResponse;
 import io.leangen.graphql.annotations.GraphQLArgument;
 import io.leangen.graphql.annotations.GraphQLMutation;
 import io.leangen.graphql.annotations.GraphQLNonNull;
@@ -31,7 +32,7 @@ public class LoginService {
     }
 
     @GraphQLMutation
-    public @GraphQLNonNull String login(
+    public @GraphQLNonNull GraphQlResponse<Void> login(
             @GraphQLNonNull @GraphQLArgument(name = "username") String username,
             @GraphQLNonNull @GraphQLArgument(name = "password") String password) {
         Authentication auth = new UsernamePasswordAuthenticationToken(username, password,
@@ -42,10 +43,11 @@ public class LoginService {
             securityContext.setAuthentication(auth);
             HttpSession session = request.getSession();
             session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
-            return session.getId();
+            
+            return GraphQlResponse.success(null);
+        } else {
+        	return GraphQlResponse.fail("Falsche Logindaten");
         }
-
-        throw new AuthenticationCredentialsNotFoundException("Invalid password or username.");
     }
 
 }

@@ -73,6 +73,7 @@ module.exports = {
     https: true,
     contentBase: path.join(__dirname, "public"),
     port: 8081,
+    historyApiFallback: true,
     proxy: {
       "/graphql": {
         target: "https://localhost:8080/",
