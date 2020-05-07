@@ -6,7 +6,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -43,10 +42,10 @@ public class LoginService {
             securityContext.setAuthentication(auth);
             HttpSession session = request.getSession();
             session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
-            
+
             return GraphQlResponse.success(null);
         } else {
-        	return GraphQlResponse.fail("Falsche Logindaten");
+            return GraphQlResponse.fail("Falsche Logindaten");
         }
     }
 
