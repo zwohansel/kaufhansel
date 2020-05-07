@@ -2,7 +2,9 @@ package de.hanselmann.shoppinglist.service;
 
 import java.util.Arrays;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +26,12 @@ import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
 public class LoginService {
 
     private final HttpServletRequest request;
+    private final HttpServletResponse response;
 
     @Autowired
-    public LoginService(HttpServletRequest request) {
+    public LoginService(HttpServletRequest request, HttpServletResponse response) {
         this.request = request;
+        this.response = response;
     }
 
     @GraphQLMutation
@@ -42,6 +46,11 @@ public class LoginService {
             securityContext.setAuthentication(auth);
             HttpSession session = request.getSession();
             session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
+
+            Cookie authCookie = new Cookie("SHOPPER_LOGGED_IN", Boolean.TRUE.toString());
+            authCookie.setMaxAge(60 * 60 * 8);
+            authCookie.setSecure(true);
+            response.addCookie(authCookie);
 
             return GraphQlResponse.success(null);
         } else {

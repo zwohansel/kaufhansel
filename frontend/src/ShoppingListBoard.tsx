@@ -23,29 +23,37 @@ import { groupBy } from "./utils";
 
 const { TabPane } = Tabs;
 
-function showApolloError(error: ApolloError) {
-  notification.error({
-    message: error.name,
-    description: error.message
-  });
+export interface ShoppingListBoardProps {
+  onAuthenticationError?: () => void;
 }
 
-function ShoppingListBoard() {
+function ShoppingListBoard(props: ShoppingListBoardProps) {
   const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
 
+  const handleApolloError = (error: ApolloError) => {
+    if (props.onAuthenticationError && error.graphQLErrors.find(e => e?.extensions?.code === 401)) {
+      props.onAuthenticationError();
+    } else {
+      notification.error({
+        message: error.networkError ? "Uuups ein Fehler ist aufgetreten..." : error.name,
+        description: error.networkError ? "Der Server antwortet nicht :(" : error.message
+      });
+    }
+  };
+
   const { loading: loadingShoppingListItems } = useQuery<ShoppingListItemsData>(GET_ITEMS, {
-    onError: showApolloError,
+    onError: handleApolloError,
     onCompleted: data => setShoppingList(data.shoppingListItems)
   });
 
   const [createItem] = useMutation<CreateShoppingListItemData, { name: string }>(CREATE_ITEM, {
-    onError: showApolloError,
+    onError: handleApolloError,
     onCompleted: data =>
       setShoppingList(produce((draft: ShoppingListItem[]) => draft.concat(data.createShoppingListItem)))
   });
 
   const [updateItem] = useMutation<UpdateItemData, UpdateItemVariables>(UPDATEM_ITEM, {
-    onError: showApolloError,
+    onError: handleApolloError,
     onCompleted: data =>
       setShoppingList(
         produce((draft: ShoppingListItem[]) =>
@@ -60,7 +68,7 @@ function ShoppingListBoard() {
   });
 
   const [deleteItem] = useMutation<DeleteShoppingListItemData, { id: string }>(DELETE_ITEM, {
-    onError: showApolloError,
+    onError: handleApolloError,
     onCompleted: data =>
       setShoppingList(
         produce((draft: ShoppingListItem[]) => draft.filter(item => item._id !== data.deleteShoppingListItem))
@@ -68,7 +76,7 @@ function ShoppingListBoard() {
   });
 
   const [clearList] = useMutation<ClearShoppingListData, {}>(CLEAR_LIST, {
-    onError: showApolloError,
+    onError: handleApolloError,
     onCompleted: () => setShoppingList([])
   });
 

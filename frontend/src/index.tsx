@@ -2,17 +2,17 @@ import { ApolloProvider } from "@apollo/react-hooks";
 import ApolloClient from "apollo-boost";
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
+import { BrowserRouter, Redirect, Route, Switch, useHistory } from "react-router-dom";
 import "./index.css";
-import ShoppingListBoard from "./ShoppingListBoard";
-import { Switch, BrowserRouter, Route, Redirect, useHistory } from "react-router-dom";
 import LoginComponent from "./LoginComponent";
+import ShoppingListBoard from "./ShoppingListBoard";
 
 const client = new ApolloClient({
   uri: "/graphql"
 });
 
 function ShoppingListApp() {
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(document.cookie.includes("SHOPPER_LOGGED_IN=true"));
   const history = useHistory();
 
   return (
@@ -29,7 +29,7 @@ function ShoppingListApp() {
         path="/"
         render={({ location }) => {
           if (loggedIn) {
-            return <ShoppingListBoard />;
+            return <ShoppingListBoard onAuthenticationError={() => setLoggedIn(false)} />;
           } else {
             return <Redirect to={{ pathname: "/login", state: { from: location } }} />;
           }
