@@ -43,7 +43,8 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
 
   const { loading: loadingShoppingListItems } = useQuery<ShoppingListItemsData>(GET_ITEMS, {
     onError: handleApolloError,
-    onCompleted: data => setShoppingList(data.shoppingListItems)
+    onCompleted: data => setShoppingList(data.shoppingListItems),
+    fetchPolicy: "network-only"
   });
 
   const [createItem] = useMutation<CreateShoppingListItemData, { name: string }>(CREATE_ITEM, {
