@@ -43,10 +43,6 @@ module.exports = {
         enforce: "pre"
       },
       {
-        test: /\.css$/,
-        use: ["style-loader", "css-loader"]
-      },
-      {
         enforce: "pre",
         test: /\.(js|tsx?)$/,
         exclude: /node_modules/,

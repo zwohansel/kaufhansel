@@ -5,6 +5,14 @@ const common = require("./webpack.config.common.js");
 module.exports = merge(common, {
   mode: "development",
   devtool: "inline-source-map",
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader"]
+      }
+    ]
+  },
   devServer: {
     https: true,
     contentBase: path.join(__dirname, "public"),
