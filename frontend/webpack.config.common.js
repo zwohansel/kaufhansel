@@ -6,7 +6,6 @@ module.exports = {
   target: "web",
   context: path.resolve(__dirname, "./src"),
   entry: "./index.tsx",
-  devtool: "inline-source-map",
   module: {
     rules: [
       {
@@ -68,29 +67,5 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "build/"),
     filename: "main.js"
-  },
-  devServer: {
-    https: true,
-    contentBase: path.join(__dirname, "public"),
-    port: 8081,
-    historyApiFallback: true,
-    proxy: {
-      "/graphql": {
-        target: "https://localhost:8080/",
-        secure: false,
-        changeOrigin: true
-      }
-    }
-  },
-  optimization: {
-    splitChunks: {
-      cacheGroups: {
-        commons: {
-          test: /[\\/]node_modules[\\/]/,
-          name: "vendors",
-          chunks: "all"
-        }
-      }
-    }
   }
 };

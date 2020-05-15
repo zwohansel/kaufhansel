@@ -4,8 +4,8 @@
   "description": "",
   "scripts": {
     "test": "npx jest --config jest.config.js",
-    "start": "webpack-dev-server --config webpack.config.js --open --mode development",
-    "build": "webpack --config webpack.config.js --mode production"
+    "start": "webpack-dev-server --config webpack.config.dev.js --open",
+    "build": "webpack --config webpack.config.prod.js"
   },
   "repository": {
     "type": "git",
@@ -62,6 +62,7 @@
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.10.3",
+    "webpack-merge": "^4.2.2",
     "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
