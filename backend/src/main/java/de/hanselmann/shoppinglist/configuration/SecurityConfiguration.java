@@ -15,11 +15,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/graphql")
-                .permitAll()
-                .and()
-                .requiresChannel()
-                .anyRequest()
-                .requiresSecure();
+                .permitAll();
     }
 
 }
