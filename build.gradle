@@ -12,3 +12,7 @@ task run {
 	dependsOn runFrontEnd
 	dependsOn ':backend:bootRun'
 }
+
+task stage {
+	dependsOn ':backend:build'
+}
