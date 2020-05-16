@@ -14,15 +14,12 @@ module.exports = merge(common, {
     ]
   },
   devServer: {
-    https: true,
     contentBase: path.join(__dirname, "public"),
     port: 8081,
     historyApiFallback: true,
     proxy: {
       "/graphql": {
-        target: "https://localhost:8080/",
-        secure: false,
-        changeOrigin: true
+        target: "http://localhost:8080/"
       }
     }
   }

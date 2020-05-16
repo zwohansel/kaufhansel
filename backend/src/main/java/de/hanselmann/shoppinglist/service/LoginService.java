@@ -8,6 +8,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -16,6 +18,8 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+
+import de.hanselmann.shoppinglist.configuration.ShoppingListProperties;
 import de.hanselmann.shoppinglist.model.GraphQlResponse;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
@@ -27,17 +31,22 @@ import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
 @Service
 @GraphQLApi
 public class LoginService {
+	private final static Logger LOGGER = LoggerFactory.getLogger(LoginService.class);
+	
 	private final static int TIMEOUT_SECONDS = 60 * 60 * 8;
 	
     private final HttpServletRequest request;
     private final HttpServletResponse response;
     private final ShoppingListUserRepository userRepository;
+    private final ShoppingListProperties properties;
 
     @Autowired
-    public LoginService(HttpServletRequest request, HttpServletResponse response, ShoppingListUserRepository userRepository) {
+    public LoginService(HttpServletRequest request, HttpServletResponse response, ShoppingListUserRepository userRepository,
+    		ShoppingListProperties properties) {
         this.userRepository = userRepository;
 		this.request = request;
         this.response = response;
+        this.properties = properties;
     }
 
     @GraphQLMutation
@@ -72,7 +81,10 @@ public class LoginService {
 
             Cookie authCookie = new Cookie("SHOPPER_LOGGED_IN", Boolean.TRUE.toString());
             authCookie.setMaxAge(TIMEOUT_SECONDS);
-            authCookie.setSecure(true);
+
+            LOGGER.info("Cookie secure: {}", properties.isSecureCookie());
+            authCookie.setSecure(properties.isSecureCookie());
+            
             response.addCookie(authCookie);
 
             return GraphQlResponse.success(null);
