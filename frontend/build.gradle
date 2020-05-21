@@ -7,7 +7,7 @@ task assemble(type: Exec) {
     inputs.dir("src")
     outputs.dir("build/")
 
-    commandLine "yarn", "build", "-o", "${project.rootDir}/backend/public/main.js"
+    commandLine "yarn", "build", "-o", "${project.rootDir}/backend/src/main/resources/public/main.js"
 }
 
 task test(type: Exec) {
