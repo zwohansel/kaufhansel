@@ -1,26 +1,26 @@
 task assemble(type: Exec) {
-	inputs.file("yarn.lock")
-	inputs.file("package.json")
-	inputs.file("webpack.config.common.js")
-	inputs.file("webpack.config.prod.js")
-	inputs.file("tsconfig.json")
-	inputs.dir("src")
-	outputs.dir("build/")
+    inputs.file("yarn.lock")
+    inputs.file("package.json")
+    inputs.file("webpack.config.common.js")
+    inputs.file("webpack.config.prod.js")
+    inputs.file("tsconfig.json")
+    inputs.dir("src")
+    outputs.dir("build/")
 
-	commandLine "yarn", "build", "-o", "${project.rootDir}/backend/public/main.js"
+    commandLine "yarn", "build", "-o", "${project.rootDir}/backend/public/main.js"
 }
 
 task test(type: Exec) {
-	inputs.file("yarn.lock")
-	inputs.file("package.json")
-	inputs.file("jest.config.js")
-	inputs.file("tsconfig.json")
-	inputs.dir("src")
+    inputs.file("yarn.lock")
+    inputs.file("package.json")
+    inputs.file("jest.config.js")
+    inputs.file("tsconfig.json")
+    inputs.dir("src")
 
-	commandLine "yarn", "test"
+    commandLine "yarn", "test"
 }
 
 task build {
-	dependsOn test
-	dependsOn assemble
+    dependsOn test
+    dependsOn assemble
 }

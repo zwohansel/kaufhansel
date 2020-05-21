@@ -1,19 +1,29 @@
 plugins {
-	id 'com.github.psxpaul.execfork' version '0.1.13'
+    id 'com.github.psxpaul.execfork' version '0.1.13'
 }
 
 task runFrontEnd(type: com.github.psxpaul.task.ExecFork) {
-	executable = 'yarn'
-	args = [ 'start' ]
-	workingDir = "$projectDir/frontend"
+    executable = 'yarn'
+    args = [ 'start' ]
+    workingDir = "$projectDir/frontend"
 }
 
 task run {
-	dependsOn runFrontEnd
-	dependsOn ':backend:bootRun'
+    dependsOn runFrontEnd
+    dependsOn ':backend:bootRun'
+}
+
+task stageFrontEnd {
+    dependsOn ':frontend:assemble'
+}
+
+task stageBackend {
+    dependsOn ':backend:build'
 }
 
 task stage {
-	dependsOn ':frontend:assemble'
-	dependsOn ':backend:build'
+    dependsOn stageFrontEnd
+    dependsOn stageBackend
 }
+
+stageBackend.mustRunAfter stageFrontEnd
