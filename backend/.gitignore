@@ -28,6 +28,3 @@ out/
 
 ### VS Code ###
 .vscode/
-
-public/*
-!public/README.MD

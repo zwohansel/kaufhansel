@@ -13,17 +13,21 @@ task run {
     dependsOn ':backend:bootRun'
 }
 
-task stageFrontEnd {
-    dependsOn ':frontend:assemble'
-}
-
-task stageBackend {
+task stage {
     dependsOn ':backend:build'
 }
 
-task stage {
-    dependsOn stageFrontEnd
-    dependsOn stageBackend
+task bundleFrontEnd {
+    dependsOn ':frontend:assemble'
 }
 
-stageBackend.mustRunAfter stageFrontEnd
+task bundleBackend {
+    dependsOn ':backend:build'
+}
+
+task bundle {
+    dependsOn bundleFrontEnd
+    dependsOn bundleBackend
+}
+
+bundleBackend.mustRunAfter bundleFrontEnd
