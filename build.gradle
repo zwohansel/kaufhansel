@@ -14,5 +14,6 @@ task run {
 }
 
 task stage {
+	dependsOn ':frontend:assemble'
 	dependsOn ':backend:build'
 }
