@@ -154,7 +154,7 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
     <PageHeader title="Einkaufsliste" subTitle={createSubTitle()}>
       <Spin spinning={loadingShoppingListItems} tip="Wird aktualisiert...">
         <Tabs defaultActiveKey="main" activeKey={activeTabKey} onChange={setActiveTabKey}>
-          <TabPane tab="Gesamte Einkaufsliste" key="main">
+          <TabPane tab="Alle" key="main">
             <EditableShoppingListComponent
               shoppingList={shoppingList}
               onItemAssigneeChange={(item, assignee) => {

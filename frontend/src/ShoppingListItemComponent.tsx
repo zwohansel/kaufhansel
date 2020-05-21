@@ -60,6 +60,7 @@ export function ShoppingListItemComponent(props: ShoppingListItemComponentProps)
               })}
               bordered={false}
               size={"small"}
+              style={{ minWidth: "30%" }}
             ></AutoComplete>
           )}
         </Col>
