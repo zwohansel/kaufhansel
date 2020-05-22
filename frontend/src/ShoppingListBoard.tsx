@@ -1,7 +1,6 @@
 import { useMutation, useQuery } from "@apollo/react-hooks";
 import { notification, PageHeader, Spin, Tabs } from "antd";
 import { ApolloError } from "apollo-boost";
-import produce from "immer";
 import React, { useState } from "react";
 import EditableShoppingListComponent from "./EditableShoppingListComponent";
 import {
@@ -28,8 +27,6 @@ export interface ShoppingListBoardProps {
 }
 
 function ShoppingListBoard(props: ShoppingListBoardProps) {
-  const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
-
   const handleApolloError = (error: ApolloError) => {
     if (props.onAuthenticationError && error.graphQLErrors.find(e => e?.extensions?.code === 401)) {
       props.onAuthenticationError();
@@ -41,49 +38,60 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
     }
   };
 
-  const { loading: loadingShoppingListItems } = useQuery<ShoppingListItemsData>(GET_ITEMS, {
-    onError: handleApolloError,
-    onCompleted: data => setShoppingList(data.shoppingListItems),
-    fetchPolicy: "network-only"
+  const { loading: loadingShoppingListItems, data: shoppingListData } = useQuery<ShoppingListItemsData>(GET_ITEMS, {
+    onError: handleApolloError
+    // fetchPolicy: "network-only"
   });
 
   const [createItem] = useMutation<CreateShoppingListItemData, { name: string }>(CREATE_ITEM, {
     onError: handleApolloError,
-    onCompleted: data =>
-      setShoppingList(produce((draft: ShoppingListItem[]) => draft.concat(data.createShoppingListItem)))
+    update: (cache, { data }) => {
+      const createdItem = data!.createShoppingListItem;
+      const { shoppingListItems: cachedList } = cache.readQuery<ShoppingListItemsData>({ query: GET_ITEMS })!;
+      cache.writeQuery<ShoppingListItemsData>({
+        query: GET_ITEMS,
+        data: {
+          shoppingListItems: [...cachedList, createdItem]
+        }
+      });
+    }
   });
 
   const [updateItem] = useMutation<UpdateItemData, UpdateItemVariables>(UPDATEM_ITEM, {
-    onError: handleApolloError,
-    onCompleted: data =>
-      setShoppingList(
-        produce((draft: ShoppingListItem[]) =>
-          draft.map(item => {
-            if (item._id === data.updateShoppingListItem._id) {
-              return data.updateShoppingListItem;
-            }
-            return item;
-          })
-        )
-      )
+    onError: handleApolloError
   });
 
   const [deleteItem] = useMutation<DeleteShoppingListItemData, { id: string }>(DELETE_ITEM, {
     onError: handleApolloError,
-    onCompleted: data =>
-      setShoppingList(
-        produce((draft: ShoppingListItem[]) => draft.filter(item => item._id !== data.deleteShoppingListItem))
-      )
+    update: (cache, { data }) => {
+      const deletedItemId = data!.deleteShoppingListItem;
+      const { shoppingListItems: cachedList } = cache.readQuery<ShoppingListItemsData>({ query: GET_ITEMS })!;
+      cache.writeQuery<ShoppingListItemsData>({
+        query: GET_ITEMS,
+        data: {
+          shoppingListItems: cachedList.filter(item => item._id !== deletedItemId)
+        }
+      });
+    }
   });
 
   const [clearList] = useMutation<ClearShoppingListData, {}>(CLEAR_LIST, {
     onError: handleApolloError,
-    onCompleted: () => setShoppingList([])
+    update: cache => {
+      cache.writeQuery<ShoppingListItemsData>({
+        query: GET_ITEMS,
+        data: {
+          shoppingListItems: []
+        }
+      });
+    }
   });
 
   const createNewItem = async (name: string) => {
     await createItem({ variables: { name } });
   };
+
+  const shoppingList = shoppingListData?.shoppingListItems || [];
 
   const itemsGroupedByAssignee = groupBy(
     shoppingList,
