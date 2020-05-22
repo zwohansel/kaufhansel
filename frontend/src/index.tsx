@@ -1,14 +1,36 @@
 import { ApolloProvider } from "@apollo/react-hooks";
-import ApolloClient from "apollo-boost";
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter, Redirect, Route, Switch, useHistory } from "react-router-dom";
 import "./index.css";
 import LoginComponent from "./LoginComponent";
 import ShoppingListBoard from "./ShoppingListBoard";
+import ApolloClient from "apollo-client";
+import { InMemoryCache } from "apollo-cache-inmemory";
+import { ApolloLink } from "apollo-link";
+import { onError } from "apollo-link-error";
+import { HttpLink } from "apollo-link-http";
+import { RetryLink } from "apollo-link-retry";
 
 const client = new ApolloClient({
-  uri: "/graphql"
+  cache: new InMemoryCache(),
+  link: ApolloLink.from([
+    new RetryLink({
+      delay: {
+        initial: 300,
+        max: 5000,
+        jitter: true
+      },
+      attempts: {
+        max: Infinity,
+        retryIf: error => !!error
+      }
+    }),
+    onError(({ graphQLErrors, networkError }) => {
+      console.log(graphQLErrors, networkError);
+    }),
+    new HttpLink({ uri: "/graphql" })
+  ])
 });
 
 function ShoppingListApp() {

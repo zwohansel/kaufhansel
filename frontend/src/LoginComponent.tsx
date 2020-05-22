@@ -20,7 +20,8 @@ export default function LoginComponent(props: LoginComponentProps) {
       } else {
         setLoginError(data.login.message);
       }
-    }
+    },
+    fetchPolicy: "no-cache"
   });
 
   const credentialsEmpty = username === "" || password === "";

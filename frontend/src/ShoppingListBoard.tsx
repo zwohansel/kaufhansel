@@ -1,6 +1,5 @@
 import { useMutation, useQuery } from "@apollo/react-hooks";
 import { notification, PageHeader, Spin, Tabs } from "antd";
-import { ApolloError } from "apollo-boost";
 import React, { useState } from "react";
 import EditableShoppingListComponent from "./EditableShoppingListComponent";
 import {
@@ -19,6 +18,7 @@ import {
 import ShoppingListComponent from "./ShoppingListComponent";
 import { ShoppingListItem } from "./ShoppingListItem";
 import { groupBy } from "./utils";
+import { ApolloError } from "apollo-client";
 
 const { TabPane } = Tabs;
 
@@ -106,6 +106,15 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
       variables: {
         id: item._id,
         state: checked
+      },
+      optimisticResponse: {
+        updateShoppingListItem: {
+          __typename: "ShoppingListItem",
+          _id: item._id,
+          assignee: item.assignee,
+          name: item.name,
+          checked: checked
+        }
       }
     });
   };

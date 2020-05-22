@@ -1,4 +1,5 @@
 export interface ShoppingListItemBase {
+  __typename?: string;
   name: string;
   checked: boolean;
   assignee: string;

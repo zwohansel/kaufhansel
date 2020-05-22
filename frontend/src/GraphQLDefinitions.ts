@@ -1,4 +1,4 @@
-import { gql } from "apollo-boost";
+import gql from "graphql-tag";
 import { ShoppingListItem } from "./ShoppingListItem";
 
 interface GraphQlResponse<T> {
@@ -59,6 +59,7 @@ export const UPDATEM_ITEM = gql`
 `;
 
 export interface UpdateItemData {
+  __typename?: string;
   updateShoppingListItem: ShoppingListItem;
 }
 
