@@ -20,12 +20,6 @@ code {
   margin-right: 5px;
 }
 
-.delete-item-btn {
-  width: 100%;
-  max-width: 100px;
-  min-width: 50px;
-}
-
 .shopping-list-board {
   height: 100vh;
   display: flex;
@@ -118,4 +112,17 @@ button.editable-shopping-list-small-add-button {
   height: 100%;
   font-weight: bold;
   margin-top: 1px;
+}
+
+.shopping-list-item {
+  padding: 8px 0px !important;
+}
+
+.shopping-list-item-row {
+  width: 100%;
+}
+
+.delete-item-btn {
+  width: 40px;
+  float: right;
 }
