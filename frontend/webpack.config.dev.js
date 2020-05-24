@@ -17,6 +17,7 @@ module.exports = merge(common, {
     contentBase: path.join(__dirname, "public"),
     port: 8081,
     historyApiFallback: true,
+    host: "0.0.0.0",
     proxy: {
       "/graphql": {
         target: "http://localhost:8080/"

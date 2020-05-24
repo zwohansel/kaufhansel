@@ -73,7 +73,7 @@ code {
   min-height: 0;
 }
 
-.shopping-list-board-tabs > .ant-tabs-content > .ant-tabs-tabpane {
+.shopping-list-board-tabs > .ant-tabs-content > .ant-tabs-tabpane-active {
   height: 100%;
 }
 
