@@ -18,7 +18,7 @@ test("render unchecked shopping list item", () => {
       item={item}
       assigneeCandidates={[]}
       onItemCheckedChange={() => {}}
-      onItemDeleted={() => {}}
+      onItemDeleted={async () => {}}
       onItemAssigneeChange={() => {}}
     />
   );
@@ -47,7 +47,7 @@ test("render checked shopping list item", () => {
       item={item}
       assigneeCandidates={[]}
       onItemCheckedChange={() => {}}
-      onItemDeleted={() => {}}
+      onItemDeleted={async () => {}}
       onItemAssigneeChange={() => {}}
     />
   );
@@ -71,7 +71,7 @@ test("click unchecked checkbox", () => {
       item={item}
       assigneeCandidates={[]}
       onItemCheckedChange={handleItemChecked}
-      onItemDeleted={() => {}}
+      onItemDeleted={async () => {}}
       onItemAssigneeChange={() => {}}
     />
   );
@@ -97,7 +97,7 @@ test("click checked checkbox", () => {
       item={item}
       assigneeCandidates={[]}
       onItemCheckedChange={handleItemChecked}
-      onItemDeleted={() => {}}
+      onItemDeleted={async () => {}}
       onItemAssigneeChange={() => {}}
     />
   );
@@ -146,7 +146,7 @@ test("render assignee", () => {
       item={item}
       assigneeCandidates={[]}
       onItemCheckedChange={() => {}}
-      onItemDeleted={() => {}}
+      onItemDeleted={async () => {}}
       onItemAssigneeChange={() => {}}
     />
   );
@@ -171,7 +171,7 @@ test("set assignee after focus lost", () => {
       item={item}
       assigneeCandidates={[]}
       onItemCheckedChange={() => {}}
-      onItemDeleted={() => {}}
+      onItemDeleted={async () => {}}
       onItemAssigneeChange={handleAssigneeChange}
     />
   );
@@ -199,7 +199,7 @@ test("set assignee after enter pressed", () => {
       item={item}
       assigneeCandidates={[]}
       onItemCheckedChange={() => {}}
-      onItemDeleted={() => {}}
+      onItemDeleted={async () => {}}
       onItemAssigneeChange={handleAssigneeChange}
     />
   );
@@ -228,7 +228,7 @@ test("do not set assignee if unchanged", () => {
       item={item}
       assigneeCandidates={[]}
       onItemCheckedChange={() => {}}
-      onItemDeleted={() => {}}
+      onItemDeleted={async () => {}}
       onItemAssigneeChange={handleAssigneeChange}
     />
   );
@@ -257,7 +257,7 @@ test("render assignee candidates as options", async () => {
       item={item}
       assigneeCandidates={["Mooncake", "Mooncookie"]}
       onItemCheckedChange={() => {}}
-      onItemDeleted={() => {}}
+      onItemDeleted={async () => {}}
       onItemAssigneeChange={handleAssigneeChange}
     />
   );

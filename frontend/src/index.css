@@ -20,8 +20,10 @@ code {
   margin-right: 5px;
 }
 
-.delete-item-btn span {
-  vertical-align: 0.1em;
+.delete-item-btn {
+  width: 100%;
+  max-width: 100px;
+  min-width: 50px;
 }
 
 .shopping-list-board {
@@ -69,6 +71,10 @@ code {
 .shopping-list-board-tabs > .ant-tabs-content {
   flex: 1 1 auto;
   min-height: 0;
+}
+
+.shopping-list-board-tabs > .ant-tabs-content > .ant-tabs-tabpane {
+  height: 100%;
 }
 
 .shopping-list-board-main-tab-content {

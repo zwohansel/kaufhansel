@@ -6,7 +6,7 @@ import { ShoppingListItem } from "./ShoppingListItem";
 export interface EditableShoppingListComponentProps {
   shoppingList: ShoppingListItem[];
   onItemCheckedChange: (item: ShoppingListItem, checked: boolean) => void;
-  onItemDeleted: (item: ShoppingListItem) => void;
+  onItemDeleted: (item: ShoppingListItem) => Promise<void>;
   onItemAssigneeChange: (item: ShoppingListItem, assignee: string) => void;
   onCreateNewItem: (name: string) => Promise<void>;
 }

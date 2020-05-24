@@ -119,7 +119,7 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
   const shoppingList = shoppingListData?.shoppingListItems || [];
 
   const itemsGroupedByAssignee = groupBy(
-    shoppingList,
+    shoppingList.filter(item => !!item.assignee),
     item => item.assignee,
     item => item
   );
@@ -144,8 +144,8 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
     });
   };
 
-  const handleItemDeleted = (item: ShoppingListItem) => {
-    deleteItem({
+  const handleItemDeleted = async (item: ShoppingListItem) => {
+    await deleteItem({
       variables: {
         id: item._id
       }
@@ -180,7 +180,7 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
     return (
       <Button
         danger
-        type="primary"
+        type="default"
         onClick={() => {
           Modal.confirm({
             title: "Wollen Sie die Einkaufsliste wirklich leeren?",
@@ -220,6 +220,7 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
           activeKey={activeTabKey}
           onChange={setActiveTabKey}
           className="shopping-list-board-tabs"
+          animated={false}
         >
           <TabPane tab="Alle" key="main">
             <div ref={mainTabContentRef} className="shopping-list-board-main-tab-content">

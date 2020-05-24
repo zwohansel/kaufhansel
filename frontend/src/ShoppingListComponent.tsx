@@ -8,7 +8,7 @@ export interface ShoppingListComponentProps {
   assigneeCandidates?: string[];
   shoppingList: ShoppingListItem[];
   onItemCheckedChange: (item: ShoppingListItem, checked: boolean) => void;
-  onItemDeleted: (item: ShoppingListItem) => void;
+  onItemDeleted: (item: ShoppingListItem) => Promise<void>;
   onItemAssigneeChange?: (item: ShoppingListItem, assignee: string) => void;
 }
 
