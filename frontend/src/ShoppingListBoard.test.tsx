@@ -16,6 +16,7 @@ import {
   UpdateItemVariables,
   UPDATEM_ITEM
 } from "./GraphQLDefinitions";
+import "./matchMedia.mock";
 import ShoppingListBoard from "./ShoppingListBoard";
 import { ShoppingListItem } from "./ShoppingListItem";
 
