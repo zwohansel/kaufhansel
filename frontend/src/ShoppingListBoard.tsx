@@ -144,27 +144,7 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
 
     const itemsToBuy = activeList.filter(item => !item.checked).length;
 
-    const isMainTab = activeTabKey === "main";
-
-    if (itemsToBuy === 0) {
-      if (isMainTab) {
-        return "Wow... ihr habt alles gekauft.";
-      }
-      return "Wow... du hast schon alles gekauft.";
-    }
-
-    if (itemsToBuy === 1) {
-      if (isMainTab) {
-        return "Nur noch ein Produkt muss gekauft werden. Ihr schafft das!";
-      }
-      return "Nur noch ein Produkt muss gekauft werden. Du schaffst das!";
-    }
-
-    if (isMainTab) {
-      return `Ihr müsst noch ${activeList.filter(item => !item.checked).length} Produkte kaufen.`;
-    }
-
-    return `Du musst noch ${activeList.filter(item => !item.checked).length} Produkte kaufen.`;
+    return `${itemsToBuy}/${activeList.length}`;
   };
 
   return (
