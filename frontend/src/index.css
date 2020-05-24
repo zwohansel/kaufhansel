@@ -11,9 +11,60 @@ code {
 }
 
 #root {
-  height: 100%;
+  height: 100vh;
 }
 
 .delete-item-btn span {
   vertical-align: 0.1em;
+}
+
+.shopping-list-board {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.shopping-list-board-spinner {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.shopping-list-board-spinner > div {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.shopping-list-board-tabs {
+  padding: 0 24px 0 24px !important;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.shopping-list-board-tabs > .ant-tabs-bar {
+  flex: 0 0 auto;
+}
+
+.shopping-list-board-tabs > .ant-tabs-content {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.editable-shopping-list-component {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.editable-shopping-list-component-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.editable-shopping-list-component-controls {
+  flex: 0 0 auto;
 }

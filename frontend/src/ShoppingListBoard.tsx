@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from "@apollo/react-hooks";
 import { notification, PageHeader, Spin, Tabs } from "antd";
+import { ApolloError } from "apollo-client";
 import React, { useState } from "react";
 import EditableShoppingListComponent from "./EditableShoppingListComponent";
 import {
@@ -18,7 +19,6 @@ import {
 import ShoppingListComponent from "./ShoppingListComponent";
 import { ShoppingListItem } from "./ShoppingListItem";
 import { groupBy } from "./utils";
-import { ApolloError } from "apollo-client";
 
 const { TabPane } = Tabs;
 
@@ -168,9 +168,19 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
   };
 
   return (
-    <PageHeader title="Einkaufsliste" subTitle={createSubTitle()}>
-      <Spin spinning={loadingShoppingListItems} tip="Wird aktualisiert...">
-        <Tabs defaultActiveKey="main" activeKey={activeTabKey} onChange={setActiveTabKey}>
+    <div className="shopping-list-board">
+      <PageHeader title="Einkaufsliste" subTitle={createSubTitle()} style={{ paddingBottom: 0, flex: "0 0 auto" }} />
+      <Spin
+        spinning={loadingShoppingListItems}
+        tip="Wird aktualisiert..."
+        wrapperClassName="shopping-list-board-spinner"
+      >
+        <Tabs
+          defaultActiveKey="main"
+          activeKey={activeTabKey}
+          onChange={setActiveTabKey}
+          className="shopping-list-board-tabs"
+        >
           <TabPane tab="Alle" key="main">
             <EditableShoppingListComponent
               shoppingList={shoppingList}
@@ -202,7 +212,7 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
           })}
         </Tabs>
       </Spin>
-    </PageHeader>
+    </div>
   );
 }
 

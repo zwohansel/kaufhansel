@@ -4,6 +4,7 @@ import { ShoppingListItem } from "./ShoppingListItem";
 import { ShoppingListItemComponent } from "./ShoppingListItemComponent";
 
 export interface ShoppingListComponentProps {
+  className?: string;
   assigneeCandidates?: string[];
   shoppingList: ShoppingListItem[];
   onItemCheckedChange: (item: ShoppingListItem, checked: boolean) => void;
@@ -14,6 +15,7 @@ export interface ShoppingListComponentProps {
 function ShoppingListComponent(props: ShoppingListComponentProps) {
   return (
     <List
+      className={props.className}
       dataSource={props.shoppingList}
       renderItem={item => {
         return (
