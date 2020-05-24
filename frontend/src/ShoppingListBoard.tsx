@@ -1,7 +1,8 @@
+import { DeleteFilled, DeleteOutlined } from "@ant-design/icons";
 import { useMutation, useQuery } from "@apollo/react-hooks";
-import { notification, PageHeader, Spin, Tabs } from "antd";
+import { Button, Modal, notification, PageHeader, Spin, Tabs } from "antd";
 import { ApolloError } from "apollo-client";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import EditableShoppingListComponent from "./EditableShoppingListComponent";
 import {
   ClearShoppingListData,
@@ -40,8 +41,11 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
 
   const { loading: loadingShoppingListItems, data: shoppingListData } = useQuery<ShoppingListItemsData>(GET_ITEMS, {
     onError: handleApolloError
-    // fetchPolicy: "network-only"
   });
+
+  const numberOfShoppingListItems = shoppingListData ? shoppingListData.shoppingListItems.length : 0;
+
+  const newItemCreatedRef = useRef(false);
 
   const [createItem] = useMutation<CreateShoppingListItemData, { name: string }>(CREATE_ITEM, {
     onError: handleApolloError,
@@ -54,8 +58,24 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
           shoppingListItems: [...cachedList, createdItem]
         }
       });
+
+      newItemCreatedRef.current = true;
     }
   });
+
+  useEffect(() => {
+    if (!newItemCreatedRef.current) {
+      return;
+    }
+
+    const items = document.getElementsByClassName("shopping-list-item");
+
+    if (items.length > 0) {
+      items[items.length - 1].scrollIntoView({ behavior: "smooth" });
+    }
+
+    newItemCreatedRef.current = false;
+  }, [numberOfShoppingListItems]);
 
   const [updateItem] = useMutation<UpdateItemData, UpdateItemVariables>(UPDATEM_ITEM, {
     onError: handleApolloError
@@ -147,9 +167,44 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
     return `${itemsToBuy}/${activeList.length}`;
   };
 
+  const renderClearButton = () => {
+    if (activeTabKey !== "main") {
+      return <div></div>;
+    }
+
+    return (
+      <Button
+        danger
+        type="primary"
+        onClick={() => {
+          Modal.confirm({
+            title: "Wollen Sie die Einkaufsliste wirklich leeren?",
+            onOk: () => clearList(),
+            okText: "Ja",
+            cancelText: "Nein",
+            icon: <DeleteFilled style={{ color: "#555555" }} />,
+            okType: "danger"
+          });
+        }}
+      >
+        <DeleteOutlined />
+      </Button>
+    );
+  };
+
   return (
     <div className="shopping-list-board">
-      <PageHeader title="Einkaufsliste" subTitle={createSubTitle()} style={{ paddingBottom: 0, flex: "0 0 auto" }} />
+      <PageHeader
+        title={
+          <span>
+            <img className="kaufhansel-image" src="favicon.svg" />
+            <span>Kaufhansel</span>
+          </span>
+        }
+        subTitle={createSubTitle()}
+        className="shopping-list-board-header"
+        extra={renderClearButton()}
+      />
       <Spin
         spinning={loadingShoppingListItems}
         tip="Wird aktualisiert..."
@@ -174,7 +229,6 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
               }}
               onItemCheckedChange={handleItemCheckedStateChange}
               onItemDeleted={handleItemDeleted}
-              onDeleteAllItems={() => clearList()}
               onCreateNewItem={createNewItem}
             />
           </TabPane>

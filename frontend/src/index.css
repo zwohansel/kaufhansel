@@ -14,6 +14,12 @@ code {
   height: 100vh;
 }
 
+.kaufhansel-image {
+  height: 1.3em;
+  margin-top: -8px;
+  margin-right: 5px;
+}
+
 .delete-item-btn span {
   vertical-align: 0.1em;
 }
@@ -22,6 +28,19 @@ code {
   height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+.shopping-list-board-header {
+  padding-bottom: 0;
+  flex: 0 0 auto;
+}
+
+.shopping-list-board-header .ant-page-header-heading-extra {
+  float: right;
+  display: inherit;
+  width: auto;
+  padding-top: 0;
+  clear: unset;
 }
 
 .shopping-list-board-spinner {
@@ -67,4 +86,17 @@ code {
 
 .editable-shopping-list-component-controls {
   flex: 0 0 auto;
+}
+
+button.editable-shopping-list-small-add-button {
+  width: 100%;
+  padding: 0;
+}
+
+.editable-shopping-list-small-add-button span:not(.anticon-loading) {
+  font-size: 2em;
+  line-height: 100%;
+  height: 100%;
+  font-weight: bold;
+  margin-top: 1px;
 }

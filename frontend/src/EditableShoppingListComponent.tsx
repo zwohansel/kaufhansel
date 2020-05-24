@@ -1,5 +1,4 @@
-import { DeleteFilled } from "@ant-design/icons";
-import { Button, Col, Input, Popconfirm, Row } from "antd";
+import { Button, Col, Input, Row } from "antd";
 import React, { useState } from "react";
 import ShoppingListComponent from "./ShoppingListComponent";
 import { ShoppingListItem } from "./ShoppingListItem";
@@ -10,7 +9,6 @@ export interface EditableShoppingListComponentProps {
   onItemDeleted: (item: ShoppingListItem) => void;
   onItemAssigneeChange: (item: ShoppingListItem, assignee: string) => void;
   onCreateNewItem: (name: string) => Promise<void>;
-  onDeleteAllItems: () => void;
 }
 
 function EditableShoppingListComponent(props: EditableShoppingListComponentProps) {
@@ -45,7 +43,7 @@ function EditableShoppingListComponent(props: EditableShoppingListComponentProps
         className="editable-shopping-list-component-controls"
       >
         <Row gutter={[16, 8]}>
-          <Col xs={24} sm={24} md={15} lg={15} xl={15}>
+          <Col xs={20} sm={20} md={20} lg={20} xl={20}>
             <Input
               value={newItemName}
               onChange={event => setNewItemName(event.target.value)}
@@ -53,7 +51,7 @@ function EditableShoppingListComponent(props: EditableShoppingListComponentProps
               disabled={creatingItem}
             />
           </Col>
-          <Col xs={24} sm={24} md={5} lg={5} xl={5}>
+          <Col xs={0} sm={0} md={4} lg={4} xl={4}>
             <Button
               type="primary"
               style={{ width: "100%" }}
@@ -64,19 +62,17 @@ function EditableShoppingListComponent(props: EditableShoppingListComponentProps
               Hinzufügen
             </Button>
           </Col>
-          <Col xs={24} sm={24} md={4} lg={4} xl={4}>
-            <Popconfirm
-              title="Wollen Sie die Einkaufsliste wirklich leeren?"
-              onConfirm={props.onDeleteAllItems}
-              okText="Ja"
-              cancelText="Nein"
-              icon={<DeleteFilled style={{ color: "#555555" }} />}
-              okType="danger"
+
+          <Col xs={4} sm={4} md={0} lg={0} xl={0}>
+            <Button
+              className="editable-shopping-list-small-add-button"
+              type="primary"
+              disabled={newItemName === ""}
+              onClick={createNewItem}
+              loading={creatingItem}
             >
-              <Button style={{ width: "100%" }} danger type="primary">
-                Liste leeren
-              </Button>
-            </Popconfirm>
+              {creatingItem ? "" : "+"}
+            </Button>
           </Col>
         </Row>
       </div>

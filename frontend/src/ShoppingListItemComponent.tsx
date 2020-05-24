@@ -27,6 +27,7 @@ export function ShoppingListItemComponent(props: ShoppingListItemComponentProps)
 
   return (
     <List.Item
+      className="shopping-list-item"
       key={props.item._id}
       style={{
         textDecoration: props.item.checked ? "line-through" : "none"

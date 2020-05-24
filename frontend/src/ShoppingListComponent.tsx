@@ -17,6 +17,7 @@ function ShoppingListComponent(props: ShoppingListComponentProps) {
     <List
       className={props.className}
       dataSource={props.shoppingList}
+      size="small"
       renderItem={item => {
         return (
           <ShoppingListItemComponent
