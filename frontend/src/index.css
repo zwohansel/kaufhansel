@@ -125,4 +125,5 @@ button.editable-shopping-list-small-add-button {
 .delete-item-btn {
   width: 40px;
   float: right;
+  margin-right: 8px;
 }
