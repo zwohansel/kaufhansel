@@ -71,6 +71,10 @@ code {
   min-height: 0;
 }
 
+.shopping-list-board-main-tab-content {
+  height: 100%;
+}
+
 .editable-shopping-list-component {
   height: 100%;
   display: flex;

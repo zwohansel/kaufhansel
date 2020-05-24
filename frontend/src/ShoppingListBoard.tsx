@@ -46,6 +46,7 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
   const numberOfShoppingListItems = shoppingListData ? shoppingListData.shoppingListItems.length : 0;
 
   const newItemCreatedRef = useRef(false);
+  const mainTabContentRef = useRef<HTMLDivElement>(null);
 
   const [createItem] = useMutation<CreateShoppingListItemData, { name: string }>(CREATE_ITEM, {
     onError: handleApolloError,
@@ -68,7 +69,11 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
       return;
     }
 
-    const items = document.getElementsByClassName("shopping-list-item");
+    if (mainTabContentRef.current === null) {
+      return;
+    }
+
+    const items = mainTabContentRef.current.getElementsByClassName("shopping-list-item");
 
     if (items.length > 0) {
       items[items.length - 1].scrollIntoView({ behavior: "smooth" });
@@ -217,20 +222,22 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
           className="shopping-list-board-tabs"
         >
           <TabPane tab="Alle" key="main">
-            <EditableShoppingListComponent
-              shoppingList={shoppingList}
-              onItemAssigneeChange={(item, assignee) => {
-                updateItem({
-                  variables: {
-                    id: item._id,
-                    assignee: assignee
-                  }
-                });
-              }}
-              onItemCheckedChange={handleItemCheckedStateChange}
-              onItemDeleted={handleItemDeleted}
-              onCreateNewItem={createNewItem}
-            />
+            <div ref={mainTabContentRef} className="shopping-list-board-main-tab-content">
+              <EditableShoppingListComponent
+                shoppingList={shoppingList}
+                onItemAssigneeChange={(item, assignee) => {
+                  updateItem({
+                    variables: {
+                      id: item._id,
+                      assignee: assignee
+                    }
+                  });
+                }}
+                onItemCheckedChange={handleItemCheckedStateChange}
+                onItemDeleted={handleItemDeleted}
+                onCreateNewItem={createNewItem}
+              />
+            </div>
           </TabPane>
 
           {assigneeShoppingLists.map(([assignee, assigneeShoppingList]) => {
