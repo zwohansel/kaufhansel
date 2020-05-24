@@ -244,6 +244,7 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
             return (
               <TabPane tab={assignee} key={assignee}>
                 <ShoppingListComponent
+                  className="shopping-list-board-readonly-list"
                   shoppingList={assigneeShoppingList}
                   onItemCheckedChange={handleItemCheckedStateChange}
                   onItemDeleted={handleItemDeleted}

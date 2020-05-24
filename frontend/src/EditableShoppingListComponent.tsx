@@ -38,10 +38,7 @@ function EditableShoppingListComponent(props: EditableShoppingListComponentProps
         onItemCheckedChange={props.onItemCheckedChange}
         onItemDeleted={props.onItemDeleted}
       />
-      <div
-        style={{ paddingTop: "10px", paddingBottom: "10px", background: "white", borderTop: "1px solid #f0f0f0" }}
-        className="editable-shopping-list-component-controls"
-      >
+      <div className="editable-shopping-list-component-controls">
         <Row gutter={[16, 8]}>
           <Col xs={20} sm={20} md={20} lg={20} xl={20}>
             <Input
