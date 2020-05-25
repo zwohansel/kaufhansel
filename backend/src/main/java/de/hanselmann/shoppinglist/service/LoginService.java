@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
@@ -39,14 +40,16 @@ public class LoginService {
     private final HttpServletResponse response;
     private final ShoppingListUserRepository userRepository;
     private final ShoppingListProperties properties;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public LoginService(HttpServletRequest request, HttpServletResponse response, ShoppingListUserRepository userRepository,
-    		ShoppingListProperties properties) {
+    		ShoppingListProperties properties, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
 		this.request = request;
         this.response = response;
         this.properties = properties;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GraphQLMutation
@@ -57,6 +60,10 @@ public class LoginService {
     	Optional<ShoppingListUser> optionalUser = userRepository.findUserByUsername(username);
         if (optionalUser.isPresent()) {
         	ShoppingListUser user = optionalUser.get();
+        	if (!user.hasPassword()) {
+        		setPassword(user, password);
+        	}
+        	
         	if (isPasswordCorrect(user, password)) {
         		return loginUser(user);
         	}
@@ -65,8 +72,19 @@ public class LoginService {
         return GraphQlResponse.fail("Falsche Logindaten");
     }
     
-    private boolean isPasswordCorrect(ShoppingListUser user, String password) {
-    	return user.getPassword().equals(password);
+    private void setPassword(ShoppingListUser user, String password) {
+    	if (password.isEmpty()) {
+    		return;
+    	}
+    	user.setPassword(passwordEncoder.encode(password));
+    	userRepository.save(user);
+	}
+
+	private boolean isPasswordCorrect(ShoppingListUser user, String password) {
+		if (!user.hasPassword()) {
+			return false;
+		}
+    	return passwordEncoder.matches(password, user.getPassword());
     }
     
     private GraphQlResponse<Void> loginUser(ShoppingListUser user) {

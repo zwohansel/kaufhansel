@@ -27,6 +27,10 @@ public class ShoppingListUser {
 		this.password = password;
 	}
 	
+	public boolean hasPassword() {
+		return password != null && !password.isEmpty();
+	}
+	
 	
 
 }
