@@ -1,6 +1,12 @@
-import { DeleteFilled, DeleteOutlined } from "@ant-design/icons";
+import {
+  BorderOutlined,
+  CheckSquareOutlined,
+  DeleteFilled,
+  DeleteOutlined,
+  ShoppingCartOutlined
+} from "@ant-design/icons";
 import { useMutation, useQuery } from "@apollo/react-hooks";
-import { Button, Modal, notification, PageHeader, Spin, Tabs } from "antd";
+import { Button, Col, Modal, notification, PageHeader, Radio, Row, Spin, Tabs } from "antd";
 import { ApolloError } from "apollo-client";
 import React, { useEffect, useRef, useState } from "react";
 import EditableShoppingListComponent from "./EditableShoppingListComponent";
@@ -17,7 +23,7 @@ import {
   UpdateItemVariables,
   UPDATEM_ITEM
 } from "./GraphQLDefinitions";
-import ShoppingListComponent from "./ShoppingListComponent";
+import ShoppingListComponent, { ShoppingListFilter } from "./ShoppingListComponent";
 import { ShoppingListItem } from "./ShoppingListItem";
 import { groupBy } from "./utils";
 
@@ -172,15 +178,47 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
     return `${itemsToBuy}/${activeList.length}`;
   };
 
+  const [activeFilter, setActiveFilter] = useState(ShoppingListFilter.all);
+
+  const renderToolbar = () => {
+    return (
+      <Row gutter={4}>
+        <Col>{renderClearButton()}</Col>
+        <Col>{renderListHeader()}</Col>
+      </Row>
+    );
+  };
+
+  const renderListHeader = () => {
+    return (
+      <Radio.Group
+        buttonStyle="solid"
+        size="small"
+        value={activeFilter}
+        onChange={event => setActiveFilter(event.target.value)}
+      >
+        <Radio.Button value={ShoppingListFilter.all}>
+          <ShoppingCartOutlined></ShoppingCartOutlined>
+        </Radio.Button>
+        <Radio.Button value={ShoppingListFilter.checked}>
+          <CheckSquareOutlined />
+        </Radio.Button>
+        <Radio.Button value={ShoppingListFilter.unchecked}>
+          <BorderOutlined />
+        </Radio.Button>
+      </Radio.Group>
+    );
+  };
+
   const renderClearButton = () => {
     if (activeTabKey !== "main") {
       return <div></div>;
     }
-
     return (
       <Button
         danger
         type="default"
+        size="small"
         onClick={() => {
           Modal.confirm({
             title: "Wollen Sie die Einkaufsliste wirklich leeren?",
@@ -208,7 +246,7 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
         }
         subTitle={createSubTitle()}
         className="shopping-list-board-header"
-        extra={renderClearButton()}
+        extra={renderToolbar()}
       />
       <Spin
         spinning={loadingShoppingListItems}
@@ -226,6 +264,7 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
             <div ref={mainTabContentRef} className="shopping-list-board-main-tab-content">
               <EditableShoppingListComponent
                 shoppingList={shoppingList}
+                filter={activeFilter}
                 onItemAssigneeChange={(item, assignee) => {
                   updateItem({
                     variables: {
@@ -247,6 +286,7 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
                 <ShoppingListComponent
                   className="shopping-list-board-readonly-list"
                   shoppingList={assigneeShoppingList}
+                  filter={activeFilter}
                   onItemCheckedChange={handleItemCheckedStateChange}
                   onItemDeleted={handleItemDeleted}
                 />

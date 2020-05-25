@@ -1,10 +1,11 @@
 import { Button, Col, Input, Row } from "antd";
 import React, { useState } from "react";
-import ShoppingListComponent from "./ShoppingListComponent";
+import ShoppingListComponent, { ShoppingListFilter } from "./ShoppingListComponent";
 import { ShoppingListItem } from "./ShoppingListItem";
 
 export interface EditableShoppingListComponentProps {
   shoppingList: ShoppingListItem[];
+  filter: ShoppingListFilter;
   onItemCheckedChange: (item: ShoppingListItem, checked: boolean) => void;
   onItemDeleted: (item: ShoppingListItem) => Promise<void>;
   onItemAssigneeChange: (item: ShoppingListItem, assignee: string) => void;
@@ -33,6 +34,7 @@ function EditableShoppingListComponent(props: EditableShoppingListComponentProps
       <ShoppingListComponent
         className="editable-shopping-list-component-list"
         shoppingList={props.shoppingList}
+        filter={props.filter}
         assigneeCandidates={assigneeCandidates}
         onItemAssigneeChange={props.onItemAssigneeChange}
         onItemCheckedChange={props.onItemCheckedChange}
