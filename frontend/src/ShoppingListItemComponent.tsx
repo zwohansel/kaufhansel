@@ -38,13 +38,8 @@ export function ShoppingListItemComponent(props: ShoppingListItemComponentProps)
     >
       <Row className="shopping-list-item-row">
         <Col span={20}>
-          <Checkbox
-            style={{ marginRight: "1em" }}
-            checked={props.item.checked}
-            onChange={event => props.onItemCheckedChange(event.target.checked)}
-          />
+          <Checkbox style={{ marginRight: "1em" }} checked={props.item.checked} />
           {props.item.name}
-
           {props.assigneeCandidates && props.item.assignee ? " kauft" : ""}
           {props.assigneeCandidates && (
             <AutoComplete

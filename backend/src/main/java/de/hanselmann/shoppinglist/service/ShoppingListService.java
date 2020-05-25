@@ -3,6 +3,8 @@ package de.hanselmann.shoppinglist.service;
 import java.text.MessageFormat;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
 @GraphQLApi
 @PreAuthorize("hasRole('SHOPPER')")
 public class ShoppingListService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(ShoppingListService.class);
+
     private ShopppingListItemRepository shoppingListRepository;
 
     @Autowired
@@ -42,8 +46,7 @@ public class ShoppingListService {
     @GraphQLMutation
     public @GraphQLNonNull ShoppingListItem updateShoppingListItem(
             @GraphQLNonNull @GraphQLId @GraphQLArgument(name = "id") String id,
-            @GraphQLArgument(name = "state") Boolean state,
-            @GraphQLArgument(name = "assignee") String assignee) {
+            @GraphQLArgument(name = "state") Boolean state, @GraphQLArgument(name = "assignee") String assignee) {
 
         final ShoppingListItem item = shoppingListRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException(
@@ -58,6 +61,12 @@ public class ShoppingListService {
         }
 
         shoppingListRepository.save(item);
+        LOGGER.info("Notify subscribers");
+        ShoppingListSubscriptionService.subscribers.forEach(subscriber -> {
+            LOGGER.info("NEXT: ", subscriber);
+            subscriber.next(item);
+        });
+
         return item;
     }
 
@@ -73,4 +82,5 @@ public class ShoppingListService {
         shoppingListRepository.deleteAll();
         return true;
     }
+
 }

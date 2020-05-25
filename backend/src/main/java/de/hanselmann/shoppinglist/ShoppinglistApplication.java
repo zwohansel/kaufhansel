@@ -12,8 +12,8 @@ import de.hanselmann.shoppinglist.configuration.ShoppingListProperties;
 @SpringBootApplication
 public class ShoppinglistApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(ShoppinglistApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(ShoppinglistApplication.class, args);
+    }
 
 }

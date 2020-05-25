@@ -7,14 +7,14 @@ import org.springframework.boot.context.properties.ConstructorBinding;
 @ConfigurationProperties(prefix = "shoppinglist")
 public class ShoppingListProperties {
 
-	private final boolean secureCookie;
-	
-	public ShoppingListProperties(boolean secureCookie) {
-		this.secureCookie = secureCookie;
-	}
+    private final boolean secureCookie;
 
-	public boolean isSecureCookie() {
-		return secureCookie;
-	}
-	
+    public ShoppingListProperties(boolean secureCookie) {
+        this.secureCookie = secureCookie;
+    }
+
+    public boolean isSecureCookie() {
+        return secureCookie;
+    }
+
 }
