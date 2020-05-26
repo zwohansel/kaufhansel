@@ -5,7 +5,7 @@ import {
   DeleteOutlined,
   ShoppingCartOutlined
 } from "@ant-design/icons";
-import { useMutation, useQuery } from "@apollo/react-hooks";
+import { useMutation, useQuery, useSubscription } from "@apollo/react-hooks";
 import { Button, Col, Modal, notification, PageHeader, Radio, Row, Spin, Tabs } from "antd";
 import { ApolloError } from "apollo-client";
 import React, { useEffect, useRef, useState } from "react";
@@ -18,7 +18,9 @@ import {
   DeleteShoppingListItemData,
   DELETE_ITEM,
   GET_ITEMS,
+  ShoppingListChangedData,
   ShoppingListItemsData,
+  SHOPPING_LIST_CHANGED,
   UpdateItemData,
   UpdateItemVariables,
   UPDATEM_ITEM
@@ -113,6 +115,28 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
         query: GET_ITEMS,
         data: {
           shoppingListItems: []
+        }
+      });
+    }
+  });
+
+  useSubscription<ShoppingListChangedData, void>(SHOPPING_LIST_CHANGED, {
+    onSubscriptionData: options => {
+      if (!options.subscriptionData.data) {
+        return;
+      }
+
+      const changedItem = options.subscriptionData.data.shoppingListChanged;
+      const { shoppingListItems: cachedList } = options.client.cache.readQuery<ShoppingListItemsData>({
+        query: GET_ITEMS
+      })!;
+      const updatedList = cachedList.map(item => {
+        return item._id === changedItem._id ? changedItem : item;
+      });
+      options.client.cache.writeQuery<ShoppingListItemsData>({
+        query: GET_ITEMS,
+        data: {
+          shoppingListItems: updatedList
         }
       });
     }

@@ -96,3 +96,18 @@ export interface LoginVariables {
   username: string;
   password: string;
 }
+
+export const SHOPPING_LIST_CHANGED = gql`
+  subscription shoppingListChanged {
+    shoppingListChanged {
+      _id
+      name
+      assignee
+      checked
+    }
+  }
+`;
+
+export interface ShoppingListChangedData {
+  shoppingListChanged: ShoppingListItem;
+}

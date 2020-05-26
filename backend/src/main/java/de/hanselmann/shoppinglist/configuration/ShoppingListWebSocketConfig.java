@@ -2,6 +2,8 @@ package de.hanselmann.shoppinglist.configuration;
 
 import java.util.Optional;
 
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
@@ -15,6 +17,7 @@ import io.leangen.graphql.spqr.spring.web.apollo.PerConnectionApolloHandler;
 
 @Configuration
 @EnableWebSocket
+@ConditionalOnProperty(name = "shoppinglist.ws.enabled", havingValue = "true", matchIfMissing = false)
 public class ShoppingListWebSocketConfig extends SpqrWebSocketAutoConfiguration {
     private final SpqrProperties config;
 
@@ -22,10 +25,13 @@ public class ShoppingListWebSocketConfig extends SpqrWebSocketAutoConfiguration 
             Optional<DataLoaderRegistryFactory> dataLoaderRegistryFactory) {
         super(graphQL, config, dataLoaderRegistryFactory);
         this.config = config;
+
+        LoggerFactory.getLogger(getClass()).info("GraphQL websocket subscriptions enabled.");
     }
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+
         String webSocketEndpoint = config.getWs().getEndpoint();
         String graphQLEndpoint = config.getHttp().getEndpoint();
         String endpointUrl = webSocketEndpoint == null ? graphQLEndpoint : webSocketEndpoint;
