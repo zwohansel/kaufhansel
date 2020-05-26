@@ -11,6 +11,7 @@ import graphql.GraphQL;
 import io.leangen.graphql.spqr.spring.autoconfigure.DataLoaderRegistryFactory;
 import io.leangen.graphql.spqr.spring.autoconfigure.SpqrProperties;
 import io.leangen.graphql.spqr.spring.autoconfigure.SpqrWebSocketAutoConfiguration;
+import io.leangen.graphql.spqr.spring.web.apollo.PerConnectionApolloHandler;
 
 @Configuration
 @EnableWebSocket
@@ -28,9 +29,15 @@ public class ShoppingListWebSocketConfig extends SpqrWebSocketAutoConfiguration 
         String webSocketEndpoint = config.getWs().getEndpoint();
         String graphQLEndpoint = config.getHttp().getEndpoint();
         String endpointUrl = webSocketEndpoint == null ? graphQLEndpoint : webSocketEndpoint;
-        registry.addHandler(webSocketHandler(webSocketExecutor(webSocketContextFactory())), endpointUrl)
-                .setAllowedOrigins(config.getWs().getAllowedOrigins()).addInterceptors(
-                        new HttpSessionHandshakeInterceptor(), new ShoppingListWebSocketAuthenticationInterceptor());
+
+        PerConnectionApolloHandler apolloHandler = webSocketHandler(webSocketExecutor(webSocketContextFactory()));
+        ConcurrentApolloHandlerDecorator threadSafeHandler = new ConcurrentApolloHandlerDecorator(apolloHandler);
+
+        registry.addHandler(threadSafeHandler, endpointUrl)
+                .setAllowedOrigins(config.getWs().getAllowedOrigins())
+                .addInterceptors(
+                        new HttpSessionHandshakeInterceptor(),
+                        new ShoppingListWebSocketAuthenticationInterceptor());
     }
 
 }
