@@ -3,8 +3,6 @@ package de.hanselmann.shoppinglist.service;
 import java.text.MessageFormat;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -22,13 +20,14 @@ import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
 @GraphQLApi
 @PreAuthorize("hasRole('SHOPPER')")
 public class ShoppingListService {
-    private final static Logger LOGGER = LoggerFactory.getLogger(ShoppingListService.class);
-
     private ShopppingListItemRepository shoppingListRepository;
+    private ShoppingListSubscribers shoppingListSubscribers;
 
     @Autowired
-    public ShoppingListService(ShopppingListItemRepository shoppingListRepository) {
+    public ShoppingListService(ShopppingListItemRepository shoppingListRepository,
+            ShoppingListSubscribers shoppingListSubscribers) {
         this.shoppingListRepository = shoppingListRepository;
+        this.shoppingListSubscribers = shoppingListSubscribers;
     }
 
     @GraphQLQuery
@@ -61,11 +60,8 @@ public class ShoppingListService {
         }
 
         shoppingListRepository.save(item);
-        LOGGER.info("Notify subscribers");
-        ShoppingListSubscriptionService.subscribers.forEach(subscriber -> {
-            LOGGER.info("NEXT: ", subscriber);
-            subscriber.next(item);
-        });
+
+        shoppingListSubscribers.notifyItemChanged(item);
 
         return item;
     }
