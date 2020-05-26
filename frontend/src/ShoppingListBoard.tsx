@@ -45,9 +45,21 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
     }
   };
 
-  const { loading: loadingShoppingListItems, data: shoppingListData } = useQuery<ShoppingListItemsData>(GET_ITEMS, {
-    onError: handleApolloError
-  });
+  const { loading: loadingShoppingListItems, data: shoppingListData, refetch } = useQuery<ShoppingListItemsData>(
+    GET_ITEMS,
+    {
+      onError: handleApolloError
+    }
+  );
+
+  // When using the pollIntervall option of the query hook the query is sent twice every x seconds.
+  // Therefore we roll our own polling mechanism.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetch();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const numberOfShoppingListItems = shoppingListData ? shoppingListData.shoppingListItems.length : 0;
 

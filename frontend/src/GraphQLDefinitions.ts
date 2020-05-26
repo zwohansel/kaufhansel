@@ -8,7 +8,7 @@ interface GraphQlResponse<T> {
 }
 
 export const GET_ITEMS = gql`
-  {
+  query shoppingListItems {
     shoppingListItems {
       _id
       name

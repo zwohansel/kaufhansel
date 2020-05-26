@@ -23,7 +23,9 @@ const client = new ApolloClient({
       },
       attempts: {
         max: Infinity,
-        retryIf: error => !!error
+        retryIf: (error, operation) => {
+          return operation.operationName !== "shoppingListItems" && !!error;
+        }
       }
     }),
     onError(({ graphQLErrors, networkError }) => {
