@@ -17,6 +17,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'io.leangen.graphql:graphql-spqr-spring-boot-starter:0.0.4'
+    implementation 'io.leangen.graphql:spqr:0.10.1'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'io.projectreactor:reactor-core:3.3.5.RELEASE'
     implementation 'org.springframework.boot:spring-boot-starter-websocket:2.3.0.RELEASE'

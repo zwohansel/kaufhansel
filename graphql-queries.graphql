@@ -1,0 +1,22 @@
+### LOGIN
+mutation login ($username:String!, $password:String!) {
+  login(username:$username, password:$password) {
+    message
+    success
+    data
+  }
+}
+{
+  "username": "<USERNAME>",
+  "password": "<PASSWORD>"
+}
+
+### SUBSCRIPTION
+subscription shoppingListChanged {
+  shoppingListChanged {
+    _id
+    assignee
+    checked
+    name
+  }
+}

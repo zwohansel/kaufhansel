@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
-import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
 import graphql.GraphQL;
 import io.leangen.graphql.spqr.spring.autoconfigure.DataLoaderRegistryFactory;
@@ -40,10 +39,7 @@ public class ShoppingListWebSocketConfig extends SpqrWebSocketAutoConfiguration 
         ConcurrentApolloHandlerDecorator threadSafeHandler = new ConcurrentApolloHandlerDecorator(apolloHandler);
 
         registry.addHandler(threadSafeHandler, endpointUrl)
-                .setAllowedOrigins(config.getWs().getAllowedOrigins())
-                .addInterceptors(
-                        new HttpSessionHandshakeInterceptor(),
-                        new ShoppingListWebSocketAuthenticationInterceptor());
+                .setAllowedOrigins(config.getWs().getAllowedOrigins());
     }
 
 }
