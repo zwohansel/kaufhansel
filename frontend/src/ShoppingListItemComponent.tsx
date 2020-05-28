@@ -56,7 +56,7 @@ export function ShoppingListItemComponent(props: ShoppingListItemComponentProps)
                 }
               }}
               onBlur={selectNewAssignee}
-              placeholder={"Wer kauf das?"}
+              placeholder={"Wer kauft das?"}
               options={assigneeCandidates.map(value => {
                 return { value };
               })}
