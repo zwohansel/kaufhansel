@@ -14,10 +14,13 @@ import "./index.css";
 import LoginComponent from "./LoginComponent";
 import ShoppingListBoard from "./ShoppingListBoard";
 
+const websocketProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+const websocketUri = `${websocketProtocol}://${window.location.host}/graphql`;
+
 const httpLink = new HttpLink({ uri: "/graphql" });
 
 const wsLink = new WebSocketLink({
-  uri: "ws://localhost:8080/graphql",
+  uri: websocketUri,
   options: {
     reconnect: false
   }
