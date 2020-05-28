@@ -18,10 +18,12 @@ module.exports = merge(common, {
     port: 8081,
     historyApiFallback: true,
     host: "0.0.0.0",
-    proxy: {
-      "/graphql": {
-        target: "http://localhost:8080/"
+    proxy: [
+      {
+        context: "/graphql",
+        target: "http://localhost:8080/",
+        ws: true
       }
-    }
+    ]
   }
 });
