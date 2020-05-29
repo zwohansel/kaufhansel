@@ -127,3 +127,51 @@ button.editable-shopping-list-small-add-button {
   float: right;
   margin-right: 8px;
 }
+
+.assignee-candidate {
+  display: inline-block;
+  cursor: pointer;
+  line-height: 100%;
+  height: 100%;
+  min-width: 30%;
+  margin-left: 0.5em;
+}
+
+.assignee-candidate:hover {
+  color: #40a9ff;
+}
+
+.assignee-candidate-placeholder {
+  color: #ababab;
+}
+
+.assignee-candidate-set {
+  color: inherit;
+}
+
+.assignee-select-dialog-subtitle {
+  font-size: 14px;
+  line-height: 22px;
+  color: #00000073;
+  margin-left: 5px;
+}
+
+.assignee-candidate-item {
+  cursor: pointer;
+  margin-bottom: 10px;
+  padding: 5px !important;
+  border: 1px solid #f0f0f0;
+}
+
+.assignee-candidate-item.current-candidate {
+  border-color: #40a9ff;
+  color: #40a9ff;
+}
+
+.assignee-candidate-item.current-candidate:hover {
+  color: #74c0ff;
+}
+
+.assignee-candidate-item:hover {
+  color: #40a9ff;
+}
