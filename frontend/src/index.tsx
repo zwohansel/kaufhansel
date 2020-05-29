@@ -2,7 +2,6 @@ import { ApolloProvider } from "@apollo/react-hooks";
 import { InMemoryCache } from "apollo-cache-inmemory";
 import ApolloClient from "apollo-client";
 import { ApolloLink, split } from "apollo-link";
-import { onError } from "apollo-link-error";
 import { HttpLink } from "apollo-link-http";
 import { RetryLink } from "apollo-link-retry";
 import { WebSocketLink } from "apollo-link-ws";
@@ -50,9 +49,6 @@ const client = new ApolloClient({
           return operation.operationName !== "shoppingListItems" && !!error;
         }
       }
-    }),
-    onError(({ graphQLErrors, networkError }) => {
-      console.log(graphQLErrors, networkError);
     }),
     splitLink
   ])

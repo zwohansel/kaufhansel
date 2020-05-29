@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.reactivestreams.Publisher;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
@@ -13,20 +14,41 @@ import reactor.core.publisher.FluxSink;
 @Component
 public class DefaultShoppingListSubscribers implements ShoppingListSubscribers {
 
-    private final List<FluxSink<ShoppingListItem>> subscribers = new CopyOnWriteArrayList<>();
+    private final List<FluxSink<ShoppingListItemChangedEvent>> subscribers = new CopyOnWriteArrayList<>();
 
     @Override
-    public Publisher<ShoppingListItem> addSubscriber() {
-        return Flux.<ShoppingListItem>create(
-                subscriber -> subscribers.add(subscriber.onDispose(() -> subscribers.remove(subscriber))),
+    public Publisher<ShoppingListItemChangedEvent> addSubscriber() {
+        return Flux.create(
+                this::addNewSubscription,
                 FluxSink.OverflowStrategy.BUFFER);
     }
 
+    private void addNewSubscription(FluxSink<ShoppingListItemChangedEvent> subscriber) {
+        subscribers.add(subscriber.onDispose(() -> removeSubscriber(subscriber)));
+    }
+
+    private void removeSubscriber(FluxSink<ShoppingListItemChangedEvent> subscriber) {
+        subscribers.remove(subscriber);
+    }
+
     @Override
-    public void notifyItemChanged(ShoppingListItem changedShoppingListItem) {
-        subscribers.forEach(subscriber -> {
-            subscriber.next(changedShoppingListItem);
-        });
+    public void notifyItemChanged(ShoppingListItem item) {
+        publishEvent(ShoppingListItemChangedEvent.changedItem(item));
+    }
+
+    @Override
+    public void notifyItemCreated(ShoppingListItem item) {
+        publishEvent(ShoppingListItemChangedEvent.createdItem(item));
+    }
+
+    @Override
+    public void notifyItemDeleted(ShoppingListItem item) {
+        publishEvent(ShoppingListItemChangedEvent.deletedItem(item));
+    }
+
+    private void publishEvent(ShoppingListItemChangedEvent event) {
+        LoggerFactory.getLogger(getClass()).info("Notify subscribers: {}", subscribers);
+        subscribers.forEach(subscriber -> subscriber.next(event));
     }
 
 }

@@ -2,6 +2,7 @@ package de.hanselmann.shoppinglist.service;
 
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,7 +40,11 @@ public class ShoppingListService {
     public @GraphQLNonNull ShoppingListItem createShoppingListItem(
             @GraphQLNonNull @GraphQLArgument(name = "name") String name) {
         final ShoppingListItem item = new ShoppingListItem(name);
-        return shoppingListRepository.save(item);
+        ShoppingListItem createdItem = shoppingListRepository.save(item);
+
+        shoppingListSubscribers.notifyItemCreated(createdItem);
+
+        return createdItem;
     }
 
     @GraphQLMutation
@@ -69,13 +74,25 @@ public class ShoppingListService {
     @GraphQLMutation
     public @GraphQLNonNull @GraphQLId String deleteShoppingListItem(
             @GraphQLNonNull @GraphQLId @GraphQLArgument(name = "id") String id) {
-        shoppingListRepository.deleteById(id);
+
+        Optional<ShoppingListItem> item = shoppingListRepository.findById(id);
+
+        if (item.isPresent()) {
+            shoppingListRepository.deleteById(id);
+            shoppingListSubscribers.notifyItemDeleted(item.get());
+        }
+
         return id;
     }
 
     @GraphQLMutation
     public @GraphQLNonNull boolean clearShoppingList() {
+
+        List<ShoppingListItem> items = shoppingListRepository.findAll();
         shoppingListRepository.deleteAll();
+
+        items.forEach(shoppingListSubscribers::notifyItemDeleted);
+
         return true;
     }
 

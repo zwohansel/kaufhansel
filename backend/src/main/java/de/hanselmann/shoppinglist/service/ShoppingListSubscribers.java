@@ -6,8 +6,12 @@ import de.hanselmann.shoppinglist.model.ShoppingListItem;
 
 public interface ShoppingListSubscribers {
 
-    Publisher<ShoppingListItem> addSubscriber();
+    Publisher<ShoppingListItemChangedEvent> addSubscriber();
 
-    void notifyItemChanged(ShoppingListItem changedShoppingListItem);
+    void notifyItemChanged(ShoppingListItem item);
+
+    void notifyItemCreated(ShoppingListItem item);
+
+    void notifyItemDeleted(ShoppingListItem item);
 
 }

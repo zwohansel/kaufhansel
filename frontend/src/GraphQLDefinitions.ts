@@ -100,14 +100,22 @@ export interface LoginVariables {
 export const SHOPPING_LIST_CHANGED = gql`
   subscription shoppingListChanged {
     shoppingListChanged {
-      _id
-      name
-      assignee
-      checked
+      item {
+        _id
+        assignee
+        checked
+        name
+      }
+      type
     }
   }
 `;
 
+export interface ShoppingListChangedEvent {
+  type: string;
+  item: ShoppingListItem;
+}
+
 export interface ShoppingListChangedData {
-  shoppingListChanged: ShoppingListItem;
+  shoppingListChanged: ShoppingListChangedEvent;
 }

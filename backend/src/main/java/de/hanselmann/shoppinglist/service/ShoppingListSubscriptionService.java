@@ -3,7 +3,6 @@ package de.hanselmann.shoppinglist.service;
 import org.reactivestreams.Publisher;
 import org.springframework.stereotype.Service;
 
-import de.hanselmann.shoppinglist.model.ShoppingListItem;
 import io.leangen.graphql.annotations.GraphQLSubscription;
 import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
 
@@ -17,7 +16,7 @@ public class ShoppingListSubscriptionService {
     }
 
     @GraphQLSubscription
-    public Publisher<ShoppingListItem> shoppingListChanged() {
+    public Publisher<ShoppingListItemChangedEvent> shoppingListChanged() {
         return shoppingListSubscribers.addSubscriber();
     }
 

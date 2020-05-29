@@ -61,6 +61,11 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
     update: (cache, { data }) => {
       const createdItem = data!.createShoppingListItem;
       const { shoppingListItems: cachedList } = cache.readQuery<ShoppingListItemsData>({ query: GET_ITEMS })!;
+
+      if (cachedList.find(item => item._id === createdItem._id)) {
+        return; // Item already added via subscription
+      }
+
       cache.writeQuery<ShoppingListItemsData>({
         query: GET_ITEMS,
         data: {
@@ -126,14 +131,34 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
         return;
       }
 
-      const changedItem = options.subscriptionData.data.shoppingListChanged;
-      const { shoppingListItems: cachedList } = options.client.cache.readQuery<ShoppingListItemsData>({
+      const changeEvent = options.subscriptionData.data.shoppingListChanged;
+      const { shoppingListItems: cachedList } = options.client.readQuery<ShoppingListItemsData>({
         query: GET_ITEMS
       })!;
-      const updatedList = cachedList.map(item => {
-        return item._id === changedItem._id ? changedItem : item;
-      });
-      options.client.cache.writeQuery<ShoppingListItemsData>({
+
+      const existingItemIndex = cachedList.findIndex(item => item._id === changeEvent.item._id);
+
+      const updatedList = [...cachedList];
+
+      switch (changeEvent.type) {
+        case "ITEM_CHANGED":
+          updatedList[existingItemIndex] = changeEvent.item;
+          break;
+
+        case "ITEM_CREATED":
+          if (existingItemIndex < 0) {
+            updatedList.push(changeEvent.item);
+          }
+          break;
+
+        case "ITEM_DELETED":
+          if (existingItemIndex >= 0) {
+            updatedList.splice(existingItemIndex, 1);
+          }
+          break;
+      }
+
+      options.client.writeQuery<ShoppingListItemsData>({
         query: GET_ITEMS,
         data: {
           shoppingListItems: updatedList
