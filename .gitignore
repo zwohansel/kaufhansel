@@ -12,7 +12,7 @@ node_modules/
 coverage/
 
 # production
-build/
+build*/
 
 # database
 /data
@@ -32,3 +32,8 @@ yarn-error.log*
 .metadata
 eclipse_workspace/
 bin/
+
+#qt & cmake
+CMakeLists.txt.user*
+
+
