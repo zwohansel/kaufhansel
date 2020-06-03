@@ -5,8 +5,13 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <QCoreApplication>
 
-int main() {
+#include <memory>
+
+int main(int argc, char** args) {
+    QCoreApplication app(argc, args);
+
     std::cout << "Hello, Pi!" << std::endl;
 
     int fbfd = open("/dev/fb1", O_RDWR);
@@ -62,7 +67,8 @@ int main() {
                 (y+vinfo.yoffset) * finfo.line_length;
 
             char* memAddress = fbp + location;
-            *(reinterpret_cast<uint16_t*>(memAddress)) = x * 65000 / vinfo.xres;
+            //*(reinterpret_cast<uint16_t*>(memAddress)) = x * 65000 / vinfo.xres;
+            *(reinterpret_cast<uint16_t*>(memAddress)) = 13;
         }
     }
 

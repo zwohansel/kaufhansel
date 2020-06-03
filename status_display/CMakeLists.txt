@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.17)
 project(status-display VERSION 0.0.1 LANGUAGES CXX)
 
-#set(CMAKE_AUTOMOC ON)
-#find_package(Qt5 COMPONENTS Widgets REQURIED)
+set(CMAKE_AUTOMOC ON)
+find_package(Qt5 COMPONENTS Core Widgets)
 
 add_executable(status-display
     hello
@@ -12,6 +12,9 @@ add_executable(status-display
 
 set_target_properties(status-display PROPERTIES
     CXX_STANDARD 17)
+
+target_link_libraries(status-display
+    Qt5::Core)
 
 install(TARGETS status-display
     RUNTIME DESTINATION bin)
