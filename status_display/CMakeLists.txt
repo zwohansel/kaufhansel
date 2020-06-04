@@ -18,6 +18,8 @@ add_executable(status-display
     main.cpp
     mainwindow.cpp
     mainwindow.h
+    shoppingliststatuspoller.cpp
+    shoppingliststatuspoller.h
     ${UI_HEADER}
     raspberrypi-gcc.cmake
     raspberrypi-clang.cmake
