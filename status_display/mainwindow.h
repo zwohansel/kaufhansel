@@ -3,7 +3,7 @@
 #include <QMainWindow>
 #include <QThread>
 #include <QTimer>
-
+#include <chrono>
 #include <memory>
 
 namespace Ui {
@@ -20,6 +20,7 @@ class MainWindow : public QMainWindow {
 
 public:
   MainWindow(const QUrl &url, const QAuthenticator &authenticator,
+             const std::chrono::milliseconds &pollingInterval,
              QWidget *parent = nullptr);
   ~MainWindow() override;
 

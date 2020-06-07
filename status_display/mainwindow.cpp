@@ -4,6 +4,7 @@
 #include <shoppingliststatuspoller.h>
 
 MainWindow::MainWindow(const QUrl &url, const QAuthenticator &authenticator,
+                       const std::chrono::milliseconds &pollingInterval,
                        QWidget *parent)
     : QMainWindow(parent), ui(std::make_unique<Ui::MainWindow>()) {
   ui->setupUi(this);
@@ -23,7 +24,7 @@ MainWindow::MainWindow(const QUrl &url, const QAuthenticator &authenticator,
   connect(&pollingThreadTimer, &QTimer::timeout, poller.get(),
           &ShoppingListStatusPoller::pollShoppingListStatus);
 
-  pollingThreadTimer.start(std::chrono::seconds(5));
+  pollingThreadTimer.start(pollingInterval);
 }
 
 void MainWindow::handleNewShoppingListStatus(int numOpenItems) {

@@ -3,6 +3,7 @@
 #include <QCommandLineParser>
 #include <QDebug>
 #include <QUrl>
+#include <chrono>
 #include <mainwindow.h>
 
 int main(int argc, char **args) {
@@ -24,6 +25,12 @@ int main(int argc, char **args) {
       {"p", "password"}, "The password of the shopping list service user",
       "password");
   parser.addOption(passwordOption);
+  const QCommandLineOption pollIntervalOption(
+      {"i", "interval"},
+      "The interval in miliseconds in which the the shopping list service "
+      "status will be polled. Default: 5000 ms",
+      "interval");
+  parser.addOption(pollIntervalOption);
 
   parser.process(app);
 
@@ -45,7 +52,16 @@ int main(int argc, char **args) {
   authenticator.setUser(parser.value(userNameOption));
   authenticator.setPassword(parser.value(passwordOption));
 
-  MainWindow mainWindow(url, authenticator);
+  QString intervalString = parser.value(pollIntervalOption);
+
+  bool isValidInterval;
+  uint pollingInterval = intervalString.toUInt(&isValidInterval);
+  if (!isValidInterval) {
+    pollingInterval = 5000;
+  }
+
+  MainWindow mainWindow(url, authenticator,
+                        std::chrono::milliseconds(pollingInterval));
   mainWindow.showMaximized();
 
   return app.exec();
