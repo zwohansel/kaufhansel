@@ -9,7 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
-import de.hanselmann.shoppinglist.repository.ShopppingListItemRepository;
+import de.hanselmann.shoppinglist.repository.ShoppingListItemRepository;
 import io.leangen.graphql.annotations.GraphQLArgument;
 import io.leangen.graphql.annotations.GraphQLId;
 import io.leangen.graphql.annotations.GraphQLMutation;
@@ -21,11 +21,11 @@ import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
 @GraphQLApi
 @PreAuthorize("hasRole('SHOPPER')")
 public class ShoppingListService {
-    private ShopppingListItemRepository shoppingListRepository;
+    private ShoppingListItemRepository shoppingListRepository;
     private ShoppingListSubscribers shoppingListSubscribers;
 
     @Autowired
-    public ShoppingListService(ShopppingListItemRepository shoppingListRepository,
+    public ShoppingListService(ShoppingListItemRepository shoppingListRepository,
             ShoppingListSubscribers shoppingListSubscribers) {
         this.shoppingListRepository = shoppingListRepository;
         this.shoppingListSubscribers = shoppingListSubscribers;

@@ -45,7 +45,7 @@
        <enum>QLCDNumber::Filled</enum>
       </property>
       <property name="intValue" stdset="0">
-       <number>12</number>
+       <number>-1</number>
       </property>
      </widget>
     </item>

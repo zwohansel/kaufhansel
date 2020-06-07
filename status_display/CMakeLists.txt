@@ -8,7 +8,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-find_package(Qt5 COMPONENTS Core Widgets)
+find_package(Qt5 COMPONENTS Core Widgets Network)
 
 QT5_WRAP_UI(UI_HEADER
     mainwindow.ui
@@ -32,6 +32,7 @@ set_target_properties(status-display PROPERTIES
 target_link_libraries(status-display
     Qt5::Core
     Qt5::Widgets
+    Qt5::Network
     Threads::Threads
 )
 
