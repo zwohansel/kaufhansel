@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.reactivestreams.Publisher;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
@@ -47,7 +46,6 @@ public class DefaultShoppingListSubscribers implements ShoppingListSubscribers {
     }
 
     private void publishEvent(ShoppingListItemChangedEvent event) {
-        LoggerFactory.getLogger(getClass()).info("Notify subscribers: {}", subscribers);
         subscribers.forEach(subscriber -> subscriber.next(event));
     }
 

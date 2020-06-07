@@ -1,8 +1,5 @@
 package de.hanselmann.shoppinglist.service;
 
-import java.util.Arrays;
-import java.util.Optional;
-
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,16 +10,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import de.hanselmann.shoppinglist.configuration.ShoppingListProperties;
 import de.hanselmann.shoppinglist.model.GraphQlResponse;
-import de.hanselmann.shoppinglist.model.ShoppingListUser;
-import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
 import io.leangen.graphql.annotations.GraphQLArgument;
 import io.leangen.graphql.annotations.GraphQLMutation;
 import io.leangen.graphql.annotations.GraphQLNonNull;
@@ -37,19 +31,16 @@ public class LoginService {
 
     private final HttpServletRequest request;
     private final HttpServletResponse response;
-    private final ShoppingListUserRepository userRepository;
     private final ShoppingListProperties properties;
-    private final PasswordEncoder passwordEncoder;
+    private final ShoppingListAuthenticationService authenticationService;
 
     @Autowired
     public LoginService(HttpServletRequest request, HttpServletResponse response,
-            ShoppingListUserRepository userRepository,
-            ShoppingListProperties properties, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
+            ShoppingListProperties properties, ShoppingListAuthenticationService authenticationService) {
         this.request = request;
         this.response = response;
         this.properties = properties;
-        this.passwordEncoder = passwordEncoder;
+        this.authenticationService = authenticationService;
     }
 
     @GraphQLMutation
@@ -57,40 +48,15 @@ public class LoginService {
             @GraphQLNonNull @GraphQLArgument(name = "username") String username,
             @GraphQLNonNull @GraphQLArgument(name = "password") String password) {
 
-        Optional<ShoppingListUser> optionalUser = userRepository.findUserByUsername(username);
-        if (optionalUser.isPresent()) {
-            ShoppingListUser user = optionalUser.get();
-            if (!user.hasPassword()) {
-                setPassword(user, password);
-            }
-
-            if (isPasswordCorrect(user, password)) {
-                return loginUser(user);
-            }
+        try {
+            return loginUser(
+                    authenticationService.authenticate(new UsernamePasswordAuthenticationToken(username, password)));
+        } catch (AuthenticationException e) {
+            return GraphQlResponse.fail("Falsche Logindaten");
         }
-
-        return GraphQlResponse.fail("Falsche Logindaten");
     }
 
-    private void setPassword(ShoppingListUser user, String password) {
-        if (password.isEmpty()) {
-            return;
-        }
-        user.setPassword(passwordEncoder.encode(password));
-        userRepository.save(user);
-    }
-
-    private boolean isPasswordCorrect(ShoppingListUser user, String password) {
-        if (!user.hasPassword()) {
-            return false;
-        }
-        return passwordEncoder.matches(password, user.getPassword());
-    }
-
-    private GraphQlResponse<Void> loginUser(ShoppingListUser user) {
-        Authentication auth = new UsernamePasswordAuthenticationToken(user.getId(), user.getPassword(),
-                Arrays.asList(new SimpleGrantedAuthority("ROLE_SHOPPER")));
-
+    private GraphQlResponse<Void> loginUser(Authentication auth) {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         securityContext.setAuthentication(auth);
         HttpSession session = request.getSession();

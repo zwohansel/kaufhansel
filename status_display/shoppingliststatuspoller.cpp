@@ -1,5 +1,6 @@
 #include "shoppingliststatuspoller.h"
 
+#include <QAuthenticator>
 #include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -8,10 +9,13 @@
 #include <QNetworkRequest>
 
 ShoppingListStatusPoller::ShoppingListStatusPoller(
-    QNetworkAccessManager *network, const QUrl url)
-    : network(network), url(url) {
+    QNetworkAccessManager *network, const QUrl &url,
+    const QAuthenticator &authenticator)
+    : network(network), url(url), authenticator(authenticator) {
   connect(network, &QNetworkAccessManager::finished, this,
           &ShoppingListStatusPoller::statusRequestFinished);
+  connect(network, &QNetworkAccessManager::authenticationRequired, this,
+          &ShoppingListStatusPoller::statusRequestsAuthenticationRequired);
 }
 
 void ShoppingListStatusPoller::pollShoppingListStatus() {
@@ -41,4 +45,14 @@ void ShoppingListStatusPoller::statusRequestFinished(QNetworkReply *reply) {
 
   emit newShoppingListStatus(numberOfOpenItems);
   reply->deleteLater();
+}
+
+void ShoppingListStatusPoller::statusRequestsAuthenticationRequired(
+    QNetworkReply *, QAuthenticator *authenticator) {
+  qDebug() << "Endpoint secured, using credentials";
+  if (this->authenticator.user().isEmpty() ||
+      this->authenticator.password().isEmpty()) {
+    throw std::runtime_error("Endpoint secured, but no credentials provided.");
+  }
+  (*authenticator) = this->authenticator;
 }

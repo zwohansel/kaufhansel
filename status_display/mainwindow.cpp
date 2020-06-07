@@ -3,14 +3,16 @@
 #include <QNetworkAccessManager>
 #include <shoppingliststatuspoller.h>
 
-MainWindow::MainWindow(const QUrl url, QWidget *parent)
-    : QMainWindow(parent), url(url), ui(std::make_unique<Ui::MainWindow>()) {
+MainWindow::MainWindow(const QUrl &url, const QAuthenticator &authenticator,
+                       QWidget *parent)
+    : QMainWindow(parent), ui(std::make_unique<Ui::MainWindow>()) {
   ui->setupUi(this);
 
   network = std::make_unique<QNetworkAccessManager>();
   network->moveToThread(&pollingThread);
 
-  poller = std::make_unique<ShoppingListStatusPoller>(network.get(), url);
+  poller = std::make_unique<ShoppingListStatusPoller>(network.get(), url,
+                                                      authenticator);
   poller->moveToThread(&pollingThread);
 
   connect(poller.get(), &ShoppingListStatusPoller::newShoppingListStatus, this,
