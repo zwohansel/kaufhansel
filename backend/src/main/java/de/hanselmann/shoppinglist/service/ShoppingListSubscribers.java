@@ -1,17 +1,19 @@
 package de.hanselmann.shoppinglist.service;
 
+import java.util.List;
+
 import org.reactivestreams.Publisher;
 
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
 
 public interface ShoppingListSubscribers {
 
-    Publisher<ShoppingListItemChangedEvent> addSubscriber();
+    Publisher<List<ShoppingListItemChangedEvent>> addSubscriber();
 
-    void notifyItemChanged(ShoppingListItem item);
+    void notifyItemsChanged(List<ShoppingListItem> items);
 
-    void notifyItemCreated(ShoppingListItem item);
+    void notifyItemsCreated(List<ShoppingListItem> items);
 
-    void notifyItemDeleted(ShoppingListItem item);
+    void notifyItemsDeleted(List<ShoppingListItem> items);
 
 }

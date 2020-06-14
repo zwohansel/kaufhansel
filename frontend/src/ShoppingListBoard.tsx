@@ -134,31 +134,33 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
         return;
       }
 
-      const changeEvent = options.subscriptionData.data.shoppingListChanged;
+      const changeEvents = options.subscriptionData.data.shoppingListChanged;
       const { shoppingListItems: cachedList } = options.client.readQuery<ShoppingListItemsData>({
         query: GET_ITEMS
       })!;
 
-      const existingItemIndex = cachedList.findIndex(item => item._id === changeEvent.item._id);
-
       const updatedList = [...cachedList];
 
-      switch (changeEvent.type) {
-        case "ITEM_CHANGED":
-          updatedList[existingItemIndex] = changeEvent.item;
-          break;
+      for (const changeEvent of changeEvents) {
+        const existingItemIndex = cachedList.findIndex(item => item._id === changeEvent.item._id);
 
-        case "ITEM_CREATED":
-          if (existingItemIndex < 0) {
-            updatedList.push(changeEvent.item);
-          }
-          break;
+        switch (changeEvent.type) {
+          case "ITEM_CHANGED":
+            updatedList[existingItemIndex] = changeEvent.item;
+            break;
 
-        case "ITEM_DELETED":
-          if (existingItemIndex >= 0) {
-            updatedList.splice(existingItemIndex, 1);
-          }
-          break;
+          case "ITEM_CREATED":
+            if (existingItemIndex < 0) {
+              updatedList.push(changeEvent.item);
+            }
+            break;
+
+          case "ITEM_DELETED":
+            if (existingItemIndex >= 0) {
+              updatedList.splice(existingItemIndex, 1);
+            }
+            break;
+        }
       }
 
       options.client.writeQuery<ShoppingListItemsData>({

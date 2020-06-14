@@ -115,5 +115,5 @@ export interface ShoppingListChangedEvent {
 }
 
 export interface ShoppingListChangedData {
-  shoppingListChanged: ShoppingListChangedEvent;
+  shoppingListChanged: ShoppingListChangedEvent[];
 }

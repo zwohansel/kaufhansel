@@ -2,6 +2,7 @@ package de.hanselmann.shoppinglist.service;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,7 +44,7 @@ public class ShoppingListService {
         final ShoppingListItem item = new ShoppingListItem(name);
         ShoppingListItem createdItem = shoppingListRepository.save(item);
 
-        shoppingListSubscribers.notifyItemCreated(createdItem);
+        shoppingListSubscribers.notifyItemsCreated(Arrays.asList(createdItem));
 
         return createdItem;
     }
@@ -52,7 +53,7 @@ public class ShoppingListService {
     public @GraphQLNonNull List<ShoppingListItem> updateShoppingListItems(
             @GraphQLNonNull @GraphQLArgument(name = "items") List<@GraphQLNonNull ShoppingListItem> items) {
 
-        List<ShoppingListItem> response = new ArrayList<>();
+        List<ShoppingListItem> changedItems = new ArrayList<>();
 
         for (ShoppingListItem requestItem : items) {
 
@@ -70,15 +71,14 @@ public class ShoppingListService {
                 item.setAssignee(requestItem.getAssignee());
             }
 
-            shoppingListRepository.save(item);
-
-            shoppingListSubscribers.notifyItemChanged(item);
-
-            response.add(item);
+            changedItems.add(item);
 
         }
 
-        return response;
+        shoppingListRepository.saveAll(changedItems);
+        shoppingListSubscribers.notifyItemsChanged(changedItems);
+
+        return changedItems;
     }
 
     @GraphQLMutation
@@ -89,7 +89,7 @@ public class ShoppingListService {
 
         if (item.isPresent()) {
             shoppingListRepository.deleteById(id);
-            shoppingListSubscribers.notifyItemDeleted(item.get());
+            shoppingListSubscribers.notifyItemsDeleted(Arrays.asList(item.get()));
         }
 
         return id;
@@ -99,9 +99,9 @@ public class ShoppingListService {
     public @GraphQLNonNull boolean clearShoppingList() {
 
         List<ShoppingListItem> items = shoppingListRepository.findAll();
-        shoppingListRepository.deleteAll();
 
-        items.forEach(shoppingListSubscribers::notifyItemDeleted);
+        shoppingListRepository.deleteAll();
+        shoppingListSubscribers.notifyItemsDeleted(items);
 
         return true;
     }

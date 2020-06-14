@@ -2,6 +2,7 @@ package de.hanselmann.shoppinglist.service;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 import org.reactivestreams.Publisher;
 import org.springframework.stereotype.Component;
@@ -13,40 +14,40 @@ import reactor.core.publisher.FluxSink;
 @Component
 public class DefaultShoppingListSubscribers implements ShoppingListSubscribers {
 
-    private final List<FluxSink<ShoppingListItemChangedEvent>> subscribers = new CopyOnWriteArrayList<>();
+    private final List<FluxSink<List<ShoppingListItemChangedEvent>>> subscribers = new CopyOnWriteArrayList<>();
 
     @Override
-    public Publisher<ShoppingListItemChangedEvent> addSubscriber() {
+    public Publisher<List<ShoppingListItemChangedEvent>> addSubscriber() {
         return Flux.create(
                 this::addNewSubscription,
                 FluxSink.OverflowStrategy.BUFFER);
     }
 
-    private void addNewSubscription(FluxSink<ShoppingListItemChangedEvent> subscriber) {
+    private void addNewSubscription(FluxSink<List<ShoppingListItemChangedEvent>> subscriber) {
         subscribers.add(subscriber.onDispose(() -> removeSubscriber(subscriber)));
     }
 
-    private void removeSubscriber(FluxSink<ShoppingListItemChangedEvent> subscriber) {
+    private void removeSubscriber(FluxSink<List<ShoppingListItemChangedEvent>> subscriber) {
         subscribers.remove(subscriber);
     }
 
     @Override
-    public void notifyItemChanged(ShoppingListItem item) {
-        publishEvent(ShoppingListItemChangedEvent.changedItem(item));
+    public void notifyItemsChanged(List<ShoppingListItem> items) {
+        publishEvent(items.stream().map(ShoppingListItemChangedEvent::changedItem).collect(Collectors.toList()));
     }
 
     @Override
-    public void notifyItemCreated(ShoppingListItem item) {
-        publishEvent(ShoppingListItemChangedEvent.createdItem(item));
+    public void notifyItemsCreated(List<ShoppingListItem> items) {
+        publishEvent(items.stream().map(ShoppingListItemChangedEvent::createdItem).collect(Collectors.toList()));
     }
 
     @Override
-    public void notifyItemDeleted(ShoppingListItem item) {
-        publishEvent(ShoppingListItemChangedEvent.deletedItem(item));
+    public void notifyItemsDeleted(List<ShoppingListItem> items) {
+        publishEvent(items.stream().map(ShoppingListItemChangedEvent::deletedItem).collect(Collectors.toList()));
     }
 
-    private void publishEvent(ShoppingListItemChangedEvent event) {
-        subscribers.forEach(subscriber -> subscriber.next(event));
+    private void publishEvent(List<ShoppingListItemChangedEvent> events) {
+        subscribers.forEach(subscriber -> subscriber.next(events));
     }
 
 }

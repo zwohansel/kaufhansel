@@ -1,5 +1,7 @@
 package de.hanselmann.shoppinglist.service;
 
+import java.util.List;
+
 import org.reactivestreams.Publisher;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +18,7 @@ public class ShoppingListSubscriptionService {
     }
 
     @GraphQLSubscription
-    public Publisher<ShoppingListItemChangedEvent> shoppingListChanged() {
+    public Publisher<List<ShoppingListItemChangedEvent>> shoppingListChanged() {
         return shoppingListSubscribers.addSubscriber();
     }
 
