@@ -15,7 +15,7 @@ import {
   SHOPPING_LIST_CHANGED,
   UpdateItemData,
   UpdateItemVariables,
-  UPDATEM_ITEM
+  UPDATEM_ITEMS
 } from "./GraphQLDefinitions";
 import "./matchMedia.mock";
 import ShoppingListBoard from "./ShoppingListBoard";
@@ -77,12 +77,12 @@ function createShoppingListItemDeleteMutationTestData(id: string) {
 }
 
 function createShoppingListItemToggleItemCheckedStateTestData(item: ShoppingListItem) {
-  const variables: UpdateItemVariables = { id: item._id, state: !item.checked };
-  const data: UpdateItemData = { updateShoppingListItem: { ...item, checked: !item.checked } };
+  const variables: UpdateItemVariables = { items: [{ ...item, checked: !item.checked }] };
+  const data: UpdateItemData = { updateShoppingListItems: [{ ...item, checked: !item.checked }] };
 
   const mock: MockedResponse = {
     request: {
-      query: UPDATEM_ITEM,
+      query: UPDATEM_ITEMS,
       variables
     },
     result: {
@@ -209,7 +209,7 @@ it("set item checked state", async () => {
     name: "Margarine",
     checked: false,
     assignee: "",
-    __typename: "shoppingListItem" // Apollos automatic cache update does not work without the typename
+    __typename: "ShoppingListItem" // Apollos automatic cache update does not work without the typename
   };
 
   const element = render(

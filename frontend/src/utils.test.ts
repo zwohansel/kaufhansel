@@ -1,5 +1,5 @@
 import { ShoppingListItem } from "./ShoppingListItem";
-import { groupBy } from "./utils";
+import { groupBy, omitTypename, omitTypenames } from "./utils";
 
 test("groupBy", () => {
   const shoppingList: ShoppingListItem[] = [
@@ -21,4 +21,59 @@ test("groupBy", () => {
   ]);
 
   expect(groupedByAssignee).toEqual(expectedMap);
+});
+
+test("omitTypename", () => {
+  const item: ShoppingListItem = {
+    _id: "0",
+    __typename: "ShoppingListItem",
+    assignee: "",
+    checked: false,
+    name: "Test"
+  };
+
+  const itemWithoutTypename = omitTypename(item);
+
+  expect(itemWithoutTypename).toEqual({
+    _id: "0",
+    assignee: "",
+    checked: false,
+    name: "Test"
+  });
+});
+
+test("omitTypenames", () => {
+  const items: ShoppingListItem[] = [
+    {
+      _id: "0",
+      __typename: "ShoppingListItem",
+      assignee: "",
+      checked: false,
+      name: "Test"
+    },
+    {
+      _id: "1",
+      __typename: "ShoppingListItem",
+      assignee: "",
+      checked: true,
+      name: "Test 2"
+    }
+  ];
+
+  const itemWithoutTypename = omitTypenames(items);
+
+  expect(itemWithoutTypename).toEqual([
+    {
+      _id: "0",
+      assignee: "",
+      checked: false,
+      name: "Test"
+    },
+    {
+      _id: "1",
+      assignee: "",
+      checked: true,
+      name: "Test 2"
+    }
+  ]);
 });

@@ -54,14 +54,12 @@ public class ShoppingListItem {
     }
 
     @GraphQLQuery(name = "assignee")
-	public @GraphQLNonNull String getAssignee() {
-		return assignee;
-	}
+    public String getAssignee() {
+        return assignee;
+    }
 
-	public void setAssignee(String assignee) {
-		this.assignee = assignee;
-	}
-    
-    
+    public void setAssignee(String assignee) {
+        this.assignee = assignee;
+    }
 
 }

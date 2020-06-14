@@ -26,11 +26,11 @@ import {
   SHOPPING_LIST_CHANGED,
   UpdateItemData,
   UpdateItemVariables,
-  UPDATEM_ITEM
+  UPDATEM_ITEMS
 } from "./GraphQLDefinitions";
 import ShoppingListComponent, { ShoppingListFilter } from "./ShoppingListComponent";
 import { ShoppingListItem } from "./ShoppingListItem";
-import { groupBy } from "./utils";
+import { groupBy, omitTypenames } from "./utils";
 
 const { TabPane } = Tabs;
 
@@ -98,7 +98,7 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
     newItemCreatedRef.current = false;
   }, [numberOfShoppingListItems]);
 
-  const [updateItem] = useMutation<UpdateItemData, UpdateItemVariables>(UPDATEM_ITEM, {
+  const [updateItems] = useMutation<UpdateItemData, UpdateItemVariables>(UPDATEM_ITEMS, {
     onError: handleApolloError
   });
 
@@ -184,31 +184,23 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
 
   const assigneeShoppingLists = Array.from(itemsGroupedByAssignee.entries());
 
-  const handleItemCheckedStateChange = (item: ShoppingListItem, checked: boolean) => {
-    updateItem({
+  const handleUpdateItems = (updatedItems: ShoppingListItem[]) => {
+    updateItems({
       variables: {
-        id: item._id,
-        state: checked
+        items: omitTypenames(updatedItems) // The ShoppingListItemUpdate must not have a __typename field
       },
       optimisticResponse: {
-        updateShoppingListItem: {
-          __typename: "ShoppingListItem",
-          _id: item._id,
-          assignee: item.assignee,
-          name: item.name,
-          checked: checked
-        }
+        updateShoppingListItems: updatedItems
       }
     });
   };
 
+  const handleItemCheckedStateChange = (item: ShoppingListItem, checked: boolean) => {
+    handleUpdateItems([{ ...item, checked }]);
+  };
+
   const handleItemAssigneeChange = (item: ShoppingListItem, assignee: string) => {
-    updateItem({
-      variables: {
-        id: item._id,
-        assignee: assignee
-      }
-    });
+    handleUpdateItems([{ ...item, assignee }]);
   };
 
   const handleItemDeleted = async (item: ShoppingListItem) => {
@@ -340,7 +332,11 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
         <Menu mode="inline" selectable={false}>
           <Menu.Item
             onClick={() => {
-              shoppingList.forEach(item => handleItemCheckedStateChange(item, false));
+              handleUpdateItems(
+                shoppingList.map(item => {
+                  return { ...item, checked: false };
+                })
+              );
               setShowMenu(false);
             }}
           >
@@ -349,7 +345,11 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
           </Menu.Item>
           <Menu.Item
             onClick={() => {
-              shoppingList.forEach(item => handleItemAssigneeChange(item, ""));
+              handleUpdateItems(
+                shoppingList.map(item => {
+                  return { ...item, assignee: "" };
+                })
+              );
               setShowMenu(false);
             }}
           >

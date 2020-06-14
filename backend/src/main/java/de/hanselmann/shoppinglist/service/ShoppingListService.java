@@ -1,6 +1,7 @@
 package de.hanselmann.shoppinglist.service;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,27 +49,36 @@ public class ShoppingListService {
     }
 
     @GraphQLMutation
-    public @GraphQLNonNull ShoppingListItem updateShoppingListItem(
-            @GraphQLNonNull @GraphQLId @GraphQLArgument(name = "id") String id,
-            @GraphQLArgument(name = "state") Boolean state, @GraphQLArgument(name = "assignee") String assignee) {
+    public @GraphQLNonNull List<ShoppingListItem> updateShoppingListItems(
+            @GraphQLNonNull @GraphQLArgument(name = "items") List<@GraphQLNonNull ShoppingListItem> items) {
 
-        final ShoppingListItem item = shoppingListRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        MessageFormat.format("There is no item with ID {0} in the shopping list.", id)));
+        List<ShoppingListItem> response = new ArrayList<>();
 
-        if (state != null) {
-            item.setChecked(state);
+        for (ShoppingListItem requestItem : items) {
+
+            final String id = requestItem.getId();
+
+            final ShoppingListItem item = shoppingListRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            MessageFormat.format("There is no item with ID {0} in the shopping list.", id)));
+
+            if (requestItem.isChecked() != null) {
+                item.setChecked(requestItem.isChecked());
+            }
+
+            if (requestItem.getAssignee() != null) {
+                item.setAssignee(requestItem.getAssignee());
+            }
+
+            shoppingListRepository.save(item);
+
+            shoppingListSubscribers.notifyItemChanged(item);
+
+            response.add(item);
+
         }
 
-        if (assignee != null) {
-            item.setAssignee(assignee);
-        }
-
-        shoppingListRepository.save(item);
-
-        shoppingListSubscribers.notifyItemChanged(item);
-
-        return item;
+        return response;
     }
 
     @GraphQLMutation

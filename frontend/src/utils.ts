@@ -1,3 +1,5 @@
+import { ShoppingListItem } from "./ShoppingListItem";
+
 export function unique<T>(array: T[]): T[] {
   const set = new Set<T>();
   const result: T[] = [];
@@ -29,4 +31,16 @@ export function groupBy<K, V, T>(array: T[], keyMapper: (item: T) => K, valueMap
   }
 
   return map;
+}
+
+export function omitTypename(item: ShoppingListItem): ShoppingListItem {
+  const copy = { ...item };
+
+  delete copy.__typename;
+
+  return copy;
+}
+
+export function omitTypenames(items: ShoppingListItem[]): ShoppingListItem[] {
+  return items.map(omitTypename);
 }

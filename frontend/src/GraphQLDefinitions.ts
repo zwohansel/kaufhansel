@@ -47,9 +47,9 @@ export interface DeleteShoppingListItemData {
   deleteShoppingListItem: string;
 }
 
-export const UPDATEM_ITEM = gql`
-  mutation updateItem($id: ID!, $state: Boolean, $assignee: String) {
-    updateShoppingListItem(id: $id, state: $state, assignee: $assignee) {
+export const UPDATEM_ITEMS = gql`
+  mutation updateItems($items: [ShoppingListItemInput!]!) {
+    updateShoppingListItems(items: $items) {
       _id
       name
       checked
@@ -60,13 +60,11 @@ export const UPDATEM_ITEM = gql`
 
 export interface UpdateItemData {
   __typename?: string;
-  updateShoppingListItem: ShoppingListItem;
+  updateShoppingListItems: ShoppingListItem[];
 }
 
 export interface UpdateItemVariables {
-  id: string;
-  state?: boolean;
-  assignee?: string;
+  items: ShoppingListItem[];
 }
 
 export const CLEAR_LIST = gql`
