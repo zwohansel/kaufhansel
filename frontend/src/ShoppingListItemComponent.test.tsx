@@ -151,12 +151,12 @@ test("render assignee", () => {
     />
   );
 
-  const assigneeInput = element.getByDisplayValue("Mooncake");
+  const assigneeInput = element.getByText("Mooncake");
 
   expect(assigneeInput).toBeInTheDocument();
 });
 
-test("set assignee after focus lost", () => {
+test("set assignee", async () => {
   const item: ShoppingListItem = {
     _id: "1",
     name: "My Test Item",
@@ -176,73 +176,19 @@ test("set assignee after focus lost", () => {
     />
   );
 
-  const assigneeInput = element.getByRole("combobox");
+  const assigneeDisplay = element.getByText("Wer kauft das?");
+  fireEvent.click(assigneeDisplay);
 
+  const assigneeInput = await element.findByRole("textbox");
   fireEvent.change(assigneeInput, { target: { value: "Mooncookie" } });
-  fireEvent.blur(assigneeInput);
+
+  const confirmBtn = element.getByRole("button", { name: /Zuweisen/ });
+  fireEvent.click(confirmBtn);
 
   expect(handleAssigneeChange).toBeCalledWith("Mooncookie");
 });
 
-test("set assignee after enter pressed", () => {
-  const item: ShoppingListItem = {
-    _id: "1",
-    name: "My Test Item",
-    checked: false,
-    assignee: ""
-  };
-
-  const handleAssigneeChange = jest.fn();
-
-  const element = render(
-    <ShoppingListItemComponent
-      item={item}
-      assigneeCandidates={[]}
-      onItemCheckedChange={() => {}}
-      onItemDeleted={async () => {}}
-      onItemAssigneeChange={handleAssigneeChange}
-    />
-  );
-
-  const assigneeInput = element.getByRole("combobox");
-
-  fireEvent.change(assigneeInput, { target: { value: "Mooncookie" } });
-  assigneeInput.focus();
-  fireEvent.keyDown(assigneeInput, { key: "Enter", keyCode: 13, charCode: 13 });
-
-  expect(handleAssigneeChange).toBeCalledWith("Mooncookie");
-});
-
-test("do not set assignee if unchanged", () => {
-  const item: ShoppingListItem = {
-    _id: "1",
-    name: "My Test Item",
-    checked: false,
-    assignee: "Mooncookie"
-  };
-
-  const handleAssigneeChange = jest.fn();
-
-  const element = render(
-    <ShoppingListItemComponent
-      item={item}
-      assigneeCandidates={[]}
-      onItemCheckedChange={() => {}}
-      onItemDeleted={async () => {}}
-      onItemAssigneeChange={handleAssigneeChange}
-    />
-  );
-
-  const assigneeInput = element.getByRole("combobox");
-
-  fireEvent.change(assigneeInput, { target: { value: "Mooncookie" } });
-  assigneeInput.focus();
-  fireEvent.keyDown(assigneeInput, { key: "Enter", keyCode: 13, charCode: 13 });
-
-  expect(handleAssigneeChange).not.toBeCalled();
-});
-
-test("render assignee candidates as options", async () => {
+test("select assignee", async () => {
   const item: ShoppingListItem = {
     _id: "1",
     name: "My Test Item",
@@ -262,14 +208,69 @@ test("render assignee candidates as options", async () => {
     />
   );
 
-  const assigneeInput = element.getByRole("combobox");
+  const assigneeDisplay = element.getByText("Wer kauft das?");
+  fireEvent.click(assigneeDisplay);
 
-  assigneeInput.focus();
-  fireEvent.mouseDown(assigneeInput);
+  const assigneeItem = await element.findByText("Mooncake");
+  fireEvent.click(assigneeItem);
 
-  const mooncakeOption = await element.findByRole("option", { name: "Mooncake" });
-  expect(mooncakeOption).toBeInTheDocument();
+  expect(handleAssigneeChange).toBeCalledWith("Mooncake");
+});
 
-  const mooncookieOption = await element.findByRole("option", { name: "Mooncookie" });
-  expect(mooncookieOption).toBeInTheDocument();
+test("remove assignee", async () => {
+  const item: ShoppingListItem = {
+    _id: "1",
+    name: "My Test Item",
+    checked: false,
+    assignee: "Mooncookie"
+  };
+
+  const handleAssigneeChange = jest.fn();
+
+  const element = render(
+    <ShoppingListItemComponent
+      item={item}
+      assigneeCandidates={["Mooncookie"]}
+      onItemCheckedChange={() => {}}
+      onItemDeleted={async () => {}}
+      onItemAssigneeChange={handleAssigneeChange}
+    />
+  );
+
+  const assigneeDisplay = element.getByText("Mooncookie");
+  fireEvent.click(assigneeDisplay);
+
+  const removeBtn = element.getByRole("button", { name: /Niemand/ });
+  fireEvent.click(removeBtn);
+
+  expect(handleAssigneeChange).toBeCalledWith("");
+});
+
+test("do not change assignee", async () => {
+  const item: ShoppingListItem = {
+    _id: "1",
+    name: "My Test Item",
+    checked: false,
+    assignee: "Mooncake"
+  };
+
+  const handleAssigneeChange = jest.fn();
+
+  const element = render(
+    <ShoppingListItemComponent
+      item={item}
+      assigneeCandidates={["Mooncake", "Mooncookie"]}
+      onItemCheckedChange={() => {}}
+      onItemDeleted={async () => {}}
+      onItemAssigneeChange={handleAssigneeChange}
+    />
+  );
+
+  const assigneeDisplay = element.getByText("Mooncake");
+  fireEvent.click(assigneeDisplay);
+
+  const removeBtn = element.getByRole("button", { name: /Egal/ });
+  fireEvent.click(removeBtn);
+
+  expect(handleAssigneeChange).not.toBeCalled();
 });
