@@ -65,6 +65,8 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
       const createdItem = data!.createShoppingListItem;
       const { shoppingListItems: cachedList } = cache.readQuery<ShoppingListItemsData>({ query: GET_ITEMS })!;
 
+      newItemCreatedRef.current = true;
+
       if (cachedList.find(item => item._id === createdItem._id)) {
         return; // Item already added via subscription
       }
@@ -75,8 +77,6 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
           shoppingListItems: [...cachedList, createdItem]
         }
       });
-
-      newItemCreatedRef.current = true;
     }
   });
 
@@ -96,7 +96,7 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
     }
 
     newItemCreatedRef.current = false;
-  }, [numberOfShoppingListItems]);
+  }, [numberOfShoppingListItems, newItemCreatedRef.current]);
 
   const [updateItems] = useMutation<UpdateItemData, UpdateItemVariables>(UPDATEM_ITEMS, {
     onError: handleApolloError
