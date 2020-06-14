@@ -27,7 +27,7 @@ code {
 }
 
 .shopping-list-board-header {
-  padding: 16px !important;
+  padding: 16px 16px 0px 16px !important;
   padding-bottom: 0;
   flex: 0 0 auto;
 }
