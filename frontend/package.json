@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "test": "npx jest --config jest.config.js",
+    "test": "npx jest --config jest.config.js --no-watchman",
     "start": "webpack-dev-server --config webpack.config.dev.js --open",
     "build": "webpack --config webpack.config.prod.js",
     "analyze": "source-map-explorer 'build/*.js'"

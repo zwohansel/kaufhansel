@@ -12,6 +12,7 @@ import {
   DELETE_ITEM,
   GET_ITEMS,
   ShoppingListItemsData,
+  SHOPPING_LIST_CHANGED,
   UpdateItemData,
   UpdateItemVariables,
   UPDATEM_ITEM
@@ -29,6 +30,18 @@ function createShoppingListItemsQueryTestData(items: ShoppingListItem[]) {
     },
     result: {
       data: shoppingListItemsData
+    }
+  };
+  return mock;
+}
+
+function createShoppingListItemsChangedData() {
+  const mock: MockedResponse = {
+    request: {
+      query: SHOPPING_LIST_CHANGED
+    },
+    result: {
+      data: null
     }
   };
   return mock;
@@ -93,16 +106,23 @@ function createShoppingListClearTestData() {
   return mock;
 }
 
+beforeAll(() => {
+  window.HTMLElement.prototype.scrollIntoView = jest.fn();
+});
+
 it("empty shopping list", async () => {
   const element = render(
-    <MockedProvider mocks={[createShoppingListItemsQueryTestData([])]} addTypename={false}>
+    <MockedProvider
+      mocks={[createShoppingListItemsQueryTestData([]), createShoppingListItemsChangedData()]}
+      addTypename={false}
+    >
       <ShoppingListBoard />
     </MockedProvider>
   );
 
   await act(wait);
 
-  const itemText = await element.findByText(/No Data/);
+  const itemText = await element.findByText(/Kaufstu was!\?/);
   expect(itemText).toBeVisible();
 });
 
@@ -113,7 +133,8 @@ it("shopping list with items", async () => {
         createShoppingListItemsQueryTestData([
           { _id: "id_1", name: "Seife", checked: false, assignee: "" },
           { _id: "id_2", name: "Klopapier", checked: false, assignee: "" }
-        ])
+        ]),
+        createShoppingListItemsChangedData()
       ]}
       addTypename={false}
     >
@@ -135,7 +156,8 @@ it("create shopping list item", async () => {
     <MockedProvider
       mocks={[
         createShoppingListItemsQueryTestData([]),
-        createShoppingListItemCreateMutationTestData({ _id: "id_1", name: "Margarine", checked: false, assignee: "" })
+        createShoppingListItemCreateMutationTestData({ _id: "id_1", name: "Margarine", checked: false, assignee: "" }),
+        createShoppingListItemsChangedData()
       ]}
       addTypename={false}
     >
@@ -163,7 +185,8 @@ it("remove shopping list item", async () => {
     <MockedProvider
       mocks={[
         createShoppingListItemsQueryTestData([{ _id: "id_1", name: "Margarine", checked: false, assignee: "" }]),
-        createShoppingListItemDeleteMutationTestData("id_1")
+        createShoppingListItemDeleteMutationTestData("id_1"),
+        createShoppingListItemsChangedData()
       ]}
       addTypename={false}
     >
@@ -176,20 +199,27 @@ it("remove shopping list item", async () => {
   const button = await element.findByTestId("delete-item-btn");
   fireEvent.click(button);
 
-  const itemText = await element.findByText(/No Data/);
+  const itemText = await element.findByText(/Kaufstu was!\?/);
   expect(itemText).toBeVisible();
 });
 
 it("set item checked state", async () => {
-  const testItem: ShoppingListItem = { _id: "id_1", name: "Margarine", checked: false, assignee: "" };
+  const testItem: ShoppingListItem = {
+    _id: "id_1",
+    name: "Margarine",
+    checked: false,
+    assignee: "",
+    __typename: "shoppingListItem" // Apollos automatic cache update does not work without the typename
+  };
 
   const element = render(
     <MockedProvider
       mocks={[
         createShoppingListItemsQueryTestData([testItem]),
-        createShoppingListItemToggleItemCheckedStateTestData(testItem)
+        createShoppingListItemToggleItemCheckedStateTestData(testItem),
+        createShoppingListItemsChangedData()
       ]}
-      addTypename={false}
+      addTypename={true}
     >
       <ShoppingListBoard />
     </MockedProvider>
@@ -216,7 +246,8 @@ it("clear shopping list", async () => {
           { _id: "id_1", name: "Seife", checked: false, assignee: "" },
           { _id: "id_2", name: "Klopapier", checked: false, assignee: "" }
         ]),
-        createShoppingListClearTestData()
+        createShoppingListClearTestData(),
+        createShoppingListItemsChangedData()
       ]}
       addTypename={false}
     >
@@ -229,13 +260,16 @@ it("clear shopping list", async () => {
   const item = await element.findByText(/Seife/);
   expect(item).toBeVisible();
 
-  const clearAllBtn = element.getByRole("button", { name: "Liste leeren" });
+  const menuButton = await element.findByTestId("menu-btn");
+  fireEvent.click(menuButton);
+
+  const clearAllBtn = await element.findByRole("menuitem", { name: /Alles löschen.../ });
   fireEvent.click(clearAllBtn);
 
   const confirmBtn = await element.findByText("Ja");
   fireEvent.click(confirmBtn);
 
-  const itemText = await element.findByText(/No Data/);
+  const itemText = await element.findByText(/Kaufstu was!\?/);
   expect(itemText).toBeVisible();
 });
 
@@ -246,7 +280,8 @@ it("create tab for each assignee", async () => {
         createShoppingListItemsQueryTestData([
           { _id: "id_1", name: "Seife", checked: false, assignee: "Claus" },
           { _id: "id_2", name: "Klopapier", checked: false, assignee: "Michael" }
-        ])
+        ]),
+        createShoppingListItemsChangedData()
       ]}
       addTypename={false}
     >

@@ -273,7 +273,7 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
 
   const renderMenuButton = () => {
     return (
-      <Button size="small" onClick={() => setShowMenu(true)}>
+      <Button size="small" onClick={() => setShowMenu(true)} data-testid="menu-btn">
         <MenuOutlined />
       </Button>
     );
