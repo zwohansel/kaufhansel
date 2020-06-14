@@ -297,3 +297,99 @@ it("create tab for each assignee", async () => {
   const michaelTab = element.getByRole("tab", { name: "Michael" });
   expect(michaelTab).toBeVisible();
 });
+
+it("show only checked items", async () => {
+  const element = render(
+    <MockedProvider
+      mocks={[
+        createShoppingListItemsQueryTestData([
+          { _id: "id_1", name: "Seife", checked: true, assignee: "" },
+          { _id: "id_2", name: "Klopapier", checked: false, assignee: "" }
+        ]),
+        createShoppingListItemsChangedData()
+      ]}
+      addTypename={false}
+    >
+      <ShoppingListBoard />
+    </MockedProvider>
+  );
+
+  await act(wait);
+
+  await element.findByText(/Seife/);
+  await element.findByText(/Klopapier/);
+
+  const showCheckedBtn = element.getByTestId("show-checked-btn");
+  fireEvent.click(showCheckedBtn);
+
+  const seife = element.queryByText(/Seife/);
+  expect(seife).toBeVisible();
+
+  const klopapier = element.queryByText(/Klopapier/);
+  expect(klopapier).toBeNull();
+});
+
+it("show only unchecked items", async () => {
+  const element = render(
+    <MockedProvider
+      mocks={[
+        createShoppingListItemsQueryTestData([
+          { _id: "id_1", name: "Seife", checked: true, assignee: "" },
+          { _id: "id_2", name: "Klopapier", checked: false, assignee: "" }
+        ]),
+        createShoppingListItemsChangedData()
+      ]}
+      addTypename={false}
+    >
+      <ShoppingListBoard />
+    </MockedProvider>
+  );
+
+  await act(wait);
+
+  await element.findByText(/Seife/);
+  await element.findByText(/Klopapier/);
+
+  const showCheckedBtn = element.getByTestId("show-unchecked-btn");
+  fireEvent.click(showCheckedBtn);
+
+  const seife = element.queryByText(/Seife/);
+  expect(seife).toBeNull();
+
+  const klopapier = element.queryByText(/Klopapier/);
+  expect(klopapier).toBeVisible();
+});
+
+it("show all items", async () => {
+  const element = render(
+    <MockedProvider
+      mocks={[
+        createShoppingListItemsQueryTestData([
+          { _id: "id_1", name: "Seife", checked: true, assignee: "" },
+          { _id: "id_2", name: "Klopapier", checked: false, assignee: "" }
+        ]),
+        createShoppingListItemsChangedData()
+      ]}
+      addTypename={false}
+    >
+      <ShoppingListBoard />
+    </MockedProvider>
+  );
+
+  await act(wait);
+
+  await element.findByText(/Seife/);
+  await element.findByText(/Klopapier/);
+
+  const showCheckedBtn = element.getByTestId("show-unchecked-btn");
+  fireEvent.click(showCheckedBtn);
+
+  const showAllBtn = element.getByTestId("show-all-btn");
+  fireEvent.click(showAllBtn);
+
+  const seife = element.queryByText(/Seife/);
+  expect(seife).toBeVisible();
+
+  const klopapier = element.queryByText(/Klopapier/);
+  expect(klopapier).toBeVisible();
+});

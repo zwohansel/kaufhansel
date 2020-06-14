@@ -258,13 +258,13 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
         value={activeFilter}
         onChange={event => setActiveFilter(event.target.value)}
       >
-        <Radio.Button value={ShoppingListFilter.all}>
+        <Radio.Button value={ShoppingListFilter.all} data-testid="show-all-btn">
           <ShoppingCartOutlined></ShoppingCartOutlined>
         </Radio.Button>
-        <Radio.Button value={ShoppingListFilter.checked}>
+        <Radio.Button value={ShoppingListFilter.checked} data-testid="show-checked-btn">
           <CheckSquareOutlined />
         </Radio.Button>
-        <Radio.Button value={ShoppingListFilter.unchecked}>
+        <Radio.Button value={ShoppingListFilter.unchecked} data-testid="show-unchecked-btn">
           <BorderOutlined />
         </Radio.Button>
       </Radio.Group>
