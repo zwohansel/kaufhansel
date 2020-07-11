@@ -3,20 +3,18 @@ package de.hanselmann.shoppinglist.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import de.hanselmann.shoppinglist.repository.ShoppingListItemRepository;
-
 @Service
 public class ShoppingListStatusService {
 
-    private ShoppingListItemRepository itemRepository;
+    private ShoppingListService shoppingListService;
 
     @Autowired
-    public ShoppingListStatusService(ShoppingListItemRepository itemRepository) {
-        this.itemRepository = itemRepository;
+    public ShoppingListStatusService(ShoppingListService shoppingListService) {
+        this.shoppingListService = shoppingListService;
     }
 
     public int getNumberOfOpenItems() {
-        return itemRepository.findByChecked(false).size();
+        return shoppingListService.getShoppingListOfCurrentUser().getByChecked(false).size();
     }
 
 }

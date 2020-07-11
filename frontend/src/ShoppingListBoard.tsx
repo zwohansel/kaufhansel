@@ -22,6 +22,7 @@ import {
   DELETE_ITEM,
   GET_ITEMS,
   ShoppingListChangedData,
+  ShoppingListChangedVariables,
   ShoppingListItemsData,
   SHOPPING_LIST_CHANGED,
   UpdateItemData,
@@ -35,6 +36,7 @@ import { groupBy, omitTypenames } from "./utils";
 const { TabPane } = Tabs;
 
 export interface ShoppingListBoardProps {
+  userId: string;
   onAuthenticationError?: () => void;
 }
 
@@ -128,7 +130,7 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
     }
   });
 
-  useSubscription<ShoppingListChangedData, void>(SHOPPING_LIST_CHANGED, {
+  useSubscription<ShoppingListChangedData, ShoppingListChangedVariables>(SHOPPING_LIST_CHANGED, {
     onSubscriptionData: options => {
       if (!options.subscriptionData.data) {
         return;
@@ -169,7 +171,11 @@ function ShoppingListBoard(props: ShoppingListBoardProps) {
           shoppingListItems: updatedList
         }
       });
-    }
+    },
+    variables: {
+      userId: props.userId
+    },
+    skip: props.userId === ""
   });
 
   const createNewItem = async (name: string) => {

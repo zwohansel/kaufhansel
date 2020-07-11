@@ -80,6 +80,7 @@ export interface ClearShoppingListData {
 export const LOGIN = gql`
   mutation login($username: String!, $password: String!) {
     login(username: $username, password: $password) {
+      data
       success
       message
     }
@@ -87,7 +88,7 @@ export const LOGIN = gql`
 `;
 
 export interface LoginData {
-  login: GraphQlResponse<void>;
+  login: GraphQlResponse<string>;
 }
 
 export interface LoginVariables {
@@ -96,8 +97,8 @@ export interface LoginVariables {
 }
 
 export const SHOPPING_LIST_CHANGED = gql`
-  subscription shoppingListChanged {
-    shoppingListChanged {
+  subscription shoppingListChanged($userId: String!) {
+    shoppingListChanged(userId: $userId) {
       item {
         _id
         assignee
@@ -112,6 +113,10 @@ export const SHOPPING_LIST_CHANGED = gql`
 export interface ShoppingListChangedEvent {
   type: string;
   item: ShoppingListItem;
+}
+
+export interface ShoppingListChangedVariables {
+  userId: string;
 }
 
 export interface ShoppingListChangedData {

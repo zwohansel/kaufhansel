@@ -12,6 +12,7 @@ import { BrowserRouter, Redirect, Route, Switch, useHistory } from "react-router
 import "./index.css";
 import LoginComponent from "./LoginComponent";
 import ShoppingListBoard from "./ShoppingListBoard";
+import { parseUserIdFromCookieString } from "./utils";
 
 const websocketProtocol = window.location.protocol === "https:" ? "wss" : "ws";
 const websocketUri = `${websocketProtocol}://${window.location.host}/graphql`;
@@ -55,14 +56,16 @@ const client = new ApolloClient({
 });
 
 function ShoppingListApp() {
-  const [loggedIn, setLoggedIn] = useState(document.cookie.includes("SHOPPER_LOGGED_IN=true"));
+  const [loggedIn, setLoggedIn] = useState(parseUserIdFromCookieString(document.cookie) !== "");
+  const [userId, setUserId] = useState(parseUserIdFromCookieString(document.cookie));
   const history = useHistory();
 
   return (
     <Switch>
       <Route path="/login">
         <LoginComponent
-          onLoginSuccess={() => {
+          onLoginSuccess={userId => {
+            setUserId(userId);
             setLoggedIn(true);
             history.replace("/");
           }}
@@ -72,7 +75,7 @@ function ShoppingListApp() {
         path="/"
         render={({ location }) => {
           if (loggedIn) {
-            return <ShoppingListBoard onAuthenticationError={() => setLoggedIn(false)} />;
+            return <ShoppingListBoard onAuthenticationError={() => setLoggedIn(false)} userId={userId} />;
           } else {
             return <Redirect to={{ pathname: "/login", state: { from: location } }} />;
           }

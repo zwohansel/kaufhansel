@@ -1,5 +1,6 @@
 package de.hanselmann.shoppinglist.model;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 
 import io.leangen.graphql.annotations.GraphQLId;
@@ -9,7 +10,7 @@ import io.leangen.graphql.annotations.GraphQLQuery;
 public class ShoppingListItem {
 
     @Id
-    private String id;
+    private ObjectId id;
     private String name;
     private Boolean checked;
     private String assignee;
@@ -19,7 +20,7 @@ public class ShoppingListItem {
     }
 
     public ShoppingListItem(String name) {
-        this.id = null;
+        this.id = new ObjectId();
         this.name = name;
         this.checked = false;
         this.assignee = "";
@@ -28,11 +29,11 @@ public class ShoppingListItem {
     @GraphQLQuery(name = "_id")
     @GraphQLId
     public String getId() {
-        return id;
+        return id.toHexString();
     }
 
     public void setId(String id) {
-        this.id = id;
+        this.id = new ObjectId(id);
     }
 
     @GraphQLQuery(name = "name")

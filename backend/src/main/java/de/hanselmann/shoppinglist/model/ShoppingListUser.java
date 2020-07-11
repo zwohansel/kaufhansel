@@ -6,6 +6,7 @@ public class ShoppingListUser {
     private String id;
     private String username;
     private String password;
+    private String shoppingListId;
 
     @Id
     public String getId() {
@@ -34,6 +35,10 @@ public class ShoppingListUser {
 
     public boolean hasPassword() {
         return password != null && !password.isEmpty();
+    }
+
+    public String getShoppingListId() {
+        return shoppingListId;
     }
 
 }

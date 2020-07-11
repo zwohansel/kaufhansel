@@ -44,26 +44,27 @@ public class LoginService {
     }
 
     @GraphQLMutation
-    public @GraphQLNonNull GraphQlResponse<Void> login(
+    public @GraphQLNonNull GraphQlResponse<String> login(
             @GraphQLNonNull @GraphQLArgument(name = "username") String username,
             @GraphQLNonNull @GraphQLArgument(name = "password") String password) {
 
         try {
-            return loginUser(
-                    authenticationService.authenticate(new UsernamePasswordAuthenticationToken(username, password)));
+            var unauthenticatedUser = new UsernamePasswordAuthenticationToken(username, password);
+            Authentication authenticatedUser = authenticationService.authenticate(unauthenticatedUser);
+            return loginUser(authenticatedUser);
         } catch (AuthenticationException e) {
             return GraphQlResponse.fail("Falsche Logindaten");
         }
     }
 
-    private GraphQlResponse<Void> loginUser(Authentication auth) {
+    private GraphQlResponse<String> loginUser(Authentication auth) {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         securityContext.setAuthentication(auth);
         HttpSession session = request.getSession();
         session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
         session.setMaxInactiveInterval(TIMEOUT_SECONDS);
 
-        Cookie authCookie = new Cookie("SHOPPER_LOGGED_IN", Boolean.TRUE.toString());
+        Cookie authCookie = new Cookie("SHOPPER_LOGGED_IN", auth.getName());
         authCookie.setMaxAge(TIMEOUT_SECONDS);
 
         LOGGER.info("Cookie secure: {}", properties.isSecureCookie());
@@ -71,7 +72,7 @@ public class LoginService {
 
         response.addCookie(authCookie);
 
-        return GraphQlResponse.success(null);
+        return GraphQlResponse.success(auth.getName());
     }
 
 }

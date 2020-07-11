@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { Form, Input, Button, Row, Col } from "antd";
 import { useMutation } from "@apollo/react-hooks";
-import { LoginData, LoginVariables, LOGIN } from "./GraphQLDefinitions";
+import { Button, Col, Form, Input, Row } from "antd";
+import React, { useState } from "react";
+import { LOGIN, LoginData, LoginVariables } from "./GraphQLDefinitions";
 
 export interface LoginComponentProps {
-  onLoginSuccess: () => void;
+  onLoginSuccess: (userId: string) => void;
 }
 
 export default function LoginComponent(props: LoginComponentProps) {
@@ -16,7 +16,7 @@ export default function LoginComponent(props: LoginComponentProps) {
     onCompleted: data => {
       if (data.login.success) {
         setLoginError("");
-        props.onLoginSuccess();
+        props.onLoginSuccess(data.login.data as string);
       } else {
         setLoginError(data.login.message);
       }

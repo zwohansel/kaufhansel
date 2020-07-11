@@ -5,6 +5,8 @@ import java.util.List;
 import org.reactivestreams.Publisher;
 import org.springframework.stereotype.Service;
 
+import io.leangen.graphql.annotations.GraphQLArgument;
+import io.leangen.graphql.annotations.GraphQLNonNull;
 import io.leangen.graphql.annotations.GraphQLSubscription;
 import io.leangen.graphql.spqr.spring.annotations.GraphQLApi;
 
@@ -18,8 +20,9 @@ public class ShoppingListSubscriptionService {
     }
 
     @GraphQLSubscription
-    public Publisher<List<ShoppingListItemChangedEvent>> shoppingListChanged() {
-        return shoppingListSubscribers.addSubscriber();
+    public Publisher<List<ShoppingListItemChangedEvent>> shoppingListChanged(
+            @GraphQLNonNull @GraphQLArgument(name = "userId") String userId) {
+        return shoppingListSubscribers.addSubscriber(userId);
     }
 
 }

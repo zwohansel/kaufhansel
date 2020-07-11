@@ -4,16 +4,17 @@ import java.util.List;
 
 import org.reactivestreams.Publisher;
 
+import de.hanselmann.shoppinglist.model.ShoppingList;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
 
 public interface ShoppingListSubscribers {
 
-    Publisher<List<ShoppingListItemChangedEvent>> addSubscriber();
+    Publisher<List<ShoppingListItemChangedEvent>> addSubscriber(String userId);
 
-    void notifyItemsChanged(List<ShoppingListItem> items);
+    void notifyItemsChanged(ShoppingList shoppingList, List<ShoppingListItem> items);
 
-    void notifyItemsCreated(List<ShoppingListItem> items);
+    void notifyItemsCreated(ShoppingList shoppingList, List<ShoppingListItem> items);
 
-    void notifyItemsDeleted(List<ShoppingListItem> items);
+    void notifyItemsDeleted(ShoppingList shoppingList, List<ShoppingListItem> items);
 
 }

@@ -44,3 +44,25 @@ export function omitTypename(item: ShoppingListItem): ShoppingListItem {
 export function omitTypenames(items: ShoppingListItem[]): ShoppingListItem[] {
   return items.map(omitTypename);
 }
+
+export function parseUserIdFromCookieString(cookieString: string): string {
+  const logInCookieKeyIndex = cookieString.indexOf("SHOPPER_LOGGED_IN");
+
+  if (logInCookieKeyIndex < 0) {
+    return "";
+  }
+
+  const logInCookieKeyValueSeperatorIndex = cookieString.indexOf("=", logInCookieKeyIndex);
+
+  if (logInCookieKeyValueSeperatorIndex < 0) {
+    return "";
+  }
+
+  const userIdStart = logInCookieKeyValueSeperatorIndex + 1;
+  let userIdEnd = cookieString.indexOf(";", userIdStart);
+  if (userIdEnd < 0) {
+    userIdEnd = cookieString.length;
+  }
+
+  return cookieString.substring(userIdStart, userIdEnd).trim();
+}

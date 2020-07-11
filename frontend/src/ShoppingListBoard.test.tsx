@@ -116,7 +116,7 @@ it("empty shopping list", async () => {
       mocks={[createShoppingListItemsQueryTestData([]), createShoppingListItemsChangedData()]}
       addTypename={false}
     >
-      <ShoppingListBoard />
+      <ShoppingListBoard userId={""} />
     </MockedProvider>
   );
 
@@ -138,7 +138,7 @@ it("shopping list with items", async () => {
       ]}
       addTypename={false}
     >
-      <ShoppingListBoard />
+      <ShoppingListBoard userId={""} />
     </MockedProvider>
   );
 
@@ -161,7 +161,7 @@ it("create shopping list item", async () => {
       ]}
       addTypename={false}
     >
-      <ShoppingListBoard />
+      <ShoppingListBoard userId={""} />
     </MockedProvider>
   );
 
@@ -190,7 +190,7 @@ it("remove shopping list item", async () => {
       ]}
       addTypename={false}
     >
-      <ShoppingListBoard />
+      <ShoppingListBoard userId={""} />
     </MockedProvider>
   );
 
@@ -221,7 +221,7 @@ it("set item checked state", async () => {
       ]}
       addTypename={true}
     >
-      <ShoppingListBoard />
+      <ShoppingListBoard userId={""} />
     </MockedProvider>
   );
 
@@ -251,7 +251,7 @@ it("clear shopping list", async () => {
       ]}
       addTypename={false}
     >
-      <ShoppingListBoard />
+      <ShoppingListBoard userId={""} />
     </MockedProvider>
   );
 
@@ -285,7 +285,7 @@ it("create tab for each assignee", async () => {
       ]}
       addTypename={false}
     >
-      <ShoppingListBoard />
+      <ShoppingListBoard userId={""} />
     </MockedProvider>
   );
 
@@ -310,7 +310,7 @@ it("show only checked items", async () => {
       ]}
       addTypename={false}
     >
-      <ShoppingListBoard />
+      <ShoppingListBoard userId={""} />
     </MockedProvider>
   );
 
@@ -341,7 +341,7 @@ it("show only unchecked items", async () => {
       ]}
       addTypename={false}
     >
-      <ShoppingListBoard />
+      <ShoppingListBoard userId={""} />
     </MockedProvider>
   );
 
@@ -372,7 +372,7 @@ it("show all items", async () => {
       ]}
       addTypename={false}
     >
-      <ShoppingListBoard />
+      <ShoppingListBoard userId={""} />
     </MockedProvider>
   );
 

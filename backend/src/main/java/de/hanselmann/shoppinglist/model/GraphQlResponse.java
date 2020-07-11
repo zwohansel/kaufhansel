@@ -18,7 +18,7 @@ public class GraphQlResponse<T> {
         return new GraphQlResponse<>(true, "", data);
     }
 
-    public static GraphQlResponse<Void> fail(String message) {
+    public static <T> GraphQlResponse<T> fail(String message) {
         return new GraphQlResponse<>(false, message, null);
     }
 

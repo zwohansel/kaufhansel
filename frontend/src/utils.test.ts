@@ -1,5 +1,5 @@
 import { ShoppingListItem } from "./ShoppingListItem";
-import { groupBy, omitTypename, omitTypenames } from "./utils";
+import { groupBy, omitTypename, omitTypenames, parseUserIdFromCookieString } from "./utils";
 
 test("groupBy", () => {
   const shoppingList: ShoppingListItem[] = [
@@ -76,4 +76,16 @@ test("omitTypenames", () => {
       name: "Test 2"
     }
   ]);
+});
+
+test("parseUserIdFromCookieString", () => {
+  expect(parseUserIdFromCookieString("SHOPPER_LOGGED_IN=12345")).toEqual("12345");
+  expect(parseUserIdFromCookieString("SHOPPER_LOGGED_IN=12345;BLA=BLUB")).toEqual("12345");
+  expect(parseUserIdFromCookieString("CHOCKITY=POK;SHOPPER_LOGGED_IN=12345;BLA=BLUB")).toEqual("12345");
+  expect(parseUserIdFromCookieString("CHOCKITY=POK; SHOPPER_LOGGED_IN=12345; BLA=BLUB")).toEqual("12345");
+  expect(parseUserIdFromCookieString("SHOPPER_LOGGED_IN= 12345 ;BLA= BLUB")).toEqual("12345");
+  expect(parseUserIdFromCookieString("SHOPPER_LOGGED_IN = 12345 ;BLA = BLUB")).toEqual("12345");
+  expect(parseUserIdFromCookieString("SHOPPER_LOGGEDIN=12345;BLA=BLUB")).toEqual("");
+  expect(parseUserIdFromCookieString("SHOPPER_LOGGED_IN=;BLA=BLUB")).toEqual("");
+  expect(parseUserIdFromCookieString("SHOPPER_LOGGED_IN=")).toEqual("");
 });
