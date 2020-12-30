@@ -9,7 +9,7 @@ void main() {
 }
 
 Future<List<ShoppingListItem>> fetchShoppingList() async {
-  return Future.delayed(Duration(seconds: 10), () => [ShoppingListItem('Kaffee'), ShoppingListItem('Milch')]);
+  return Future.delayed(Duration(seconds: 2), () => [ShoppingListItem('Kaffee'), ShoppingListItem('Milch')]);
 }
 
 class ShoppingListItem extends ChangeNotifier {
@@ -28,20 +28,19 @@ class ShoppingListItem extends ChangeNotifier {
   String get name => _name;
 }
 
-class ShoppingListModel {
-  // TODO extends ChangeNotifier
+class ShoppingListModel extends ChangeNotifier {
   final List<ShoppingListItem> _items;
 
   ShoppingListModel(this._items);
 
   void addItem(ShoppingListItem item) {
     _items.add(item);
-    //TODO: notifyListeners();
+    notifyListeners();
   }
 
   void removeItem(ShoppingListItem item) {
     _items.remove(item);
-    //TODO: notifyListeners();
+    notifyListeners();
   }
 
   UnmodifiableListView<ShoppingListItem> get items => UnmodifiableListView(_items);
@@ -85,12 +84,8 @@ class _ShoppingListState extends State<ShoppingList> {
         future: _futureShoppingList,
         builder: (context, shoppingList) {
           if (shoppingList.hasData) {
-            final tiles = shoppingList.data
-                .map((item) => ChangeNotifierProvider(create: (context) => item, child: ShoppingListItemTile()));
-            final dividedTiles = ListTile.divideTiles(tiles: tiles, context: context).toList();
-            return ListView(
-              children: dividedTiles,
-            );
+            return ChangeNotifierProvider(
+                create: (context) => ShoppingListModel(shoppingList.data), child: ShoppingListView());
           } else if (shoppingList.hasError) {
             return Text("ERROR");
           }
@@ -101,6 +96,20 @@ class _ShoppingListState extends State<ShoppingList> {
   }
 }
 
+class ShoppingListView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ShoppingListModel>(builder: (context, shoppingList, child) {
+      final tiles = shoppingList.items
+          .map((item) => ChangeNotifierProvider<ShoppingListItem>.value(value: item, child: ShoppingListItemTile()));
+      final dividedTiles = ListTile.divideTiles(tiles: tiles, context: context).toList();
+      return ListView(
+        children: dividedTiles,
+      );
+    });
+  }
+}
+
 class ShoppingListItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -108,6 +117,9 @@ class ShoppingListItemTile extends StatelessWidget {
       return CheckboxListTile(
         title: Text(item.name),
         controlAffinity: ListTileControlAffinity.leading,
+        secondary: IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () => Provider.of<ShoppingListModel>(context, listen: false).removeItem(item)),
         value: item.checked,
         onChanged: (checked) => item.checked = checked,
       );
