@@ -1,11 +1,8 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:developer';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -121,7 +118,7 @@ class ShoppingListView extends StatelessWidget {
               controller: _scrollController,
             )),
             Container(
-                child: ShoppingListItemInput(_scrollController),
+                child: Material(child: ShoppingListItemInput(_scrollController)),
                 decoration: BoxDecoration(color: Colors.white, boxShadow: [
                   BoxShadow(color: Colors.grey.withOpacity(0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
                 ])),
@@ -156,14 +153,16 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
 
   void addNewItem() {
     var name = _newItemNameController.value.text;
-    Provider.of<ShoppingListModel>(context).addItem(ShoppingListItem(name));
-    _newItemNameController.clear();
+    if (name.isNotEmpty) {
+      Provider.of<ShoppingListModel>(context).addItem(ShoppingListItem(name));
+      _newItemNameController.clear();
+      // Scroll to the new element after it has been added and rendered (at the end of this frame).
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        _shoppingListScrollController.animateTo(_shoppingListScrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+      });
+    }
     _focus.requestFocus();
-    // Scroll to the new element after it has been added and rendered (at the end of this frame).
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      _shoppingListScrollController.animateTo(_shoppingListScrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
-    });
   }
 
   @override
@@ -177,10 +176,14 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
                     focusNode: _focus,
                     decoration: InputDecoration(border: OutlineInputBorder(), hintText: "New Item"),
                     controller: _newItemNameController,
-                    onSubmitted: _enabled ? (_) => addNewItem() : null)),
+                    onSubmitted: (_) => addNewItem())),
             Container(
-              child: IconButton(icon: Icon(Icons.add), onPressed: _enabled ? addNewItem : null),
-              margin: EdgeInsets.only(left: 5.0),
+              child: IconButton(
+                splashRadius: 25,
+                icon: Icon(Icons.add),
+                onPressed: _enabled ? addNewItem : null,
+              ),
+              margin: EdgeInsets.only(left: 10.0, right: 3.0),
             )
           ],
         ));
