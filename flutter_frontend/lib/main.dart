@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -76,37 +79,92 @@ class _ShoppingListState extends State<ShoppingList> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Kaufhansel'),
-      ),
-      body: FutureBuilder<List<ShoppingListItem>>(
-        future: _futureShoppingList,
-        builder: (context, shoppingList) {
-          if (shoppingList.hasData) {
-            return ChangeNotifierProvider(
-                create: (context) => ShoppingListModel(shoppingList.data), child: ShoppingListView());
-          } else if (shoppingList.hasError) {
-            return Text("ERROR");
-          }
-          return Center(child: CircularProgressIndicator());
-        },
-      ),
+    const String title = "Kaufhansel";
+    return FutureBuilder<List<ShoppingListItem>>(
+      future: _futureShoppingList,
+      builder: (context, shoppingList) {
+        if (shoppingList.hasData) {
+          return ChangeNotifierProvider(
+              create: (context) => ShoppingListModel(shoppingList.data), child: ShoppingListView(title));
+        } else if (shoppingList.hasError) {
+          return Text("ERROR");
+        }
+        return Scaffold(
+            appBar: AppBar(
+              title: Text(title),
+            ),
+            body: Center(child: CircularProgressIndicator()));
+      },
     );
   }
 }
 
 class ShoppingListView extends StatelessWidget {
+  String _title;
+
+  ShoppingListView(this._title);
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ShoppingListModel>(builder: (context, shoppingList, child) {
       final tiles = shoppingList.items
           .map((item) => ChangeNotifierProvider<ShoppingListItem>.value(value: item, child: ShoppingListItemTile()));
       final dividedTiles = ListTile.divideTiles(tiles: tiles, context: context).toList();
-      return ListView(
-        children: dividedTiles,
+      return Scaffold(
+        appBar: AppBar(title: Text(_title)),
+        body: ListView(
+          children: dividedTiles,
+        ),
+        bottomNavigationBar: BottomAppBar(
+          child: ShoppingListItemInput(),
+        ),
       );
     });
+  }
+}
+
+class ShoppingListItemInput extends StatefulWidget {
+  @override
+  _ShoppingListItemInputState createState() => _ShoppingListItemInputState();
+}
+
+class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
+  TextEditingController _newItemNameController;
+  bool _enabled = false;
+  FocusNode _focus = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _newItemNameController = TextEditingController();
+    _newItemNameController.addListener(() => setState(() => _enabled = _newItemNameController.text.isNotEmpty));
+  }
+
+  void addNewItem() {
+    var name = _newItemNameController.value.text;
+    Provider.of<ShoppingListModel>(context).addItem(ShoppingListItem(name));
+    _newItemNameController.clear();
+    _focus.requestFocus();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            Expanded(
+                child: TextField(
+                    focusNode: _focus,
+                    decoration: InputDecoration(border: OutlineInputBorder(), hintText: "New Item"),
+                    controller: _newItemNameController,
+                    onSubmitted: _enabled ? (text) => addNewItem() : null)),
+            Container(
+              child: IconButton(icon: Icon(Icons.add), onPressed: _enabled ? addNewItem : null),
+              margin: EdgeInsets.only(left: 5.0),
+            )
+          ],
+        ));
   }
 }
 
