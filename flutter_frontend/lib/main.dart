@@ -118,8 +118,10 @@ class ShoppingListView extends StatelessWidget {
               controller: _scrollController,
             )),
             Container(
-                child: Material(child: ShoppingListItemInput(_scrollController)),
-                decoration: BoxDecoration(color: Colors.white, boxShadow: [
+                child: Material(child: ShoppingListItemInput(_scrollController), type: MaterialType.transparency),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                    boxShadow: [
                   BoxShadow(color: Colors.grey.withOpacity(0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
                 ])),
           ]));
@@ -168,18 +170,18 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
         child: Row(
           children: [
             Expanded(
                 child: TextField(
                     focusNode: _focus,
-                    decoration: InputDecoration(border: OutlineInputBorder(), hintText: "New Item"),
+                    decoration: InputDecoration(isDense: true, contentPadding: EdgeInsets.fromLTRB(12, 8, 12, 8), border: OutlineInputBorder(), hintText: "New Item"),
                     controller: _newItemNameController,
                     onSubmitted: (_) => addNewItem())),
             Container(
               child: IconButton(
-                splashRadius: 25,
+                splashRadius: 23,
                 icon: Icon(Icons.add),
                 onPressed: _enabled ? addNewItem : null,
               ),
@@ -195,7 +197,7 @@ class ShoppingListItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ShoppingListItem>(builder: (context, item, child) {
       return CheckboxListTile(
-        title: Text(item.name),
+        title: SelectableText(item.name),
         controlAffinity: ListTileControlAffinity.leading,
         secondary: IconButton(
             icon: Icon(Icons.delete),
