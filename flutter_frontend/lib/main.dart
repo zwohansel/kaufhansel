@@ -119,9 +119,7 @@ class ShoppingListView extends StatelessWidget {
             )),
             Container(
                 child: Material(child: ShoppingListItemInput(_scrollController), type: MaterialType.transparency),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                    boxShadow: [
+                decoration: BoxDecoration(color: Colors.white, boxShadow: [
                   BoxShadow(color: Colors.grey.withOpacity(0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
                 ])),
           ]));
@@ -170,13 +168,17 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
+        padding: const EdgeInsets.only(left: 8.0, right: 8.0),
         child: Row(
           children: [
             Expanded(
                 child: TextField(
                     focusNode: _focus,
-                    decoration: InputDecoration(isDense: true, contentPadding: EdgeInsets.fromLTRB(12, 8, 12, 8), border: OutlineInputBorder(), hintText: "New Item"),
+                    decoration: InputDecoration(
+                        isDense: true,
+                        contentPadding: EdgeInsets.fromLTRB(12, 8, 12, 8),
+                        border: OutlineInputBorder(),
+                        hintText: "New Item"),
                     controller: _newItemNameController,
                     onSubmitted: (_) => addNewItem())),
             Container(
@@ -199,9 +201,69 @@ class ShoppingListItemTile extends StatelessWidget {
       return CheckboxListTile(
         title: SelectableText(item.name),
         controlAffinity: ListTileControlAffinity.leading,
-        secondary: IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: () => Provider.of<ShoppingListModel>(context, listen: false).removeItem(item)),
+        secondary: Wrap(children: [
+          IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () => Provider.of<ShoppingListModel>(context, listen: false).removeItem(item)),
+          IconButton(
+              icon: Icon(Icons.edit),
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return Dialog(
+                          child: Column(
+                        children: [
+                          Row(children: [
+                            Expanded(child: Text(item.name)),
+                            IconButton(icon: Icon(Icons.drive_file_rename_outline), onPressed: () {})
+                          ]),
+                          Container(
+                            child: Text(
+                              "Wählstu oder sagstu!",
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                            margin: EdgeInsets.only(left: 12.0, right: 12.0),
+                          ),
+                          Divider(),
+                          Container(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Container(
+                                  child: OutlineButton(onPressed: () {}, child: Text("nächster")),
+                                  margin: EdgeInsets.only(bottom: 5),
+                                ),
+                                TextField(
+                                  decoration: InputDecoration(
+                                    isDense: true,
+                                    contentPadding: EdgeInsets.fromLTRB(12, 8, 12, 8),
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            margin: EdgeInsets.only(left: 12.0, right: 12.0),
+                          ),
+                          Divider(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              OutlineButton(onPressed: () {}, child: Text("Egal")),
+                              OutlineButton(
+                                onPressed: () {},
+                                child: Text("Niemand"),
+                                textColor: Theme.of(context).accentColor,
+                                borderSide: BorderSide(color: Theme.of(context).accentColor),
+                              ),
+                              ElevatedButton(onPressed: () {}, child: Text("Zuweisen"))
+                            ],
+                          )
+                        ],
+                      ));
+                    });
+              })
+        ]),
         value: item.checked,
         onChanged: (checked) => item.checked = checked,
       );
