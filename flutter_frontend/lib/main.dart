@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
@@ -100,7 +101,8 @@ class _ShoppingListState extends State<ShoppingList> {
 }
 
 class ShoppingListView extends StatelessWidget {
-  String _title;
+  final String _title;
+  final ScrollController _scrollController = ScrollController();
 
   ShoppingListView(this._title);
 
@@ -111,27 +113,39 @@ class ShoppingListView extends StatelessWidget {
           .map((item) => ChangeNotifierProvider<ShoppingListItem>.value(value: item, child: ShoppingListItemTile()));
       final dividedTiles = ListTile.divideTiles(tiles: tiles, context: context).toList();
       return Scaffold(
-        appBar: AppBar(title: Text(_title)),
-        body: ListView(
-          children: dividedTiles,
-        ),
-        bottomNavigationBar: BottomAppBar(
-          child: ShoppingListItemInput(),
-        ),
-      );
+          appBar: AppBar(title: Text(_title)),
+          body: Column(children: [
+            Expanded(
+                child: ListView(
+              children: dividedTiles,
+              controller: _scrollController,
+            )),
+            Container(
+                child: ShoppingListItemInput(_scrollController),
+                decoration: BoxDecoration(color: Colors.white, boxShadow: [
+                  BoxShadow(color: Colors.grey.withOpacity(0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
+                ])),
+          ]));
     });
   }
 }
 
 class ShoppingListItemInput extends StatefulWidget {
+  final ScrollController _shoppingListScrollController;
+
+  ShoppingListItemInput(this._shoppingListScrollController);
+
   @override
-  _ShoppingListItemInputState createState() => _ShoppingListItemInputState();
+  _ShoppingListItemInputState createState() => _ShoppingListItemInputState(_shoppingListScrollController);
 }
 
 class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
+  final ScrollController _shoppingListScrollController;
   TextEditingController _newItemNameController;
   bool _enabled = false;
   FocusNode _focus = FocusNode();
+
+  _ShoppingListItemInputState(this._shoppingListScrollController);
 
   @override
   void initState() {
@@ -145,6 +159,11 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
     Provider.of<ShoppingListModel>(context).addItem(ShoppingListItem(name));
     _newItemNameController.clear();
     _focus.requestFocus();
+    // Scroll to the new element after it has been added and rendered (at the end of this frame).
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _shoppingListScrollController.animateTo(_shoppingListScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+    });
   }
 
   @override
@@ -158,7 +177,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
                     focusNode: _focus,
                     decoration: InputDecoration(border: OutlineInputBorder(), hintText: "New Item"),
                     controller: _newItemNameController,
-                    onSubmitted: _enabled ? (text) => addNewItem() : null)),
+                    onSubmitted: _enabled ? (_) => addNewItem() : null)),
             Container(
               child: IconButton(icon: Icon(Icons.add), onPressed: _enabled ? addNewItem : null),
               margin: EdgeInsets.only(left: 5.0),
