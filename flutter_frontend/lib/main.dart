@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(ShoppingListApp());
@@ -11,11 +12,18 @@ Future<List<ShoppingListItem>> fetchShoppingList() async {
   return Future.delayed(Duration(seconds: 10), () => [ShoppingListItem('Kaffee'), ShoppingListItem('Milch')]);
 }
 
-class ShoppingListItem {
+class ShoppingListItem extends ChangeNotifier {
   String _name;
-  bool checked = false;
+  bool _checked = false;
 
   ShoppingListItem(this._name);
+
+  set checked(bool value) {
+    _checked = value;
+    notifyListeners();
+  }
+
+  bool get checked => _checked;
 
   String get name => _name;
 }
@@ -77,7 +85,8 @@ class _ShoppingListState extends State<ShoppingList> {
         future: _futureShoppingList,
         builder: (context, shoppingList) {
           if (shoppingList.hasData) {
-            final tiles = shoppingList.data.map((e) => ListTile(title: Text(e.name)));
+            final tiles = shoppingList.data
+                .map((item) => ChangeNotifierProvider(create: (context) => item, child: ShoppingListItemTile()));
             final dividedTiles = ListTile.divideTiles(tiles: tiles, context: context).toList();
             return ListView(
               children: dividedTiles,
@@ -89,5 +98,19 @@ class _ShoppingListState extends State<ShoppingList> {
         },
       ),
     );
+  }
+}
+
+class ShoppingListItemTile extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ShoppingListItem>(builder: (context, item, child) {
+      return CheckboxListTile(
+        title: Text(item.name),
+        controlAffinity: ListTileControlAffinity.leading,
+        value: item.checked,
+        onChanged: (checked) => item.checked = checked,
+      );
+    });
   }
 }
