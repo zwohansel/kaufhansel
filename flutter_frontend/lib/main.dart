@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 void main() {
@@ -10,23 +12,40 @@ void main() {
 }
 
 Future<List<ShoppingListItem>> fetchShoppingList() async {
-  return Future.delayed(Duration(seconds: 2), () => [ShoppingListItem('Kaffee'), ShoppingListItem('Milch')]);
+  http.Response response = await http.get("http://localhost:8080/shoppinglist/5f0a01054ccfbf87d8c754f4",
+      headers: {'Content-Type': 'application/json'});
+
+  if (response.statusCode == 200) {
+    final String decoded = utf8.decode(response.bodyBytes);
+    List<dynamic> items = jsonDecode(decoded);
+    return items.map((e) => ShoppingListItem.fromJson(e)).toList();
+  } else if (response.statusCode == 404) {
+    throw Exception('Failed to load shopping list: could not find any list with the given id');
+  } else {
+    throw Exception('Failed to load shopping list');
+  }
 }
 
 class ShoppingListItem extends ChangeNotifier {
+  String _id;
   String _name;
   bool _checked = false;
 
-  ShoppingListItem(this._name);
+  ShoppingListItem.create(this._name);
+  ShoppingListItem(this._id, this._name, this._checked);
+
+  factory ShoppingListItem.fromJson(Map<String, dynamic> json) {
+    return ShoppingListItem(json['id'], json['name'], json['checked']);
+  }
 
   set checked(bool value) {
     _checked = value;
     notifyListeners();
   }
 
-  bool get checked => _checked;
-
+  String get id => _id;
   String get name => _name;
+  bool get checked => _checked;
 }
 
 class ShoppingListModel extends ChangeNotifier {
@@ -85,7 +104,7 @@ class _ShoppingListState extends State<ShoppingList> {
           return ChangeNotifierProvider(
               create: (context) => ShoppingListModel(shoppingList.data), child: ShoppingListView(title));
         } else if (shoppingList.hasError) {
-          return Text("ERROR");
+          return Text("ERROR: ${shoppingList.error}");
         }
         return Scaffold(
             appBar: AppBar(
@@ -154,7 +173,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
   void addNewItem() {
     var name = _newItemNameController.value.text;
     if (name.isNotEmpty) {
-      Provider.of<ShoppingListModel>(context).addItem(ShoppingListItem(name));
+      Provider.of<ShoppingListModel>(context).addItem(ShoppingListItem.create(name));
       _newItemNameController.clear();
       // Scroll to the new element after it has been added and rendered (at the end of this frame).
       SchedulerBinding.instance.addPostFrameCallback((_) {
