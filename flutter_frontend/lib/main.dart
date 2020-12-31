@@ -72,9 +72,7 @@ class ShoppingListApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Kaufhansel',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
+      theme: ThemeData(primarySwatch: Colors.green, fontFamily: 'Roboto'),
       home: ShoppingList(),
     );
   }
@@ -193,6 +191,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
             Expanded(
                 child: TextField(
                     focusNode: _focus,
+                    style: TextStyle(fontFamilyFallback: ['NotoColorEmoji']),
                     decoration: InputDecoration(
                         isDense: true,
                         contentPadding: EdgeInsets.fromLTRB(12, 8, 12, 8),
@@ -218,7 +217,10 @@ class ShoppingListItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ShoppingListItem>(builder: (context, item, child) {
       return CheckboxListTile(
-        title: SelectableText(item.name),
+        title: SelectableText(
+          item.name,
+          style: TextStyle(fontFamilyFallback: ['NotoColorEmoji']),
+        ),
         controlAffinity: ListTileControlAffinity.leading,
         secondary: Wrap(children: [
           IconButton(
