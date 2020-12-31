@@ -26,6 +26,19 @@ Future<List<ShoppingListItem>> fetchShoppingList() async {
   }
 }
 
+Future<ShoppingListItem> createShoppingListItem(String name) async {
+  final body = utf8.encode(jsonEncode({'name': name}));
+  http.Response response = await http.post("http://localhost:8080/shoppinglist/5f0a01054ccfbf87d8c754f4",
+      headers: {'Content-Type': 'application/json'}, body: body);
+
+  if (response.statusCode == 200) {
+    final decoded = utf8.decode(response.bodyBytes);
+    return ShoppingListItem.fromJson(jsonDecode(decoded));
+  } else {
+    throw Exception('Failed to create new item: ' + name);
+  }
+}
+
 class ShoppingListItem extends ChangeNotifier {
   String _id;
   String _name;
@@ -157,6 +170,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
   final ScrollController _shoppingListScrollController;
   TextEditingController _newItemNameController;
   bool _enabled = false;
+  bool _submitting = false;
   FocusNode _focus = FocusNode();
 
   _ShoppingListItemInputState(this._shoppingListScrollController);
@@ -168,15 +182,23 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
     _newItemNameController.addListener(() => setState(() => _enabled = _newItemNameController.text.isNotEmpty));
   }
 
-  void addNewItem() {
-    var name = _newItemNameController.value.text;
+  void addNewItem() async {
+    final name = _newItemNameController.value.text;
+
     if (name.isNotEmpty) {
-      Provider.of<ShoppingListModel>(context).addItem(ShoppingListItem.create(name));
+      setState(() {
+        _submitting = true;
+      });
+      ShoppingListItem shoppingListItem = await createShoppingListItem(name);
+      Provider.of<ShoppingListModel>(context).addItem(shoppingListItem);
       _newItemNameController.clear();
       // Scroll to the new element after it has been added and rendered (at the end of this frame).
       SchedulerBinding.instance.addPostFrameCallback((_) {
         _shoppingListScrollController.animateTo(_shoppingListScrollController.position.maxScrollExtent,
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+      });
+      setState(() {
+        _submitting = false;
       });
     }
     _focus.requestFocus();
@@ -184,6 +206,22 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
 
   @override
   Widget build(BuildContext context) {
+    final addButton = _submitting
+        ? Center(
+            child: SizedBox(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                ),
+                width: 20,
+                height: 20))
+        : Center(
+            child: IconButton(
+              splashRadius: 23,
+              icon: Icon(Icons.add),
+              onPressed: _enabled ? addNewItem : null,
+            ),
+          );
+
     return Container(
         padding: const EdgeInsets.only(left: 8.0, right: 8.0),
         child: Row(
@@ -198,15 +236,9 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
                         border: OutlineInputBorder(),
                         hintText: "New Item"),
                     controller: _newItemNameController,
+                    enabled: !_submitting,
                     onSubmitted: (_) => addNewItem())),
-            Container(
-              child: IconButton(
-                splashRadius: 23,
-                icon: Icon(Icons.add),
-                onPressed: _enabled ? addNewItem : null,
-              ),
-              margin: EdgeInsets.only(left: 10.0, right: 3.0),
-            )
+            Container(child: SizedBox(child: addButton, width: 40, height: 40), margin: EdgeInsets.only(left: 6.0)),
           ],
         ));
   }
