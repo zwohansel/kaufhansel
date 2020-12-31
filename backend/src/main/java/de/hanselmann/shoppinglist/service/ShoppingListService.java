@@ -1,5 +1,7 @@
 package de.hanselmann.shoppinglist.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -36,5 +38,9 @@ public class ShoppingListService {
 
     public void saveShoppingList(ShoppingList list) {
         shoppingListRepository.save(list);
+    }
+    
+    public Optional<ShoppingList> getShoppingList(String id) {
+    	return shoppingListRepository.findById(id);
     }
 }
