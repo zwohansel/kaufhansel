@@ -23,10 +23,13 @@ class ShoppingListView extends StatelessWidget {
           appBar: AppBar(title: Text(title)),
           body: Column(children: [
             Expanded(
-                child: ListView(
-              children: dividedTiles,
-              controller: _scrollController,
-            )),
+                child: Scrollbar(
+                    isAlwaysShown: true,
+                    controller: _scrollController,
+                    child: ListView(
+                      children: dividedTiles,
+                      controller: _scrollController,
+                    ))),
             Container(
                 child: Material(
                     child: ShoppingListItemInput(
