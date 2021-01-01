@@ -16,22 +16,21 @@ class ShoppingListItemInput extends StatefulWidget {
 }
 
 class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
-  TextEditingController _newItemNameController;
+  final TextEditingController _newItemNameController = TextEditingController();
+  final FocusNode _focus = FocusNode();
   bool _enabled = false;
   bool _submitting = false;
-  FocusNode _focus = FocusNode();
 
   _ShoppingListItemInputState();
 
   @override
   void initState() {
     super.initState();
-    _newItemNameController = TextEditingController();
-    _newItemNameController.addListener(() => setState(() => _enabled = _newItemNameController.text.isNotEmpty));
+    _newItemNameController.addListener(() => setState(() => _enabled = _newItemNameController.text.trim().isNotEmpty));
   }
 
   void addNewItem() async {
-    final name = _newItemNameController.value.text;
+    final name = _newItemNameController.value.text.trim();
 
     if (name.isNotEmpty) {
       setState(() {

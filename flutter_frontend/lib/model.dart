@@ -24,6 +24,11 @@ class ShoppingListItem extends ChangeNotifier {
 
   String get name => _name;
 
+  set name(String value) {
+    _name = value;
+    notifyListeners();
+  }
+
   bool get checked => _checked;
 }
 
