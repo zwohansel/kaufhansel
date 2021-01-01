@@ -17,7 +17,11 @@ class ShoppingListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ShoppingListModel>(builder: (context, shoppingList, child) {
       final tiles = shoppingList.items.map((item) => ChangeNotifierProvider<ShoppingListItem>.value(
-          value: item, child: ShoppingListItemTile(shoppingListId: shoppingListId)));
+          value: item,
+          child: ShoppingListItemTile(
+            shoppingListId: shoppingListId,
+            key: ValueKey(item.id),
+          )));
       final dividedTiles = ListTile.divideTiles(tiles: tiles, context: context).toList();
       return Scaffold(
           appBar: AppBar(title: Text(title)),

@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 class ShoppingListItemTile extends StatelessWidget {
   final String shoppingListId;
 
-  const ShoppingListItemTile({@required this.shoppingListId});
+  const ShoppingListItemTile({@required this.shoppingListId, key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
