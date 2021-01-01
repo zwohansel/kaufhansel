@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/model.dart';
+import 'package:kaufhansel_client/rest_client.dart';
 
 class EditShoppingListItemDialog extends StatefulWidget {
+  final String shoppingListId;
   final ShoppingListItem item;
+  final RestClient client;
 
-  const EditShoppingListItemDialog({this.item});
+  const EditShoppingListItemDialog({@required this.item, @required this.shoppingListId, @required this.client});
 
   @override
   _EditShoppingListItemDialogState createState() => _EditShoppingListItemDialogState();
@@ -91,12 +94,13 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
   }
 
   Widget buildTitle(ThemeData theme) {
+    final textStyle = theme.textTheme.headline6.apply(fontFamilyFallback: ['NotoColorEmoji']);
     if (_editingItemName) {
       return Row(children: [
         Expanded(
             child: TextField(
           controller: _itemNameEditingController,
-          style: theme.textTheme.headline6,
+          style: textStyle,
           onSubmitted: (_) => this.submitNewItemName(),
           focusNode: _focus,
           decoration: InputDecoration(
@@ -109,7 +113,7 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
       Expanded(
           child: Text(
         widget.item.name,
-        style: theme.textTheme.headline6,
+        style: textStyle,
       )),
       IconButton(
           icon: Icon(Icons.drive_file_rename_outline),
@@ -126,9 +130,11 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
     ]);
   }
 
-  void submitNewItemName() {
+  void submitNewItemName() async {
     if (_newItemNameIsValid) {
+      // TODO: What if the following request fails?
       widget.item.name = _itemNameEditingController.text.trim();
+      await widget.client.updateShoppingListItem(widget.shoppingListId, widget.item);
       setState(() {
         _editingItemName = false;
       });

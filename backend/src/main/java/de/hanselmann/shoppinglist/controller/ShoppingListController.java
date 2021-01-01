@@ -12,6 +12,7 @@ import de.hanselmann.shoppinglist.model.ShoppingListItem;
 import de.hanselmann.shoppinglist.restapi.ShoppingListApi;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
+import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemUpdateDto;
 import de.hanselmann.shoppinglist.restapi.dto.transformer.DtoTransformer;
 import de.hanselmann.shoppinglist.service.ShoppingListService;
 import de.hanselmann.shoppinglist.service.ShoppingListSubscribers;
@@ -23,7 +24,9 @@ public class ShoppingListController implements ShoppingListApi {
     private final ShoppingListSubscribers shoppingListSubscribers;
 
     @Autowired
-    public ShoppingListController(ShoppingListService shoppingListService, DtoTransformer dtoTransformer,
+    public ShoppingListController(
+            ShoppingListService shoppingListService,
+            DtoTransformer dtoTransformer,
             ShoppingListSubscribers shoppingListSubscribers) {
         this.shoppingListService = shoppingListService;
         this.dtoTransformer = dtoTransformer;
@@ -61,6 +64,27 @@ public class ShoppingListController implements ShoppingListApi {
             shoppingListService.saveShoppingList(list);
             shoppingListSubscribers.notifyItemsDeleted(list, Collections.singletonList(deletedItem));
         });
+    }
+
+    @Override
+    public ResponseEntity<Void> updateShoppingListItem(String id, String itemId, ShoppingListItemUpdateDto updateItem) {
+        return shoppingListService.getShoppingList(id).map(list -> findAndUpdateItem(itemId, updateItem, list))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    private ResponseEntity<Void> findAndUpdateItem(String itemId, ShoppingListItemUpdateDto updateItem,
+            ShoppingList list) {
+        return list.findItemById(itemId).map(item -> updateItem(item, updateItem, list))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    private ResponseEntity<Void> updateItem(ShoppingListItem item, ShoppingListItemUpdateDto updateItem,
+            ShoppingList list) {
+        item.setName(updateItem.getName());
+        item.setChecked(updateItem.isChecked());
+        shoppingListService.saveShoppingList(list);
+        shoppingListSubscribers.notifyItemsChanged(list, Collections.singletonList(item));
+        return ResponseEntity.noContent().build();
     }
 
 }

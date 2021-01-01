@@ -53,11 +53,23 @@ class RestClient {
     }
   }
 
-  Future<void> deleteShoppingListItem(String shoppingListId, String itemId) async {
-    http.Response response = await http.delete(_serverUrl.resolve("$shoppingListId/item/$itemId")).timeout(timeout);
+  Future<void> deleteShoppingListItem(String shoppingListId, ShoppingListItem item) async {
+    http.Response response = await http.delete(_serverUrl.resolve("$shoppingListId/item/${item.id}")).timeout(timeout);
 
     if (response.statusCode != 204) {
-      throw Exception('Failed to delete item: ' + itemId);
+      throw Exception('Failed to delete item: ' + item.name);
+    }
+  }
+
+  Future<void> updateShoppingListItem(String shoppingListId, ShoppingListItem item) async {
+    final body = utf8.encode(jsonEncode({'name': item.name, 'checked': item.checked}));
+    http.Response response = await http
+        .put(_serverUrl.resolve("$shoppingListId/item/${item.id}"),
+            headers: {'Content-Type': 'application/json'}, body: body)
+        .timeout(timeout);
+
+    if (response.statusCode != 204) {
+      throw Exception('Failed to update item: ' + item.name);
     }
   }
 }

@@ -24,23 +24,31 @@ class ShoppingListItemTile extends StatelessWidget {
           IconButton(
               icon: Icon(Icons.edit),
               onPressed: () {
+                final RestClient client = RestClientWidget.of(context);
                 showDialog(
                     context: context,
                     builder: (context) {
                       return EditShoppingListItemDialog(
+                        shoppingListId: shoppingListId,
                         item: item,
+                        client: client,
                       );
                     });
               })
         ]),
         value: item.checked,
-        onChanged: (checked) => item.checked = checked,
+        onChanged: (checked) => this.checkItem(item, checked, context),
       );
     });
   }
 
   void deleteItem(ShoppingListItem item, BuildContext context) async {
-    await RestClientWidget.of(context).deleteShoppingListItem(shoppingListId, item.id);
+    await RestClientWidget.of(context).deleteShoppingListItem(shoppingListId, item);
     Provider.of<ShoppingListModel>(context, listen: false).removeItem(item);
+  }
+
+  checkItem(ShoppingListItem item, bool checked, BuildContext context) async {
+    item.checked = checked; // TODO: What if the following request fails?
+    await RestClientWidget.of(context).updateShoppingListItem(shoppingListId, item);
   }
 }
