@@ -20,12 +20,13 @@ class RestClientWidget extends InheritedWidget {
 
 class RestClient {
   final Uri _serverUrl;
+  final Duration timeout = Duration(seconds: 10);
 
   RestClient(this._serverUrl);
 
   Future<List<ShoppingListItem>> fetchShoppingList(String shoppingListId) async {
-    http.Response response =
-        await http.get(_serverUrl.resolve(shoppingListId), headers: {'Content-Type': 'application/json'});
+    http.Response response = await http
+        .get(_serverUrl.resolve(shoppingListId), headers: {'Content-Type': 'application/json'}).timeout(timeout);
 
     if (response.statusCode == 200) {
       final String decoded = utf8.decode(response.bodyBytes);
@@ -40,8 +41,9 @@ class RestClient {
 
   Future<ShoppingListItem> createShoppingListItem(String shoppingListId, String name) async {
     final body = utf8.encode(jsonEncode({'name': name}));
-    http.Response response =
-        await http.post(_serverUrl.resolve(shoppingListId), headers: {'Content-Type': 'application/json'}, body: body);
+    http.Response response = await http
+        .post(_serverUrl.resolve(shoppingListId), headers: {'Content-Type': 'application/json'}, body: body)
+        .timeout(timeout);
 
     if (response.statusCode == 200) {
       final decoded = utf8.decode(response.bodyBytes);
@@ -52,7 +54,7 @@ class RestClient {
   }
 
   Future<void> deleteShoppingListItem(String shoppingListId, String itemId) async {
-    http.Response response = await http.delete(_serverUrl.resolve("$shoppingListId/item/$itemId"));
+    http.Response response = await http.delete(_serverUrl.resolve("$shoppingListId/item/$itemId")).timeout(timeout);
 
     if (response.statusCode != 204) {
       throw Exception('Failed to delete item: ' + itemId);
