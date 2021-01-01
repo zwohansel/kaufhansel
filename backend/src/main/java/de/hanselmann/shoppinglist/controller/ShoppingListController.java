@@ -50,4 +50,17 @@ public class ShoppingListController implements ShoppingListApi {
         return newItem;
     }
 
+    @Override
+    public ResponseEntity<Void> deleteShoppingListItem(String id, String itemId) {
+        shoppingListService.getShoppingList(id).ifPresent(list -> deleteItem(itemId, list));
+        return ResponseEntity.noContent().build();
+    }
+
+    private void deleteItem(String itemId, ShoppingList list) {
+        list.deleteItemById(itemId).ifPresent(deletedItem -> {
+            shoppingListService.saveShoppingList(list);
+            shoppingListSubscribers.notifyItemsDeleted(list, Collections.singletonList(deletedItem));
+        });
+    }
+
 }

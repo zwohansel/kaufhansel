@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/model.dart';
+import 'package:kaufhansel_client/rest_client.dart';
 import 'package:provider/provider.dart';
 
 class ShoppingListItemTile extends StatelessWidget {
+  final String shoppingListId;
+
+  const ShoppingListItemTile({@required this.shoppingListId});
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ShoppingListItem>(builder: (context, item, child) {
@@ -14,9 +19,7 @@ class ShoppingListItemTile extends StatelessWidget {
         ),
         controlAffinity: ListTileControlAffinity.leading,
         secondary: Wrap(children: [
-          IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: () => Provider.of<ShoppingListModel>(context, listen: false).removeItem(item)),
+          IconButton(icon: Icon(Icons.delete), onPressed: () => this.deleteItem(item, context)),
           IconButton(
               icon: Icon(Icons.edit),
               onPressed: () {
@@ -80,5 +83,10 @@ class ShoppingListItemTile extends StatelessWidget {
         onChanged: (checked) => item.checked = checked,
       );
     });
+  }
+
+  void deleteItem(ShoppingListItem item, BuildContext context) async {
+    await RestClientWidget.of(context).deleteShoppingListItem(shoppingListId, item.id);
+    Provider.of<ShoppingListModel>(context, listen: false).removeItem(item);
   }
 }
