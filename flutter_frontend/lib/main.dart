@@ -7,7 +7,7 @@ void main() {
 }
 
 class ShoppingListApp extends StatelessWidget {
-  final client = RestClient(Uri.parse("http://localhost:8080/shoppinglist/"));
+  final client = RestClient(Uri.parse("https://localhost:8080/shoppinglist/"));
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
