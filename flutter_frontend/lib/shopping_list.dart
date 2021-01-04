@@ -22,8 +22,8 @@ class ShoppingList extends StatelessWidget {
         .map((item) => ChangeNotifierProvider<ShoppingListItem>.value(
             value: item,
             child: ShoppingListItemTile(
-              shoppingListId: _shoppingList.id,
-              key: ValueKey(item.id),
+              ValueKey(item.id),
+              showCategory: _category == null,
             )));
     final dividedTiles = ListTile.divideTiles(tiles: tiles, context: context).toList();
 

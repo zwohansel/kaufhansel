@@ -1,12 +1,14 @@
 import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 class ShoppingListItem extends ChangeNotifier {
   String _id;
   String _name;
   bool _checked = false;
   String _category;
+  void Function() _notifyCategoryChanged;
 
   ShoppingListItem.create(this._name);
 
@@ -32,29 +34,42 @@ class ShoppingListItem extends ChangeNotifier {
 
   bool get checked => _checked;
 
+  set categoryChangedCallback(void Function() callback) => _notifyCategoryChanged = callback;
+
   set category(String category) {
     _category = category;
     notifyListeners();
+    if (_notifyCategoryChanged != null) {
+      _notifyCategoryChanged();
+    }
   }
 
   String get category => _category;
+
+  bool hasCategory() {
+    return category != null && category.trim().isNotEmpty;
+  }
 }
 
 class ShoppingListModel extends ChangeNotifier {
   final String _id;
   final List<ShoppingListItem> _items;
 
-  ShoppingListModel(this._id, this._items);
+  ShoppingListModel(this._id, this._items) {
+    _items.forEach((item) => item.categoryChangedCallback = this.notifyListeners);
+  }
 
   get id => _id;
 
   void addItem(ShoppingListItem item) {
     _items.add(item);
+    item.categoryChangedCallback = notifyListeners;
     notifyListeners();
   }
 
   void removeItem(ShoppingListItem item) {
     _items.remove(item);
+    item.categoryChangedCallback = null;
     notifyListeners();
   }
 

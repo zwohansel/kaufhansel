@@ -6,18 +6,34 @@ import 'package:kaufhansel_client/shopping_list_item_edit_dialog.dart';
 import 'package:provider/provider.dart';
 
 class ShoppingListItemTile extends StatelessWidget {
-  final String shoppingListId;
-
-  const ShoppingListItemTile({@required this.shoppingListId, key}) : super(key: key);
+  final bool _showCategory;
+  const ShoppingListItemTile(key, {bool showCategory = false})
+      : _showCategory = showCategory,
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Consumer<ShoppingListItem>(builder: (context, item, child) {
-      return CheckboxListTile(
-        title: SelectableText(
+      final List<Widget> titleElements = [
+        SelectableText(
           item.name,
           style: TextStyle(fontFamilyFallback: ['NotoColorEmoji']),
-        ),
+        )
+      ];
+
+      if (_showCategory && item.hasCategory()) {
+        titleElements.add(Container(
+          child: Text(item.category,
+              style: Theme.of(context).textTheme.subtitle2.apply(fontSizeDelta: -1, color: Colors.white70)),
+          margin: EdgeInsets.only(left: 10.0),
+          padding: EdgeInsets.all(3.0),
+          decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.all(Radius.circular(3))),
+          //color: Colors.green,
+        ));
+      }
+
+      return CheckboxListTile(
+        title: Row(children: titleElements),
         controlAffinity: ListTileControlAffinity.leading,
         secondary: Wrap(children: [
           IconButton(icon: Icon(Icons.delete), onPressed: () => this.deleteItem(item, context)),
@@ -25,12 +41,14 @@ class ShoppingListItemTile extends StatelessWidget {
               icon: Icon(Icons.edit),
               onPressed: () {
                 final RestClient client = RestClientWidget.of(context);
+                final shoppingList = Provider.of<ShoppingListModel>(context);
                 showDialog(
                     context: context,
                     builder: (context) {
                       return EditShoppingListItemDialog(
-                        shoppingListId: shoppingListId,
+                        shoppingListId: shoppingList.id,
                         item: item,
+                        categories: shoppingList.getCategories(),
                         client: client,
                       );
                     });
@@ -43,12 +61,14 @@ class ShoppingListItemTile extends StatelessWidget {
   }
 
   void deleteItem(ShoppingListItem item, BuildContext context) async {
-    await RestClientWidget.of(context).deleteShoppingListItem(shoppingListId, item);
-    Provider.of<ShoppingListModel>(context, listen: false).removeItem(item);
+    final shoppingList = Provider.of<ShoppingListModel>(context, listen: false);
+    await RestClientWidget.of(context).deleteShoppingListItem(shoppingList.id, item);
+    shoppingList.removeItem(item);
   }
 
   checkItem(ShoppingListItem item, bool checked, BuildContext context) async {
     item.checked = checked; // TODO: What if the following request fails?
-    await RestClientWidget.of(context).updateShoppingListItem(shoppingListId, item);
+    final shoppingList = Provider.of<ShoppingListModel>(context, listen: false);
+    await RestClientWidget.of(context).updateShoppingListItem(shoppingList.id, item);
   }
 }

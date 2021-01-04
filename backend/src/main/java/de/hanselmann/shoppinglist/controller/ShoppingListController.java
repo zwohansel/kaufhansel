@@ -84,6 +84,7 @@ public class ShoppingListController implements ShoppingListApi {
             ShoppingList list) {
         item.setName(updateItem.getName());
         item.setChecked(updateItem.isChecked());
+        item.setAssignee(updateItem.getCategory());
         shoppingListService.saveShoppingList(list);
         shoppingListSubscribers.notifyItemsChanged(list, Collections.singletonList(item));
         return ResponseEntity.noContent().build();

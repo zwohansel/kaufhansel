@@ -62,7 +62,7 @@ class RestClient {
   }
 
   Future<void> updateShoppingListItem(String shoppingListId, ShoppingListItem item) async {
-    final body = utf8.encode(jsonEncode({'name': item.name, 'checked': item.checked}));
+    final body = utf8.encode(jsonEncode({'name': item.name, 'checked': item.checked, 'category': item.category}));
     http.Response response = await http
         .put(_serverUrl.resolve("$shoppingListId/item/${item.id}"),
             headers: {'Content-Type': 'application/json'}, body: body)
