@@ -11,12 +11,12 @@ import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
 @Component
 public class DtoTransformer {
 
-	public List<ShoppingListItemDto> map(List<ShoppingListItem> shoppingListItems) {
-		return shoppingListItems.stream().map(this::map).collect(Collectors.toList());	
-	}
-	
-	public ShoppingListItemDto map(ShoppingListItem item) {
-		return new ShoppingListItemDto(item.getId(), item.getName(), item.isChecked());
-	}
+    public List<ShoppingListItemDto> map(List<ShoppingListItem> shoppingListItems) {
+        return shoppingListItems.stream().map(this::map).collect(Collectors.toList());
+    }
+
+    public ShoppingListItemDto map(ShoppingListItem item) {
+        return new ShoppingListItemDto(item.getId(), item.getName(), item.isChecked(), item.getAssignee());
+    }
 
 }

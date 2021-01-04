@@ -6,30 +6,38 @@ class ShoppingListItem extends ChangeNotifier {
   String _id;
   String _name;
   bool _checked = false;
+  String _category;
 
   ShoppingListItem.create(this._name);
 
-  ShoppingListItem(this._id, this._name, this._checked);
+  ShoppingListItem(this._id, this._name, this._checked, this._category);
 
   factory ShoppingListItem.fromJson(Map<String, dynamic> json) {
-    return ShoppingListItem(json['id'], json['name'], json['checked']);
-  }
-
-  set checked(bool value) {
-    _checked = value;
-    notifyListeners();
+    return ShoppingListItem(json['id'], json['name'], json['checked'], json['category']);
   }
 
   String get id => _id;
-
-  String get name => _name;
 
   set name(String value) {
     _name = value;
     notifyListeners();
   }
 
+  String get name => _name;
+
+  set checked(bool value) {
+    _checked = value;
+    notifyListeners();
+  }
+
   bool get checked => _checked;
+
+  set category(String category) {
+    _category = category;
+    notifyListeners();
+  }
+
+  String get category => _category;
 }
 
 class ShoppingListModel extends ChangeNotifier {
@@ -48,4 +56,15 @@ class ShoppingListModel extends ChangeNotifier {
   }
 
   UnmodifiableListView<ShoppingListItem> get items => UnmodifiableListView(_items);
+
+  List<String> getCategories() {
+    final categories = _items
+        .map((item) => item.category)
+        .where((category) => category != null)
+        .where((category) => category.trim().isNotEmpty)
+        .toSet()
+        .toList();
+    categories.sort();
+    return categories;
+  }
 }

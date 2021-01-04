@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.hanselmann.shoppinglist.model.ShoppingList;
@@ -42,11 +43,12 @@ public class ShoppingListController implements ShoppingListApi {
     @Override
     public ResponseEntity<ShoppingListItemDto> addShoppingListItem(String id, NewShoppingListItemDto item) {
         return ResponseEntity.of(shoppingListService.getShoppingList(id)
-                .map(list -> createNewItem(item.getName(), list)).map(dtoTransformer::map));
+                .map(list -> createNewItem(item.getName(), item.getCategory(), list)).map(dtoTransformer::map));
     }
 
-    private ShoppingListItem createNewItem(String name, ShoppingList list) {
+    private ShoppingListItem createNewItem(String name, @Nullable String category, ShoppingList list) {
         ShoppingListItem newItem = new ShoppingListItem(name);
+        newItem.setAssignee(category);
         list.addItem(newItem);
         shoppingListService.saveShoppingList(list);
         shoppingListSubscribers.notifyItemsCreated(list, Collections.singletonList(newItem));

@@ -39,8 +39,8 @@ class RestClient {
     }
   }
 
-  Future<ShoppingListItem> createShoppingListItem(String shoppingListId, String name) async {
-    final body = utf8.encode(jsonEncode({'name': name}));
+  Future<ShoppingListItem> createShoppingListItem(String shoppingListId, String name, String category) async {
+    final body = utf8.encode(jsonEncode({'name': name, 'category': category}));
     http.Response response = await http
         .post(_serverUrl.resolve(shoppingListId), headers: {'Content-Type': 'application/json'}, body: body)
         .timeout(timeout);

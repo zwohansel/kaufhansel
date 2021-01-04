@@ -1,49 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:kaufhansel_client/model.dart';
-import 'package:kaufhansel_client/rest_client.dart';
-import 'package:kaufhansel_client/shopping_list_view.dart';
+import 'package:kaufhansel_client/shopping_list_item_input.dart';
+import 'package:kaufhansel_client/shopping_list_item_tile.dart';
 import 'package:provider/provider.dart';
 
-class ShoppingList extends StatefulWidget {
-  final String shoppingListId;
+import 'model.dart';
 
-  const ShoppingList({@required this.shoppingListId});
+class ShoppingList extends StatelessWidget {
+  ShoppingList({@required shoppingListId, @required shoppingList, category})
+      : _shoppingList = shoppingList,
+        _shoppingListId = shoppingListId,
+        _category = category,
+        _scrollController = ScrollController();
 
-  @override
-  State<StatefulWidget> createState() => _ShoppingListState();
-}
-
-class _ShoppingListState extends State<ShoppingList> {
-  Future<List<ShoppingListItem>> _futureShoppingList;
-
-  @override
-  void didChangeDependencies() {
-    // Called after initState.
-    // Unlike initState this method is called again if the RestClientWidget is exchanged.
-    super.didChangeDependencies();
-    _futureShoppingList = RestClientWidget.of(context).fetchShoppingList(widget.shoppingListId);
-  }
+  final ScrollController _scrollController;
+  final String _shoppingListId;
+  final ShoppingListModel _shoppingList;
+  final String _category;
 
   @override
   Widget build(BuildContext context) {
-    const String title = "Kaufhansel";
-    return FutureBuilder<List<ShoppingListItem>>(
-      future: _futureShoppingList,
-      builder: (context, shoppingList) {
-        if (shoppingList.hasData) {
-          return ChangeNotifierProvider(
-              create: (context) => ShoppingListModel(shoppingList.data),
-              child: ShoppingListView(title: title, shoppingListId: widget.shoppingListId));
-        } else if (shoppingList.hasError) {
-          return Text("ERROR: ${shoppingList.error}");
-        }
-        return Scaffold(
-            appBar: AppBar(
-              title: Text(title),
-            ),
-            body: Center(child: CircularProgressIndicator()));
-      },
-    );
+    final tiles = _shoppingList.items
+        .where((item) => _category == null || item.category == _category)
+        .map((item) => ChangeNotifierProvider<ShoppingListItem>.value(
+            value: item,
+            child: ShoppingListItemTile(
+              shoppingListId: _shoppingListId,
+              key: ValueKey(item.id),
+            )));
+    final dividedTiles = ListTile.divideTiles(tiles: tiles, context: context).toList();
+
+    return Column(children: [
+      Expanded(
+          child: Scrollbar(
+              isAlwaysShown: true,
+              controller: _scrollController,
+              child: ListView(
+                children: dividedTiles,
+                controller: _scrollController,
+              ))),
+      Container(
+          child: Material(
+              child: ShoppingListItemInput(
+                shoppingListScrollController: _scrollController,
+                shoppingListId: _shoppingListId,
+                category: _category,
+              ),
+              type: MaterialType.transparency),
+          decoration: BoxDecoration(color: Colors.white, boxShadow: [
+            BoxShadow(color: Colors.grey.withOpacity(0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
+          ])),
+    ]);
   }
 }

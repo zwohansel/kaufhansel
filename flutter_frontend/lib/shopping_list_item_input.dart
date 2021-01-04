@@ -6,10 +6,15 @@ import 'package:kaufhansel_client/rest_client.dart';
 import 'package:provider/provider.dart';
 
 class ShoppingListItemInput extends StatefulWidget {
-  final String shoppingListId;
-  final ScrollController shoppingListScrollController;
+  final String _shoppingListId;
+  final ScrollController _shoppingListScrollController;
+  final String _category;
 
-  ShoppingListItemInput({@required this.shoppingListScrollController, @required this.shoppingListId});
+  ShoppingListItemInput(
+      {@required ScrollController shoppingListScrollController, @required String shoppingListId, String category})
+      : _shoppingListScrollController = shoppingListScrollController,
+        _shoppingListId = shoppingListId,
+        _category = category;
 
   @override
   _ShoppingListItemInputState createState() => _ShoppingListItemInputState();
@@ -37,13 +42,13 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
         _submitting = true;
       });
       ShoppingListItem shoppingListItem =
-          await RestClientWidget.of(context).createShoppingListItem(widget.shoppingListId, name);
+          await RestClientWidget.of(context).createShoppingListItem(widget._shoppingListId, name, widget._category);
       Provider.of<ShoppingListModel>(context).addItem(shoppingListItem);
       _newItemNameController.clear();
       // Scroll to the new element after it has been added and rendered (at the end of this frame).
       // TODO: Does not work reliably (e.g. after hot reload)
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        widget.shoppingListScrollController.animateTo(widget.shoppingListScrollController.position.maxScrollExtent,
+        widget._shoppingListScrollController.animateTo(widget._shoppingListScrollController.position.maxScrollExtent,
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
       });
       setState(() {
