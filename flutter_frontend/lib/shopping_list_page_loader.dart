@@ -33,8 +33,8 @@ class _ShoppingListPageLoaderState extends State<ShoppingListPageLoader> {
       builder: (context, shoppingList) {
         if (shoppingList.hasData) {
           return ChangeNotifierProvider(
-              create: (context) => ShoppingListModel(shoppingList.data),
-              child: ShoppingListPage(title: title, shoppingListId: widget.shoppingListId));
+              create: (context) => ShoppingListModel(widget.shoppingListId, shoppingList.data),
+              child: ShoppingListPage(title: title));
         } else if (shoppingList.hasError) {
           return Text("ERROR: ${shoppingList.error}");
         }

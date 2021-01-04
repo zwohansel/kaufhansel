@@ -41,9 +41,12 @@ class ShoppingListItem extends ChangeNotifier {
 }
 
 class ShoppingListModel extends ChangeNotifier {
+  final String _id;
   final List<ShoppingListItem> _items;
 
-  ShoppingListModel(this._items);
+  ShoppingListModel(this._id, this._items);
+
+  get id => _id;
 
   void addItem(ShoppingListItem item) {
     _items.add(item);

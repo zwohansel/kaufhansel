@@ -6,14 +6,12 @@ import 'package:provider/provider.dart';
 import 'model.dart';
 
 class ShoppingList extends StatelessWidget {
-  ShoppingList({@required shoppingListId, @required shoppingList, category})
+  ShoppingList({@required shoppingList, category})
       : _shoppingList = shoppingList,
-        _shoppingListId = shoppingListId,
         _category = category,
         _scrollController = ScrollController();
 
   final ScrollController _scrollController;
-  final String _shoppingListId;
   final ShoppingListModel _shoppingList;
   final String _category;
 
@@ -24,7 +22,7 @@ class ShoppingList extends StatelessWidget {
         .map((item) => ChangeNotifierProvider<ShoppingListItem>.value(
             value: item,
             child: ShoppingListItemTile(
-              shoppingListId: _shoppingListId,
+              shoppingListId: _shoppingList.id,
               key: ValueKey(item.id),
             )));
     final dividedTiles = ListTile.divideTiles(tiles: tiles, context: context).toList();
@@ -42,7 +40,6 @@ class ShoppingList extends StatelessWidget {
           child: Material(
               child: ShoppingListItemInput(
                 shoppingListScrollController: _scrollController,
-                shoppingListId: _shoppingListId,
                 category: _category,
               ),
               type: MaterialType.transparency),

@@ -7,29 +7,28 @@ import 'model.dart';
 
 class ShoppingListPage extends StatelessWidget {
   final String title;
-  final String shoppingListId;
 
-  ShoppingListPage({@required this.title, @required this.shoppingListId});
+  ShoppingListPage({@required this.title});
 
   @override
   Widget build(BuildContext context) {
     return Consumer<ShoppingListModel>(builder: (context, shoppingList, child) {
+      final categories = shoppingList.getCategories();
+
       return DefaultTabController(
-          length: shoppingList.getCategories().length + 1,
+          length: categories.length + 1,
           child: Scaffold(
               appBar: AppBar(
                 title: Text(title),
                 bottom: TabBar(
-                  tabs: [Tab(text: 'Alle'), ...shoppingList.getCategories().map((category) => Tab(text: category))],
+                  tabs: [Tab(text: 'Alle'), ...categories.map((category) => Tab(text: category))],
                 ),
               ),
               body: TabBarView(children: [
                 ShoppingList(
                   shoppingList: shoppingList,
-                  shoppingListId: shoppingListId,
                 ),
-                ...shoppingList.getCategories().map((category) =>
-                    ShoppingList(shoppingListId: shoppingListId, shoppingList: shoppingList, category: category))
+                ...categories.map((category) => ShoppingList(shoppingList: shoppingList, category: category))
               ])));
     });
   }

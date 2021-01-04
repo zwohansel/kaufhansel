@@ -6,14 +6,11 @@ import 'package:kaufhansel_client/rest_client.dart';
 import 'package:provider/provider.dart';
 
 class ShoppingListItemInput extends StatefulWidget {
-  final String _shoppingListId;
   final ScrollController _shoppingListScrollController;
   final String _category;
 
-  ShoppingListItemInput(
-      {@required ScrollController shoppingListScrollController, @required String shoppingListId, String category})
+  ShoppingListItemInput({@required ScrollController shoppingListScrollController, String category})
       : _shoppingListScrollController = shoppingListScrollController,
-        _shoppingListId = shoppingListId,
         _category = category;
 
   @override
@@ -41,9 +38,10 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
       setState(() {
         _submitting = true;
       });
+      final shoppingList = Provider.of<ShoppingListModel>(context);
       ShoppingListItem shoppingListItem =
-          await RestClientWidget.of(context).createShoppingListItem(widget._shoppingListId, name, widget._category);
-      Provider.of<ShoppingListModel>(context).addItem(shoppingListItem);
+          await RestClientWidget.of(context).createShoppingListItem(shoppingList.id, name, widget._category);
+      shoppingList.addItem(shoppingListItem);
       _newItemNameController.clear();
       // Scroll to the new element after it has been added and rendered (at the end of this frame).
       // TODO: Does not work reliably (e.g. after hot reload)
