@@ -23,26 +23,46 @@ class ShoppingListView extends StatelessWidget {
             key: ValueKey(item.id),
           )));
       final dividedTiles = ListTile.divideTiles(tiles: tiles, context: context).toList();
-      return Scaffold(
-          appBar: AppBar(title: Text(title)),
-          body: Column(children: [
-            Expanded(
-                child: Scrollbar(
-                    isAlwaysShown: true,
-                    controller: _scrollController,
-                    child: ListView(
-                      children: dividedTiles,
-                      controller: _scrollController,
-                    ))),
-            Container(
-                child: Material(
-                    child: ShoppingListItemInput(
-                        shoppingListScrollController: _scrollController, shoppingListId: shoppingListId),
-                    type: MaterialType.transparency),
-                decoration: BoxDecoration(color: Colors.white, boxShadow: [
-                  BoxShadow(color: Colors.grey.withOpacity(0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
-                ])),
-          ]));
+      return DefaultTabController(
+          length: 2,
+          child: Scaffold(
+              appBar: AppBar(
+                title: Text(title),
+                bottom: TabBar(
+                  tabs: [
+                    Tab(
+                      text: "Alle",
+                    ),
+                    Tab(
+                      text: "Nächster",
+                    )
+                  ],
+                ),
+              ),
+              body: TabBarView(children: [
+                Column(children: [
+                  Expanded(
+                      child: Scrollbar(
+                          isAlwaysShown: true,
+                          controller: _scrollController,
+                          child: ListView(
+                            children: dividedTiles,
+                            controller: _scrollController,
+                          ))),
+                  Container(
+                      child: Material(
+                          child: ShoppingListItemInput(
+                              shoppingListScrollController: _scrollController, shoppingListId: shoppingListId),
+                          type: MaterialType.transparency),
+                      decoration: BoxDecoration(color: Colors.white, boxShadow: [
+                        BoxShadow(
+                            color: Colors.grey.withOpacity(0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
+                      ])),
+                ]),
+                Center(
+                  child: Text("Nächster"),
+                )
+              ])));
     });
   }
 }
