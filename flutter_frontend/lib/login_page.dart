@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:kaufhansel_client/rest_client.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LoginPage extends StatefulWidget {
+  final void Function() _loggedIn;
+
+  const LoginPage({@required void Function() loggedIn}) : _loggedIn = loggedIn;
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
   final _loginFormKey = GlobalKey<FormState>();
+  final _userNameController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +27,8 @@ class _LoginPageState extends State<LoginPage> {
                   key: _loginFormKey,
                   child: ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: 300),
-                    child: Column(
+                    child: AutofillGroup(
+                        child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -42,6 +50,8 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         TextFormField(
+                          controller: _userNameController,
+                          autofillHints: [AutofillHints.username],
                           decoration: const InputDecoration(
                             hintText: 'Nutzername',
                           ),
@@ -53,6 +63,8 @@ class _LoginPageState extends State<LoginPage> {
                           },
                         ),
                         TextFormField(
+                          controller: _passwordController,
+                          autofillHints: [AutofillHints.password],
                           decoration: const InputDecoration(
                             hintText: 'Kennwort',
                           ),
@@ -67,21 +79,12 @@ class _LoginPageState extends State<LoginPage> {
                         Padding(
                             padding: EdgeInsets.only(top: 15),
                             child: ElevatedButton(
-                                onPressed: () {
+                                onPressed: () async {
                                   if (_loginFormKey.currentState.validate()) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return AlertDialog(title: Text("Erfolgreich."));
-                                      },
-                                    );
-                                  } else {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return AlertDialog(title: Text("Nein!"));
-                                      },
-                                    );
+                                    if (await RestClientWidget.of(context)
+                                        .login(_userNameController.text, _passwordController.text)) {
+                                      widget._loggedIn();
+                                    }
                                   }
                                 },
                                 child: Text("Anmelden"))),
@@ -90,7 +93,7 @@ class _LoginPageState extends State<LoginPage> {
                           child: OutlineButton(child: Text("Registrieren"), onPressed: () {}),
                         )
                       ],
-                    ),
+                    )),
                   )))),
       bottomNavigationBar: SizedBox(
           height: 60,

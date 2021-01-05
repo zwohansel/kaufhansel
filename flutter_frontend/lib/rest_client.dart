@@ -29,15 +29,35 @@ class RestClient {
     _httpClient.badCertificateCallback = (cert, host, port) => kDebugMode;
   }
 
-  Future<List<ShoppingListItem>> fetchShoppingList(String shoppingListId) async {
-    var request = await _httpClient.getUrl(_serverUrl.resolve(shoppingListId));
+  Future<bool> login(String username, String password) async {
+    _httpClient.addCredentials(_serverUrl, "", HttpClientBasicCredentials(username, password));
+    var request = await _httpClient.getUrl(_serverUrl.resolve("rlogin"));
+    var response = await request.close().timeout(timeout);
+    return response.statusCode == 204;
+  }
+
+  Future<List<ShoppingListInfo>> getShoppingLists() async {
+    var request = await _httpClient.getUrl(_serverUrl.resolve("shoppinglists"));
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode == 200) {
+      final String decoded = await response.transform(utf8.decoder).join();
+      List<dynamic> lists = jsonDecode(decoded);
+      return lists.map((json) => ShoppingListInfo.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load shopping list info');
+    }
+  }
+
+  Future<ShoppingListModel> fetchShoppingList(String shoppingListId) async {
+    var request = await _httpClient.getUrl(_serverUrl.resolve("shoppinglist/$shoppingListId"));
     request.headers.contentType = ContentType.json;
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode == 200) {
       final String decoded = await response.transform(utf8.decoder).join();
       List<dynamic> items = jsonDecode(decoded);
-      return items.map((e) => ShoppingListItem.fromJson(e)).toList();
+      return ShoppingListModel(shoppingListId, items.map((e) => ShoppingListItem.fromJson(e)).toList());
     } else if (response.statusCode == 404) {
       throw Exception('Failed to load shopping list: could not find any list with the given id');
     } else {
@@ -48,7 +68,7 @@ class RestClient {
   Future<ShoppingListItem> createShoppingListItem(String shoppingListId, String name, String category) async {
     final body = jsonEncode({'name': name, 'category': category});
 
-    var request = await _httpClient.postUrl(_serverUrl.resolve(shoppingListId));
+    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId"));
     request.headers.contentType = ContentType.json;
     request.write(body);
     var response = await request.close().timeout(timeout);
@@ -62,7 +82,7 @@ class RestClient {
   }
 
   Future<void> deleteShoppingListItem(String shoppingListId, ShoppingListItem item) async {
-    var request = await _httpClient.deleteUrl(_serverUrl.resolve("$shoppingListId/item/${item.id}"));
+    var request = await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/item/${item.id}"));
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
@@ -73,7 +93,7 @@ class RestClient {
   Future<void> updateShoppingListItem(String shoppingListId, ShoppingListItem item) async {
     final body = jsonEncode({'name': item.name, 'checked': item.checked, 'category': item.category});
 
-    var request = await _httpClient.putUrl(_serverUrl.resolve("$shoppingListId/item/${item.id}"));
+    var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/item/${item.id}"));
     request.headers.contentType = ContentType.json;
     request.write(body);
     var response = await request.close().timeout(timeout);

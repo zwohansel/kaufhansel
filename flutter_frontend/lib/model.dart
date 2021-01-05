@@ -86,3 +86,18 @@ class ShoppingListModel extends ChangeNotifier {
     return categories;
   }
 }
+
+class ShoppingListInfo {
+  String _id;
+  String _name;
+
+  ShoppingListInfo(this._id, this._name);
+
+  factory ShoppingListInfo.fromJson(Map<String, dynamic> json) {
+    return ShoppingListInfo(json['id'], json['name']);
+  }
+
+  String get id => _id;
+
+  String get name => _name;
+}

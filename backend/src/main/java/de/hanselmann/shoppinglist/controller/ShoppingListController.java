@@ -6,18 +6,21 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.hanselmann.shoppinglist.model.ShoppingList;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
 import de.hanselmann.shoppinglist.restapi.ShoppingListApi;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListItemDto;
+import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemUpdateDto;
 import de.hanselmann.shoppinglist.restapi.dto.transformer.DtoTransformer;
 import de.hanselmann.shoppinglist.service.ShoppingListService;
 import de.hanselmann.shoppinglist.service.ShoppingListSubscribers;
 
+@PreAuthorize("hasRole('SHOPPER')")
 @RestController
 public class ShoppingListController implements ShoppingListApi {
     private final ShoppingListService shoppingListService;
@@ -32,6 +35,18 @@ public class ShoppingListController implements ShoppingListApi {
         this.shoppingListService = shoppingListService;
         this.dtoTransformer = dtoTransformer;
         this.shoppingListSubscribers = shoppingListSubscribers;
+    }
+
+    @Override
+    public ResponseEntity<Void> login() {
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<List<ShoppingListInfoDto>> getShoppingLists() {
+        ShoppingList mainList = shoppingListService.getShoppingListOfCurrentUser();
+        return ResponseEntity
+                .ok(Collections.singletonList(new ShoppingListInfoDto("Meine Liste", mainList.getId().toString())));
     }
 
     @Override
