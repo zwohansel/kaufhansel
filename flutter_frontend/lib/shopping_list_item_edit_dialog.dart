@@ -75,11 +75,15 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
           title,
           subTitle,
           Flexible(
-              child: Container(
+              child: Padding(
                   child: Scrollbar(
                       controller: _scrollController,
-                      child: ListView(shrinkWrap: true, controller: _scrollController, children: categoryButtons)),
-                  margin: EdgeInsets.only(bottom: bottomMargin))),
+                      child: ListView(
+                        shrinkWrap: true,
+                        controller: _scrollController,
+                        children: categoryButtons,
+                      )),
+                  padding: EdgeInsets.only(bottom: bottomMargin))),
           Container(
             child: OutlineButton(
               onPressed: () {
@@ -108,7 +112,7 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
           ),
         ]));
 
-    return Dialog(child: IntrinsicWidth(child: dialogContent));
+    return Dialog(child: ConstrainedBox(constraints: BoxConstraints(maxWidth: 150), child: dialogContent));
   }
 
   Widget buildTitle(ThemeData theme) {

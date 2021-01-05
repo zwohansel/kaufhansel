@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 class ShoppingListItemTile extends StatelessWidget {
   final bool _showCategory;
+
   const ShoppingListItemTile(key, {bool showCategory = false})
       : _showCategory = showCategory,
         super(key: key);
@@ -15,9 +16,12 @@ class ShoppingListItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ShoppingListItem>(builder: (context, item, child) {
       final List<Widget> titleElements = [
-        SelectableText(
-          item.name,
-          style: TextStyle(fontFamilyFallback: ['NotoColorEmoji']),
+        Container(
+          child: SelectableText(
+            item.name,
+            style: TextStyle(fontFamilyFallback: ['NotoColorEmoji']),
+          ),
+          margin: EdgeInsets.only(right: 10.0),
         )
       ];
 
@@ -25,7 +29,6 @@ class ShoppingListItemTile extends StatelessWidget {
         titleElements.add(Container(
           child: Text(item.category,
               style: Theme.of(context).textTheme.subtitle2.apply(fontSizeDelta: -1, color: Colors.white70)),
-          margin: EdgeInsets.only(left: 10.0),
           padding: EdgeInsets.all(3.0),
           decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.all(Radius.circular(3))),
           //color: Colors.green,
@@ -33,7 +36,7 @@ class ShoppingListItemTile extends StatelessWidget {
       }
 
       return CheckboxListTile(
-        title: Row(children: titleElements),
+        title: Wrap(children: titleElements),
         controlAffinity: ListTileControlAffinity.leading,
         secondary: Wrap(children: [
           IconButton(icon: Icon(Icons.delete), onPressed: () => this.deleteItem(item, context)),
