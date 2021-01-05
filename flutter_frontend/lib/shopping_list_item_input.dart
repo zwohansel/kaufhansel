@@ -81,6 +81,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
             Expanded(
                 child: TextField(
                     focusNode: _focus,
+                    textCapitalization: TextCapitalization.sentences,
                     style: TextStyle(fontFamilyFallback: ['NotoColorEmoji']),
                     decoration: InputDecoration(
                         isDense: true,

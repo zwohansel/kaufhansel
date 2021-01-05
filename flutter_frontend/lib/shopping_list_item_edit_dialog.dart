@@ -101,6 +101,7 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
             child: TextField(
               controller: _newCategoryEditingController,
               focusNode: _newCategoryEditionFocus,
+              textCapitalization: TextCapitalization.sentences,
               onSubmitted: (_) => submitNewCategory(),
               decoration: InputDecoration(
                   labelText: "Neue Kategorie",
@@ -122,6 +123,7 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
         Expanded(
             child: TextField(
           controller: _itemNameEditingController,
+          textCapitalization: TextCapitalization.sentences,
           style: textStyle,
           onSubmitted: (_) => this.submitNewItemName(),
           focusNode: _itemNameEditingFocus,
