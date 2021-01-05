@@ -82,7 +82,7 @@ class ShoppingListModel extends ChangeNotifier {
         .where((category) => category.trim().isNotEmpty)
         .toSet()
         .toList();
-    categories.sort();
+    categories.sort((l, r) => l.toLowerCase().compareTo(r.toLowerCase()));
     return categories;
   }
 }

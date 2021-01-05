@@ -24,6 +24,7 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
   bool _editingItemName = false;
   bool _newItemNameIsValid = false;
   bool _newCategoryIsValid = false;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -57,56 +58,52 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
     final categoryButtons = widget.categories.map((category) {
       final currentItemCategory = widget.item.category == category;
       final color = currentItemCategory ? Theme.of(context).accentColor : Theme.of(context).unselectedWidgetColor;
-      return Container(
-        child: OutlineButton(
-            onPressed: () {
-              setItemCategory(category);
-              Navigator.pop(context);
-            },
-            child: Text(category),
-            textColor: color,
-            highlightedBorderColor: color,
-            borderSide: BorderSide(color: color, width: currentItemCategory ? 2.0 : 1.0)),
-        margin: EdgeInsets.only(bottom: bottomMargin),
-      );
-    });
+      return OutlineButton(
+          onPressed: () {
+            setItemCategory(category);
+            Navigator.pop(context);
+          },
+          child: Text(category),
+          textColor: color,
+          highlightedBorderColor: color,
+          borderSide: BorderSide(color: color, width: currentItemCategory ? 2.0 : 1.0));
+    }).toList();
 
     final dialogContent = Container(
         padding: EdgeInsets.all(10.0),
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           title,
           subTitle,
+          Flexible(
+              child: Container(
+                  child: Scrollbar(
+                      controller: _scrollController,
+                      child: ListView(shrinkWrap: true, controller: _scrollController, children: categoryButtons)),
+                  margin: EdgeInsets.only(bottom: bottomMargin))),
           Container(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ...categoryButtons,
-                Container(
-                    child: OutlineButton(
-                      onPressed: () {
-                        setItemCategory(null);
-                        Navigator.pop(context);
-                      },
-                      child: Text("Keine"),
-                      textColor: Colors.orange,
-                      highlightedBorderColor: Colors.orange,
-                      borderSide: BorderSide(color: Colors.orange),
-                    ),
-                    margin: EdgeInsets.only(bottom: bottomMargin)),
-                Container(
-                  child: TextField(
-                    controller: _newCategoryEditingController,
-                    focusNode: _newCategoryEditionFocus,
-                    onSubmitted: (_) => submitNewCategory(),
-                    decoration: InputDecoration(
-                        labelText: "Neue Kategorie",
-                        isDense: true,
-                        border: OutlineInputBorder(),
-                        suffixIcon: IconButton(
-                            icon: Icon(Icons.check), onPressed: _newCategoryIsValid ? submitNewCategory : null)),
-                  ),
-                ),
-              ],
+            child: OutlineButton(
+              onPressed: () {
+                setItemCategory(null);
+                Navigator.pop(context);
+              },
+              child: Text("Keine"),
+              textColor: Colors.orange,
+              highlightedBorderColor: Colors.orange,
+              borderSide: BorderSide(color: Colors.orange),
+            ),
+            margin: EdgeInsets.only(bottom: bottomMargin),
+          ),
+          Container(
+            child: TextField(
+              controller: _newCategoryEditingController,
+              focusNode: _newCategoryEditionFocus,
+              onSubmitted: (_) => submitNewCategory(),
+              decoration: InputDecoration(
+                  labelText: "Neue Kategorie",
+                  isDense: true,
+                  border: OutlineInputBorder(),
+                  suffixIcon:
+                      IconButton(icon: Icon(Icons.check), onPressed: _newCategoryIsValid ? submitNewCategory : null)),
             ),
           ),
         ]));
