@@ -1,0 +1,8 @@
+[Unit]
+Description=Kaufhansel Backend
+User=kaufhansel
+Type=simple
+
+[Service]
+EnvironmentFile=/opt/kaufhansel/kaufhansel_service_config
+ExecStart=/usr/bin/java -jar /opt/kaufhansel/backend.jar --server.ssl.enabled=true --server.ssl.key-store-type=PKCS12 --server.ssl.key-store=/opt/kaufhansel/zwohansel.de.keystore --server.ssl.key-alias=zwohansel.de --server.ssl.key-store-password=${KAUFHANSEL_KEYSTORE_PASSWORD} --spring.data.mongodb.uri=${KAUFHANSEL_MONGODB_URI}

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/login_page.dart';
 import 'package:kaufhansel_client/rest_client.dart';
@@ -13,7 +14,8 @@ class ShoppingListApp extends StatefulWidget {
 }
 
 class _ShoppingListAppState extends State<ShoppingListApp> {
-  final client = RestClient(Uri.parse("https://192.168.188.60:8080"));
+  static const _serverUrl = kDebugMode ? "https://localhost:8080" : "https://zwohansel.de/kaufhansel/";
+  final _client = RestClient(Uri.parse(_serverUrl));
   bool _loggedIn = false;
 
   @override
@@ -22,6 +24,6 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     return MaterialApp(
         title: 'Kaufhansel',
         theme: ThemeData(primarySwatch: Colors.green, fontFamily: 'Roboto'),
-        home: RestClientWidget(client: client, child: home));
+        home: RestClientWidget(client: _client, child: home));
   }
 }

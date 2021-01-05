@@ -31,8 +31,9 @@ class RestClient {
 
   Future<bool> login(String username, String password) async {
     _httpClient.addCredentials(_serverUrl, "", HttpClientBasicCredentials(username, password));
-    var request = await _httpClient.getUrl(_serverUrl.resolve("rlogin"));
-    var response = await request.close().timeout(timeout);
+    final url = _serverUrl.resolve("rlogin");
+    final request = await _httpClient.getUrl(url);
+    final response = await request.close().timeout(timeout);
     return response.statusCode == 204;
   }
 
