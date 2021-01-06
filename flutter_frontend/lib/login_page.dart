@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:kaufhansel_client/error_dialog.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -84,13 +85,19 @@ class _LoginPageState extends State<LoginPage> {
                                     if (await RestClientWidget.of(context)
                                         .login(_userNameController.text, _passwordController.text)) {
                                       widget._loggedIn();
+                                    } else {
+                                      showErrorDialog(context,
+                                          "Haben wir Deinen Account gelöscht oder hast Du Deine Zugangsdaten vergessen?");
                                     }
                                   }
                                 },
                                 child: Text("Anmelden"))),
                         Padding(
                           padding: EdgeInsets.only(top: 10),
-                          child: OutlineButton(child: Text("Registrieren"), onPressed: () {}),
+                          child: OutlineButton(
+                              child: Text("Registrieren"),
+                              onPressed: () => showErrorDialog(
+                                  context, "Die Registrierung zum Kaufhansel wird bald für Dich verfügbar sein!")),
                         )
                       ],
                     )),

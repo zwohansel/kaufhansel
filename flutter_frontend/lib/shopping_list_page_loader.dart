@@ -49,7 +49,27 @@ class _ShoppingListPageLoaderState extends State<ShoppingListPageLoader> {
   Widget build(BuildContext context) {
     const String title = "Kaufhansel";
     if (_error != null) {
-      return Text(_error);
+      return Scaffold(
+          body: Center(
+              child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            child: Text("🤷‍♂️", style: TextStyle(fontFamilyFallback: ["NotoColorEmoji"], fontSize: 100)),
+            padding: EdgeInsets.all(20),
+          ),
+          Text(
+            "Oh nein! Haben wir Deine Einkaufsliste etwa verlegt?",
+            style: Theme.of(context).textTheme.headline6,
+          ),
+          Padding(
+              child: ElevatedButton(
+                child: Text("Nochmal versuchen"),
+                onPressed: _getMainShoppingList,
+              ),
+              padding: EdgeInsets.all(20))
+        ],
+      )));
     } else if (_loading) {
       return Scaffold(
         appBar: AppBar(
