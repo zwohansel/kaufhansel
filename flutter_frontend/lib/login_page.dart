@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:kaufhansel_client/error_dialog.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'error_dialog.dart';
 
 class LoginPage extends StatefulWidget {
   final void Function() _loggedIn;
@@ -17,6 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   final _loginFormKey = GlobalKey<FormState>();
   final _userNameController = TextEditingController();
   final _passwordController = TextEditingController();
+  var _loading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +52,7 @@ class _LoginPageState extends State<LoginPage> {
                             ],
                           ),
                         ),
+                        buildProgressBar(context),
                         TextFormField(
                           controller: _userNameController,
                           autofillHints: [AutofillHints.username],
@@ -79,25 +82,10 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         Padding(
                             padding: EdgeInsets.only(top: 15),
-                            child: ElevatedButton(
-                                onPressed: () async {
-                                  if (_loginFormKey.currentState.validate()) {
-                                    if (await RestClientWidget.of(context)
-                                        .login(_userNameController.text, _passwordController.text)) {
-                                      widget._loggedIn();
-                                    } else {
-                                      showErrorDialog(context,
-                                          "Haben wir Deinen Account gelöscht oder hast Du Deine Zugangsdaten vergessen?");
-                                    }
-                                  }
-                                },
-                                child: Text("Anmelden"))),
+                            child: ElevatedButton(child: Text("Anmelden"), onPressed: buildLoginFunction(context))),
                         Padding(
                           padding: EdgeInsets.only(top: 10),
-                          child: OutlineButton(
-                              child: Text("Registrieren"),
-                              onPressed: () => showErrorDialog(
-                                  context, "Die Registrierung zum Kaufhansel wird bald für Dich verfügbar sein!")),
+                          child: OutlineButton(child: Text("Registrieren"), onPressed: buildRegisterFunction(context)),
                         )
                       ],
                     )),
@@ -114,5 +102,47 @@ class _LoginPageState extends State<LoginPage> {
                 onTap: () => launch('https://zwohansel.de'),
               ))),
     );
+  }
+
+  Function buildLoginFunction(BuildContext context) {
+    if (_loading) {
+      return null;
+    } else {
+      return () {
+        if (_loginFormKey.currentState.validate()) {
+          setState(() {
+            _loading = true;
+          });
+          login(context);
+        }
+      };
+    }
+  }
+
+  void login(BuildContext context) async {
+    if (await RestClientWidget.of(context).login(_userNameController.text, _passwordController.text)) {
+      widget._loggedIn();
+    } else {
+      showErrorDialog(context, "Haben wir Deinen Account gelöscht oder hast Du Deine Zugangsdaten vergessen?");
+    }
+    setState(() {
+      _loading = false;
+    });
+  }
+
+  Function buildRegisterFunction(BuildContext context) {
+    if (_loading) {
+      return null;
+    } else {
+      return () => showErrorDialog(context, "Die Registrierung zum Kaufhansel wird bald für Dich verfügbar sein!");
+    }
+  }
+
+  Widget buildProgressBar(BuildContext context) {
+    if (_loading) {
+      return LinearProgressIndicator(minHeight: 5, backgroundColor: Theme.of(context).scaffoldBackgroundColor);
+    } else {
+      return SizedBox(height: 5);
+    }
   }
 }
