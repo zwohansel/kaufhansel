@@ -13,39 +13,55 @@ class ShoppingListPageLoader extends StatefulWidget {
 }
 
 class _ShoppingListPageLoaderState extends State<ShoppingListPageLoader> {
-  Future<ShoppingListModel> _futureShoppingList;
+  ShoppingListModel _shoppingList;
+  bool _loading = true;
+  String _error;
 
   @override
   void didChangeDependencies() {
     // Called after initState.
     // Unlike initState this method is called again if the RestClientWidget is exchanged.
     super.didChangeDependencies();
-    _futureShoppingList = _getMainShoppingList();
+    _getMainShoppingList();
   }
 
-  Future<ShoppingListModel> _getMainShoppingList() async {
-    final client = RestClientWidget.of(context);
-    final lists = await client.getShoppingLists();
-    return client.fetchShoppingList(lists.first.id);
+  void _getMainShoppingList() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final client = RestClientWidget.of(context);
+      final lists = await client.getShoppingLists();
+      final list = await client.fetchShoppingList(lists.first.id);
+      setState(() {
+        _shoppingList = list;
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     const String title = "Kaufhansel";
-    return FutureBuilder<ShoppingListModel>(
-      future: _futureShoppingList,
-      builder: (context, shoppingList) {
-        if (shoppingList.hasData) {
-          return ChangeNotifierProvider.value(value: shoppingList.data, child: ShoppingListPage(title: title));
-        } else if (shoppingList.hasError) {
-          return Text("ERROR: ${shoppingList.error}");
-        }
-        return Scaffold(
-            appBar: AppBar(
-              title: Text(title),
-            ),
-            body: Center(child: CircularProgressIndicator()));
-      },
-    );
+    if (_error != null) {
+      return Text(_error);
+    } else if (_loading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(title),
+        ),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    } else {
+      return ChangeNotifierProvider.value(
+        value: _shoppingList,
+        child: ShoppingListPage(title: title, onRefresh: _getMainShoppingList),
+      );
+    }
   }
 }

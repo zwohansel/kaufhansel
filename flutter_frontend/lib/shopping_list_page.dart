@@ -7,8 +7,9 @@ import 'model.dart';
 
 class ShoppingListPage extends StatelessWidget {
   final String title;
+  final void Function() _onRefresh;
 
-  ShoppingListPage({@required this.title});
+  ShoppingListPage({@required this.title, @required onRefresh}) : _onRefresh = onRefresh;
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +21,13 @@ class ShoppingListPage extends StatelessWidget {
           child: Scaffold(
               appBar: AppBar(
                 title: Text(title),
+                actions: [
+                  IconButton(
+                    icon: Icon(Icons.refresh),
+                    onPressed: _onRefresh,
+                    tooltip: "Aktualisieren",
+                  )
+                ],
                 bottom: TabBar(
                   tabs: [Tab(text: 'Alle'), ...categories.map((category) => Tab(text: category))],
                 ),

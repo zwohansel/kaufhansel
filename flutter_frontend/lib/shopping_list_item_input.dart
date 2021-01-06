@@ -87,7 +87,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
                         isDense: true,
                         contentPadding: EdgeInsets.fromLTRB(12, 8, 12, 8),
                         border: OutlineInputBorder(),
-                        hintText: "New Item"),
+                        hintText: "Das brauche ich noch..."),
                     controller: _newItemNameController,
                     enabled: !_submitting,
                     onSubmitted: (_) => addNewItem())),
