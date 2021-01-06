@@ -69,7 +69,7 @@ class ShoppingListItemTile extends StatelessWidget {
     shoppingList.removeItem(item);
   }
 
-  checkItem(ShoppingListItem item, bool checked, BuildContext context) async {
+  void checkItem(ShoppingListItem item, bool checked, BuildContext context) async {
     item.checked = checked; // TODO: What if the following request fails?
     final shoppingList = Provider.of<ShoppingListModel>(context, listen: false);
     await RestClientWidget.of(context).updateShoppingListItem(shoppingList.id, item);
