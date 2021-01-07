@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/rest_client.dart';
@@ -120,14 +123,24 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void login(BuildContext context) async {
-    if (await RestClientWidget.of(context).login(_userNameController.text, _passwordController.text)) {
-      widget._loggedIn();
-    } else {
-      showErrorDialog(context, "Haben wir Deinen Account gelöscht oder hast Du Deine Zugangsdaten vergessen?");
+    try {
+      if (await RestClientWidget.of(context).login(_userNameController.text, _passwordController.text)) {
+        widget._loggedIn();
+      } else {
+        showErrorDialog(context, "Haben wir Deinen Account gelöscht oder hast Du Deine Zugangsdaten vergessen?");
+      }
+    } on SocketException catch (e) {
+      if (e.osError.errorCode == 111 && Platform.isLinux || Platform.isAndroid) {
+        showErrorDialog(
+            context, "Haben wir den Server heruntergefahren oder bist du nicht mit dem Internet verbunden?");
+      }
+      showErrorDialog(context,
+          "Haben wir einen Fehler eingebaut oder hast du etwas falsch gemacht?\nComputer sagt: " + e.osError.message);
+    } finally {
+      setState(() {
+        _loading = false;
+      });
     }
-    setState(() {
-      _loading = false;
-    });
   }
 
   Function buildRegisterFunction(BuildContext context) {
