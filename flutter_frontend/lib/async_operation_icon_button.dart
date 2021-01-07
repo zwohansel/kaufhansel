@@ -5,7 +5,7 @@ class AsyncOperationIconButton extends StatelessWidget {
   final bool _loading;
   final VoidCallback _onPressed;
 
-  const AsyncOperationIconButton({@required Icon icon, @required bool loading, @required onPressed})
+  const AsyncOperationIconButton({@required Icon icon, @required bool loading, @required VoidCallback onPressed})
       : _icon = icon,
         _loading = loading,
         _onPressed = onPressed;
@@ -31,7 +31,7 @@ class AsyncOperationIconButton extends StatelessWidget {
     return Center(
       child: IconButton(
         splashRadius: 23,
-        icon: Icon(Icons.add),
+        icon: _icon,
         onPressed: _onPressed != null ? _onPressed : null,
       ),
     );

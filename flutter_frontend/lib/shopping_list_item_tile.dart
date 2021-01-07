@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:kaufhansel_client/async_operation_icon_button.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/shopping_list_item_edit_dialog.dart';
 import 'package:provider/provider.dart';
 
-class ShoppingListItemTile extends StatelessWidget {
+class ShoppingListItemTile extends StatefulWidget {
   final bool _showCategory;
 
   const ShoppingListItemTile(key, {bool showCategory = false})
       : _showCategory = showCategory,
         super(key: key);
+
+  @override
+  _ShoppingListItemTileState createState() => _ShoppingListItemTileState();
+}
+
+class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
+  bool _enabled = true;
+  bool _deleting = false;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +34,7 @@ class ShoppingListItemTile extends StatelessWidget {
         )
       ];
 
-      if (_showCategory && item.hasCategory()) {
+      if (widget._showCategory && item.hasCategory()) {
         titleElements.add(Container(
           child: Text(item.category,
               style: Theme.of(context).textTheme.subtitle2.apply(fontSizeDelta: -1, color: Colors.white70)),
@@ -39,39 +48,61 @@ class ShoppingListItemTile extends StatelessWidget {
         title: Wrap(children: titleElements),
         controlAffinity: ListTileControlAffinity.leading,
         secondary: Wrap(children: [
-          IconButton(icon: Icon(Icons.delete), onPressed: () => this.deleteItem(item, context)),
-          IconButton(
+          AsyncOperationIconButton(
+              icon: Icon(Icons.delete),
+              loading: _deleting,
+              onPressed: _enabled ? () => _handleDeleteItemPressed(item, context) : null),
+          AsyncOperationIconButton(
               icon: Icon(Icons.edit),
-              onPressed: () {
-                final RestClient client = RestClientWidget.of(context);
-                final shoppingList = Provider.of<ShoppingListModel>(context);
-                showDialog(
-                    context: context,
-                    builder: (context) {
-                      return EditShoppingListItemDialog(
-                        shoppingListId: shoppingList.id,
-                        item: item,
-                        categories: shoppingList.getCategories(),
-                        client: client,
-                      );
-                    });
-              })
+              loading: false,
+              onPressed: _enabled ? () => _handleEditItemPressed(item, context) : null)
         ]),
         value: item.checked,
-        onChanged: (checked) => this.checkItem(item, checked, context),
+        onChanged: _enabled ? (checked) => _handleCheckItemPressed(item, checked, context) : null,
       );
     });
   }
 
-  void deleteItem(ShoppingListItem item, BuildContext context) async {
+  void _handleDeleteItemPressed(ShoppingListItem item, BuildContext context) {
+    setState(() {
+      _enabled = false;
+      _deleting = true;
+    });
+    _deleteItem(item, context).whenComplete(() => setState(() {
+          _enabled = true;
+          _deleting = false;
+        }));
+  }
+
+  Future<void> _deleteItem(ShoppingListItem item, BuildContext context) async {
     final shoppingList = Provider.of<ShoppingListModel>(context, listen: false);
     await RestClientWidget.of(context).deleteShoppingListItem(shoppingList.id, item);
     shoppingList.removeItem(item);
   }
 
-  void checkItem(ShoppingListItem item, bool checked, BuildContext context) async {
+  void _handleCheckItemPressed(ShoppingListItem item, bool checked, BuildContext context) {
+    setState(() => _enabled = false);
+    _checkItem(item, checked, context).whenComplete(() => setState(() => _enabled = true));
+  }
+
+  Future<void> _checkItem(ShoppingListItem item, bool checked, BuildContext context) async {
     item.checked = checked; // TODO: What if the following request fails?
     final shoppingList = Provider.of<ShoppingListModel>(context, listen: false);
     await RestClientWidget.of(context).updateShoppingListItem(shoppingList.id, item);
+  }
+
+  void _handleEditItemPressed(ShoppingListItem item, BuildContext context) {
+    final RestClient client = RestClientWidget.of(context);
+    final shoppingList = Provider.of<ShoppingListModel>(context);
+    showDialog(
+        context: context,
+        builder: (context) {
+          return EditShoppingListItemDialog(
+            shoppingListId: shoppingList.id,
+            item: item,
+            categories: shoppingList.getCategories(),
+            client: client,
+          );
+        });
   }
 }

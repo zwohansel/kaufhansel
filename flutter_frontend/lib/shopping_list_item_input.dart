@@ -43,8 +43,6 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
   }
 
   Future<void> addNewItem(String name) async {
-    await Future.delayed(Duration(seconds: 5));
-
     final shoppingList = Provider.of<ShoppingListModel>(context);
     ShoppingListItem shoppingListItem =
         await RestClientWidget.of(context).createShoppingListItem(shoppingList.id, name, widget._category);
