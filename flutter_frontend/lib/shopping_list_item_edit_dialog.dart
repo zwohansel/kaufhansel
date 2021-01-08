@@ -33,7 +33,10 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
       setState(() => _newItemNameIsValid = _itemNameEditingController.text.trim().isNotEmpty);
     });
     _newCategoryEditingController.addListener(() {
-      setState(() => _newCategoryIsValid = _newCategoryEditingController.text.trim().isNotEmpty);
+      setState(() {
+        final category = _newCategoryEditingController.text.trim();
+        _newCategoryIsValid = category != CATEGORY_ALL && category.isNotEmpty;
+      });
     });
   }
 

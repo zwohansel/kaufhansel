@@ -7,10 +7,10 @@ import 'package:kaufhansel_client/shopping_list_item_edit_dialog.dart';
 import 'package:provider/provider.dart';
 
 class ShoppingListItemTile extends StatefulWidget {
-  final bool _showCategory;
+  final bool _showUserCategory;
 
-  const ShoppingListItemTile(key, {bool showCategory = false})
-      : _showCategory = showCategory,
+  const ShoppingListItemTile(key, {bool showUserCategory = false})
+      : _showUserCategory = showUserCategory,
         super(key: key);
 
   @override
@@ -34,7 +34,7 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
         )
       ];
 
-      if (widget._showCategory && item.hasCategory()) {
+      if (widget._showUserCategory && item.hasUserCategory()) {
         titleElements.add(Container(
           child: Text(item.category,
               style: Theme.of(context).textTheme.subtitle2.apply(fontSizeDelta: -1, color: Colors.white70)),
@@ -100,7 +100,7 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
           return EditShoppingListItemDialog(
             shoppingListId: shoppingList.id,
             item: item,
-            categories: shoppingList.getCategories(),
+            categories: shoppingList.getUserCategories(),
             client: client,
           );
         });

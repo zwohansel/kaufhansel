@@ -50,7 +50,7 @@ class RestClient {
     }
   }
 
-  Future<ShoppingListModel> fetchShoppingList(String shoppingListId) async {
+  Future<ShoppingListModel> fetchShoppingList(String shoppingListId, String name) async {
     var request = await _httpClient.getUrl(_serverUrl.resolve("shoppinglist/$shoppingListId"));
     request.headers.contentType = ContentType.json;
     var response = await request.close().timeout(timeout);
@@ -58,7 +58,7 @@ class RestClient {
     if (response.statusCode == 200) {
       final String decoded = await response.transform(utf8.decoder).join();
       List<dynamic> items = jsonDecode(decoded);
-      return ShoppingListModel(shoppingListId, items.map((e) => ShoppingListItem.fromJson(e)).toList());
+      return ShoppingListModel(shoppingListId, name, items.map((e) => ShoppingListItem.fromJson(e)).toList());
     } else if (response.statusCode == 404) {
       throw Exception('Failed to load shopping list: could not find any list with the given id');
     } else {

@@ -18,12 +18,12 @@ class ShoppingList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tiles = _shoppingList.items
-        .where((item) => _category == null || item.category == _category)
+        .where((item) => item.isInCategory(_category))
         .map((item) => ChangeNotifierProvider<ShoppingListItem>.value(
             value: item,
             child: ShoppingListItemTile(
               ValueKey(item.id),
-              showCategory: _category == null,
+              showUserCategory: _category == CATEGORY_ALL,
             )));
     final dividedTiles = ListTile.divideTiles(tiles: tiles, context: context).toList();
 

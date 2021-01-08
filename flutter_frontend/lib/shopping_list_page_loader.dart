@@ -33,7 +33,7 @@ class _ShoppingListPageLoaderState extends State<ShoppingListPageLoader> {
     try {
       final client = RestClientWidget.of(context);
       final lists = await client.getShoppingLists();
-      final list = await client.fetchShoppingList(lists.first.id);
+      final list = await client.fetchShoppingList(lists.first.id, lists.first.name);
       setState(() {
         _shoppingList = list;
         _loading = false;
@@ -80,7 +80,7 @@ class _ShoppingListPageLoaderState extends State<ShoppingListPageLoader> {
     } else {
       return ChangeNotifierProvider.value(
         value: _shoppingList,
-        child: ShoppingListPage(title: title, onRefresh: _getMainShoppingList),
+        child: ShoppingListPage(appTitle: title, onRefresh: _getMainShoppingList),
       );
     }
   }

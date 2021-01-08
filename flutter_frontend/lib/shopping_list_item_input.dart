@@ -44,8 +44,10 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
 
   Future<void> addNewItem(String name) async {
     final shoppingList = Provider.of<ShoppingListModel>(context);
+    // category CATEGORY_ALL is virtual, do not add it to items
+    final category = widget._category == CATEGORY_ALL ? null : widget._category;
     ShoppingListItem shoppingListItem =
-        await RestClientWidget.of(context).createShoppingListItem(shoppingList.id, name, widget._category);
+        await RestClientWidget.of(context).createShoppingListItem(shoppingList.id, name, category);
     shoppingList.addItem(shoppingListItem);
     _newItemNameController.clear();
     // Scroll to the new element after it has been added and rendered (at the end of this frame).
