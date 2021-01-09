@@ -82,6 +82,7 @@ class _LoginPageState extends State<LoginPage> {
                             }
                             return null;
                           },
+                          onFieldSubmitted: (_) => buildLoginFunction(context)?.call(),
                         ),
                         Padding(
                             padding: EdgeInsets.only(top: 15),
