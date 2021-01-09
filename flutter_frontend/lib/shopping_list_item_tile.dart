@@ -93,7 +93,7 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
 
   void _handleEditItemPressed(ShoppingListItem item, BuildContext context) {
     final RestClient client = RestClientWidget.of(context);
-    final shoppingList = Provider.of<ShoppingListModel>(context);
+    final shoppingList = Provider.of<ShoppingListModel>(context, listen: false);
     showDialog(
         context: context,
         builder: (context) {

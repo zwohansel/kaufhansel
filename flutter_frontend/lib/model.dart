@@ -10,7 +10,8 @@ class ShoppingListItem extends ChangeNotifier {
   String _name;
   bool _checked = false;
   String _category;
-  void Function() _notifyCategoryChanged;
+  VoidCallback _notifyCategoryChanged;
+  VoidCallback _notifyCheckedChanged;
 
   ShoppingListItem.create(this._name);
 
@@ -23,26 +24,33 @@ class ShoppingListItem extends ChangeNotifier {
   String get id => _id;
 
   set name(String value) {
-    _name = value;
-    notifyListeners();
+    if (value != _name) {
+      _name = value;
+      notifyListeners();
+    }
   }
 
   String get name => _name;
 
   set checked(bool value) {
-    _checked = value;
-    notifyListeners();
+    if (value != _checked) {
+      _checked = value;
+      notifyListeners();
+      _notifyCheckedChanged?.call();
+    }
   }
 
   bool get checked => _checked;
 
-  set categoryChangedCallback(void Function() callback) => _notifyCategoryChanged = callback;
+  set categoryChangedCallback(VoidCallback callback) => _notifyCategoryChanged = callback;
+
+  set checkedChangedCallback(VoidCallback callback) => _notifyCheckedChanged = callback;
 
   set category(String category) {
-    _category = category;
-    notifyListeners();
-    if (_notifyCategoryChanged != null) {
-      _notifyCategoryChanged();
+    if (category != _category) {
+      _category = category;
+      notifyListeners();
+      _notifyCategoryChanged?.call();
     }
   }
 
@@ -55,6 +63,18 @@ class ShoppingListItem extends ChangeNotifier {
   bool isInCategory(String category) {
     return category == CATEGORY_ALL || category == _category;
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ShoppingListItem &&
+        other._id == _id &&
+        other._name == _name &&
+        other._category == _category &&
+        other._checked == _checked;
+  }
+
+  @override
+  int get hashCode => _id.hashCode;
 }
 
 class ShoppingListModel extends ChangeNotifier {
@@ -63,7 +83,10 @@ class ShoppingListModel extends ChangeNotifier {
   final List<ShoppingListItem> _items;
 
   ShoppingListModel(this._id, this._name, this._items) {
-    _items.forEach((item) => item.categoryChangedCallback = this.notifyListeners);
+    _items.forEach((item) {
+      item.categoryChangedCallback = this.notifyListeners;
+      item.checkedChangedCallback = this.notifyListeners;
+    });
   }
 
   String get id => _id;
@@ -73,12 +96,14 @@ class ShoppingListModel extends ChangeNotifier {
   void addItem(ShoppingListItem item) {
     _items.add(item);
     item.categoryChangedCallback = notifyListeners;
+    item.checkedChangedCallback = notifyListeners;
     notifyListeners();
   }
 
   void removeItem(ShoppingListItem item) {
     _items.remove(item);
     item.categoryChangedCallback = null;
+    item.checkedChangedCallback = null;
     notifyListeners();
   }
 
