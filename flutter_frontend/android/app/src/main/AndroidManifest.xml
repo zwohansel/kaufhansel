@@ -2,7 +2,7 @@
     package="de.zwohansel.kaufhansel.kaufhansel_client">
    <application
         android:label="Kauf&#8203;hansel"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
