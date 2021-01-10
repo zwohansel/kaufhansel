@@ -73,7 +73,13 @@ class _ShoppingListPageLoaderState extends State<ShoppingListPageLoader> {
     } else if (_loading) {
       return Scaffold(
         appBar: AppBar(
-          title: Text(title),
+          title: Flex(direction: Axis.horizontal, crossAxisAlignment: CrossAxisAlignment.center, children: [
+            Icon(
+              Icons.shopping_cart_outlined,
+              size: Theme.of(context).primaryTextTheme.headline6.fontSize,
+            ),
+            Text(title)
+          ]),
         ),
         body: Center(child: CircularProgressIndicator()),
       );

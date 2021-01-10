@@ -6,6 +6,7 @@
 #endif
 
 #include "flutter/generated_plugin_registrant.h"
+#include "icon.h"
 
 struct _MyApplication {
   GtkApplication parent_instance;
@@ -47,6 +48,12 @@ static void my_application_activate(GApplication* application) {
   else {
     gtk_window_set_title(window, "Kaufhansel");
   }
+
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_inline(-1, icon, false, NULL);
+  #pragma GCC diagnostic pop
+  gtk_window_set_icon(window, pixbuf) ;
 
   gtk_window_set_default_size(window, 1280, 720);
   gtk_widget_show(GTK_WIDGET(window));
