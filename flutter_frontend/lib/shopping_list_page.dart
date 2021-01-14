@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/shopping_list.dart';
 import 'package:kaufhansel_client/shopping_list_drawer.dart';
+import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_title.dart';
 import 'package:provider/provider.dart';
 
@@ -10,8 +11,17 @@ import 'model.dart';
 class ShoppingListPage extends StatelessWidget {
   final String appTitle;
   final void Function() _onRefresh;
+  final void Function(ShoppingListFilterOption nextFilter) _onFilterChanged;
+  final ShoppingListFilterOption _filter;
 
-  ShoppingListPage({@required this.appTitle, @required onRefresh}) : _onRefresh = onRefresh;
+  ShoppingListPage(
+      {@required this.appTitle,
+      @required onRefresh,
+      @required ShoppingListFilterOption filter,
+      @required void Function(ShoppingListFilterOption nextFilter) onFilterChanged})
+      : _onRefresh = onRefresh,
+        _onFilterChanged = onFilterChanged,
+        _filter = filter;
 
   @override
   Widget build(BuildContext context) {
@@ -37,9 +47,18 @@ class ShoppingListPage extends StatelessWidget {
                           tabs: categories.map((category) => Tab(text: category)).toList(),
                         ),
                       ),
-                      endDrawer: ShoppingListDrawer(onRefreshPressed: _onRefresh),
+                      endDrawer: ShoppingListDrawer(
+                        onRefreshPressed: _onRefresh,
+                        filter: _filter,
+                        onFilterChanged: _onFilterChanged,
+                      ),
                       body: TabBarView(
-                          children: categories.map((category) => ShoppingList(category: category)).toList()));
+                          children: categories
+                              .map((category) => ShoppingList(
+                                    category: category,
+                                    filter: _filter,
+                                  ))
+                              .toList()));
                 },
               ));
         });

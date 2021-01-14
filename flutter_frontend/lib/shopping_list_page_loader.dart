@@ -4,10 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
+import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_page.dart';
 import 'package:provider/provider.dart';
 
 class ShoppingListPageLoader extends StatefulWidget {
+  final void Function(ShoppingListFilterOption nextFilter) _onFilterChanged;
+  final ShoppingListFilterOption _filter;
+
+  const ShoppingListPageLoader(
+      {@required ShoppingListFilterOption filter,
+      @required void Function(ShoppingListFilterOption nextFilter) onFilterChanged})
+      : _filter = filter,
+        _onFilterChanged = onFilterChanged;
+
   @override
   State<StatefulWidget> createState() => _ShoppingListPageLoaderState();
 }
@@ -86,7 +96,12 @@ class _ShoppingListPageLoaderState extends State<ShoppingListPageLoader> {
     } else {
       return ChangeNotifierProvider.value(
         value: _shoppingList,
-        child: ShoppingListPage(appTitle: title, onRefresh: _getMainShoppingList),
+        child: ShoppingListPage(
+          appTitle: title,
+          onRefresh: _getMainShoppingList,
+          filter: widget._filter,
+          onFilterChanged: widget._onFilterChanged,
+        ),
       );
     }
   }
