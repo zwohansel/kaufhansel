@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/shopping_list.dart';
+import 'package:kaufhansel_client/shopping_list_drawer.dart';
 import 'package:kaufhansel_client/shopping_list_title.dart';
 import 'package:provider/provider.dart';
 
@@ -32,17 +33,11 @@ class ShoppingListPage extends StatelessWidget {
                   return Scaffold(
                       appBar: AppBar(
                         title: ShoppingListTitle(appTitle),
-                        actions: [
-                          IconButton(
-                            icon: Icon(Icons.refresh),
-                            onPressed: _onRefresh,
-                            tooltip: "Aktualisieren",
-                          )
-                        ],
                         bottom: TabBar(
                           tabs: categories.map((category) => Tab(text: category)).toList(),
                         ),
                       ),
+                      endDrawer: ShoppingListDrawer(onRefreshPressed: _onRefresh),
                       body: TabBarView(
                           children: categories.map((category) => ShoppingList(category: category)).toList()));
                 },

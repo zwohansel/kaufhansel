@@ -32,6 +32,7 @@ class ShoppingList extends StatelessWidget {
                     isAlwaysShown: true,
                     controller: _scrollController,
                     child: ListView(
+                      shrinkWrap: true,
                       children: dividedTiles,
                       controller: _scrollController,
                     ))),
