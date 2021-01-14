@@ -43,22 +43,38 @@ class ShoppingListPage extends StatelessWidget {
                   return Scaffold(
                       appBar: AppBar(
                         title: ShoppingListTitle(appTitle),
-                        bottom: TabBar(
-                          tabs: categories.map((category) => Tab(text: category)).toList(),
-                        ),
+                        shadowColor: Colors.transparent,
                       ),
                       endDrawer: ShoppingListDrawer(
                         onRefreshPressed: _onRefresh,
                         filter: _filter,
                         onFilterChanged: _onFilterChanged,
                       ),
-                      body: TabBarView(
-                          children: categories
-                              .map((category) => ShoppingList(
-                                    category: category,
-                                    filter: _filter,
-                                  ))
-                              .toList()));
+                      body: Column(children: [
+                        Container(
+                            decoration: BoxDecoration(color: Theme.of(context).primaryColor, boxShadow: [
+                              BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  spreadRadius: 3,
+                                  blurRadius: 4,
+                                  offset: Offset(0, 3))
+                            ]),
+                            child: Material(
+                                type: MaterialType.transparency,
+                                child: TabBar(
+                                  tabs: categories.map((category) => Tab(text: category)).toList(),
+                                  indicator:
+                                      BoxDecoration(border: Border(bottom: BorderSide(width: 3, color: Colors.white))),
+                                ))),
+                        Expanded(
+                            child: TabBarView(
+                                children: categories
+                                    .map((category) => ShoppingList(
+                                          category: category,
+                                          filter: _filter,
+                                        ))
+                                    .toList()))
+                      ]));
                 },
               ));
         });
