@@ -135,13 +135,14 @@ class _LoginPageState extends State<LoginPage> {
       if (e.osError.errorCode == 111 && Platform.isLinux || Platform.isAndroid) {
         showErrorDialog(
             context, "Haben wir den Server heruntergefahren oder bist du nicht mit dem Internet verbunden?");
+      } else {
+        showErrorDialog(context,
+            "Haben wir einen Fehler eingebaut oder hast du etwas falsch gemacht?\nComputer sagt: " + e.osError.message);
       }
-      showErrorDialog(context,
-          "Haben wir einen Fehler eingebaut oder hast du etwas falsch gemacht?\nComputer sagt: " + e.osError.message);
     } on TimeoutException {
       showErrorDialog(context,
           "Schläft der Server oder ist das Internet zu langsam?\nJedenfalls hat das alles viel zu lange gedauert.");
-    } on Exception catch (e) {
+    } catch (e) {
       showErrorDialog(context,
           "Haben wir einen Fehler eingebaut oder hast du etwas falsch gemacht?\nComputer sagt: " + e.toString());
     } finally {
