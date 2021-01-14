@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -137,6 +138,12 @@ class _LoginPageState extends State<LoginPage> {
       }
       showErrorDialog(context,
           "Haben wir einen Fehler eingebaut oder hast du etwas falsch gemacht?\nComputer sagt: " + e.osError.message);
+    } on TimeoutException {
+      showErrorDialog(context,
+          "Schläft der Server oder ist das Internet zu langsam?\nJedenfalls hat das alles viel zu lange gedauert.");
+    } on Exception catch (e) {
+      showErrorDialog(context,
+          "Haben wir einen Fehler eingebaut oder hast du etwas falsch gemacht?\nComputer sagt: " + e.toString());
     } finally {
       setState(() {
         _loading = false;
