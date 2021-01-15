@@ -9,14 +9,13 @@ import 'package:kaufhansel_client/shopping_list_page.dart';
 import 'package:provider/provider.dart';
 
 class ShoppingListPageLoader extends StatefulWidget {
-  final void Function(ShoppingListFilterOption nextFilter) _onFilterChanged;
   final ShoppingListFilterOption _filter;
+  final void Function(int index) _onTabIndexChanged;
 
   const ShoppingListPageLoader(
-      {@required ShoppingListFilterOption filter,
-      @required void Function(ShoppingListFilterOption nextFilter) onFilterChanged})
+      {@required ShoppingListFilterOption filter, @required void Function(int index) onTabIndexChanged})
       : _filter = filter,
-        _onFilterChanged = onFilterChanged;
+        _onTabIndexChanged = onTabIndexChanged;
 
   @override
   State<StatefulWidget> createState() => _ShoppingListPageLoaderState();
@@ -57,11 +56,9 @@ class _ShoppingListPageLoaderState extends State<ShoppingListPageLoader> {
 
   @override
   Widget build(BuildContext context) {
-    const String title = "Kaufhansel";
     if (_error != null) {
-      return Scaffold(
-          body: Center(
-              child: Column(
+      return Center(
+          child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
@@ -79,28 +76,14 @@ class _ShoppingListPageLoaderState extends State<ShoppingListPageLoader> {
               ),
               padding: EdgeInsets.all(20))
         ],
-      )));
+      ));
     } else if (_loading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Flex(direction: Axis.horizontal, crossAxisAlignment: CrossAxisAlignment.center, children: [
-            Icon(
-              Icons.shopping_cart_outlined,
-              size: Theme.of(context).primaryTextTheme.headline6.fontSize,
-            ),
-            Text(title)
-          ]),
-        ),
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return Center(child: CircularProgressIndicator());
     } else {
       return ChangeNotifierProvider.value(
         value: _shoppingList,
         child: ShoppingListPage(
-          appTitle: title,
-          onRefresh: _getMainShoppingList,
           filter: widget._filter,
-          onFilterChanged: widget._onFilterChanged,
         ),
       );
     }

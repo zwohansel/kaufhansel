@@ -125,6 +125,20 @@ class ShoppingListModel extends ChangeNotifier {
   }
 }
 
+class ShoppingListTabSelection extends ChangeNotifier {
+  int _currentTabIndex;
+
+  ShoppingListTabSelection(this._currentTabIndex);
+
+  int get currentTabIndex => _currentTabIndex;
+  set currentTabIndex(int index) {
+    if (index != _currentTabIndex) {
+      _currentTabIndex = index;
+      notifyListeners();
+    }
+  }
+}
+
 class ShoppingListInfo {
   String _id;
   String _name;

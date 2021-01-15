@@ -3,37 +3,22 @@ import 'package:provider/provider.dart';
 
 import 'model.dart';
 
-class ShoppingListTitle extends StatefulWidget {
-  final String _appTitle;
-
-  ShoppingListTitle(String appTitle) : _appTitle = appTitle;
-
-  @override
-  _ShoppingListTitleState createState() => _ShoppingListTitleState();
-}
-
-class _ShoppingListTitleState extends State<ShoppingListTitle> {
-  int _currentTabIndex;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final tabController = DefaultTabController.of(context);
-    setState(() {
-      _currentTabIndex = tabController.index;
-    });
-    tabController.addListener(() {
-      setState(() {
-        _currentTabIndex = tabController.index;
-      });
-    });
-  }
-
+class ShoppingListTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Selector<ShoppingListModel, _ShoppingListTitleInfo>(
       selector: (_, shoppingList) {
-        final currentCategory = shoppingList.getAllCategories()[_currentTabIndex];
+        if (shoppingList == null) {
+          return null;
+        }
+        final currentTabIndex = Provider.of<ShoppingListTabSelection>(context, listen: true).currentTabIndex;
+        final categories = shoppingList.getAllCategories();
+
+        if (categories.length <= currentTabIndex) {
+          return null;
+        }
+
+        final currentCategory = shoppingList.getAllCategories()[currentTabIndex];
         final itemsInCategory = shoppingList.items.where((item) => item.isInCategory(currentCategory));
         final checkedItemsInCategory = itemsInCategory.where((item) => item.checked);
         return _ShoppingListTitleInfo(shoppingList.name, itemsInCategory.length, checkedItemsInCategory.length);
@@ -52,21 +37,25 @@ class _ShoppingListTitleState extends State<ShoppingListTitle> {
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.ideographic,
               //mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(widget._appTitle),
-                Padding(
-                  child: Text(
-                    "${titleInfo.shoppingListName}: ${titleInfo.numChecked}/${titleInfo.numTotal}",
-                    style: Theme.of(context).primaryTextTheme.subtitle1.apply(color: Colors.white70),
-                  ),
-                  padding: EdgeInsets.only(left: 10),
-                )
-              ],
+              children: [Text('Kaufhansel'), _buildShoppingListInfoWidget(context, titleInfo)],
             )
           ],
         );
       },
     );
+  }
+
+  Widget _buildShoppingListInfoWidget(BuildContext context, _ShoppingListTitleInfo titleInfo) {
+    if (titleInfo != null) {
+      return Padding(
+        child: Text(
+          "${titleInfo.shoppingListName}: ${titleInfo.numChecked}/${titleInfo.numTotal}",
+          style: Theme.of(context).primaryTextTheme.subtitle1.apply(color: Colors.white70),
+        ),
+        padding: EdgeInsets.only(left: 10),
+      );
+    }
+    return Container();
   }
 }
 
