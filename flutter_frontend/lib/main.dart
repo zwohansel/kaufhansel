@@ -89,22 +89,6 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
           );
         },
       );
-      return ChangeNotifierProvider.value(
-          value: _shoppingList,
-          builder: (context, child) {
-            return Scaffold(
-              appBar: AppBar(
-                title: ShoppingListTitle(),
-                shadowColor: Colors.transparent,
-              ),
-              endDrawer: ShoppingListDrawer(
-                onRefreshPressed: () {},
-                filter: _filter,
-                onFilterChanged: _onFilterChanged,
-              ),
-              body: _buildShoppingList(context),
-            );
-          });
     }
 
     return LoginPage(loggedIn: _onLoggedIn);
