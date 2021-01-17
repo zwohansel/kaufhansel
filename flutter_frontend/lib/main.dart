@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/login_page.dart';
 import 'package:kaufhansel_client/rest_client.dart';
@@ -24,9 +25,10 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   bool _loggedIn = false;
   ShoppingListFilterOption _filter = ShoppingListFilterOption.ALL;
 
-  ShoppingList _shoppingList;
-  bool _loadingShoppingList = true;
-  String _shoppingListLoadError;
+  List<ShoppingListInfo> _shoppingListInfos;
+  String _error;
+  int _currentShoppingListIndex = 0;
+  ShoppingList _currentShoppingList;
 
   void _onFilterChanged(ShoppingListFilterOption nextFilter) {
     setState(() {
@@ -36,24 +38,25 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   void _onLoggedIn() {
     setState(() => _loggedIn = true);
-    _getMainShoppingList();
+    _fetchShoppingListInfos();
   }
 
-  void _getMainShoppingList() async {
+  void _fetchShoppingListInfos() async {
     setState(() {
-      _loadingShoppingList = true;
-      _shoppingListLoadError = null;
+      _shoppingListInfos = null;
+      _currentShoppingList = null;
+      _error = null;
     });
+
     try {
       final lists = await _client.getShoppingLists();
-      final list = await _client.fetchShoppingList(lists.first.id, lists.first.name);
       setState(() {
-        _shoppingList = list;
-        _loadingShoppingList = false;
+        _shoppingListInfos = lists;
+        _fetchCurrentShoppingList();
       });
     } catch (e) {
       setState(() {
-        _shoppingListLoadError = e.toString();
+        _error = e.toString();
       });
     }
   }
@@ -71,7 +74,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     if (_loggedIn) {
       return MultiProvider(
         providers: [
-          ChangeNotifierProvider.value(value: _shoppingList),
+          ChangeNotifierProvider.value(value: _currentShoppingList),
           ChangeNotifierProvider(create: (context) => ShoppingListTabSelection(0))
         ],
         builder: (context, child) {
@@ -81,9 +84,10 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               shadowColor: Colors.transparent,
             ),
             endDrawer: ShoppingListDrawer(
-              onRefreshPressed: _getMainShoppingList,
+              onRefreshPressed: _fetchShoppingListInfos,
               filter: _filter,
               onFilterChanged: _onFilterChanged,
+              shoppingListInfos: _shoppingListInfos,
             ),
             body: _buildShoppingList(context),
           );
@@ -94,8 +98,16 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     return LoginPage(loggedIn: _onLoggedIn);
   }
 
+  void _handleRetry() {
+    if (_shoppingListInfos == null) {
+      _fetchShoppingListInfos();
+    } else if (_currentShoppingList == null) {
+      _fetchCurrentShoppingList();
+    }
+  }
+
   Widget _buildShoppingList(BuildContext context) {
-    if (_shoppingListLoadError != null) {
+    if (_error != null) {
       return Center(
           child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -105,24 +117,36 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
             padding: EdgeInsets.all(20),
           ),
           Text(
-            "Oh nein! Haben wir Deine Einkaufsliste etwa verlegt?",
+            "Oh nein! Haben wir Deine Einkaufslisten etwa verlegt?",
             style: Theme.of(context).textTheme.headline6,
           ),
           Padding(
-              child: ElevatedButton(
-                child: Text("Nochmal versuchen"),
-                onPressed: _getMainShoppingList,
-              ),
+              child: ElevatedButton(child: Text("Nochmal versuchen"), onPressed: _handleRetry),
               padding: EdgeInsets.all(20))
         ],
       ));
-    } else if (_loadingShoppingList) {
+    } else if (_shoppingListInfos == null || _currentShoppingList == null) {
       return Center(child: CircularProgressIndicator());
     } else {
-      return ChangeNotifierProvider.value(
-        value: _shoppingList,
-        child: ShoppingListPage(filter: _filter),
-      );
+      return ShoppingListPage(filter: _filter);
+    }
+  }
+
+  void _fetchCurrentShoppingList() async {
+    ShoppingListInfo info = _shoppingListInfos[_currentShoppingListIndex];
+    setState(() {
+      _currentShoppingList = null;
+      _error = null;
+    });
+    try {
+      final fetchedList = await _client.fetchShoppingList(info.id, info.name);
+      setState(() {
+        _currentShoppingList = fetchedList;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
     }
   }
 }

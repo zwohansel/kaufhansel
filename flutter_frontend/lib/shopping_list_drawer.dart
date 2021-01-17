@@ -1,22 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:kaufhansel_client/error_dialog.dart';
 import 'package:kaufhansel_client/shopping_list_filter.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
+
+import 'model.dart';
 
 class ShoppingListDrawer extends StatelessWidget {
   const ShoppingListDrawer(
       {@required VoidCallback onRefreshPressed,
       @required ShoppingListFilterOption filter,
-      @required void Function(ShoppingListFilterOption nextFilter) onFilterChanged})
+      @required void Function(ShoppingListFilterOption nextFilter) onFilterChanged,
+      @required List<ShoppingListInfo> shoppingListInfos})
       : _onRefreshPressed = onRefreshPressed,
         _onFilterChanged = onFilterChanged,
-        _filter = filter;
+        _filter = filter,
+        _shoppingListInfos = shoppingListInfos;
 
   final VoidCallback _onRefreshPressed;
   final void Function(ShoppingListFilterOption nextFilter) _onFilterChanged;
   final ShoppingListFilterOption _filter;
+  final List<ShoppingListInfo> _shoppingListInfos;
 
   @override
   Widget build(BuildContext context) {
+    final infoTiles = _shoppingListInfos.map((info) => ListTile(
+        key: ValueKey(info.id),
+        title: Text(info.name),
+        trailing: IconButton(
+            icon: Icon(Icons.edit),
+            onPressed: () {
+              showErrorDialog(context, "Kannst du nicht schreiben?");
+            }),
+        onTap: () {
+          showErrorDialog(context, "Bringt noch nix.");
+        }));
+
     return Drawer(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -55,16 +73,7 @@ class ShoppingListDrawer extends StatelessWidget {
           ),
           Flexible(
             child: ListView(
-              children: ListTile.divideTiles(context: context, tiles: [
-                ListTile(
-                    title: Text("Meine Liste"),
-                    trailing: IconButton(
-                      icon: Icon(Icons.edit),
-                      onPressed: () {},
-                    ),
-                    onTap: () {}),
-                ListTile(title: Text("Schindlers Liste"), onTap: () {})
-              ]).toList(),
+              children: ListTile.divideTiles(context: context, tiles: infoTiles).toList(),
             ),
           ),
           Container(
