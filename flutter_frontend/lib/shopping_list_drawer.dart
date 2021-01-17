@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kaufhansel_client/shopping_list_filter.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 
 class ShoppingListDrawer extends StatelessWidget {
@@ -13,34 +14,6 @@ class ShoppingListDrawer extends StatelessWidget {
   final VoidCallback _onRefreshPressed;
   final void Function(ShoppingListFilterOption nextFilter) _onFilterChanged;
   final ShoppingListFilterOption _filter;
-
-  List<bool> _calculateSelection() {
-    switch (_filter) {
-      case ShoppingListFilterOption.UNCHECKED:
-        return [true, false];
-      case ShoppingListFilterOption.CHECKED:
-        return [false, true];
-      case ShoppingListFilterOption.ALL:
-      default:
-        return [false, false];
-    }
-  }
-
-  void _setSelection(int index) {
-    if (index == 0) {
-      if (_filter == ShoppingListFilterOption.UNCHECKED) {
-        _onFilterChanged(ShoppingListFilterOption.ALL);
-      } else {
-        _onFilterChanged(ShoppingListFilterOption.UNCHECKED);
-      }
-    } else if (index == 1) {
-      if (_filter == ShoppingListFilterOption.CHECKED) {
-        _onFilterChanged(ShoppingListFilterOption.ALL);
-      } else {
-        _onFilterChanged(ShoppingListFilterOption.CHECKED);
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,22 +36,15 @@ class ShoppingListDrawer extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     direction: Axis.horizontal,
                     children: [
-                      ToggleButtons(
-                          fillColor: Colors.white,
-                          color: Colors.white,
-                          selectedColor: Colors.black,
-                          hoverColor: Theme.of(context).secondaryHeaderColor,
-                          children: [
-                            Tooltip(message: "Was muss ich noch kaufen", child: Icon(Icons.check_box_outline_blank)),
-                            Tooltip(message: "Was ist schon im Einkaufswagen", child: Icon(Icons.check_box_outlined)),
-                          ],
-                          onPressed: _setSelection,
-                          isSelected: _calculateSelection()),
+                      ShoppingListFilter(_onFilterChanged, _filter),
                       IconButton(
                         icon: Icon(Icons.refresh),
                         color: Theme.of(context).primaryIconTheme.color,
                         splashRadius: 25,
-                        onPressed: _onRefreshPressed,
+                        onPressed: () {
+                          _onRefreshPressed();
+                          Navigator.pop(context);
+                        },
                         tooltip: "Aktualisieren",
                       ),
                     ],
@@ -109,14 +75,20 @@ class ShoppingListDrawer extends StatelessWidget {
                   child: Text("Neue Liste"),
                   textColor: Theme.of(context).primaryIconTheme.color,
                   borderSide: BorderSide(color: Theme.of(context).primaryIconTheme.color),
-                  onPressed: () {},
+                  onPressed: () {
+                    // TODO
+                    Navigator.pop(context);
+                  },
                 ),
                 SizedBox(height: 10),
                 OutlineButton(
                   child: Text("Einstellungen"),
                   textColor: Theme.of(context).primaryIconTheme.color,
                   borderSide: BorderSide(color: Theme.of(context).primaryIconTheme.color),
-                  onPressed: () {},
+                  onPressed: () {
+                    //TODO
+                    Navigator.pop(context);
+                  },
                 )
               ],
             ),

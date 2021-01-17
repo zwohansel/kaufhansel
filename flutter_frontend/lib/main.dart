@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/login_page.dart';
 import 'package:kaufhansel_client/rest_client.dart';
@@ -62,6 +61,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Kaufhansel',
         theme: ThemeData(primarySwatch: Colors.green, fontFamily: 'Roboto'),
         home: RestClientWidget(client: _client, child: _buildContent(context)));
