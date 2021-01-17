@@ -40,10 +40,4 @@ class _DefaultTabControllerIndexListenerState extends State<DefaultTabController
   Widget build(BuildContext context) {
     return Container();
   }
-
-  @override
-  void dispose() {
-    super.dispose();
-    DefaultTabController.of(context).removeListener(_onTabControllerChanged);
-  }
 }

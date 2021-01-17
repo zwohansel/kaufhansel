@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/default_tab_controller_index_listener.dart';
@@ -19,6 +21,8 @@ class ShoppingListPage extends StatelessWidget {
         builder: (context, categories, child) {
           return DefaultTabController(
               length: categories.length,
+              initialIndex: min(
+                  Provider.of<ShoppingListTabSelection>(context, listen: false).currentTabIndex, categories.length - 1),
               child: Builder(
                 builder: (context) {
                   final tabController = DefaultTabController.of(context);

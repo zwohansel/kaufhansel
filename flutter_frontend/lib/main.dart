@@ -81,7 +81,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               shadowColor: Colors.transparent,
             ),
             endDrawer: ShoppingListDrawer(
-              onRefreshPressed: () {},
+              onRefreshPressed: _getMainShoppingList,
               filter: _filter,
               onFilterChanged: _onFilterChanged,
             ),
