@@ -75,7 +75,7 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
   }
 
   Future<void> _deleteItem(ShoppingListItem item, BuildContext context) async {
-    final shoppingList = Provider.of<ShoppingListModel>(context, listen: false);
+    final shoppingList = Provider.of<ShoppingList>(context, listen: false);
     await RestClientWidget.of(context).deleteShoppingListItem(shoppingList.id, item);
     shoppingList.removeItem(item);
   }
@@ -87,13 +87,13 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
 
   Future<void> _checkItem(ShoppingListItem item, bool checked, BuildContext context) async {
     item.checked = checked; // TODO: What if the following request fails?
-    final shoppingList = Provider.of<ShoppingListModel>(context, listen: false);
+    final shoppingList = Provider.of<ShoppingList>(context, listen: false);
     await RestClientWidget.of(context).updateShoppingListItem(shoppingList.id, item);
   }
 
   void _handleEditItemPressed(ShoppingListItem item, BuildContext context) {
     final RestClient client = RestClientWidget.of(context);
-    final shoppingList = Provider.of<ShoppingListModel>(context, listen: false);
+    final shoppingList = Provider.of<ShoppingList>(context, listen: false);
     showDialog(
         context: context,
         builder: (context) {

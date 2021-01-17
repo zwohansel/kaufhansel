@@ -24,7 +24,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   bool _loggedIn = false;
   ShoppingListFilterOption _filter = ShoppingListFilterOption.ALL;
 
-  ShoppingListModel _shoppingList;
+  ShoppingList _shoppingList;
   bool _loadingShoppingList = true;
   String _shoppingListLoadError;
 

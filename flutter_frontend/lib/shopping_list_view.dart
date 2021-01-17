@@ -6,8 +6,8 @@ import 'package:provider/provider.dart';
 
 import 'model.dart';
 
-class ShoppingList extends StatelessWidget {
-  ShoppingList({String category, @required ShoppingListFilterOption filter})
+class ShoppingListView extends StatelessWidget {
+  ShoppingListView({String category, @required ShoppingListFilterOption filter})
       : _category = category,
         _filter = filter,
         _scrollController = ScrollController();
@@ -18,7 +18,7 @@ class ShoppingList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Selector<ShoppingListModel, Iterable<ShoppingListItem>>(
+    return Selector<ShoppingList, Iterable<ShoppingListItem>>(
         selector: (_, shoppingList) =>
             shoppingList.items.where((item) => item.isInCategory(_category)).toList(growable: false),
         builder: (context, shoppingListItems, child) {

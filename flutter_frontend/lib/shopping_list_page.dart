@@ -3,8 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/default_tab_controller_index_listener.dart';
-import 'package:kaufhansel_client/shopping_list.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
+import 'package:kaufhansel_client/shopping_list_view.dart';
 import 'package:provider/provider.dart';
 
 import 'model.dart';
@@ -16,7 +16,7 @@ class ShoppingListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Selector<ShoppingListModel, List<String>>(
+    return Selector<ShoppingList, List<String>>(
         selector: (_, shoppingList) => shoppingList.getAllCategories(),
         builder: (context, categories, child) {
           return DefaultTabController(
@@ -50,7 +50,7 @@ class ShoppingListPage extends StatelessWidget {
                     Expanded(
                         child: TabBarView(
                             children: categories
-                                .map((category) => ShoppingList(
+                                .map((category) => ShoppingListView(
                                       category: category,
                                       filter: _filter,
                                     ))

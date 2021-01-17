@@ -77,12 +77,12 @@ class ShoppingListItem extends ChangeNotifier {
   int get hashCode => _id.hashCode;
 }
 
-class ShoppingListModel extends ChangeNotifier {
+class ShoppingList extends ChangeNotifier {
   final String _id;
   final String _name;
   final List<ShoppingListItem> _items;
 
-  ShoppingListModel(this._id, this._name, this._items) {
+  ShoppingList(this._id, this._name, this._items) {
     _items.forEach((item) {
       item.categoryChangedCallback = this.notifyListeners;
       item.checkedChangedCallback = this.notifyListeners;

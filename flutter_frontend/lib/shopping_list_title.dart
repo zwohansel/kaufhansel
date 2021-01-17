@@ -6,7 +6,7 @@ import 'model.dart';
 class ShoppingListTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Selector<ShoppingListModel, _ShoppingListTitleInfo>(
+    return Selector<ShoppingList, _ShoppingListTitleInfo>(
       selector: (_, shoppingList) {
         if (shoppingList == null) {
           return null;
