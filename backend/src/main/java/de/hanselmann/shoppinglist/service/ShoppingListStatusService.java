@@ -14,7 +14,7 @@ public class ShoppingListStatusService {
     }
 
     public int getNumberOfOpenItems() {
-        return shoppingListService.getShoppingListOfCurrentUser().getByChecked(false).size();
+        return shoppingListService.getFirstShoppingListOfCurrentUser().getByChecked(false).size();
     }
 
 }

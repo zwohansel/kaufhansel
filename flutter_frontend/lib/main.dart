@@ -25,15 +25,24 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   bool _loggedIn = false;
   ShoppingListFilterOption _filter = ShoppingListFilterOption.ALL;
 
-  List<ShoppingListInfo> _shoppingListInfos;
   String _error;
-  int _currentShoppingListIndex = 0;
+  List<ShoppingListInfo> _shoppingListInfos;
+  ShoppingListInfo _currentShoppingListInfo;
   ShoppingList _currentShoppingList;
 
   void _onFilterChanged(ShoppingListFilterOption nextFilter) {
     setState(() {
       _filter = nextFilter;
     });
+  }
+
+  void _onShoppingListSelected(ShoppingListInfo info) {
+    if (info != _currentShoppingListInfo) {
+      setState(() {
+        _currentShoppingListInfo = info;
+        _fetchCurrentShoppingList();
+      });
+    }
   }
 
   void _onLoggedIn() {
@@ -52,6 +61,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       final lists = await _client.getShoppingLists();
       setState(() {
         _shoppingListInfos = lists;
+        _currentShoppingListInfo = lists.isNotEmpty ? lists.first : null;
         _fetchCurrentShoppingList();
       });
     } catch (e) {
@@ -87,7 +97,8 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               onRefreshPressed: _fetchShoppingListInfos,
               filter: _filter,
               onFilterChanged: _onFilterChanged,
-              shoppingListInfos: _shoppingListInfos,
+              shoppingLists: _shoppingListInfos,
+              onShoppingListSelected: _onShoppingListSelected,
             ),
             body: _buildShoppingList(context),
           );
@@ -133,13 +144,12 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   }
 
   void _fetchCurrentShoppingList() async {
-    ShoppingListInfo info = _shoppingListInfos[_currentShoppingListIndex];
     setState(() {
       _currentShoppingList = null;
       _error = null;
     });
     try {
-      final fetchedList = await _client.fetchShoppingList(info.id, info.name);
+      final fetchedList = await _client.fetchShoppingList(_currentShoppingListInfo.id, _currentShoppingListInfo.name);
       setState(() {
         _currentShoppingList = fetchedList;
       });

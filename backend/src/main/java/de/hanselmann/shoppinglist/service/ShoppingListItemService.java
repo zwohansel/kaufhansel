@@ -36,13 +36,13 @@ public class ShoppingListItemService {
 
     @GraphQLQuery
     public @GraphQLNonNull List<@GraphQLNonNull ShoppingListItem> getShoppingListItems() {
-        return shoppingListService.getShoppingListOfCurrentUser().getItems();
+        return shoppingListService.getFirstShoppingListOfCurrentUser().getItems();
     }
 
     @GraphQLMutation
     public @GraphQLNonNull ShoppingListItem createShoppingListItem(
             @GraphQLNonNull @GraphQLArgument(name = "name") String name) {
-        ShoppingList shoppingList = shoppingListService.getShoppingListOfCurrentUser();
+        ShoppingList shoppingList = shoppingListService.getFirstShoppingListOfCurrentUser();
         ShoppingListItem item = new ShoppingListItem(name);
         shoppingList.addItem(item);
         shoppingListService.saveShoppingList(shoppingList);
@@ -54,7 +54,7 @@ public class ShoppingListItemService {
     @GraphQLMutation
     public @GraphQLNonNull List<ShoppingListItem> updateShoppingListItems(
             @GraphQLNonNull @GraphQLArgument(name = "items") List<@GraphQLNonNull ShoppingListItem> items) {
-        ShoppingList shoppingList = shoppingListService.getShoppingListOfCurrentUser();
+        ShoppingList shoppingList = shoppingListService.getFirstShoppingListOfCurrentUser();
 
         List<ShoppingListItem> changedItems = new ArrayList<>();
         for (ShoppingListItem requestItem : items) {
@@ -86,7 +86,7 @@ public class ShoppingListItemService {
     @GraphQLMutation
     public @GraphQLNonNull @GraphQLId String deleteShoppingListItem(
             @GraphQLNonNull @GraphQLId @GraphQLArgument(name = "id") String id) {
-        ShoppingList shoppingList = shoppingListService.getShoppingListOfCurrentUser();
+        ShoppingList shoppingList = shoppingListService.getFirstShoppingListOfCurrentUser();
         Optional<ShoppingListItem> deltedItem = shoppingList.deleteItemById(id);
         if (deltedItem.isPresent()) {
             shoppingListService.saveShoppingList(shoppingList);
@@ -98,7 +98,7 @@ public class ShoppingListItemService {
 
     @GraphQLMutation
     public @GraphQLNonNull boolean clearShoppingList() {
-        ShoppingList shoppingList = shoppingListService.getShoppingListOfCurrentUser();
+        ShoppingList shoppingList = shoppingListService.getFirstShoppingListOfCurrentUser();
         List<ShoppingListItem> items = shoppingList.getItems();
         shoppingList.clearItems();
         shoppingListService.saveShoppingList(shoppingList);

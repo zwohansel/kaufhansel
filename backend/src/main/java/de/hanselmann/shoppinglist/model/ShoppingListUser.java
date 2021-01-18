@@ -1,20 +1,21 @@
 package de.hanselmann.shoppinglist.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 
 public class ShoppingListUser {
-    private String id;
+    @Id
+    private ObjectId id;
     private String username;
     private String password;
-    private String shoppingListId;
+    private List<ShoppingListReference> shoppingLists = new ArrayList<>();
 
-    @Id
-    public String getId() {
+    public ObjectId getId() {
         return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getUsername() {
@@ -37,8 +38,12 @@ public class ShoppingListUser {
         return password != null && !password.isEmpty();
     }
 
-    public String getShoppingListId() {
-        return shoppingListId;
+    public List<ShoppingListReference> getShoppingLists() {
+        return Collections.unmodifiableList(shoppingLists);
+    }
+
+    public void addShoppingList(ShoppingListReference shoppingListReference) {
+        shoppingLists.add(shoppingListReference);
     }
 
 }

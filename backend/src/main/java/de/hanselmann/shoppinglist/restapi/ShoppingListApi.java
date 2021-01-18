@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListDto;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
@@ -22,6 +23,10 @@ public interface ShoppingListApi {
 
     @GetMapping("/shoppinglists")
     ResponseEntity<List<ShoppingListInfoDto>> getShoppingLists();
+
+    @PostMapping("/shoppinglist")
+    ResponseEntity<ShoppingListInfoDto> createShoppingList(
+            @RequestBody NewShoppingListDto newList);
 
     @GetMapping("/shoppinglist/{id}")
     ResponseEntity<List<ShoppingListItemDto>> getShoppingListItems(

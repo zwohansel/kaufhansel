@@ -2,16 +2,18 @@ package de.hanselmann.shoppinglist.controller;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.hanselmann.shoppinglist.model.ShoppingList;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
 import de.hanselmann.shoppinglist.restapi.ShoppingListApi;
+import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListDto;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
@@ -44,35 +46,51 @@ public class ShoppingListController implements ShoppingListApi {
 
     @Override
     public ResponseEntity<List<ShoppingListInfoDto>> getShoppingLists() {
-        ShoppingList mainList = shoppingListService.getShoppingListOfCurrentUser();
+        final List<ShoppingListInfoDto> infos = shoppingListService.getShoppingListsOfCurrentUser()
+                .map(list -> new ShoppingListInfoDto(list.getName(), list.getId().toString()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(infos);
+    }
+
+    @Override
+    public ResponseEntity<ShoppingListInfoDto> createShoppingList(NewShoppingListDto newList) {
+        ShoppingList newShoppingList = shoppingListService.createShoppingListForCurrentUser(newList.getName());
         return ResponseEntity
-                .ok(Collections.singletonList(new ShoppingListInfoDto("Meine Liste", mainList.getId().toString())));
+                .ok(new ShoppingListInfoDto(newShoppingList.getName(), newShoppingList.getId().toString()));
     }
 
     @Override
     public ResponseEntity<List<ShoppingListItemDto>> getShoppingListItems(String id) {
+        if (!ObjectId.isValid(id)) {
+            return ResponseEntity.badRequest().build();
+        }
         return ResponseEntity
-                .of(shoppingListService.getShoppingList(id).map(ShoppingList::getItems).map(dtoTransformer::map));
+                .of(shoppingListService.getShoppingList(new ObjectId(id)).map(ShoppingList::getItems)
+                        .map(dtoTransformer::map));
     }
 
     @Override
     public ResponseEntity<ShoppingListItemDto> addShoppingListItem(String id, NewShoppingListItemDto item) {
-        return ResponseEntity.of(shoppingListService.getShoppingList(id)
-                .map(list -> createNewItem(item.getName(), item.getCategory(), list)).map(dtoTransformer::map));
+        if (!ObjectId.isValid(id)) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.of(shoppingListService.getShoppingList(new ObjectId(id))
+                .map(list -> createNewItem(item, list))
+                .map(dtoTransformer::map));
     }
 
-    private ShoppingListItem createNewItem(String name, @Nullable String category, ShoppingList list) {
-        ShoppingListItem newItem = new ShoppingListItem(name);
-        newItem.setAssignee(category);
-        list.addItem(newItem);
-        shoppingListService.saveShoppingList(list);
+    private ShoppingListItem createNewItem(NewShoppingListItemDto item, ShoppingList list) {
+        ShoppingListItem newItem = shoppingListService.createNewItem(item.getName(), item.getCategory(), list);
         shoppingListSubscribers.notifyItemsCreated(list, Collections.singletonList(newItem));
         return newItem;
     }
 
     @Override
     public ResponseEntity<Void> deleteShoppingListItem(String id, String itemId) {
-        shoppingListService.getShoppingList(id).ifPresent(list -> deleteItem(itemId, list));
+        if (!ObjectId.isValid(id)) {
+            return ResponseEntity.badRequest().build();
+        }
+        shoppingListService.getShoppingList(new ObjectId(id)).ifPresent(list -> deleteItem(itemId, list));
         return ResponseEntity.noContent().build();
     }
 
@@ -85,7 +103,11 @@ public class ShoppingListController implements ShoppingListApi {
 
     @Override
     public ResponseEntity<Void> updateShoppingListItem(String id, String itemId, ShoppingListItemUpdateDto updateItem) {
-        return shoppingListService.getShoppingList(id).map(list -> findAndUpdateItem(itemId, updateItem, list))
+        if (!ObjectId.isValid(id)) {
+            return ResponseEntity.badRequest().build();
+        }
+        return shoppingListService.getShoppingList(new ObjectId(id))
+                .map(list -> findAndUpdateItem(itemId, updateItem, list))
                 .orElse(ResponseEntity.notFound().build());
     }
 

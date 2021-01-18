@@ -1,6 +1,7 @@
 package de.hanselmann.shoppinglist.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -12,18 +13,36 @@ public class ShoppingList {
 
     @Id
     private ObjectId id;
+    private String name;
     private List<ShoppingListItem> items = new ArrayList<>();
+    private List<ShoppingListUserReference> users = new ArrayList<>();
 
     public ObjectId getId() {
         return id;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public List<ShoppingListItem> getItems() {
-        return new ArrayList<>(items);
+        return Collections.unmodifiableList(items);
+    }
+
+    public List<ShoppingListUserReference> getUsers() {
+        return Collections.unmodifiableList(users);
     }
 
     public void addItem(ShoppingListItem item) {
         items.add(item);
+    }
+
+    public void addUser(ShoppingListUserReference user) {
+        users.add(user);
     }
 
     public List<ShoppingListItem> getByChecked(boolean checked) {

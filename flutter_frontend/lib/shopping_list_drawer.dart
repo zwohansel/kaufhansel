@@ -10,20 +10,23 @@ class ShoppingListDrawer extends StatelessWidget {
       {@required VoidCallback onRefreshPressed,
       @required ShoppingListFilterOption filter,
       @required void Function(ShoppingListFilterOption nextFilter) onFilterChanged,
-      @required List<ShoppingListInfo> shoppingListInfos})
+      @required List<ShoppingListInfo> shoppingLists,
+      @required void Function(ShoppingListInfo info) onShoppingListSelected})
       : _onRefreshPressed = onRefreshPressed,
         _onFilterChanged = onFilterChanged,
         _filter = filter,
-        _shoppingListInfos = shoppingListInfos;
+        _shoppingLists = shoppingLists,
+        _onShoppingListSelected = onShoppingListSelected;
 
   final VoidCallback _onRefreshPressed;
   final void Function(ShoppingListFilterOption nextFilter) _onFilterChanged;
+  final void Function(ShoppingListInfo info) _onShoppingListSelected;
   final ShoppingListFilterOption _filter;
-  final List<ShoppingListInfo> _shoppingListInfos;
+  final List<ShoppingListInfo> _shoppingLists;
 
   @override
   Widget build(BuildContext context) {
-    final infoTiles = _shoppingListInfos.map((info) => ListTile(
+    final infoTiles = _shoppingLists?.map((info) => ListTile(
         key: ValueKey(info.id),
         title: Text(info.name),
         trailing: IconButton(
@@ -32,7 +35,8 @@ class ShoppingListDrawer extends StatelessWidget {
               showErrorDialog(context, "Kannst du nicht schreiben?");
             }),
         onTap: () {
-          showErrorDialog(context, "Bringt noch nix.");
+          _onShoppingListSelected(info);
+          Navigator.pop(context);
         }));
 
     return Drawer(
@@ -73,7 +77,7 @@ class ShoppingListDrawer extends StatelessWidget {
           ),
           Flexible(
             child: ListView(
-              children: ListTile.divideTiles(context: context, tiles: infoTiles).toList(),
+              children: ListTile.divideTiles(context: context, tiles: infoTiles ?? []).toList(),
             ),
           ),
           Container(
