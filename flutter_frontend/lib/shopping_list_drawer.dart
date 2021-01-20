@@ -3,6 +3,7 @@ import 'package:kaufhansel_client/error_dialog.dart';
 import 'package:kaufhansel_client/shopping_list_filter.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 
+import 'create_shopping_list_dialog.dart';
 import 'model.dart';
 
 class ShoppingListDrawer extends StatelessWidget {
@@ -11,18 +12,21 @@ class ShoppingListDrawer extends StatelessWidget {
       @required ShoppingListFilterOption filter,
       @required void Function(ShoppingListFilterOption nextFilter) onFilterChanged,
       @required List<ShoppingListInfo> shoppingLists,
-      @required void Function(ShoppingListInfo info) onShoppingListSelected})
+      @required void Function(ShoppingListInfo info) onShoppingListSelected,
+      @required Future<void> Function(String) onCreateShoppingList})
       : _onRefreshPressed = onRefreshPressed,
         _onFilterChanged = onFilterChanged,
         _filter = filter,
         _shoppingLists = shoppingLists,
-        _onShoppingListSelected = onShoppingListSelected;
+        _onShoppingListSelected = onShoppingListSelected,
+        _onCreateShoppingList = onCreateShoppingList;
 
   final VoidCallback _onRefreshPressed;
   final void Function(ShoppingListFilterOption nextFilter) _onFilterChanged;
   final void Function(ShoppingListInfo info) _onShoppingListSelected;
   final ShoppingListFilterOption _filter;
   final List<ShoppingListInfo> _shoppingLists;
+  final Future<void> Function(String) _onCreateShoppingList;
 
   @override
   Widget build(BuildContext context) {
@@ -89,8 +93,13 @@ class ShoppingListDrawer extends StatelessWidget {
                   textColor: Theme.of(context).primaryIconTheme.color,
                   borderSide: BorderSide(color: Theme.of(context).primaryIconTheme.color),
                   onPressed: () {
-                    // TODO
-                    Navigator.pop(context);
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) {
+                        return CreateShoppingListDialog(_onCreateShoppingList);
+                      },
+                    );
                   },
                 ),
                 SizedBox(height: 10),

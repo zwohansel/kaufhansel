@@ -50,6 +50,13 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     _fetchShoppingListInfos();
   }
 
+  Future<void> _createShoppingList(String shoppingListName) async {
+    ShoppingListInfo info = await _client.createShoppingList(shoppingListName);
+    setState(() {
+      _shoppingListInfos.add(info);
+    });
+  }
+
   void _fetchShoppingListInfos() async {
     setState(() {
       _shoppingListInfos = null;
@@ -99,6 +106,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               onFilterChanged: _onFilterChanged,
               shoppingLists: _shoppingListInfos,
               onShoppingListSelected: _onShoppingListSelected,
+              onCreateShoppingList: _createShoppingList,
             ),
             body: _buildShoppingList(context),
           );

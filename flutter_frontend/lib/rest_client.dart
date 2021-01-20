@@ -103,4 +103,20 @@ class RestClient {
       throw Exception('Failed to update item: ' + item.name);
     }
   }
+
+  Future<ShoppingListInfo> createShoppingList(String shoppingListName) async {
+    final body = jsonEncode({'name': shoppingListName});
+
+    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist"));
+    request.headers.contentType = ContentType.json;
+    request.write(body);
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode == 200) {
+      final String decoded = await response.transform(utf8.decoder).join();
+      return ShoppingListInfo.fromJson(jsonDecode(decoded));
+    } else {
+      throw Exception('Failed to create new list: ' + shoppingListName);
+    }
+  }
 }

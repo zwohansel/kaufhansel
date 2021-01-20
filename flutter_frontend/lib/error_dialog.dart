@@ -9,5 +9,14 @@ void showErrorDialog(BuildContext context, String text) {
             "🤷‍♂️",
             style: TextStyle(fontFamilyFallback: ["NotoColorEmoji"], fontSize: 100),
           )),
-          content: Text(text, textAlign: TextAlign.center)));
+          content: Flex(
+            direction: Axis.vertical,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(text, textAlign: TextAlign.center),
+              SizedBox(height: 24, width: 24),
+              Center(
+                  child: TextButton(onPressed: () => Navigator.pop(context), child: Text("Ist dann halt schon so...")))
+            ],
+          )));
 }

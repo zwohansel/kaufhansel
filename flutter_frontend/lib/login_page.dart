@@ -56,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
                             ],
                           ),
                         ),
-                        buildProgressBar(context),
+                        _buildProgressBar(context),
                         TextFormField(
                           controller: _userNameController,
                           autofillHints: [AutofillHints.username],
@@ -83,14 +83,14 @@ class _LoginPageState extends State<LoginPage> {
                             }
                             return null;
                           },
-                          onFieldSubmitted: (_) => buildLoginFunction(context)?.call(),
+                          onFieldSubmitted: (_) => _buildLoginFunction(context)?.call(),
                         ),
                         Padding(
                             padding: EdgeInsets.only(top: 15),
-                            child: ElevatedButton(child: Text("Anmelden"), onPressed: buildLoginFunction(context))),
+                            child: ElevatedButton(child: Text("Anmelden"), onPressed: _buildLoginFunction(context))),
                         Padding(
                           padding: EdgeInsets.only(top: 10),
-                          child: OutlineButton(child: Text("Registrieren"), onPressed: buildRegisterFunction(context)),
+                          child: OutlineButton(child: Text("Registrieren"), onPressed: _buildRegisterFunction(context)),
                         )
                       ],
                     )),
@@ -109,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Function buildLoginFunction(BuildContext context) {
+  Function _buildLoginFunction(BuildContext context) {
     if (_loading) {
       return null;
     } else {
@@ -118,13 +118,13 @@ class _LoginPageState extends State<LoginPage> {
           setState(() {
             _loading = true;
           });
-          login(context);
+          _login(context);
         }
       };
     }
   }
 
-  void login(BuildContext context) async {
+  void _login(BuildContext context) async {
     try {
       if (await RestClientWidget.of(context).login(_userNameController.text, _passwordController.text)) {
         widget._loggedIn();
@@ -152,7 +152,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Function buildRegisterFunction(BuildContext context) {
+  Function _buildRegisterFunction(BuildContext context) {
     if (_loading) {
       return null;
     } else {
@@ -160,7 +160,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Widget buildProgressBar(BuildContext context) {
+  Widget _buildProgressBar(BuildContext context) {
     if (_loading) {
       return LinearProgressIndicator(minHeight: 5, backgroundColor: Theme.of(context).scaffoldBackgroundColor);
     } else {
