@@ -6,11 +6,13 @@ import java.util.stream.Stream;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.MongoTransactionException;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import de.hanselmann.shoppinglist.model.ShoppingList;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
@@ -93,5 +95,43 @@ public class ShoppingListService {
 
     public Optional<ShoppingList> getShoppingList(ObjectId id) {
         return shoppingListRepository.findById(id);
+    }
+
+    public boolean deleteShoppingList(ObjectId id) {
+        try {
+            return tryDeleteShoppingList(id);
+        } catch (MongoTransactionException e) {
+            return false;
+        }
+    }
+
+    @Transactional
+    private boolean tryDeleteShoppingList(ObjectId id) {
+        ShoppingList list = getShoppingList(id).orElse(null);
+
+        if (list == null) {
+            return false;
+        }
+
+        ShoppingListUser user = getCurrentUser();
+
+        if (!user.deleteShoppingList(id)) {
+            return false;
+        }
+
+        if (!list.deleteUser(user.getId())) {
+            return false;
+        }
+
+        userRepository.save(user);
+
+        if (list.getUsers().isEmpty()) {
+            shoppingListRepository.deleteById(id);
+        } else {
+
+            shoppingListRepository.save(list);
+        }
+
+        return true;
     }
 }

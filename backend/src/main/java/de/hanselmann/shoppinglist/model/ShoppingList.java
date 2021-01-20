@@ -62,4 +62,8 @@ public class ShoppingList {
     public void clearItems() {
         items.clear();
     }
+
+    public boolean deleteUser(ObjectId userId) {
+        return users.removeIf(user -> user.getUserId().equals(userId));
+    }
 }

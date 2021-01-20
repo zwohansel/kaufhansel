@@ -60,6 +60,19 @@ public class ShoppingListController implements ShoppingListApi {
     }
 
     @Override
+    public ResponseEntity<Void> deleteShoppingList(String id) {
+        if (!ObjectId.isValid(id)) {
+            return ResponseEntity.badRequest().build();
+        }
+        boolean deleted = shoppingListService.deleteShoppingList(new ObjectId(id));
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @Override
     public ResponseEntity<List<ShoppingListItemDto>> getShoppingListItems(String id) {
         if (!ObjectId.isValid(id)) {
             return ResponseEntity.badRequest().build();

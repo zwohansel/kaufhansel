@@ -28,6 +28,10 @@ public interface ShoppingListApi {
     ResponseEntity<ShoppingListInfoDto> createShoppingList(
             @RequestBody NewShoppingListDto newList);
 
+    @DeleteMapping("/shoppinglist/{id}")
+    ResponseEntity<Void> deleteShoppingList(
+            @PathVariable String id);
+
     @GetMapping("/shoppinglist/{id}")
     ResponseEntity<List<ShoppingListItemDto>> getShoppingListItems(
             @PathVariable String id);

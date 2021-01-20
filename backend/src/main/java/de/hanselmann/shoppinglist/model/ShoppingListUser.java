@@ -46,4 +46,14 @@ public class ShoppingListUser {
         shoppingLists.add(shoppingListReference);
     }
 
+    /**
+     * 
+     * @param shoppingListId
+     * @return true, if the reference to the shopping list was successfully removed
+     *         from the user
+     */
+    public boolean deleteShoppingList(ObjectId shoppingListId) {
+        return shoppingLists.removeIf(ref -> ref.getShoppingListId().equals(shoppingListId));
+    }
+
 }
