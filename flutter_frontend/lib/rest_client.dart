@@ -119,4 +119,14 @@ class RestClient {
       throw Exception('Failed to create new list: ' + shoppingListName);
     }
   }
+
+  Future<void> deleteShoppingList(String shoppingListId) async {
+    var request = await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId"));
+    request.headers.contentType = ContentType.json;
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode != 204) {
+      throw Exception('Failed to delete shopping list');
+    }
+  }
 }

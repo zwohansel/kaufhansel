@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:kaufhansel_client/error_dialog.dart';
 import 'package:kaufhansel_client/shopping_list_filter.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
+import 'package:kaufhansel_client/shopping_list_settings.dart';
 
 import 'create_shopping_list_dialog.dart';
 import 'model.dart';
@@ -13,13 +13,15 @@ class ShoppingListDrawer extends StatelessWidget {
       @required void Function(ShoppingListFilterOption nextFilter) onFilterChanged,
       @required List<ShoppingListInfo> shoppingLists,
       @required void Function(ShoppingListInfo info) onShoppingListSelected,
-      @required Future<void> Function(String) onCreateShoppingList})
+      @required Future<void> Function(String) onCreateShoppingList,
+      @required Future<void> Function(ShoppingListInfo) onDeleteShoppingList})
       : _onRefreshPressed = onRefreshPressed,
         _onFilterChanged = onFilterChanged,
         _filter = filter,
         _shoppingLists = shoppingLists,
         _onShoppingListSelected = onShoppingListSelected,
-        _onCreateShoppingList = onCreateShoppingList;
+        _onCreateShoppingList = onCreateShoppingList,
+        _onDeleteShoppingList = onDeleteShoppingList;
 
   final VoidCallback _onRefreshPressed;
   final void Function(ShoppingListFilterOption nextFilter) _onFilterChanged;
@@ -27,6 +29,7 @@ class ShoppingListDrawer extends StatelessWidget {
   final ShoppingListFilterOption _filter;
   final List<ShoppingListInfo> _shoppingLists;
   final Future<void> Function(String) _onCreateShoppingList;
+  final Future<void> Function(ShoppingListInfo) _onDeleteShoppingList;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +39,14 @@ class ShoppingListDrawer extends StatelessWidget {
         trailing: IconButton(
             icon: Icon(Icons.edit),
             onPressed: () {
-              showErrorDialog(context, "Kannst du nicht schreiben?");
+              Navigator.push(context, MaterialPageRoute(
+                builder: (context) {
+                  return ShoppingListSettings(
+                    info,
+                    onDeleteShoppingList: () => _onDeleteShoppingList(info),
+                  );
+                },
+              ));
             }),
         onTap: () {
           _onShoppingListSelected(info);

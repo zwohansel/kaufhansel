@@ -57,6 +57,17 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     });
   }
 
+  Future<void> _deleteShoppingList(ShoppingListInfo info) async {
+    await _client.deleteShoppingList(info.id);
+    setState(() {
+      _shoppingListInfos.remove(info);
+      if (_currentShoppingListInfo == info) {
+        _currentShoppingListInfo = _shoppingListInfos.isNotEmpty ? _shoppingListInfos.first : null;
+        _fetchCurrentShoppingList();
+      }
+    });
+  }
+
   void _fetchShoppingListInfos() async {
     setState(() {
       _shoppingListInfos = null;
@@ -107,6 +118,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               shoppingLists: _shoppingListInfos,
               onShoppingListSelected: _onShoppingListSelected,
               onCreateShoppingList: _createShoppingList,
+              onDeleteShoppingList: _deleteShoppingList,
             ),
             body: _buildShoppingList(context),
           );
@@ -156,6 +168,11 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       _currentShoppingList = null;
       _error = null;
     });
+
+    if (_currentShoppingListInfo == null) {
+      return;
+    }
+
     try {
       final fetchedList = await _client.fetchShoppingList(_currentShoppingListInfo.id, _currentShoppingListInfo.name);
       setState(() {

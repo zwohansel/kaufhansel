@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kaufhansel_client/title_widget.dart';
 import 'package:provider/provider.dart';
 
 import 'model.dart';
@@ -24,38 +25,16 @@ class ShoppingListTitle extends StatelessWidget {
         return _ShoppingListTitleInfo(shoppingList.name, itemsInCategory.length, checkedItemsInCategory.length);
       },
       builder: (context, titleInfo, child) {
-        return Flex(
-          direction: Axis.horizontal,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.shopping_cart_outlined,
-              size: Theme.of(context).primaryTextTheme.headline6.fontSize,
-            ),
-            Flex(
-              direction: Axis.horizontal,
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.ideographic,
-              //mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [Text('Kaufhansel'), _buildShoppingListInfoWidget(context, titleInfo)],
-            )
-          ],
-        );
+        return TitleWidget(subTitle: _buildShoppingListSubtitle(context, titleInfo));
       },
     );
   }
 
-  Widget _buildShoppingListInfoWidget(BuildContext context, _ShoppingListTitleInfo titleInfo) {
+  String _buildShoppingListSubtitle(BuildContext context, _ShoppingListTitleInfo titleInfo) {
     if (titleInfo != null) {
-      return Padding(
-        child: Text(
-          "${titleInfo.shoppingListName}: ${titleInfo.numChecked}/${titleInfo.numTotal}",
-          style: Theme.of(context).primaryTextTheme.subtitle1.apply(color: Colors.white70),
-        ),
-        padding: EdgeInsets.only(left: 10),
-      );
+      return "${titleInfo.shoppingListName}: ${titleInfo.numChecked}/${titleInfo.numTotal}";
     }
-    return Container();
+    return "";
   }
 }
 
