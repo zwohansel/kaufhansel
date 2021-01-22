@@ -6,7 +6,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
+import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
+import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserReferenceDto;
 
 @Component
 public class DtoTransformer {
@@ -17,6 +19,10 @@ public class DtoTransformer {
 
     public ShoppingListItemDto map(ShoppingListItem item) {
         return new ShoppingListItemDto(item.getId(), item.getName(), item.isChecked(), item.getAssignee());
+    }
+
+    public ShoppingListUserReferenceDto map(ShoppingListUser user) {
+        return new ShoppingListUserReferenceDto(user.getId().toString(), user.getUsername());
     }
 
 }

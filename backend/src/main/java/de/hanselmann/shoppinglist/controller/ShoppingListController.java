@@ -18,23 +18,28 @@ import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemUpdateDto;
+import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserReferenceDto;
 import de.hanselmann.shoppinglist.restapi.dto.transformer.DtoTransformer;
 import de.hanselmann.shoppinglist.service.ShoppingListService;
 import de.hanselmann.shoppinglist.service.ShoppingListSubscribers;
+import de.hanselmann.shoppinglist.service.ShoppingListUserService;
 
 @PreAuthorize("hasRole('SHOPPER')")
 @RestController
 public class ShoppingListController implements ShoppingListApi {
     private final ShoppingListService shoppingListService;
+    private final ShoppingListUserService userService;
     private final DtoTransformer dtoTransformer;
     private final ShoppingListSubscribers shoppingListSubscribers;
 
     @Autowired
     public ShoppingListController(
             ShoppingListService shoppingListService,
+            ShoppingListUserService userService,
             DtoTransformer dtoTransformer,
             ShoppingListSubscribers shoppingListSubscribers) {
         this.shoppingListService = shoppingListService;
+        this.userService = userService;
         this.dtoTransformer = dtoTransformer;
         this.shoppingListSubscribers = shoppingListSubscribers;
     }
@@ -47,7 +52,8 @@ public class ShoppingListController implements ShoppingListApi {
     @Override
     public ResponseEntity<List<ShoppingListInfoDto>> getShoppingLists() {
         final List<ShoppingListInfoDto> infos = shoppingListService.getShoppingListsOfCurrentUser()
-                .map(list -> new ShoppingListInfoDto(list.getName(), list.getId().toString()))
+                .map(list -> new ShoppingListInfoDto(list.getId().toString(), list.getName(),
+                        getShoppingListUserReferenceDtos(list)))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(infos);
     }
@@ -56,7 +62,16 @@ public class ShoppingListController implements ShoppingListApi {
     public ResponseEntity<ShoppingListInfoDto> createShoppingList(NewShoppingListDto newList) {
         ShoppingList newShoppingList = shoppingListService.createShoppingListForCurrentUser(newList.getName());
         return ResponseEntity
-                .ok(new ShoppingListInfoDto(newShoppingList.getName(), newShoppingList.getId().toString()));
+                .ok(new ShoppingListInfoDto(newShoppingList.getId().toString(),
+                        newShoppingList.getName(),
+                        getShoppingListUserReferenceDtos(newShoppingList)));
+    }
+
+    private List<ShoppingListUserReferenceDto> getShoppingListUserReferenceDtos(ShoppingList shoppingList) {
+        return shoppingList.getUsers().stream()
+                .map(userRef -> userService.getUser(userRef.getUserId()))
+                .map(dtoTransformer::map)
+                .collect(Collectors.toList());
     }
 
     @Override

@@ -8,9 +8,6 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.MongoTransactionException;
 import org.springframework.lang.Nullable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,43 +17,32 @@ import de.hanselmann.shoppinglist.model.ShoppingListReference;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.model.ShoppingListUserReference;
 import de.hanselmann.shoppinglist.repository.ShoppingListRepository;
-import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
 
 @Service
 public class ShoppingListService {
-    private ShoppingListUserRepository userRepository;
-    private ShoppingListRepository shoppingListRepository;
+    private final ShoppingListRepository shoppingListRepository;
+    private final ShoppingListUserService userService;
 
     @Autowired
-    public ShoppingListService(ShoppingListUserRepository userRepository,
-            ShoppingListRepository shoppingListRepository) {
-        this.userRepository = userRepository;
+    public ShoppingListService(ShoppingListRepository shoppingListRepository,
+            ShoppingListUserService userService) {
         this.shoppingListRepository = shoppingListRepository;
+        this.userService = userService;
     }
 
+    @Transactional
     public ShoppingList createShoppingListForCurrentUser(String name) {
-        ShoppingListUser user = getCurrentUser();
+        ShoppingListUser user = userService.getCurrentUser();
         ShoppingList shoppingList = new ShoppingList();
         shoppingList.setName(name);
         shoppingList.addUser(new ShoppingListUserReference(user.getId()));
         shoppingListRepository.save(shoppingList);
-        user.addShoppingList(new ShoppingListReference(shoppingList.getId()));
-        userRepository.save(user);
+        userService.addShoppingListToUser(user, shoppingList.getId());
         return shoppingList;
     }
 
-    private ShoppingListUser getCurrentUser() {
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        Authentication auth = securityContext.getAuthentication();
-        return getUser(auth.getName());
-    }
-
-    private ShoppingListUser getUser(String userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User does not exist."));
-    }
-
     public Stream<ShoppingList> getShoppingListsOfCurrentUser() {
-        return getShoppingListsOfUser(getCurrentUser());
+        return getShoppingListsOfUser(userService.getCurrentUser());
     }
 
     private Stream<ShoppingList> getShoppingListsOfUser(ShoppingListUser user) {
@@ -70,13 +56,11 @@ public class ShoppingListService {
     }
 
     public ShoppingList getFirstShoppingListOfCurrentUser() {
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        Authentication auth = securityContext.getAuthentication();
-        return getShoppingListOfUser(auth.getName());
+        return getFirstShoppingListOfUser(userService.getCurrentUser().getId());
     }
 
-    public ShoppingList getShoppingListOfUser(String userId) {
-        return getShoppingListsOfUser(getUser(userId))
+    public ShoppingList getFirstShoppingListOfUser(ObjectId userId) {
+        return getShoppingListsOfUser(userService.getUser(userId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("User has no shopping list."));
     }
@@ -106,16 +90,15 @@ public class ShoppingListService {
     }
 
     @Transactional
-    private boolean tryDeleteShoppingList(ObjectId id) {
-        ShoppingList list = getShoppingList(id).orElse(null);
+    private boolean tryDeleteShoppingList(ObjectId shoppingListId) {
+        ShoppingList list = getShoppingList(shoppingListId).orElse(null);
 
         if (list == null) {
             return false;
         }
 
-        ShoppingListUser user = getCurrentUser();
-
-        if (!user.deleteShoppingList(id)) {
+        ShoppingListUser user = userService.getCurrentUser();
+        if (!userService.removeShoppingListFromUser(user, shoppingListId)) {
             return false;
         }
 
@@ -123,12 +106,9 @@ public class ShoppingListService {
             return false;
         }
 
-        userRepository.save(user);
-
         if (list.getUsers().isEmpty()) {
-            shoppingListRepository.deleteById(id);
+            shoppingListRepository.deleteById(shoppingListId);
         } else {
-
             shoppingListRepository.save(list);
         }
 

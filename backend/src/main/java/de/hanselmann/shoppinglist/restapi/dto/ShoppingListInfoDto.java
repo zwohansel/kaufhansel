@@ -1,19 +1,27 @@
 package de.hanselmann.shoppinglist.restapi.dto;
 
-public class ShoppingListInfoDto {
-    private final String name;
-    private final String id;
+import java.util.List;
 
-    public ShoppingListInfoDto(String name, String id) {
+public class ShoppingListInfoDto {
+    private final String id;
+    private final String name;
+    private final List<ShoppingListUserReferenceDto> users;
+
+    public ShoppingListInfoDto(String id, String name, List<ShoppingListUserReferenceDto> users) {
         this.name = name;
         this.id = id;
+        this.users = users;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getName() {
         return name;
     }
 
-    public String getId() {
-        return id;
+    public List<ShoppingListUserReferenceDto> getUsers() {
+        return users;
     }
 }

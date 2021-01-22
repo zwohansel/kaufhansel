@@ -29,21 +29,21 @@ public class DefaultShoppingListSubscribers implements ShoppingListSubscribers {
     }
 
     @Override
-    public Publisher<List<ShoppingListItemChangedEvent>> addSubscriber(String userId) {
+    public Publisher<List<ShoppingListItemChangedEvent>> addSubscriber(ObjectId userId) {
         return Flux.create(
                 sink -> addNewSubscription(sink, userId),
                 FluxSink.OverflowStrategy.BUFFER);
     }
 
-    private void addNewSubscription(FluxSink<List<ShoppingListItemChangedEvent>> subscriber, String userId) {
-        ShoppingList shoppingList = shoppingListService.getShoppingListOfUser(userId);
+    private void addNewSubscription(FluxSink<List<ShoppingListItemChangedEvent>> subscriber, ObjectId userId) {
+        ShoppingList shoppingList = shoppingListService.getFirstShoppingListOfUser(userId);
         subscribers
                 .computeIfAbsent(shoppingList.getId(), id -> new CopyOnWriteArrayList<>())
                 .add(subscriber.onDispose(() -> removeSubscriber(userId, subscriber)));
     }
 
-    private void removeSubscriber(String userId, FluxSink<List<ShoppingListItemChangedEvent>> subscriber) {
-        ShoppingList shoppingList = shoppingListService.getShoppingListOfUser(userId);
+    private void removeSubscriber(ObjectId userId, FluxSink<List<ShoppingListItemChangedEvent>> subscriber) {
+        ShoppingList shoppingList = shoppingListService.getFirstShoppingListOfUser(userId);
         var shoppingListSubscribers = subscribers.get(shoppingList.getId());
         if (shoppingListSubscribers != null) {
             shoppingListSubscribers.remove(subscriber);

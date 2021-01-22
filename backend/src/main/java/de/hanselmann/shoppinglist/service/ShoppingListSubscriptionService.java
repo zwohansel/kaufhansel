@@ -2,6 +2,7 @@ package de.hanselmann.shoppinglist.service;
 
 import java.util.List;
 
+import org.bson.types.ObjectId;
 import org.reactivestreams.Publisher;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,7 @@ public class ShoppingListSubscriptionService {
     @GraphQLSubscription
     public Publisher<List<ShoppingListItemChangedEvent>> shoppingListChanged(
             @GraphQLNonNull @GraphQLArgument(name = "userId") String userId) {
-        return shoppingListSubscribers.addSubscriber(userId);
+        return shoppingListSubscribers.addSubscriber(new ObjectId(userId));
     }
 
 }

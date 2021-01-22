@@ -22,6 +22,11 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
 
   @override
   Widget build(BuildContext context) {
+    final sharedUsers = widget._shoppingListInfo.users.map((user) => ListTile(
+          title: Text(user.userName),
+          onTap: () {},
+        ));
+
     return Scaffold(
         appBar: AppBar(
           title: TitleWidget(),
@@ -39,19 +44,6 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Card(
-                              child: Padding(
-                                  padding: EdgeInsets.all(18),
-                                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                                    Flexible(
-                                        child: Text(
-                                      widget._shoppingListInfo.name,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(context).textTheme.headline5,
-                                    )),
-                                    IconButton(icon: Icon(Icons.drive_file_rename_outline), onPressed: null)
-                                  ])),
-                            ),
                             SizedBox(height: 12),
                             Card(
                               child: Padding(
@@ -60,10 +52,15 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                                     crossAxisAlignment: CrossAxisAlignment.stretch,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text(
-                                        "Elementoptionen",
-                                        style: Theme.of(context).textTheme.headline6,
-                                      ),
+                                      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                                        Flexible(
+                                            child: Text(
+                                          widget._shoppingListInfo.name,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: Theme.of(context).textTheme.headline5,
+                                        )),
+                                        IconButton(icon: Icon(Icons.drive_file_rename_outline), onPressed: null)
+                                      ]),
                                       SizedBox(height: 12),
                                       OutlineButton(
                                         onPressed: null,
@@ -91,7 +88,38 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
-                                        "Listenoptionen",
+                                        "Du teilst die Liste mit",
+                                        style: Theme.of(context).textTheme.headline6,
+                                      ),
+                                      SizedBox(height: 12),
+                                      ListView(
+                                        shrinkWrap: true,
+                                        children: ListTile.divideTiles(context: context, tiles: [
+                                          ...sharedUsers,
+                                          ListTile(
+                                            title: TextField(
+                                                onSubmitted: (text) {},
+                                                decoration: InputDecoration(
+                                                    suffixIcon: IconButton(icon: Icon(Icons.add), onPressed: () {}),
+                                                    labelText: "",
+                                                    hintText: "Mit einem weiteren Hansel teilen",
+                                                    contentPadding: EdgeInsets.zero)),
+                                          )
+                                        ]).toList(),
+                                      )
+                                    ],
+                                  )),
+                            ),
+                            SizedBox(height: 12),
+                            Card(
+                              child: Padding(
+                                  padding: EdgeInsets.all(18),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        "Gefahrenzone",
                                         style: Theme.of(context).textTheme.headline6,
                                       ),
                                       SizedBox(height: 12),
@@ -112,6 +140,13 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                                                     });
                                               },
                                       ),
+                                      SizedBox(height: 12),
+                                      OutlineButton(
+                                          child: Text("Liste übertragen..."),
+                                          textColor: Colors.red,
+                                          highlightedBorderColor: Colors.red,
+                                          borderSide: BorderSide(color: Colors.red),
+                                          onPressed: null)
                                     ],
                                   )),
                             )

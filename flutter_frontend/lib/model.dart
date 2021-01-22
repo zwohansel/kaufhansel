@@ -107,7 +107,7 @@ class ShoppingList extends ChangeNotifier {
     notifyListeners();
   }
 
-  UnmodifiableListView<ShoppingListItem> get items => UnmodifiableListView(_items);
+  List<ShoppingListItem> get items => UnmodifiableListView(_items);
 
   List<String> getAllCategories() {
     return [CATEGORY_ALL, ...getUserCategories()];
@@ -139,17 +139,36 @@ class ShoppingListTabSelection extends ChangeNotifier {
   }
 }
 
-class ShoppingListInfo {
-  String _id;
-  String _name;
+class ShoppingListUserReference {
+  final String _userId;
+  final String _userName;
 
-  ShoppingListInfo(this._id, this._name);
+  ShoppingListUserReference(this._userId, this._userName);
+
+  factory ShoppingListUserReference.fromJson(Map<String, dynamic> json) {
+    return ShoppingListUserReference(json['userId'], json['userName']);
+  }
+
+  String get userId => _userId;
+  String get userName => _userName;
+}
+
+class ShoppingListInfo {
+  final String _id;
+  final String _name;
+  final List<ShoppingListUserReference> _users;
+
+  ShoppingListInfo(this._id, this._name, this._users);
 
   factory ShoppingListInfo.fromJson(Map<String, dynamic> json) {
-    return ShoppingListInfo(json['id'], json['name']);
+    return ShoppingListInfo(json['id'], json['name'], _parseUserReferences(json['users']));
+  }
+
+  static List<ShoppingListUserReference> _parseUserReferences(List<dynamic> json) {
+    return json.map((ref) => ShoppingListUserReference.fromJson(ref)).toList();
   }
 
   String get id => _id;
-
   String get name => _name;
+  List<ShoppingListUserReference> get users => UnmodifiableListView(_users);
 }
