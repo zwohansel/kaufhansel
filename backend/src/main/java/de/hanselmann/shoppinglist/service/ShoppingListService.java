@@ -6,10 +6,11 @@ import java.util.stream.Stream;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.MongoTransactionException;
+import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.TransactionException;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import de.hanselmann.shoppinglist.model.ShoppingList;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
@@ -22,23 +23,31 @@ import de.hanselmann.shoppinglist.repository.ShoppingListRepository;
 public class ShoppingListService {
     private final ShoppingListRepository shoppingListRepository;
     private final ShoppingListUserService userService;
+    private TransactionTemplate transactionTemplate;
 
     @Autowired
     public ShoppingListService(ShoppingListRepository shoppingListRepository,
-            ShoppingListUserService userService) {
+            ShoppingListUserService userService,
+            MongoTransactionManager transactionManager) {
         this.shoppingListRepository = shoppingListRepository;
         this.userService = userService;
+        transactionTemplate = new TransactionTemplate(transactionManager);
     }
 
-    @Transactional
-    public ShoppingList createShoppingListForCurrentUser(String name) {
-        ShoppingListUser user = userService.getCurrentUser();
-        ShoppingList shoppingList = new ShoppingList();
-        shoppingList.setName(name);
-        shoppingList.addUser(new ShoppingListUserReference(user.getId()));
-        shoppingListRepository.save(shoppingList);
-        userService.addShoppingListToUser(user, shoppingList.getId());
-        return shoppingList;
+    public @Nullable ShoppingList createShoppingListForCurrentUser(String name) {
+        try {
+            return transactionTemplate.execute(status -> {
+                ShoppingListUser user = userService.getCurrentUser();
+                ShoppingList shoppingList = new ShoppingList();
+                shoppingList.setName(name);
+                shoppingList.addUser(new ShoppingListUserReference(user.getId()));
+                shoppingListRepository.save(shoppingList);
+                userService.addShoppingListToUser(user, shoppingList.getId());
+                return shoppingList;
+            });
+        } catch (TransactionException e) {
+            return null;
+        }
     }
 
     public Stream<ShoppingList> getShoppingListsOfCurrentUser() {
@@ -83,13 +92,12 @@ public class ShoppingListService {
 
     public boolean deleteShoppingList(ObjectId id) {
         try {
-            return tryDeleteShoppingList(id);
-        } catch (MongoTransactionException e) {
+            return transactionTemplate.execute(status -> tryDeleteShoppingList(id));
+        } catch (TransactionException e) {
             return false;
         }
     }
 
-    @Transactional
     private boolean tryDeleteShoppingList(ObjectId shoppingListId) {
         ShoppingList list = getShoppingList(shoppingListId).orElse(null);
 

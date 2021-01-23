@@ -61,6 +61,11 @@ public class ShoppingListController implements ShoppingListApi {
     @Override
     public ResponseEntity<ShoppingListInfoDto> createShoppingList(NewShoppingListDto newList) {
         ShoppingList newShoppingList = shoppingListService.createShoppingListForCurrentUser(newList.getName());
+
+        if (newShoppingList == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
         return ResponseEntity
                 .ok(new ShoppingListInfoDto(newShoppingList.getId().toString(),
                         newShoppingList.getName(),
