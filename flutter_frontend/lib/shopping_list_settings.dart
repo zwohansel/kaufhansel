@@ -23,7 +23,7 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
   @override
   Widget build(BuildContext context) {
     final sharedUsers = widget._shoppingListInfo.users.map((user) => ListTile(
-          title: Text(user.userName),
+          title: Text("${user.userName} (${user.userEmailAddress})"),
           onTap: () {},
         ));
 

@@ -142,15 +142,17 @@ class ShoppingListTabSelection extends ChangeNotifier {
 class ShoppingListUserReference {
   final String _userId;
   final String _userName;
+  final String _userEmailAddress;
 
-  ShoppingListUserReference(this._userId, this._userName);
+  ShoppingListUserReference(this._userId, this._userName, this._userEmailAddress);
 
   factory ShoppingListUserReference.fromJson(Map<String, dynamic> json) {
-    return ShoppingListUserReference(json['userId'], json['userName']);
+    return ShoppingListUserReference(json['userId'], json['userName'], json['userEmailAddress']);
   }
 
   String get userId => _userId;
   String get userName => _userName;
+  String get userEmailAddress => _userEmailAddress;
 }
 
 class ShoppingListInfo {

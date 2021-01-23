@@ -12,6 +12,7 @@ public class ShoppingListUser {
     private ObjectId id;
     private String username;
     private String password;
+    private String emailAddress;
     private List<ShoppingListReference> shoppingLists = new ArrayList<>();
 
     public ObjectId getId() {
@@ -36,6 +37,14 @@ public class ShoppingListUser {
 
     public boolean hasPassword() {
         return password != null && !password.isEmpty();
+    }
+
+    public String getEmailAdress() {
+        return emailAddress;
+    }
+
+    public void setEmailAddress(String email) {
+        this.emailAddress = email;
     }
 
     public List<ShoppingListReference> getShoppingLists() {
