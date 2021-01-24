@@ -232,6 +232,9 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
     setState(() => _loading = true);
     try {
       await widget._onUncheckAllItems();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Alle Häckchen in ${widget._shoppingListInfo.name} wurden entfernt."),
+          duration: Duration(seconds: 1)));
     } catch (e) {
       showErrorDialog(context, "Ist der Server zu faul oder hast du kein Internet?");
     } finally {
@@ -243,6 +246,9 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
     setState(() => _loading = true);
     try {
       await widget._onRemoveAllCategories();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Alle Kategorien in ${widget._shoppingListInfo.name} wurden entfernt."),
+          duration: Duration(seconds: 1)));
     } catch (e) {
       showErrorDialog(context, "Hat der Server keine Lust oder hast du kein Internet?");
     } finally {
@@ -260,6 +266,9 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
           "Möchtest du wirklich alle Elemente aus ${widget._shoppingListInfo.name} unwiederbringlich entfernen?");
       if (removeItems) {
         await widget._onRemoveAllItems();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text("Alle Elemente in ${widget._shoppingListInfo.name} wurden entfernt."),
+            duration: Duration(seconds: 1)));
       }
     } catch (e) {
       showErrorDialog(context, "Schläft der Server noch oder hast du kein Internet?");
