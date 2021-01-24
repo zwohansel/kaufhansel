@@ -53,13 +53,12 @@ class ShoppingListDrawer extends StatelessWidget {
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(
                 builder: (context) {
-                  return ShoppingListSettings(
-                    info,
-                    onDeleteShoppingList: () => _onDeleteShoppingList(info),
-                    onUncheckAllItems: () => _onUncheckAllItems(info),
-                    onRemoveAllCategories: () => _onRemoveAllCategories(info),
-                    onRemoveAllItems: () => _onRemoveAllItems(info),
-                    onAddUserToShoppingList: (userEmailAddress) => _onAddUserToShoppingList(info, userEmailAddress));
+                  return ShoppingListSettings(info,
+                      onDeleteShoppingList: () => _onDeleteShoppingList(info),
+                      onUncheckAllItems: () => _onUncheckAllItems(info),
+                      onRemoveAllCategories: () => _onRemoveAllCategories(info),
+                      onRemoveAllItems: () => _onRemoveAllItems(info),
+                      onAddUserToShoppingList: (userEmailAddress) => _onAddUserToShoppingList(info, userEmailAddress));
                 },
               ));
             }),

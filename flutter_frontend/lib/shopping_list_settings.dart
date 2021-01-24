@@ -45,144 +45,145 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
 
     return WillPopScope(
         onWillPop: () async => !_loading,
-    child: Scaffold(
-        appBar: AppBar(
-          title: TitleWidget(),
-        ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildProgressBar(),
-            Expanded(
-              child: Scrollbar(
-                  controller: _scrollController,
-                  child: ListView(children: [
-                    Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            SizedBox(height: 12),
-                            Card(
-                              child: Padding(
-                                  padding: EdgeInsets.all(18),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                                        Flexible(
-                                            child: Text(
-                                          widget._shoppingListInfo.name,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: Theme.of(context).textTheme.headline5,
-                                        )),
-                                        IconButton(icon: Icon(Icons.drive_file_rename_outline), onPressed: null)
-                                      ]),
-                                      SizedBox(height: 12),
-                                      OutlinedButton(
-                                        onPressed: _loading ? null : _onUncheckAllItemsPressed,
-                                        child: Text("Alle Häckchen entfernen"),
-                                      ),
-                                      SizedBox(height: 6),
-                                      OutlinedButton(
-                                        onPressed: _loading ? null : _onRemoveAllCategoriesPressed,
-                                        child: Text("Alle Kategorien entfernen"),
-                                      ),
-                                      SizedBox(height: 6),
-                                      OutlinedButton(
-                                        onPressed: _loading ? null : _onRemoveAllItemsPressed,
-                                        child: Text("Liste leeren"),
-                                      ),
-                                    ],
-                                  )),
-                            ),
-                            SizedBox(height: 12),
-                            Card(
-                              child: Padding(
-                                  padding: EdgeInsets.all(18),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        "Du teilst die Liste mit",
-                                        style: Theme.of(context).textTheme.headline6,
-                                      ),
-                                      SizedBox(height: 12),
-                                      ListView(
-                                        shrinkWrap: true,
-                                        children: ListTile.divideTiles(context: context, tiles: sharedUsers).toList(),
-                                      ),
-                                      SizedBox(height: 12),
-                                      Text(
-                                        "Mit einem weiteren Hansel teilen",
-                                        style: Theme.of(context).textTheme.headline6,
-                                      ),
-                                      SizedBox(height: 12),
-                                      Row(children: [
-                                        Expanded(
-                                            child: Form(
-                                                key: _addUserToShoppingListFormKey,
-                                                child: TextFormField(
-                                                  focusNode: _addUserToShoppingListFocusNode,
-                                                  controller: _addUserTextEditingController,
-                                                  enabled: !_loading,
-                                                  onFieldSubmitted: (_) => _onAddUserToShoppingList(),
-                                                  decoration: const InputDecoration(
-                                                    hintText: 'Emailadresse vom Hansel',
-                                                  ),
-                                                  validator: (emailAddress) {
-                                                    if (emailAddress.trim().isEmpty ||
-                                                        !emailAddress.contains('@') ||
-                                                        !emailAddress.contains('.')) {
-                                                      return 'Dazu brauchen wir schon eine korrekte Emailadresse...';
-                                                    }
-                                                    return null;
-                                                  },
-                                                ))),
-                                        IconButton(
-                                          icon: Icon(Icons.add),
-                                          onPressed: _loading ? null : _onAddUserToShoppingList,
-                                        )
-                                      ]),
-                                    ],
-                                  )),
-                            ),
-                            SizedBox(height: 12),
-                            Card(
-                              child: Padding(
-                                  padding: EdgeInsets.all(18),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        "Gefahrenzone",
-                                        style: Theme.of(context).textTheme.headline6,
-                                      ),
-                                      SizedBox(height: 12),
-                                      OutlinedButton(
-                                        child: Text("Liste löschen..."),
-                                        style: OutlinedButton.styleFrom(primary: Colors.red),
-                                        onPressed: _loading ? null : _onDeleteShoppingList,
-                                      ),
-                                      SizedBox(height: 12),
-                                      OutlineButton(
-                                          child: Text("Liste übertragen..."),
-                                          textColor: Colors.red,
-                                          highlightedBorderColor: Colors.red,
-                                          borderSide: BorderSide(color: Colors.red),
-                                          onPressed: null)
-                                    ],
-                                  )),
-                            )
-                          ],
-                        ))
-                  ])),
-            )
-          ],
-        )));
+        child: Scaffold(
+            appBar: AppBar(
+              title: TitleWidget(),
+            ),
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildProgressBar(),
+                Expanded(
+                  child: Scrollbar(
+                      controller: _scrollController,
+                      child: ListView(children: [
+                        Padding(
+                            padding: EdgeInsets.all(24),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                SizedBox(height: 12),
+                                Card(
+                                  child: Padding(
+                                      padding: EdgeInsets.all(18),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                                            Flexible(
+                                                child: Text(
+                                              widget._shoppingListInfo.name,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: Theme.of(context).textTheme.headline5,
+                                            )),
+                                            IconButton(icon: Icon(Icons.drive_file_rename_outline), onPressed: null)
+                                          ]),
+                                          SizedBox(height: 12),
+                                          OutlinedButton(
+                                            onPressed: _loading ? null : _onUncheckAllItemsPressed,
+                                            child: Text("Alle Häckchen entfernen"),
+                                          ),
+                                          SizedBox(height: 6),
+                                          OutlinedButton(
+                                            onPressed: _loading ? null : _onRemoveAllCategoriesPressed,
+                                            child: Text("Alle Kategorien entfernen"),
+                                          ),
+                                          SizedBox(height: 6),
+                                          OutlinedButton(
+                                            onPressed: _loading ? null : _onRemoveAllItemsPressed,
+                                            child: Text("Liste leeren"),
+                                          ),
+                                        ],
+                                      )),
+                                ),
+                                SizedBox(height: 12),
+                                Card(
+                                  child: Padding(
+                                      padding: EdgeInsets.all(18),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            "Du teilst die Liste mit",
+                                            style: Theme.of(context).textTheme.headline6,
+                                          ),
+                                          SizedBox(height: 12),
+                                          ListView(
+                                            shrinkWrap: true,
+                                            children:
+                                                ListTile.divideTiles(context: context, tiles: sharedUsers).toList(),
+                                          ),
+                                          SizedBox(height: 12),
+                                          Text(
+                                            "Mit einem weiteren Hansel teilen",
+                                            style: Theme.of(context).textTheme.headline6,
+                                          ),
+                                          SizedBox(height: 12),
+                                          Row(children: [
+                                            Expanded(
+                                                child: Form(
+                                                    key: _addUserToShoppingListFormKey,
+                                                    child: TextFormField(
+                                                      focusNode: _addUserToShoppingListFocusNode,
+                                                      controller: _addUserTextEditingController,
+                                                      enabled: !_loading,
+                                                      onFieldSubmitted: (_) => _onAddUserToShoppingList(),
+                                                      decoration: const InputDecoration(
+                                                        hintText: 'Emailadresse vom Hansel',
+                                                      ),
+                                                      validator: (emailAddress) {
+                                                        if (emailAddress.trim().isEmpty ||
+                                                            !emailAddress.contains('@') ||
+                                                            !emailAddress.contains('.')) {
+                                                          return 'Dazu brauchen wir schon eine korrekte Emailadresse...';
+                                                        }
+                                                        return null;
+                                                      },
+                                                    ))),
+                                            IconButton(
+                                              icon: Icon(Icons.add),
+                                              onPressed: _loading ? null : _onAddUserToShoppingList,
+                                            )
+                                          ]),
+                                        ],
+                                      )),
+                                ),
+                                SizedBox(height: 12),
+                                Card(
+                                  child: Padding(
+                                      padding: EdgeInsets.all(18),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            "Gefahrenzone",
+                                            style: Theme.of(context).textTheme.headline6,
+                                          ),
+                                          SizedBox(height: 12),
+                                          OutlinedButton(
+                                            child: Text("Liste löschen..."),
+                                            style: OutlinedButton.styleFrom(primary: Colors.red),
+                                            onPressed: _loading ? null : _onDeleteShoppingList,
+                                          ),
+                                          SizedBox(height: 12),
+                                          OutlineButton(
+                                              child: Text("Liste übertragen..."),
+                                              textColor: Colors.red,
+                                              highlightedBorderColor: Colors.red,
+                                              borderSide: BorderSide(color: Colors.red),
+                                              onPressed: null)
+                                        ],
+                                      )),
+                                )
+                              ],
+                            ))
+                      ])),
+                )
+              ],
+            )));
   }
 
   void _onAddUserToShoppingList() {
@@ -196,13 +197,13 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
     });
     widget
         ._onAddUserToShoppingList(_addUserTextEditingController.value.text.trim().toLowerCase())
-        .then((_) => _addUserTextEditingController.text == "")
+        .then((_) => _addUserTextEditingController.clear())
         .catchError((e) {
       showErrorDialog(context, "Hast du dich vertippt oder können wir den Hansel nicht finden?");
       _addUserToShoppingListFocusNode.requestFocus();
     }).whenComplete(() => setState(() {
-      _loading = false;
-    }));
+              _loading = false;
+            }));
   }
 
   Widget _buildProgressBar() {
