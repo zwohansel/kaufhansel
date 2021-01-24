@@ -107,6 +107,15 @@ class ShoppingList extends ChangeNotifier {
     notifyListeners();
   }
 
+  void removeAllItems() {
+    _items.forEach((item) {
+      item.categoryChangedCallback = null;
+      item.checkedChangedCallback = null;
+    });
+    _items.clear();
+    notifyListeners();
+  }
+
   List<ShoppingListItem> get items => UnmodifiableListView(_items);
 
   List<String> getAllCategories() {

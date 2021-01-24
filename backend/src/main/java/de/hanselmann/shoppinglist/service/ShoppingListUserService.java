@@ -36,13 +36,9 @@ public class ShoppingListUserService {
         userRepository.save(user);
     }
 
-    public boolean removeShoppingListFromUser(ShoppingListUser user, ObjectId shoppingListId) {
-        if (user.deleteShoppingList(shoppingListId)) {
-            userRepository.save(user);
-            return true;
-        } else {
-            return false;
-        }
+    public void removeShoppingListFromUser(ShoppingListUser user, ObjectId shoppingListId) {
+        user.deleteShoppingList(shoppingListId);
+        userRepository.save(user);
     }
 
 }

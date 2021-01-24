@@ -122,11 +122,37 @@ class RestClient {
 
   Future<void> deleteShoppingList(String shoppingListId) async {
     var request = await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId"));
-    request.headers.contentType = ContentType.json;
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
       throw Exception('Failed to delete shopping list');
+    }
+  }
+
+  Future<void> uncheckAllItems(String shoppingListId) async {
+    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/uncheckallitems"));
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode != 204) {
+      throw Exception('Failed to uncheck all items in the shopping list');
+    }
+  }
+
+  Future<void> removeAllCategories(String shoppingListId) async {
+    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/removeallcategories"));
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode != 204) {
+      throw Exception('Failed to remove all categories from the shopping list');
+    }
+  }
+
+  Future<void> removeAllItems(String shoppingListId) async {
+    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/clear"));
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode != 204) {
+      throw Exception('Failed to remove all items from the shopping list');
     }
   }
 }

@@ -14,14 +14,20 @@ class ShoppingListDrawer extends StatelessWidget {
       @required List<ShoppingListInfo> shoppingLists,
       @required void Function(ShoppingListInfo info) onShoppingListSelected,
       @required Future<void> Function(String) onCreateShoppingList,
-      @required Future<void> Function(ShoppingListInfo) onDeleteShoppingList})
+      @required Future<void> Function(ShoppingListInfo) onDeleteShoppingList,
+      @required Future<void> Function(ShoppingListInfo) onUncheckAllItems,
+      @required Future<void> Function(ShoppingListInfo) onRemoveAllCategories,
+      @required Future<void> Function(ShoppingListInfo) onRemoveAllItems})
       : _onRefreshPressed = onRefreshPressed,
         _onFilterChanged = onFilterChanged,
         _filter = filter,
         _shoppingLists = shoppingLists,
         _onShoppingListSelected = onShoppingListSelected,
         _onCreateShoppingList = onCreateShoppingList,
-        _onDeleteShoppingList = onDeleteShoppingList;
+        _onDeleteShoppingList = onDeleteShoppingList,
+        _onUncheckAllItems = onUncheckAllItems,
+        _onRemoveAllCategories = onRemoveAllCategories,
+        _onRemoveAllItems = onRemoveAllItems;
 
   final VoidCallback _onRefreshPressed;
   final void Function(ShoppingListFilterOption nextFilter) _onFilterChanged;
@@ -30,6 +36,9 @@ class ShoppingListDrawer extends StatelessWidget {
   final List<ShoppingListInfo> _shoppingLists;
   final Future<void> Function(String) _onCreateShoppingList;
   final Future<void> Function(ShoppingListInfo) _onDeleteShoppingList;
+  final Future<void> Function(ShoppingListInfo) _onUncheckAllItems;
+  final Future<void> Function(ShoppingListInfo) _onRemoveAllCategories;
+  final Future<void> Function(ShoppingListInfo) _onRemoveAllItems;
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +53,9 @@ class ShoppingListDrawer extends StatelessWidget {
                   return ShoppingListSettings(
                     info,
                     onDeleteShoppingList: () => _onDeleteShoppingList(info),
+                    onUncheckAllItems: () => _onUncheckAllItems(info),
+                    onRemoveAllCategories: () => _onRemoveAllCategories(info),
+                    onRemoveAllItems: () => _onRemoveAllItems(info),
                   );
                 },
               ));

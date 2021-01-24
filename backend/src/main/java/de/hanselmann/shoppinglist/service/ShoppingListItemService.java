@@ -99,8 +99,7 @@ public class ShoppingListItemService {
     @GraphQLMutation
     public @GraphQLNonNull boolean clearShoppingList() {
         ShoppingList shoppingList = shoppingListService.getFirstShoppingListOfCurrentUser();
-        List<ShoppingListItem> items = shoppingList.getItems();
-        shoppingList.clearItems();
+        List<ShoppingListItem> items = shoppingList.clearItems();
         shoppingListService.saveShoppingList(shoppingList);
         shoppingListSubscribers.notifyItemsDeleted(shoppingList, items);
         return true;
