@@ -142,6 +142,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               filter: _filter,
               onFilterChanged: _onFilterChanged,
               shoppingLists: _shoppingListInfos,
+              selectedShoppingListId: _currentShoppingList?.id,
               onShoppingListSelected: _onShoppingListSelected,
               onCreateShoppingList: _createShoppingList,
               onDeleteShoppingList: _deleteShoppingList,

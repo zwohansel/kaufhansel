@@ -12,6 +12,7 @@ class ShoppingListDrawer extends StatelessWidget {
       @required ShoppingListFilterOption filter,
       @required void Function(ShoppingListFilterOption nextFilter) onFilterChanged,
       @required List<ShoppingListInfo> shoppingLists,
+      @required String selectedShoppingListId,
       @required void Function(ShoppingListInfo info) onShoppingListSelected,
       @required Future<void> Function(String) onCreateShoppingList,
       @required Future<void> Function(ShoppingListInfo) onDeleteShoppingList,
@@ -23,6 +24,7 @@ class ShoppingListDrawer extends StatelessWidget {
         _onFilterChanged = onFilterChanged,
         _filter = filter,
         _shoppingLists = shoppingLists,
+        _selectedShoppingListId = selectedShoppingListId,
         _onShoppingListSelected = onShoppingListSelected,
         _onCreateShoppingList = onCreateShoppingList,
         _onDeleteShoppingList = onDeleteShoppingList,
@@ -36,6 +38,7 @@ class ShoppingListDrawer extends StatelessWidget {
   final void Function(ShoppingListInfo info) _onShoppingListSelected;
   final ShoppingListFilterOption _filter;
   final List<ShoppingListInfo> _shoppingLists;
+  final String _selectedShoppingListId;
   final Future<void> Function(String) _onCreateShoppingList;
   final Future<void> Function(ShoppingListInfo) _onDeleteShoppingList;
   final Future<void> Function(ShoppingListInfo, String) _onAddUserToShoppingList;
@@ -48,6 +51,7 @@ class ShoppingListDrawer extends StatelessWidget {
     final infoTiles = _shoppingLists?.map((info) => ListTile(
         key: ValueKey(info.id),
         title: Text(info.name),
+        tileColor: _getTileColor(context, info),
         trailing: IconButton(
             icon: Icon(Icons.edit),
             onPressed: () {
@@ -146,5 +150,11 @@ class ShoppingListDrawer extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Color _getTileColor(BuildContext context, ShoppingListInfo info) {
+    return _selectedShoppingListId != null
+        ? (info.id == _selectedShoppingListId ? Theme.of(context).highlightColor : null)
+        : null;
   }
 }
