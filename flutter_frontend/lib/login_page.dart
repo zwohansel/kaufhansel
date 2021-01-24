@@ -90,7 +90,8 @@ class _LoginPageState extends State<LoginPage> {
                             child: ElevatedButton(child: Text("Anmelden"), onPressed: _buildLoginFunction(context))),
                         Padding(
                           padding: EdgeInsets.only(top: 10),
-                          child: OutlineButton(child: Text("Registrieren"), onPressed: _buildRegisterFunction(context)),
+                          child:
+                              OutlinedButton(child: Text("Registrieren"), onPressed: _buildRegisterFunction(context)),
                         )
                       ],
                     )),

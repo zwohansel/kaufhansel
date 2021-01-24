@@ -112,10 +112,11 @@ class ShoppingListDrawer extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                OutlineButton(
+                OutlinedButton(
                   child: Text("Neue Liste"),
-                  textColor: Theme.of(context).primaryIconTheme.color,
-                  borderSide: BorderSide(color: Theme.of(context).primaryIconTheme.color),
+                  style: OutlinedButton.styleFrom(
+                      primary: Theme.of(context).primaryIconTheme.color,
+                      side: BorderSide(color: Theme.of(context).primaryIconTheme.color)),
                   onPressed: () {
                     showDialog(
                       context: context,
@@ -127,10 +128,11 @@ class ShoppingListDrawer extends StatelessWidget {
                   },
                 ),
                 SizedBox(height: 10),
-                OutlineButton(
+                OutlinedButton(
                   child: Text("Einstellungen"),
-                  textColor: Theme.of(context).primaryIconTheme.color,
-                  borderSide: BorderSide(color: Theme.of(context).primaryIconTheme.color),
+                  style: OutlinedButton.styleFrom(
+                      primary: Theme.of(context).primaryIconTheme.color,
+                      side: BorderSide(color: Theme.of(context).primaryIconTheme.color)),
                   onPressed: () {
                     //TODO
                     Navigator.pop(context);

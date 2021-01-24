@@ -74,7 +74,7 @@ class _CreateShoppingListDialogState extends State<CreateShoppingListDialog> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                      child: OutlineButton(
+                      child: OutlinedButton(
                           child: Text("Abbrechen"), onPressed: _loading ? null : () => Navigator.pop(context))),
                   SizedBox(width: 10),
                   Expanded(

@@ -169,11 +169,9 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                                             onPressed: _loading ? null : _onDeleteShoppingList,
                                           ),
                                           SizedBox(height: 12),
-                                          OutlineButton(
+                                          OutlinedButton(
                                               child: Text("Liste übertragen..."),
-                                              textColor: Colors.red,
-                                              highlightedBorderColor: Colors.red,
-                                              borderSide: BorderSide(color: Colors.red),
+                                              style: OutlinedButton.styleFrom(primary: Colors.red),
                                               onPressed: null)
                                         ],
                                       )),

@@ -61,15 +61,16 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
     final categoryButtons = widget.categories.map((category) {
       final currentItemCategory = widget.item.category == category;
       final color = currentItemCategory ? Theme.of(context).accentColor : Theme.of(context).unselectedWidgetColor;
-      return OutlineButton(
+      return OutlinedButton(
           onPressed: () {
             setItemCategory(category);
             Navigator.pop(context);
           },
           child: Text(category),
-          textColor: color,
-          highlightedBorderColor: color,
-          borderSide: BorderSide(color: color, width: currentItemCategory ? 2.0 : 1.0));
+          style: OutlinedButton.styleFrom(
+              textStyle: TextStyle(color: color),
+              primary: color,
+              side: BorderSide(color: color, width: currentItemCategory ? 2.0 : 1.0)));
     }).toList();
 
     final dialogContent = Container(
@@ -88,15 +89,13 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
                       )),
                   padding: EdgeInsets.only(bottom: bottomMargin))),
           Container(
-            child: OutlineButton(
+            child: OutlinedButton(
               onPressed: () {
                 setItemCategory(null);
                 Navigator.pop(context);
               },
               child: Text("Keine"),
-              textColor: Colors.orange,
-              highlightedBorderColor: Colors.orange,
-              borderSide: BorderSide(color: Colors.orange),
+              style: OutlinedButton.styleFrom(primary: Colors.orange, side: BorderSide(color: Colors.orange)),
             ),
             margin: EdgeInsets.only(bottom: bottomMargin),
           ),
