@@ -10,11 +10,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import de.hanselmann.shoppinglist.restapi.dto.AddUserToShoppingListDto;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListDto;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemUpdateDto;
+import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserReferenceDto;
 
 public interface ShoppingListApi {
 
@@ -51,4 +53,9 @@ public interface ShoppingListApi {
             @PathVariable String id,
             @PathVariable String itemId,
             @RequestBody ShoppingListItemUpdateDto updateItem);
+
+    @PutMapping("/shoppinglist/{id}/adduser")
+    ResponseEntity<ShoppingListUserReferenceDto> addUserToShoppingList(
+            @PathVariable String id,
+            @RequestBody AddUserToShoppingListDto addUserDto);
 }

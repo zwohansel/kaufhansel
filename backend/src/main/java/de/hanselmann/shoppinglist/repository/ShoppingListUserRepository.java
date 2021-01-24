@@ -9,4 +9,6 @@ import de.hanselmann.shoppinglist.model.ShoppingListUser;
 
 public interface ShoppingListUserRepository extends MongoRepository<ShoppingListUser, ObjectId> {
     Optional<ShoppingListUser> findUserByUsername(String username);
+
+    Optional<ShoppingListUser> findUserByEmailAddress(String emailAddress);
 }

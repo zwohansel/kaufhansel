@@ -129,4 +129,19 @@ class RestClient {
       throw Exception('Failed to delete shopping list');
     }
   }
+
+  Future<ShoppingListUserReference> addUserToShoppingList(String shoppingListId, String userEmailAddress) async {
+    final body = jsonEncode({'emailAddress': userEmailAddress});
+    var request = await _httpClient.putUrl(_serverUrl.resolve("/shoppinglist/$shoppingListId/adduser"));
+    request.headers.contentType = ContentType.json;
+    request.write(body);
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode == 200) {
+      final String decoded = await response.transform(utf8.decoder).join();
+      return ShoppingListUserReference.fromJson(jsonDecode(decoded));
+    } else {
+      throw Exception('Failed to add user to shopping list');
+    }
+  }
 }

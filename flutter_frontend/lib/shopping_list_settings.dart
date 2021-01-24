@@ -7,10 +7,14 @@ import 'package:kaufhansel_client/title_widget.dart';
 class ShoppingListSettings extends StatefulWidget {
   final ShoppingListInfo _shoppingListInfo;
 
-  const ShoppingListSettings(this._shoppingListInfo, {@required Future<void> Function() onDeleteShoppingList})
-      : _onDeleteShoppingList = onDeleteShoppingList;
+  const ShoppingListSettings(this._shoppingListInfo,
+      {@required Future<void> Function() onDeleteShoppingList,
+      @required Future<void> Function(String) onAddUserToShoppingList})
+      : _onDeleteShoppingList = onDeleteShoppingList,
+        _onAddUserToShoppingList = onAddUserToShoppingList;
 
   final Future<void> Function() _onDeleteShoppingList;
+  final Future<void> Function(String) _onAddUserToShoppingList;
 
   @override
   _ShoppingListSettingsState createState() => _ShoppingListSettingsState();
@@ -18,6 +22,9 @@ class ShoppingListSettings extends StatefulWidget {
 
 class _ShoppingListSettingsState extends State<ShoppingListSettings> {
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _addUserTextEditingController = new TextEditingController();
+  final FocusNode _addUserToShoppingListFocusNode = new FocusNode();
+  final _addUserToShoppingListFormKey = GlobalKey<FormState>();
   bool _loading = false;
 
   @override
@@ -94,19 +101,40 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                                       SizedBox(height: 12),
                                       ListView(
                                         shrinkWrap: true,
-                                        children: ListTile.divideTiles(context: context, tiles: [
-                                          ...sharedUsers,
-                                          ListTile(
-                                            title: TextField(
-                                                onSubmitted: (text) {},
-                                                decoration: InputDecoration(
-                                                    suffixIcon: IconButton(icon: Icon(Icons.add), onPressed: () {}),
-                                                    labelText: "",
-                                                    hintText: "Mit einem weiteren Hansel teilen",
-                                                    contentPadding: EdgeInsets.zero)),
-                                          )
-                                        ]).toList(),
-                                      )
+                                        children: ListTile.divideTiles(context: context, tiles: sharedUsers).toList(),
+                                      ),
+                                      SizedBox(height: 12),
+                                      Text(
+                                        "Mit einem weiteren Hansel teilen",
+                                        style: Theme.of(context).textTheme.headline6,
+                                      ),
+                                      SizedBox(height: 12),
+                                      Row(children: [
+                                        Expanded(
+                                            child: Form(
+                                                key: _addUserToShoppingListFormKey,
+                                                child: TextFormField(
+                                                  focusNode: _addUserToShoppingListFocusNode,
+                                                  controller: _addUserTextEditingController,
+                                                  enabled: !_loading,
+                                                  onFieldSubmitted: (_) => _onAddUserToShoppingList(),
+                                                  decoration: const InputDecoration(
+                                                    hintText: 'Emailadresse vom Hansel',
+                                                  ),
+                                                  validator: (emailAddress) {
+                                                    if (emailAddress.trim().isEmpty ||
+                                                        !emailAddress.contains('@') ||
+                                                        !emailAddress.contains('.')) {
+                                                      return 'Dazu brauchen wir schon eine korrekte Emailadresse...';
+                                                    }
+                                                    return null;
+                                                  },
+                                                ))),
+                                        IconButton(
+                                          icon: Icon(Icons.add),
+                                          onPressed: _loading ? null : _onAddUserToShoppingList,
+                                        )
+                                      ]),
                                     ],
                                   )),
                             ),
@@ -156,6 +184,26 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
             )
           ],
         ));
+  }
+
+  void _onAddUserToShoppingList() {
+    if (!_addUserToShoppingListFormKey.currentState.validate()) {
+      _addUserToShoppingListFocusNode.requestFocus();
+      return;
+    }
+
+    setState(() {
+      _loading = true;
+    });
+    widget
+        ._onAddUserToShoppingList(_addUserTextEditingController.value.text.trim().toLowerCase())
+        .then((_) => _addUserTextEditingController.text == "")
+        .catchError((e) {
+      showErrorDialog(context, "Hast du dich vertippt oder können wir den Hansel nicht finden?");
+      _addUserToShoppingListFocusNode.requestFocus();
+    }).whenComplete(() => setState(() {
+              _loading = false;
+            }));
   }
 
   void _onDeleteShoppingList() {

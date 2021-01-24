@@ -22,7 +22,7 @@ public class DtoTransformer {
     }
 
     public ShoppingListUserReferenceDto map(ShoppingListUser user) {
-        return new ShoppingListUserReferenceDto(user.getId().toString(), user.getUsername(), user.getEmailAdress());
+        return new ShoppingListUserReferenceDto(user.getId().toString(), user.getUsername(), user.getEmailAddress());
     }
 
 }

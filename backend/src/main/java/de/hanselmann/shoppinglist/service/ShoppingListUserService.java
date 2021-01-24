@@ -1,5 +1,7 @@
 package de.hanselmann.shoppinglist.service;
 
+import java.util.Optional;
+
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -42,6 +44,14 @@ public class ShoppingListUserService {
             return true;
         } else {
             return false;
+        }
+    }
+
+    public Optional<ShoppingListUser> findByEmailAddress(String emailAddress) {
+        if (emailAddress != null) {
+            return userRepository.findUserByEmailAddress(emailAddress.toLowerCase());
+        } else {
+            return Optional.empty();
         }
     }
 

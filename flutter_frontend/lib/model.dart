@@ -155,7 +155,7 @@ class ShoppingListUserReference {
   String get userEmailAddress => _userEmailAddress;
 }
 
-class ShoppingListInfo {
+class ShoppingListInfo extends ChangeNotifier {
   final String _id;
   final String _name;
   final List<ShoppingListUserReference> _users;
@@ -168,6 +168,11 @@ class ShoppingListInfo {
 
   static List<ShoppingListUserReference> _parseUserReferences(List<dynamic> json) {
     return json.map((ref) => ShoppingListUserReference.fromJson(ref)).toList();
+  }
+
+  void addUserToShoppingList(ShoppingListUserReference userReference) {
+    _users.add(userReference);
+    notifyListeners();
   }
 
   String get id => _id;

@@ -2,6 +2,7 @@ package de.hanselmann.shoppinglist.controller;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
@@ -12,7 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.hanselmann.shoppinglist.model.ShoppingList;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
+import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.restapi.ShoppingListApi;
+import de.hanselmann.shoppinglist.restapi.dto.AddUserToShoppingListDto;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListDto;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
@@ -158,6 +161,22 @@ public class ShoppingListController implements ShoppingListApi {
         shoppingListService.saveShoppingList(list);
         shoppingListSubscribers.notifyItemsChanged(list, Collections.singletonList(item));
         return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<ShoppingListUserReferenceDto> addUserToShoppingList(String id,
+            AddUserToShoppingListDto addUserDto) {
+        if (!ObjectId.isValid(id)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Optional<ShoppingListUser> userOptional = userService.findByEmailAddress(addUserDto.getEmailAddress());
+        if (userOptional.isPresent()) {
+            shoppingListService.addUserToShoppingList(new ObjectId(id), userOptional.get());
+            return ResponseEntity.ok(dtoTransformer.map(userOptional.get()));
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
 }

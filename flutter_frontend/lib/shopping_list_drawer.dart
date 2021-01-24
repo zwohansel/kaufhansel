@@ -14,14 +14,16 @@ class ShoppingListDrawer extends StatelessWidget {
       @required List<ShoppingListInfo> shoppingLists,
       @required void Function(ShoppingListInfo info) onShoppingListSelected,
       @required Future<void> Function(String) onCreateShoppingList,
-      @required Future<void> Function(ShoppingListInfo) onDeleteShoppingList})
+      @required Future<void> Function(ShoppingListInfo) onDeleteShoppingList,
+      @required Future<void> Function(ShoppingListInfo, String) onAddUserToShoppingList})
       : _onRefreshPressed = onRefreshPressed,
         _onFilterChanged = onFilterChanged,
         _filter = filter,
         _shoppingLists = shoppingLists,
         _onShoppingListSelected = onShoppingListSelected,
         _onCreateShoppingList = onCreateShoppingList,
-        _onDeleteShoppingList = onDeleteShoppingList;
+        _onDeleteShoppingList = onDeleteShoppingList,
+        _onAddUserToShoppingList = onAddUserToShoppingList;
 
   final VoidCallback _onRefreshPressed;
   final void Function(ShoppingListFilterOption nextFilter) _onFilterChanged;
@@ -30,6 +32,7 @@ class ShoppingListDrawer extends StatelessWidget {
   final List<ShoppingListInfo> _shoppingLists;
   final Future<void> Function(String) _onCreateShoppingList;
   final Future<void> Function(ShoppingListInfo) _onDeleteShoppingList;
+  final Future<void> Function(ShoppingListInfo, String) _onAddUserToShoppingList;
 
   @override
   Widget build(BuildContext context) {
@@ -41,10 +44,9 @@ class ShoppingListDrawer extends StatelessWidget {
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(
                 builder: (context) {
-                  return ShoppingListSettings(
-                    info,
-                    onDeleteShoppingList: () => _onDeleteShoppingList(info),
-                  );
+                  return ShoppingListSettings(info,
+                      onDeleteShoppingList: () => _onDeleteShoppingList(info),
+                      onAddUserToShoppingList: (userEmailAddress) => _onAddUserToShoppingList(info, userEmailAddress));
                 },
               ));
             }),

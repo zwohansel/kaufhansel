@@ -68,6 +68,11 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     });
   }
 
+  Future<void> _addUserToShoppingList(ShoppingListInfo info, String userEmailAddress) async {
+    final userReference = await _client.addUserToShoppingList(info.id, userEmailAddress);
+    info.addUserToShoppingList(userReference);
+  }
+
   void _fetchShoppingListInfos() async {
     setState(() {
       _shoppingListInfos = null;
@@ -119,6 +124,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               onShoppingListSelected: _onShoppingListSelected,
               onCreateShoppingList: _createShoppingList,
               onDeleteShoppingList: _deleteShoppingList,
+              onAddUserToShoppingList: _addUserToShoppingList,
             ),
             body: _buildShoppingList(context),
           );

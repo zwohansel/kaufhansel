@@ -39,7 +39,7 @@ public class ShoppingListUser {
         return password != null && !password.isEmpty();
     }
 
-    public String getEmailAdress() {
+    public String getEmailAddress() {
         return emailAddress;
     }
 

@@ -50,6 +50,27 @@ public class ShoppingListService {
         }
     }
 
+    public @Nullable ShoppingList addUserToShoppingList(ObjectId shoppingListId, ShoppingListUser user) {
+        try {
+            return transactionTemplate.execute(status -> {
+                ShoppingList shoppingList = shoppingListRepository.findById(shoppingListId)
+                        .orElseThrow(() -> new IllegalArgumentException("User does not exist."));
+
+                if (shoppingList.getUsers().stream().anyMatch(listUser -> listUser.getUserId().equals(user.getId()))) {
+                    throw new IllegalArgumentException("Shopping list is alread shared with user.");
+                }
+
+                shoppingList.addUser(new ShoppingListUserReference(user.getId()));
+                shoppingListRepository.save(shoppingList);
+                userService.addShoppingListToUser(user, shoppingListId);
+                return shoppingList;
+            });
+
+        } catch (TransactionException e) {
+            return null;
+        }
+    }
+
     public Stream<ShoppingList> getShoppingListsOfCurrentUser() {
         return getShoppingListsOfUser(userService.getCurrentUser());
     }
