@@ -4,11 +4,14 @@ public class ShoppingListUserReferenceDto {
     final String userId;
     final String userName;
     final String userEmailAddress;
+    final ShoppingListPermissionsDto permissions;
 
-    public ShoppingListUserReferenceDto(String userId, String userName, String userEmailAddress) {
+    public ShoppingListUserReferenceDto(String userId, String userName, String userEmailAddress,
+            ShoppingListPermissionsDto permissions) {
         this.userId = userId;
         this.userName = userName;
         this.userEmailAddress = userEmailAddress;
+        this.permissions = permissions;
     }
 
     public String getUserId() {
@@ -21,6 +24,10 @@ public class ShoppingListUserReferenceDto {
 
     public String getUserEmailAddress() {
         return userEmailAddress;
+    }
+
+    public ShoppingListPermissionsDto getPermissions() {
+        return permissions;
     }
 
 }

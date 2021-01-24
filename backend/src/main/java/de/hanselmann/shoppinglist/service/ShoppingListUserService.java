@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import de.hanselmann.shoppinglist.model.ShoppingListReference;
+import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
 
@@ -32,10 +33,12 @@ public class ShoppingListUserService {
         return userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User does not exist."));
     }
 
-    public void addShoppingListToUser(ShoppingListUser user, ObjectId shoppingListId) {
-        ShoppingListReference shoppingListReference = new ShoppingListReference(shoppingListId);
+    public ShoppingListReference addShoppingListToUser(ShoppingListUser user, ObjectId shoppingListId,
+            ShoppingListRole role) {
+        ShoppingListReference shoppingListReference = new ShoppingListReference(shoppingListId, role);
         user.addShoppingList(shoppingListReference);
         userRepository.save(user);
+        return shoppingListReference;
     }
 
     public void removeShoppingListFromUser(ShoppingListUser user, ObjectId shoppingListId) {

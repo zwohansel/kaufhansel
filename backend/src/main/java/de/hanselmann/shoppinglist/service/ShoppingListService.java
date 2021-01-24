@@ -16,6 +16,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import de.hanselmann.shoppinglist.model.ShoppingList;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
 import de.hanselmann.shoppinglist.model.ShoppingListReference;
+import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.model.ShoppingListUserReference;
 import de.hanselmann.shoppinglist.repository.ShoppingListRepository;
@@ -43,7 +44,7 @@ public class ShoppingListService {
                 shoppingList.setName(name);
                 shoppingList.addUser(new ShoppingListUserReference(user.getId()));
                 shoppingListRepository.save(shoppingList);
-                userService.addShoppingListToUser(user, shoppingList.getId());
+                userService.addShoppingListToUser(user, shoppingList.getId(), ShoppingListRole.ADMIN);
                 return shoppingList;
             });
         } catch (TransactionException e) {
@@ -51,7 +52,7 @@ public class ShoppingListService {
         }
     }
 
-    public @Nullable ShoppingList addUserToShoppingList(ObjectId shoppingListId, ShoppingListUser user) {
+    public @Nullable ShoppingListReference addUserToShoppingList(ObjectId shoppingListId, ShoppingListUser user) {
         try {
             return transactionTemplate.execute(status -> {
                 ShoppingList shoppingList = shoppingListRepository.findById(shoppingListId)
@@ -63,8 +64,7 @@ public class ShoppingListService {
 
                 shoppingList.addUser(new ShoppingListUserReference(user.getId()));
                 shoppingListRepository.save(shoppingList);
-                userService.addShoppingListToUser(user, shoppingListId);
-                return shoppingList;
+                return userService.addShoppingListToUser(user, shoppingListId, ShoppingListRole.READ_WRITE);
             });
 
         } catch (TransactionException e) {

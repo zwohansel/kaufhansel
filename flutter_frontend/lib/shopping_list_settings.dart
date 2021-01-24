@@ -39,8 +39,9 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
   @override
   Widget build(BuildContext context) {
     final sharedUsers = widget._shoppingListInfo.users.map((user) => ListTile(
-          title: Text("${user.userName} (${user.userEmailAddress})"),
-          onTap: () {},
+          title: Text("${user.userName} (${user.userEmailAddress}): ${_mapRole(user.permissions.role)}"),
+          onTap: () => showErrorDialog(
+              context, "Willst du etwa die Einstelungen für diesen Hansel ändern? Das geht noch nicht."),
         ));
 
     return WillPopScope(
@@ -121,6 +122,10 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                                             style: Theme.of(context).textTheme.headline6,
                                           ),
                                           SizedBox(height: 12),
+                                          Text(
+                                              "Wenn du nichts änderst, kann der neue Hansel Dinge hinzufügen, abhaken und entfernen: er ist ein Kaufhansel.",
+                                              style: Theme.of(context).textTheme.subtitle2),
+                                          SizedBox(height: 12),
                                           Row(children: [
                                             Expanded(
                                                 child: Form(
@@ -182,6 +187,21 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                 )
               ],
             )));
+  }
+
+  String _mapRole(String role) {
+    switch (role) {
+      case "ADMIN":
+        return "Chefhansel";
+      case "READ_WRITE":
+        return "Schreibhansel";
+      case "CHECK_ONLY":
+        return "Kaufhansel";
+      case "READ_ONLY":
+        return "Guckhansel";
+      default:
+        return "UNGÜLTIG";
+    }
   }
 
   Widget _buildProgressBar() {

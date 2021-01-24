@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.hanselmann.shoppinglist.model.ShoppingList;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
+import de.hanselmann.shoppinglist.model.ShoppingListReference;
+import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.restapi.ShoppingListApi;
 import de.hanselmann.shoppinglist.restapi.dto.AddUserToShoppingListDto;
@@ -78,8 +80,19 @@ public class ShoppingListController implements ShoppingListApi {
     private List<ShoppingListUserReferenceDto> getShoppingListUserReferenceDtos(ShoppingList shoppingList) {
         return shoppingList.getUsers().stream()
                 .map(userRef -> userService.getUser(userRef.getUserId()))
-                .map(dtoTransformer::map)
+                .map(user -> getShoppingListUserReferenceDto(shoppingList, user))
                 .collect(Collectors.toList());
+    }
+
+    private ShoppingListUserReferenceDto getShoppingListUserReferenceDto(ShoppingList shoppingList,
+            ShoppingListUser user) {
+        ShoppingListRole userRoleForList = user.getShoppingLists().stream()
+                .filter(listRef -> listRef.getShoppingListId().equals(shoppingList.getId()))
+                .findAny()
+                .map(listRef -> listRef.getRole())
+                .orElseThrow(
+                        () -> new IllegalArgumentException("No roles defined for user " + user.getId()));
+        return dtoTransformer.map(user, userRoleForList);
     }
 
     @Override
@@ -220,8 +233,12 @@ public class ShoppingListController implements ShoppingListApi {
 
         Optional<ShoppingListUser> userOptional = userService.findByEmailAddress(addUserDto.getEmailAddress());
         if (userOptional.isPresent()) {
-            shoppingListService.addUserToShoppingList(new ObjectId(id), userOptional.get());
-            return ResponseEntity.ok(dtoTransformer.map(userOptional.get()));
+            ShoppingListReference shoppingListReference = shoppingListService.addUserToShoppingList(new ObjectId(id),
+                    userOptional.get());
+            if (shoppingListReference == null) {
+                return ResponseEntity.badRequest().build();
+            }
+            return ResponseEntity.ok(dtoTransformer.map(userOptional.get(), shoppingListReference.getRole()));
         } else {
             return ResponseEntity.badRequest().build();
         }

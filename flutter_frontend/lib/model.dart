@@ -152,11 +152,13 @@ class ShoppingListUserReference {
   final String _userId;
   final String _userName;
   final String _userEmailAddress;
+  final ShoppingListPermissions permissions;
 
-  ShoppingListUserReference(this._userId, this._userName, this._userEmailAddress);
+  ShoppingListUserReference(this._userId, this._userName, this._userEmailAddress, this.permissions);
 
   factory ShoppingListUserReference.fromJson(Map<String, dynamic> json) {
-    return ShoppingListUserReference(json['userId'], json['userName'], json['userEmailAddress']);
+    return ShoppingListUserReference(json['userId'], json['userName'], json['userEmailAddress'],
+        new ShoppingListPermissions.fromJson(json['permissions']));
   }
 
   String get userId => _userId;
@@ -187,4 +189,22 @@ class ShoppingListInfo extends ChangeNotifier {
   String get id => _id;
   String get name => _name;
   List<ShoppingListUserReference> get users => UnmodifiableListView(_users);
+}
+
+class ShoppingListPermissions {
+  final String _role;
+  final bool _canEditList;
+  final bool _canEditItems;
+  final bool _canCheckItems;
+
+  ShoppingListPermissions(this._role, this._canEditList, this._canEditItems, this._canCheckItems);
+
+  factory ShoppingListPermissions.fromJson(Map<String, dynamic> json) {
+    return new ShoppingListPermissions(json['role'], json['canEditList'], json['canEditItems'], json['canCheckItems']);
+  }
+
+  String get role => _role;
+  bool get canCheckItems => _canCheckItems;
+  bool get canEditItems => _canEditItems;
+  bool get canEditList => _canEditList;
 }
