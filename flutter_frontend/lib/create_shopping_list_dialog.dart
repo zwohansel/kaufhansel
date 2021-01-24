@@ -28,23 +28,6 @@ class _CreateShoppingListDialogState extends State<CreateShoppingListDialog> {
     });
   }
 
-  void _onCreateShoppingListPressed() {
-    setState(() {
-      _loading = true;
-    });
-
-    widget
-        ._onCreateShoppingList(_textController.text.trim())
-        .whenComplete(() {
-          setState(() {
-            _loading = false;
-          });
-        })
-        .then((value) => Navigator.pop(context))
-        .catchError((e) => showErrorDialog(
-            context, "Ist der Speicher voll oder hast du einen Fehler beim Anlegen der Liste gemacht?"));
-  }
-
   @override
   Widget build(BuildContext context) {
     return SimpleDialog(title: Text("Neue Liste anlegen"), children: [
@@ -93,6 +76,19 @@ class _CreateShoppingListDialogState extends State<CreateShoppingListDialog> {
       return LinearProgressIndicator(minHeight: 5);
     } else {
       return SizedBox(height: 5);
+    }
+  }
+
+  void _onCreateShoppingListPressed() async {
+    setState(() => _loading = true);
+
+    try {
+      await widget._onCreateShoppingList(_textController.text.trim());
+      Navigator.pop(context);
+    } catch (e) {
+      showErrorDialog(context, "Ist der Speicher voll oder hast du einen Fehler beim Anlegen der Liste gemacht?");
+    } finally {
+      setState(() => _loading = false);
     }
   }
 }

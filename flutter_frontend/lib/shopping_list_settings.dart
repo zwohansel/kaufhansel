@@ -184,26 +184,6 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
             )));
   }
 
-  void _onAddUserToShoppingList() {
-    if (!_addUserToShoppingListFormKey.currentState.validate()) {
-      _addUserToShoppingListFocusNode.requestFocus();
-      return;
-    }
-
-    setState(() {
-      _loading = true;
-    });
-    widget
-        ._onAddUserToShoppingList(_addUserTextEditingController.value.text.trim().toLowerCase())
-        .then((_) => _addUserTextEditingController.clear())
-        .catchError((e) {
-      showErrorDialog(context, "Hast du dich vertippt oder können wir den Hansel nicht finden?");
-      _addUserToShoppingListFocusNode.requestFocus();
-    }).whenComplete(() => setState(() {
-              _loading = false;
-            }));
-  }
-
   Widget _buildProgressBar() {
     if (_loading) {
       return LinearProgressIndicator(
@@ -211,6 +191,24 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
       );
     } else {
       return Container();
+    }
+  }
+
+  void _onAddUserToShoppingList() async {
+    if (!_addUserToShoppingListFormKey.currentState.validate()) {
+      _addUserToShoppingListFocusNode.requestFocus();
+      return;
+    }
+
+    setState(() => _loading = true);
+    try {
+      final userEmail = _addUserTextEditingController.value.text.trim().toLowerCase();
+      await widget._onAddUserToShoppingList(userEmail);
+      _addUserTextEditingController.clear();
+    } catch (e) {
+      showErrorDialog(context, "Hast du dich vertippt oder können wir den Hansel nicht finden?");
+    } finally {
+      setState(() => _loading = false);
     }
   }
 
