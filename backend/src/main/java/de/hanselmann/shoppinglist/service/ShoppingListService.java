@@ -2,6 +2,7 @@ package de.hanselmann.shoppinglist.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.bson.types.ObjectId;
@@ -113,34 +114,67 @@ public class ShoppingListService {
 
     public boolean deleteShoppingList(ObjectId id) {
         try {
-            return transactionTemplate.execute(status -> tryDeleteShoppingList(id));
+            transactionTemplate.executeWithoutResult(status -> tryDeleteShoppingList(id));
+            return true;
         } catch (TransactionException e) {
             return false;
         }
     }
 
-    private boolean tryDeleteShoppingList(ObjectId shoppingListId) {
-        ShoppingList list = getShoppingList(shoppingListId).orElse(null);
-
-        if (list == null) {
-            return false;
-        }
+    private void tryDeleteShoppingList(ObjectId shoppingListId) {
+        ShoppingList list = getShoppingList(shoppingListId).orElseThrow();
 
         ShoppingListUser user = userService.getCurrentUser();
-        if (!userService.removeShoppingListFromUser(user, shoppingListId)) {
-            return false;
-        }
+        userService.removeShoppingListFromUser(user, shoppingListId);
 
-        if (!list.deleteUser(user.getId())) {
-            return false;
-        }
+        list.deleteUser(user.getId());
 
         if (list.getUsers().isEmpty()) {
             shoppingListRepository.deleteById(shoppingListId);
         } else {
             shoppingListRepository.save(list);
         }
+    }
 
-        return true;
+    public @Nullable List<ShoppingListItem> uncheckAllItems(ShoppingList list) {
+        try {
+            return transactionTemplate.execute(status -> {
+                List<ShoppingListItem> itemsToUncheck = list.getItems().stream()
+                        .filter(ShoppingListItem::isChecked)
+                        .collect(Collectors.toList());
+                itemsToUncheck.forEach(item -> item.setChecked(false));
+                shoppingListRepository.save(list);
+                return itemsToUncheck;
+            });
+        } catch (TransactionException e) {
+            return null;
+        }
+    }
+
+    public @Nullable List<ShoppingListItem> removeAllCategories(ShoppingList list) {
+        try {
+            return transactionTemplate.execute(status -> {
+                List<ShoppingListItem> itemsToChange = list.getItems().stream()
+                        .filter(item -> item.getAssignee() != null && !item.getAssignee().isBlank())
+                        .collect(Collectors.toList());
+                itemsToChange.forEach(item -> item.setAssignee(""));
+                shoppingListRepository.save(list);
+                return itemsToChange;
+            });
+        } catch (TransactionException e) {
+            return null;
+        }
+    }
+
+    public @Nullable List<ShoppingListItem> removeAllItems(ShoppingList list) {
+        try {
+            return transactionTemplate.execute(status -> {
+                List<ShoppingListItem> deletedItems = list.clearItems();
+                shoppingListRepository.save(list);
+                return deletedItems;
+            });
+        } catch (TransactionException e) {
+            return null;
+        }
     }
 }

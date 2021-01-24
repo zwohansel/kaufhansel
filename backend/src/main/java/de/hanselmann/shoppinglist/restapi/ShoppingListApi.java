@@ -38,6 +38,18 @@ public interface ShoppingListApi {
     ResponseEntity<List<ShoppingListItemDto>> getShoppingListItems(
             @PathVariable String id);
 
+    @PostMapping("/shoppinglist/{id}/uncheckallitems")
+    ResponseEntity<Void> uncheckAllShoppingListItems(
+            @PathVariable String id);
+
+    @PostMapping("/shoppinglist/{id}/removeallcategories")
+    ResponseEntity<Void> removeAllCategoriesFromShoppingList(
+            @PathVariable String id);
+
+    @PostMapping("/shoppinglist/{id}/clear")
+    ResponseEntity<Void> clearShoppingList(
+            @PathVariable String id);
+
     @PostMapping("/shoppinglist/{id}")
     ResponseEntity<ShoppingListItemDto> addShoppingListItem(
             @PathVariable String id,

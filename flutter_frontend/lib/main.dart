@@ -68,6 +68,27 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     });
   }
 
+  Future<void> _uncheckAllItems(ShoppingListInfo info) async {
+    await _client.uncheckAllItems(info.id);
+    if (_currentShoppingListInfo == info) {
+      _currentShoppingList?.items?.forEach((item) => item.checked = false);
+    }
+  }
+
+  Future<void> _removeAllCategories(ShoppingListInfo info) async {
+    await _client.removeAllCategories(info.id);
+    if (_currentShoppingListInfo == info) {
+      _currentShoppingList?.items?.forEach((item) => item.category = null);
+    }
+  }
+
+  Future<void> _removeAllItems(ShoppingListInfo info) async {
+    await _client.removeAllItems(info.id);
+    if (_currentShoppingListInfo == info) {
+      _currentShoppingList?.removeAllItems();
+    }
+  }
+
   Future<void> _addUserToShoppingList(ShoppingListInfo info, String userEmailAddress) async {
     final userReference = await _client.addUserToShoppingList(info.id, userEmailAddress);
     info.addUserToShoppingList(userReference);
@@ -124,6 +145,9 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               onShoppingListSelected: _onShoppingListSelected,
               onCreateShoppingList: _createShoppingList,
               onDeleteShoppingList: _deleteShoppingList,
+              onUncheckAllItems: _uncheckAllItems,
+              onRemoveAllCategories: _removeAllCategories,
+              onRemoveAllItems: _removeAllItems,
               onAddUserToShoppingList: _addUserToShoppingList,
             ),
             body: _buildShoppingList(context),

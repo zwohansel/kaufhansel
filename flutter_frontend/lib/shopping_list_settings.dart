@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kaufhansel_client/delete_shopping_list_dialog.dart';
+import 'package:kaufhansel_client/confirm_dialog.dart';
 import 'package:kaufhansel_client/error_dialog.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/title_widget.dart';
@@ -9,11 +9,20 @@ class ShoppingListSettings extends StatefulWidget {
 
   const ShoppingListSettings(this._shoppingListInfo,
       {@required Future<void> Function() onDeleteShoppingList,
+      @required Future<void> Function() onUncheckAllItems,
+      @required Future<void> Function() onRemoveAllCategories,
+      @required Future<void> Function() onRemoveAllItems,
       @required Future<void> Function(String) onAddUserToShoppingList})
       : _onDeleteShoppingList = onDeleteShoppingList,
+        _onUncheckAllItems = onUncheckAllItems,
+        _onRemoveAllCategories = onRemoveAllCategories,
+        _onRemoveAllItems = onRemoveAllItems,
         _onAddUserToShoppingList = onAddUserToShoppingList;
 
   final Future<void> Function() _onDeleteShoppingList;
+  final Future<void> Function() _onUncheckAllItems;
+  final Future<void> Function() _onRemoveAllCategories;
+  final Future<void> Function() _onRemoveAllItems;
   final Future<void> Function(String) _onAddUserToShoppingList;
 
   @override
@@ -34,7 +43,9 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
           onTap: () {},
         ));
 
-    return Scaffold(
+    return WillPopScope(
+        onWillPop: () async => !_loading,
+    child: Scaffold(
         appBar: AppBar(
           title: TitleWidget(),
         ),
@@ -69,19 +80,19 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                                         IconButton(icon: Icon(Icons.drive_file_rename_outline), onPressed: null)
                                       ]),
                                       SizedBox(height: 12),
-                                      OutlineButton(
-                                        onPressed: null,
+                                      OutlinedButton(
+                                        onPressed: _loading ? null : _onUncheckAllItemsPressed,
                                         child: Text("Alle Häckchen entfernen"),
                                       ),
                                       SizedBox(height: 6),
-                                      OutlineButton(
-                                        onPressed: null,
+                                      OutlinedButton(
+                                        onPressed: _loading ? null : _onRemoveAllCategoriesPressed,
                                         child: Text("Alle Kategorien entfernen"),
                                       ),
                                       SizedBox(height: 6),
-                                      OutlineButton(
-                                        onPressed: null,
-                                        child: Text("Alle Elemente löschen"),
+                                      OutlinedButton(
+                                        onPressed: _loading ? null : _onRemoveAllItemsPressed,
+                                        child: Text("Liste leeren"),
                                       ),
                                     ],
                                   )),
@@ -151,22 +162,10 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                                         style: Theme.of(context).textTheme.headline6,
                                       ),
                                       SizedBox(height: 12),
-                                      OutlineButton(
+                                      OutlinedButton(
                                         child: Text("Liste löschen..."),
-                                        textColor: Colors.red,
-                                        highlightedBorderColor: Colors.red,
-                                        borderSide: BorderSide(color: Colors.red),
-                                        onPressed: _loading
-                                            ? null
-                                            : () {
-                                                showDialog(
-                                                    context: context,
-                                                    barrierDismissible: false,
-                                                    builder: (context) {
-                                                      return DeleteShoppingListDialog(
-                                                          widget._shoppingListInfo, _onDeleteShoppingList);
-                                                    });
-                                              },
+                                        style: OutlinedButton.styleFrom(primary: Colors.red),
+                                        onPressed: _loading ? null : _onDeleteShoppingList,
                                       ),
                                       SizedBox(height: 12),
                                       OutlineButton(
@@ -183,7 +182,7 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                   ])),
             )
           ],
-        ));
+        )));
   }
 
   void _onAddUserToShoppingList() {
@@ -202,22 +201,8 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
       showErrorDialog(context, "Hast du dich vertippt oder können wir den Hansel nicht finden?");
       _addUserToShoppingListFocusNode.requestFocus();
     }).whenComplete(() => setState(() {
-              _loading = false;
-            }));
-  }
-
-  void _onDeleteShoppingList() {
-    setState(() {
-      _loading = true;
-    });
-    widget
-        ._onDeleteShoppingList()
-        .then((value) => Navigator.pop(context))
-        .catchError((e) =>
-            showErrorDialog(context, "Wollen wir nicht, dass du die Liste löschst oder hast du etwas falsch gemacht?"))
-        .whenComplete(() => setState(() {
-              _loading = false;
-            }));
+      _loading = false;
+    }));
   }
 
   Widget _buildProgressBar() {
@@ -227,6 +212,62 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
       );
     } else {
       return Container();
+    }
+  }
+
+  void _onDeleteShoppingList() async {
+    setState(() => _loading = true);
+    try {
+      final deleteList = await showConfirmDialog(
+          context, "Möchtest du ${widget._shoppingListInfo.name} wirklich für immer und unwiederbringlich löschen?");
+      if (deleteList) {
+        await widget._onDeleteShoppingList();
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      showErrorDialog(context, "Kann die Liste nicht gelöscht werden oder hast du kein Internet?");
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  void _onUncheckAllItemsPressed() async {
+    setState(() => _loading = true);
+    try {
+      await widget._onUncheckAllItems();
+    } catch (e) {
+      showErrorDialog(context, "Ist der Server zu faul oder hast du kein Internet?");
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  void _onRemoveAllCategoriesPressed() async {
+    setState(() => _loading = true);
+    try {
+      await widget._onRemoveAllCategories();
+    } catch (e) {
+      showErrorDialog(context, "Hat der Server keine Lust oder hast du kein Internet?");
+    } finally {
+      setState(() => _loading = false);
+    }
+    setState(() {
+      _loading = false;
+    });
+  }
+
+  void _onRemoveAllItemsPressed() async {
+    setState(() => _loading = true);
+    try {
+      final removeItems = await showConfirmDialog(context,
+          "Möchtest du wirklich alle Elemente aus ${widget._shoppingListInfo.name} unwiederbringlich entfernen?");
+      if (removeItems) {
+        await widget._onRemoveAllItems();
+      }
+    } catch (e) {
+      showErrorDialog(context, "Schläft der Server noch oder hast du kein Internet?");
+    } finally {
+      setState(() => _loading = false);
     }
   }
 }

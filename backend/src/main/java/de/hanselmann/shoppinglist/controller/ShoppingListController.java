@@ -96,6 +96,54 @@ public class ShoppingListController implements ShoppingListApi {
     }
 
     @Override
+    public ResponseEntity<Void> uncheckAllShoppingListItems(String id) {
+        return shoppingListService.getShoppingList(new ObjectId(id))
+                .map(this::uncheckAllShoppingListItems)
+                .orElse(ResponseEntity.noContent().build());
+    }
+
+    private ResponseEntity<Void> uncheckAllShoppingListItems(ShoppingList list) {
+        List<ShoppingListItem> changedItems = shoppingListService.uncheckAllItems(list);
+        if (changedItems == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        shoppingListSubscribers.notifyItemsChanged(list, changedItems);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> removeAllCategoriesFromShoppingList(String id) {
+        return shoppingListService.getShoppingList(new ObjectId(id))
+                .map(this::removeAllCategoriesFromShoppingList)
+                .orElse(ResponseEntity.noContent().build());
+    }
+
+    private ResponseEntity<Void> removeAllCategoriesFromShoppingList(ShoppingList list) {
+        List<ShoppingListItem> changedItems = shoppingListService.removeAllCategories(list);
+        if (changedItems == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        shoppingListSubscribers.notifyItemsChanged(list, changedItems);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> clearShoppingList(String id) {
+        return shoppingListService.getShoppingList(new ObjectId(id))
+                .map(this::clearShoppingList)
+                .orElse(ResponseEntity.noContent().build());
+    }
+
+    private ResponseEntity<Void> clearShoppingList(ShoppingList list) {
+        List<ShoppingListItem> deletedItems = shoppingListService.removeAllItems(list);
+        if (deletedItems == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        shoppingListSubscribers.notifyItemsDeleted(list, deletedItems);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
     public ResponseEntity<List<ShoppingListItemDto>> getShoppingListItems(String id) {
         if (!ObjectId.isValid(id)) {
             return ResponseEntity.badRequest().build();

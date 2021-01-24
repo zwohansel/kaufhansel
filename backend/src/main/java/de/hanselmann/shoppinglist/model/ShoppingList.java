@@ -3,6 +3,7 @@ package de.hanselmann.shoppinglist.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -59,11 +60,20 @@ public class ShoppingList {
         return item;
     }
 
-    public void clearItems() {
+    /**
+     * Removes all items from the list
+     *
+     * @return the list of removed items
+     */
+    public List<ShoppingListItem> clearItems() {
+        List<ShoppingListItem> copy = new ArrayList<>(items);
         items.clear();
+        return copy;
     }
 
-    public boolean deleteUser(ObjectId userId) {
-        return users.removeIf(user -> user.getUserId().equals(userId));
+    public void deleteUser(ObjectId userId) {
+        if (!users.removeIf(user -> user.getUserId().equals(userId))) {
+            throw new NoSuchElementException();
+        }
     }
 }

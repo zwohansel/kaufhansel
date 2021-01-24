@@ -3,6 +3,7 @@ package de.hanselmann.shoppinglist.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -55,14 +56,10 @@ public class ShoppingListUser {
         shoppingLists.add(shoppingListReference);
     }
 
-    /**
-     * 
-     * @param shoppingListId
-     * @return true, if the reference to the shopping list was successfully removed
-     *         from the user
-     */
-    public boolean deleteShoppingList(ObjectId shoppingListId) {
-        return shoppingLists.removeIf(ref -> ref.getShoppingListId().equals(shoppingListId));
+    public void deleteShoppingList(ObjectId shoppingListId) {
+        if (!shoppingLists.removeIf(ref -> ref.getShoppingListId().equals(shoppingListId))) {
+            throw new NoSuchElementException();
+        }
     }
 
 }
