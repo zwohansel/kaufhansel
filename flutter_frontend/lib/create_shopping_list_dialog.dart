@@ -52,8 +52,7 @@ class _CreateShoppingListDialogState extends State<CreateShoppingListDialog> {
                 decoration: InputDecoration(hintText: "Gib einen Namen ein"),
               ),
               SizedBox(height: 20),
-              Flex(
-                direction: Axis.horizontal,
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(

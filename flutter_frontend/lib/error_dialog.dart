@@ -9,8 +9,7 @@ void showErrorDialog(BuildContext context, String text) {
             "🤷‍♂️",
             style: TextStyle(fontFamilyFallback: ["NotoColorEmoji"], fontSize: 100),
           )),
-          content: Flex(
-            direction: Axis.vertical,
+          content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(text, textAlign: TextAlign.center),

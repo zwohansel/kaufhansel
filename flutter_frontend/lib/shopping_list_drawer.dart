@@ -93,9 +93,8 @@ class ShoppingListDrawer extends StatelessWidget {
               type: MaterialType.transparency,
               child: Padding(
                 padding: EdgeInsets.only(left: 15, right: 15),
-                child: Flex(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  direction: Axis.horizontal,
                   children: [
                     ShoppingListFilterSelection(_onFilterChanged, _filter),
                     ShoppingListModeSelection(_onModeChanged, _mode),
