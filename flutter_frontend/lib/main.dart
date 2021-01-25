@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/login_page.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/shopping_list_drawer.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
+import 'package:kaufhansel_client/shopping_list_mode.dart';
 import 'package:kaufhansel_client/shopping_list_page.dart';
 import 'package:kaufhansel_client/shopping_list_title.dart';
 import 'package:provider/provider.dart';
@@ -24,6 +27,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   final _client = RestClient(Uri.parse(_serverUrl));
   bool _loggedIn = false;
   ShoppingListFilterOption _filter = ShoppingListFilterOption.ALL;
+  ShoppingListMode _mode = ShoppingListMode.DEFAULT;
 
   String _error;
   List<ShoppingListInfo> _shoppingListInfos;
@@ -33,6 +37,13 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   void _onFilterChanged(ShoppingListFilterOption nextFilter) {
     setState(() {
       _filter = nextFilter;
+    });
+  }
+
+  void _onModeChanged(ShoppingListMode nextMode) {
+    setState(() {
+      stdout.writeln(nextMode);
+      _mode = nextMode;
     });
   }
 
@@ -141,6 +152,8 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               onRefreshPressed: _fetchShoppingListInfos,
               filter: _filter,
               onFilterChanged: _onFilterChanged,
+              mode: _mode,
+              onModeChanged: _onModeChanged,
               shoppingLists: _shoppingListInfos,
               selectedShoppingListId: _currentShoppingList?.id,
               onShoppingListSelected: _onShoppingListSelected,
@@ -190,7 +203,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     } else if (_shoppingListInfos == null || _currentShoppingList == null) {
       return Center(child: CircularProgressIndicator());
     } else {
-      return ShoppingListPage(filter: _filter);
+      return ShoppingListPage(filter: _filter, mode: _mode);
     }
   }
 

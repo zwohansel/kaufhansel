@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/default_tab_controller_index_listener.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
+import 'package:kaufhansel_client/shopping_list_mode.dart';
 import 'package:kaufhansel_client/shopping_list_view.dart';
 import 'package:provider/provider.dart';
 
@@ -11,8 +12,11 @@ import 'model.dart';
 
 class ShoppingListPage extends StatelessWidget {
   final ShoppingListFilterOption _filter;
+  final ShoppingListMode _mode;
 
-  ShoppingListPage({@required ShoppingListFilterOption filter}) : _filter = filter;
+  ShoppingListPage({@required ShoppingListFilterOption filter, ShoppingListMode mode = ShoppingListMode.DEFAULT})
+      : _filter = filter,
+        _mode = mode;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +57,7 @@ class ShoppingListPage extends StatelessWidget {
                                 .map((category) => ShoppingListView(
                                       category: category,
                                       filter: _filter,
+                                      mode: _mode,
                                     ))
                                 .toList()))
                   ]);

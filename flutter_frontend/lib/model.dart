@@ -132,6 +132,33 @@ class ShoppingList extends ChangeNotifier {
     categories.sort((l, r) => l.toLowerCase().compareTo(r.toLowerCase()));
     return categories;
   }
+
+  void moveItem(ShoppingListItem item, {ShoppingListItem before, ShoppingListItem behind}) {
+    assert((before == null) ^ (behind == null), "Either before or behind must be defined but not both.");
+
+    if (!_items.contains(item)) {
+      throw ArgumentError.value(item, item.name, "Item is not in the list");
+    }
+
+    final refItem = before ?? behind;
+    if (!_items.contains(refItem)) {
+      throw ArgumentError.value(refItem, refItem.name, "Item is not in the list");
+    }
+
+    if (item == refItem) {
+      throw ArgumentError.value(item, item.name, "Can't move item relative to itself");
+    }
+
+    _items.remove(item);
+    final refItemIndex = _items.indexOf(refItem);
+
+    if (before != null) {
+      _items.insert(refItemIndex, item);
+    } else {
+      _items.insert(refItemIndex + 1, item);
+    }
+    notifyListeners();
+  }
 }
 
 class ShoppingListTabSelection extends ChangeNotifier {

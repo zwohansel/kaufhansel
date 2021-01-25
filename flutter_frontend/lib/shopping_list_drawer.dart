@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:kaufhansel_client/shopping_list_filter.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
+import 'package:kaufhansel_client/shopping_list_filter_selection.dart';
+import 'package:kaufhansel_client/shopping_list_mode.dart';
+import 'package:kaufhansel_client/shopping_list_mode_selection.dart';
 import 'package:kaufhansel_client/shopping_list_settings.dart';
 
 import 'create_shopping_list_dialog.dart';
@@ -8,10 +10,12 @@ import 'model.dart';
 
 class ShoppingListDrawer extends StatelessWidget {
   const ShoppingListDrawer(
-      {@required VoidCallback onRefreshPressed,
-      @required ShoppingListFilterOption filter,
+      {@required ShoppingListFilterOption filter,
       @required void Function(ShoppingListFilterOption nextFilter) onFilterChanged,
+      @required ShoppingListMode mode,
+      @required final void Function(ShoppingListMode nextMode) onModeChanged,
       @required List<ShoppingListInfo> shoppingLists,
+      @required VoidCallback onRefreshPressed,
       @required String selectedShoppingListId,
       @required void Function(ShoppingListInfo info) onShoppingListSelected,
       @required Future<void> Function(String) onCreateShoppingList,
@@ -21,8 +25,10 @@ class ShoppingListDrawer extends StatelessWidget {
       @required Future<void> Function(ShoppingListInfo) onRemoveAllCategories,
       @required Future<void> Function(ShoppingListInfo) onRemoveAllItems})
       : _onRefreshPressed = onRefreshPressed,
-        _onFilterChanged = onFilterChanged,
         _filter = filter,
+        _onFilterChanged = onFilterChanged,
+        _mode = mode,
+        _onModeChanged = onModeChanged,
         _shoppingLists = shoppingLists,
         _selectedShoppingListId = selectedShoppingListId,
         _onShoppingListSelected = onShoppingListSelected,
@@ -33,11 +39,13 @@ class ShoppingListDrawer extends StatelessWidget {
         _onRemoveAllCategories = onRemoveAllCategories,
         _onRemoveAllItems = onRemoveAllItems;
 
+  final ShoppingListFilterOption _filter;
+  final ShoppingListMode _mode;
+  final List<ShoppingListInfo> _shoppingLists;
   final VoidCallback _onRefreshPressed;
   final void Function(ShoppingListFilterOption nextFilter) _onFilterChanged;
+  final void Function(ShoppingListMode nextMode) _onModeChanged;
   final void Function(ShoppingListInfo info) _onShoppingListSelected;
-  final ShoppingListFilterOption _filter;
-  final List<ShoppingListInfo> _shoppingLists;
   final String _selectedShoppingListId;
   final Future<void> Function(String) _onCreateShoppingList;
   final Future<void> Function(ShoppingListInfo) _onDeleteShoppingList;
@@ -78,31 +86,30 @@ class ShoppingListDrawer extends StatelessWidget {
         children: [
           Container(
             height: 104,
-            child: DrawerHeader(
-              margin: EdgeInsets.zero,
-              padding: EdgeInsets.zero,
-              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-              child: Material(
-                type: MaterialType.transparency,
-                child: Padding(
-                  padding: EdgeInsets.only(left: 15, right: 15),
-                  child: Flex(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    direction: Axis.horizontal,
-                    children: [
-                      ShoppingListFilter(_onFilterChanged, _filter),
-                      IconButton(
-                        icon: Icon(Icons.refresh),
-                        color: Theme.of(context).primaryIconTheme.color,
-                        splashRadius: 25,
-                        onPressed: () {
-                          _onRefreshPressed();
-                          Navigator.pop(context);
-                        },
-                        tooltip: "Aktualisieren",
-                      ),
-                    ],
-                  ),
+            margin: EdgeInsets.zero,
+            padding: EdgeInsets.zero,
+            decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+            child: Material(
+              type: MaterialType.transparency,
+              child: Padding(
+                padding: EdgeInsets.only(left: 15, right: 15),
+                child: Flex(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  direction: Axis.horizontal,
+                  children: [
+                    ShoppingListFilterSelection(_onFilterChanged, _filter),
+                    ShoppingListModeSelection(_onModeChanged, _mode),
+                    IconButton(
+                      icon: Icon(Icons.refresh),
+                      color: Theme.of(context).primaryIconTheme.color,
+                      splashRadius: 25,
+                      onPressed: () {
+                        _onRefreshPressed();
+                        Navigator.pop(context);
+                      },
+                      tooltip: "Aktualisieren",
+                    ),
+                  ],
                 ),
               ),
             ),
