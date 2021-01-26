@@ -3,6 +3,9 @@ package de.hanselmann.shoppinglist.model;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 
+/**
+ * Reference from a shopping list to a user.
+ */
 public class ShoppingListUserReference {
 
     @Id

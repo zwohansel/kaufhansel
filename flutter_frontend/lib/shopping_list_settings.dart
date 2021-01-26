@@ -12,18 +12,22 @@ class ShoppingListSettings extends StatefulWidget {
       @required Future<void> Function() onUncheckAllItems,
       @required Future<void> Function() onRemoveAllCategories,
       @required Future<void> Function() onRemoveAllItems,
-      @required Future<void> Function(String) onAddUserToShoppingList})
+      @required Future<void> Function(String) onAddUserToShoppingList,
+      @required Future<void> Function(ShoppingListInfo, String, String) onChangeShoppingListPermissions})
       : _onDeleteShoppingList = onDeleteShoppingList,
         _onUncheckAllItems = onUncheckAllItems,
         _onRemoveAllCategories = onRemoveAllCategories,
         _onRemoveAllItems = onRemoveAllItems,
-        _onAddUserToShoppingList = onAddUserToShoppingList;
+        _onAddUserToShoppingList = onAddUserToShoppingList,
+        _onChangeShoppingListPermissions = onChangeShoppingListPermissions;
 
   final Future<void> Function() _onDeleteShoppingList;
   final Future<void> Function() _onUncheckAllItems;
   final Future<void> Function() _onRemoveAllCategories;
   final Future<void> Function() _onRemoveAllItems;
   final Future<void> Function(String) _onAddUserToShoppingList;
+  final Future<void> Function(ShoppingListInfo info, String affectedUserId, String newRole)
+      _onChangeShoppingListPermissions;
 
   @override
   _ShoppingListSettingsState createState() => _ShoppingListSettingsState();
@@ -39,9 +43,10 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
   @override
   Widget build(BuildContext context) {
     final sharedUsers = widget._shoppingListInfo.users.map((user) => ListTile(
+          enabled: !_loading,
+          leading: _getIcon(user.permissions.role),
           title: Text("${user.userName} (${user.userEmailAddress}): ${_mapRole(user.permissions.role)}"),
-          onTap: () => showErrorDialog(
-              context, "Willst du etwa die Einstelungen für diesen Hansel ändern? Das geht noch nicht."),
+          onTap: () => _onChangePermissions(user),
         ));
 
     return WillPopScope(
@@ -189,6 +194,72 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
             )));
   }
 
+  Future<String> _buildChangePermissionsDialog(BuildContext context, ShoppingListUserReference user) {
+    if (user.permissions.role == "ADMIN") {
+      showErrorDialog(context, "Einmal Chefhansel, immer Chefhansel. Daran kannst du nichts mehr ändern.");
+      return null;
+    }
+
+    return showDialog<String>(
+        context: context,
+        builder: (context) => SimpleDialog(
+              title: Text("Was ist ${user.userName} für ein Hansel?"),
+              children: [
+                _buildRoleOption(
+                    context,
+                    "ADMIN",
+                    "ADMIN" == user.permissions.role,
+                    "Chefhansel",
+                    "Darf alles: Dinge hinzufügen und entfernen, Haken setzen und entfernen. Darf neue Hansel zur Liste " +
+                        "hinzufügen.\nEinmal Chefhansel, immer Chefhansel: diese Rolle kannst du nicht mehr ändern"),
+                _buildRoleOption(context, "READ_WRITE", "READ_WRITE" == user.permissions.role, "Schreibhansel",
+                    "Darf Dinge hinzufügen und entfernen, darf Haken setzen und entfernen"),
+                _buildRoleOption(context, "CHECK_ONLY", "CHECK_ONLY" == user.permissions.role, "Kaufhansel",
+                    "Darf Haken setzen und entfernen"),
+                _buildRoleOption(context, "READ_ONLY", "READ_ONLY" == user.permissions.role, "Guckhansel",
+                    "Darf die Liste anschauen, aber nix ändern"),
+              ],
+            ));
+  }
+
+  Widget _buildRoleOption(BuildContext context, String role, bool selected, String title, String description) {
+    return Container(
+        color: selected ? Theme.of(context).highlightColor : null,
+        child: SimpleDialogOption(
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            _getIcon(role),
+            SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.headline6,
+                ),
+                Text(description)
+              ],
+            )
+          ]),
+          onPressed: () => Navigator.pop(context, role),
+        ));
+  }
+
+  Icon _getIcon(String role) {
+    switch (role) {
+      case "ADMIN":
+        return Icon(Icons.gavel_outlined);
+      case "READ_WRITE":
+        return Icon(Icons.assignment_outlined);
+      case "CHECK_ONLY":
+        return Icon(Icons.assignment_turned_in_outlined);
+      case "READ_ONLY":
+        return Icon(Icons.remove_red_eye_outlined);
+      default:
+        return Icon(Icons.radio_button_off_outlined);
+    }
+  }
+
   String _mapRole(String role) {
     switch (role) {
       case "ADMIN":
@@ -289,6 +360,20 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text("Alle Elemente in ${widget._shoppingListInfo.name} wurden entfernt."),
             duration: Duration(seconds: 1)));
+      }
+    } catch (e) {
+      showErrorDialog(context, "Schläft der Server noch oder hast du kein Internet?");
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  void _onChangePermissions(ShoppingListUserReference user) async {
+    setState(() => _loading = true);
+    try {
+      final nextRole = await _buildChangePermissionsDialog(context, user);
+      if (nextRole != null && nextRole != user.permissions.role) {
+        await widget._onChangeShoppingListPermissions(widget._shoppingListInfo, user.userId, nextRole);
       }
     } catch (e) {
       showErrorDialog(context, "Schläft der Server noch oder hast du kein Internet?");

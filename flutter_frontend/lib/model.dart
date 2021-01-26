@@ -166,7 +166,7 @@ class ShoppingListUserReference {
   String get userEmailAddress => _userEmailAddress;
 }
 
-class ShoppingListInfo extends ChangeNotifier {
+class ShoppingListInfo {
   final String _id;
   final String _name;
   final List<ShoppingListUserReference> _users;
@@ -183,12 +183,18 @@ class ShoppingListInfo extends ChangeNotifier {
 
   void addUserToShoppingList(ShoppingListUserReference userReference) {
     _users.add(userReference);
-    notifyListeners();
   }
 
   String get id => _id;
   String get name => _name;
   List<ShoppingListUserReference> get users => UnmodifiableListView(_users);
+
+  void updateShoppingListUser(ShoppingListUserReference changedUser) {
+    final index = _users.indexWhere((element) => element.userId == changedUser.userId);
+    if (index >= 0) {
+      _users[index] = changedUser;
+    }
+  }
 }
 
 class ShoppingListPermissions {

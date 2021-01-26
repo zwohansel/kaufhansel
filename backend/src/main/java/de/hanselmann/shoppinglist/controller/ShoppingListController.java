@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +19,7 @@ import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.restapi.ShoppingListApi;
 import de.hanselmann.shoppinglist.restapi.dto.AddUserToShoppingListDto;
+import de.hanselmann.shoppinglist.restapi.dto.ChangeShoppingListPermissionsDto;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListDto;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
@@ -91,7 +93,8 @@ public class ShoppingListController implements ShoppingListApi {
                 .findAny()
                 .map(listRef -> listRef.getRole())
                 .orElseThrow(
-                        () -> new IllegalArgumentException("No roles defined for user " + user.getId()));
+                        () -> new IllegalArgumentException(
+                                "No roles defined for user " + user.getId() + " on list " + shoppingList.getId()));
         return dtoTransformer.map(user, userRoleForList);
     }
 
@@ -242,6 +245,30 @@ public class ShoppingListController implements ShoppingListApi {
         } else {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @Override
+    public ResponseEntity<ShoppingListUserReferenceDto> changeShoppingListPermissionsForUser(String id,
+            ChangeShoppingListPermissionsDto permissionsDto) {
+        if (!ObjectId.isValid(id) || !ObjectId.isValid(permissionsDto.getUserId())) {
+            return ResponseEntity.badRequest().build();
+        }
+        ObjectId shopingListObjectId = new ObjectId(id);
+
+        // TODO: move to @PreAuthorize?
+        if (userService.getRoleForUser(userService.getCurrentUser(), shopingListObjectId)
+                .orElse(null) != ShoppingListRole.ADMIN) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        ShoppingListUser userToBeChanged = userService.getUser(new ObjectId(permissionsDto.getUserId()));
+        if (userService.getRoleForUser(userToBeChanged, shopingListObjectId).orElse(null) == ShoppingListRole.ADMIN) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        ShoppingListReference reference = userService.changePermission(userToBeChanged, shopingListObjectId,
+                permissionsDto.getRole());
+        return ResponseEntity.ok(dtoTransformer.map(userToBeChanged, reference.getRole()));
     }
 
 }

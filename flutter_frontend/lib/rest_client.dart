@@ -170,4 +170,20 @@ class RestClient {
       throw Exception('Failed to remove all items from the shopping list');
     }
   }
+
+  Future<ShoppingListUserReference> changeShoppingListPermissions(
+      String shoppingListId, String affectedUserId, String newRole) async {
+    final body = jsonEncode({'userId': affectedUserId, 'role': newRole});
+    var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/permissions"));
+    request.headers.contentType = ContentType.json;
+    request.write(body);
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode == 200) {
+      final String decoded = await response.transform(utf8.decoder).join();
+      return ShoppingListUserReference.fromJson(jsonDecode(decoded));
+    } else {
+      throw Exception('Failed to add user to shopping list');
+    }
+  }
 }

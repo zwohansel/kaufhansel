@@ -54,4 +54,21 @@ public class ShoppingListUserService {
         }
     }
 
+    public Optional<ShoppingListRole> getRoleForUser(ShoppingListUser user, ObjectId shoppingListId) {
+        return user.getShoppingLists().stream()
+                .filter(refs -> refs.getShoppingListId().equals(shoppingListId))
+                .findAny().map(ref -> ref.getRole());
+    }
+
+    public ShoppingListReference changePermission(ShoppingListUser userToBeChanged, ObjectId shopingListId,
+            ShoppingListRole role) {
+        ShoppingListReference referenceForUserToBeChanged = userToBeChanged.getShoppingLists().stream()
+                .filter(ref -> ref.getShoppingListId().equals(shopingListId))
+                .findAny()
+                .orElseThrow();
+        referenceForUserToBeChanged.setRole(role);
+        userRepository.save(userToBeChanged);
+        return referenceForUserToBeChanged;
+    }
+
 }

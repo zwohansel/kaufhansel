@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import de.hanselmann.shoppinglist.restapi.dto.AddUserToShoppingListDto;
+import de.hanselmann.shoppinglist.restapi.dto.ChangeShoppingListPermissionsDto;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListDto;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
@@ -70,4 +71,9 @@ public interface ShoppingListApi {
     ResponseEntity<ShoppingListUserReferenceDto> addUserToShoppingList(
             @PathVariable String id,
             @RequestBody AddUserToShoppingListDto addUserDto);
+
+    @PutMapping("/shoppinglist/{id}/permissions")
+    ResponseEntity<ShoppingListUserReferenceDto> changeShoppingListPermissionsForUser(
+            @PathVariable String id,
+            @RequestBody ChangeShoppingListPermissionsDto permissionsDto);
 }

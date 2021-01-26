@@ -94,6 +94,11 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     info.addUserToShoppingList(userReference);
   }
 
+  Future<void> _changeShoppingListPermissions(ShoppingListInfo info, String affectedUserId, String newRole) async {
+    final userReference = await _client.changeShoppingListPermissions(info.id, affectedUserId, newRole);
+    info.updateShoppingListUser(userReference);
+  }
+
   void _fetchShoppingListInfos() async {
     setState(() {
       _shoppingListInfos = null;
@@ -150,6 +155,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               onRemoveAllCategories: _removeAllCategories,
               onRemoveAllItems: _removeAllItems,
               onAddUserToShoppingList: _addUserToShoppingList,
+              onChangeShoppingListPermissions: _changeShoppingListPermissions,
             ),
             body: _buildShoppingList(context),
           );
