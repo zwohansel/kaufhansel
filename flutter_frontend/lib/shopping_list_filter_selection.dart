@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 
-class ShoppingListFilter extends StatelessWidget {
+class ShoppingListFilterSelection extends StatelessWidget {
   final void Function(ShoppingListFilterOption nextFilter) _onFilterChanged;
   final ShoppingListFilterOption _filter;
 
-  const ShoppingListFilter(this._onFilterChanged, this._filter);
+  const ShoppingListFilterSelection(this._onFilterChanged, this._filter);
 
   List<bool> _calculateSelection() {
     switch (_filter) {

@@ -31,8 +31,7 @@ class _ConfirmationDialog extends StatelessWidget {
             children: [
               Text(_text),
               SizedBox(height: 20),
-              Flex(
-                direction: Axis.horizontal,
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(

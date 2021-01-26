@@ -4,14 +4,16 @@ import 'package:kaufhansel_client/async_operation_icon_button.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/shopping_list_item_edit_dialog.dart';
+import 'package:kaufhansel_client/shopping_list_mode.dart';
 import 'package:provider/provider.dart';
 
 class ShoppingListItemTile extends StatefulWidget {
   final bool _showUserCategory;
+  final ShoppingListMode _mode;
 
-  const ShoppingListItemTile(key, {bool showUserCategory = false})
+  const ShoppingListItemTile({bool showUserCategory = false, ShoppingListMode mode = ShoppingListMode.DEFAULT})
       : _showUserCategory = showUserCategory,
-        super(key: key);
+        _mode = mode;
 
   @override
   _ShoppingListItemTileState createState() => _ShoppingListItemTileState();
@@ -44,23 +46,36 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
         ));
       }
 
-      return CheckboxListTile(
-        title: Wrap(children: titleElements),
-        controlAffinity: ListTileControlAffinity.leading,
-        secondary: Wrap(children: [
-          AsyncOperationIconButton(
-              icon: Icon(Icons.delete),
-              loading: _deleting,
-              onPressed: _enabled ? () => _handleDeleteItemPressed(item, context) : null),
-          AsyncOperationIconButton(
-              icon: Icon(Icons.edit),
-              loading: false,
-              onPressed: _enabled ? () => _handleEditItemPressed(item, context) : null)
-        ]),
-        value: item.checked,
-        onChanged: _enabled ? (checked) => _handleCheckItemPressed(item, checked, context) : null,
-      );
+      if (widget._mode == ShoppingListMode.EDITING) {
+        return ListTile(title: Wrap(children: titleElements), trailing: _buildAction(item, context));
+      } else {
+        return CheckboxListTile(
+          title: Wrap(children: titleElements),
+          controlAffinity: ListTileControlAffinity.leading,
+          secondary: _buildAction(item, context),
+          value: item.checked,
+          onChanged: _enabled ? (checked) => _handleCheckItemPressed(item, checked, context) : null,
+        );
+      }
     });
+  }
+
+  Widget _buildAction(ShoppingListItem item, BuildContext context) {
+    switch (widget._mode) {
+      case ShoppingListMode.EDITING:
+        return AsyncOperationIconButton(
+            icon: Icon(Icons.delete),
+            loading: _deleting,
+            onPressed: _enabled ? () => _handleDeleteItemPressed(item, context) : null);
+      case ShoppingListMode.SHOPPING:
+        return null;
+      case ShoppingListMode.DEFAULT:
+      default:
+        return AsyncOperationIconButton(
+            icon: Icon(Icons.edit),
+            loading: false,
+            onPressed: _enabled ? () => _handleEditItemPressed(item, context) : null);
+    }
   }
 
   void _handleDeleteItemPressed(ShoppingListItem item, BuildContext context) {
