@@ -76,4 +76,22 @@ public class ShoppingList {
             throw new NoSuchElementException();
         }
     }
+
+    public boolean moveItem(ShoppingListItem item, int targetIndex) {
+        if (targetIndex < 0) {
+            throw new IndexOutOfBoundsException();
+        }
+
+        int currentIndex = items.indexOf(item);
+
+        if (currentIndex < 0) {
+            return false;
+        }
+        items.remove(currentIndex);
+
+        int correctedTargetIndex = targetIndex > currentIndex ? targetIndex - 1 : targetIndex;
+
+        items.add(Math.min(items.size() - 1, correctedTargetIndex), item);
+        return true;
+    }
 }

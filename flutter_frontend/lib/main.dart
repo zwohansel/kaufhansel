@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/login_page.dart';
@@ -42,7 +40,6 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   void _onModeChanged(ShoppingListMode nextMode) {
     setState(() {
-      stdout.writeln(nextMode);
       _mode = nextMode;
     });
   }

@@ -177,4 +177,12 @@ public class ShoppingListService {
             return null;
         }
     }
+
+    public boolean moveShoppingListItem(ShoppingList list, ShoppingListItem item, int targetIndex) {
+        if (list.moveItem(item, targetIndex)) {
+            shoppingListRepository.save(list);
+            return true;
+        }
+        return false;
+    }
 }

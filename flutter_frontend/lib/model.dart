@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -77,6 +78,7 @@ class ShoppingListItem extends ChangeNotifier {
   int get hashCode => _id.hashCode;
 }
 
+// TODO: Can be modified concurrently... use locks
 class ShoppingList extends ChangeNotifier {
   final String _id;
   final String _name;
@@ -133,30 +135,21 @@ class ShoppingList extends ChangeNotifier {
     return categories;
   }
 
-  void moveItem(ShoppingListItem item, {ShoppingListItem before, ShoppingListItem behind}) {
-    assert((before == null) ^ (behind == null), "Either before or behind must be defined but not both.");
+  void moveItem(ShoppingListItem item, int targetIndex) {
+    if (targetIndex < 0) {
+      throw ArgumentError.value("The target index must not be negative.");
+    }
 
-    if (!_items.contains(item)) {
+    final currentIndex = _items.indexOf(item);
+
+    if (currentIndex < 0) {
       throw ArgumentError.value(item, item.name, "Item is not in the list");
     }
 
-    final refItem = before ?? behind;
-    if (!_items.contains(refItem)) {
-      throw ArgumentError.value(refItem, refItem.name, "Item is not in the list");
-    }
+    _items.removeAt(currentIndex);
+    int correctedTargetIndex = targetIndex > currentIndex ? targetIndex - 1 : targetIndex;
+    _items.insert(min(correctedTargetIndex, _items.length), item);
 
-    if (item == refItem) {
-      throw ArgumentError.value(item, item.name, "Can't move item relative to itself");
-    }
-
-    _items.remove(item);
-    final refItemIndex = _items.indexOf(refItem);
-
-    if (before != null) {
-      _items.insert(refItemIndex, item);
-    } else {
-      _items.insert(refItemIndex + 1, item);
-    }
     notifyListeners();
   }
 }

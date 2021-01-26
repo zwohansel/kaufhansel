@@ -87,7 +87,7 @@ class RestClient {
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
-      throw Exception('Failed to delete item: ' + item.name);
+      throw Exception("Failed to delete item: ${item.name}");
     }
   }
 
@@ -100,7 +100,20 @@ class RestClient {
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
-      throw Exception('Failed to update item: ' + item.name);
+      throw Exception("Failed to update item: ${item.name}");
+    }
+  }
+
+  Future<void> moveShoppingListItem(String shoppingListId, ShoppingListItem item, int targetIndex) async {
+    final body = jsonEncode({'itemId': item.id, 'targetIndex': targetIndex});
+
+    var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/moveitem"));
+    request.headers.contentType = ContentType.json;
+    request.write(body);
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode != 204) {
+      throw Exception("Failed to move item: ${item.name}");
     }
   }
 
@@ -116,7 +129,7 @@ class RestClient {
       final String decoded = await response.transform(utf8.decoder).join();
       return ShoppingListInfo.fromJson(jsonDecode(decoded));
     } else {
-      throw Exception('Failed to create new list: ' + shoppingListName);
+      throw Exception("Failed to create new list: $shoppingListName");
     }
   }
 
