@@ -17,6 +17,7 @@ import de.hanselmann.shoppinglist.model.ShoppingListItem;
 import de.hanselmann.shoppinglist.model.ShoppingListReference;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
+import de.hanselmann.shoppinglist.restapi.MoveShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.ShoppingListApi;
 import de.hanselmann.shoppinglist.restapi.dto.AddUserToShoppingListDto;
 import de.hanselmann.shoppinglist.restapi.dto.ChangeShoppingListPermissionsDto;
@@ -91,7 +92,7 @@ public class ShoppingListController implements ShoppingListApi {
         ShoppingListRole userRoleForList = user.getShoppingLists().stream()
                 .filter(listRef -> listRef.getShoppingListId().equals(shoppingList.getId()))
                 .findAny()
-                .map(listRef -> listRef.getRole())
+                .map(ShoppingListReference::getRole)
                 .orElseThrow(
                         () -> new IllegalArgumentException(
                                 "No roles defined for user " + user.getId() + " on list " + shoppingList.getId()));
@@ -113,6 +114,9 @@ public class ShoppingListController implements ShoppingListApi {
 
     @Override
     public ResponseEntity<Void> uncheckAllShoppingListItems(String id) {
+        if (!ObjectId.isValid(id)) {
+            return ResponseEntity.badRequest().build();
+        }
         return shoppingListService.findShoppingList(new ObjectId(id))
                 .map(this::uncheckAllShoppingListItems)
                 .orElse(ResponseEntity.noContent().build());
@@ -129,9 +133,12 @@ public class ShoppingListController implements ShoppingListApi {
 
     @Override
     public ResponseEntity<Void> removeAllCategoriesFromShoppingList(String id) {
+        if (!ObjectId.isValid(id)) {
+            return ResponseEntity.badRequest().build();
+        }
         return shoppingListService.findShoppingList(new ObjectId(id))
                 .map(this::removeAllCategoriesFromShoppingList)
-                .orElse(ResponseEntity.noContent().build());
+                .orElse(ResponseEntity.badRequest().build());
     }
 
     private ResponseEntity<Void> removeAllCategoriesFromShoppingList(ShoppingList list) {
@@ -145,9 +152,12 @@ public class ShoppingListController implements ShoppingListApi {
 
     @Override
     public ResponseEntity<Void> clearShoppingList(String id) {
+        if (!ObjectId.isValid(id)) {
+            return ResponseEntity.badRequest().build();
+        }
         return shoppingListService.findShoppingList(new ObjectId(id))
                 .map(this::clearShoppingList)
-                .orElse(ResponseEntity.noContent().build());
+                .orElse(ResponseEntity.badRequest().build());
     }
 
     private ResponseEntity<Void> clearShoppingList(ShoppingList list) {
@@ -157,6 +167,32 @@ public class ShoppingListController implements ShoppingListApi {
         }
         shoppingListSubscribers.notifyItemsDeleted(list, deletedItems);
         return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> moveShoppingListItem(String id, MoveShoppingListItemDto moveItem) {
+        if (!ObjectId.isValid(id)) {
+            return ResponseEntity.badRequest().build();
+        }
+        return shoppingListService.findShoppingList(new ObjectId(id))
+                .map(list -> moveShoppingListItem(list, moveItem))
+                .orElse(ResponseEntity.badRequest().build());
+    }
+
+    private ResponseEntity<Void> moveShoppingListItem(ShoppingList list, MoveShoppingListItemDto moveItem) {
+        return list.findItemById(moveItem.getItemId())
+                .map(item -> moveShoppingListItem(list, item, moveItem.getTargetIndex()))
+                .orElse(ResponseEntity.badRequest().<Void>build());
+    }
+
+    private ResponseEntity<Void> moveShoppingListItem(ShoppingList list, ShoppingListItem item, int targetIndex) {
+        if (targetIndex < 0) {
+            return ResponseEntity.badRequest().build();
+        }
+        if (shoppingListService.moveShoppingListItem(list, item, targetIndex)) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.badRequest().build();
     }
 
     @Override

@@ -9,10 +9,12 @@ import 'package:provider/provider.dart';
 class ShoppingListItemInput extends StatefulWidget {
   final ScrollController _shoppingListScrollController;
   final String _category;
+  final bool _enabled;
 
-  ShoppingListItemInput({@required ScrollController shoppingListScrollController, String category})
+  ShoppingListItemInput({@required ScrollController shoppingListScrollController, String category, bool enabled = true})
       : _shoppingListScrollController = shoppingListScrollController,
-        _category = category;
+        _category = category,
+        _enabled = enabled;
 
   @override
   _ShoppingListItemInputState createState() => _ShoppingListItemInputState();
@@ -21,7 +23,7 @@ class ShoppingListItemInput extends StatefulWidget {
 class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
   final TextEditingController _newItemNameController = TextEditingController();
   final FocusNode _focus = FocusNode();
-  bool _enabled = false;
+  bool _nameValid = false;
   bool _submitting = false;
 
   _ShoppingListItemInputState();
@@ -29,7 +31,15 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
   @override
   void initState() {
     super.initState();
-    _newItemNameController.addListener(() => setState(() => _enabled = _newItemNameController.text.trim().isNotEmpty));
+    _newItemNameController.addListener(() {
+      setState(() => _nameValid = _newItemNameController.text.trim().isNotEmpty);
+    });
+  }
+
+  @override
+  void dispose() {
+    _newItemNameController.dispose();
+    super.dispose();
   }
 
   void addNewItemIfValid() {
@@ -62,7 +72,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
   Widget build(BuildContext context) {
     final addButton = AsyncOperationIconButton(
       icon: Icon(Icons.add),
-      onPressed: _enabled ? addNewItemIfValid : null,
+      onPressed: widget._enabled && _nameValid ? addNewItemIfValid : null,
       loading: _submitting,
     );
 
@@ -81,7 +91,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
                         border: OutlineInputBorder(),
                         hintText: "Das brauche ich noch..."),
                     controller: _newItemNameController,
-                    enabled: !_submitting,
+                    enabled: !_submitting && widget._enabled,
                     onSubmitted: (_) => addNewItemIfValid())),
             Container(child: addButton, margin: EdgeInsets.only(left: 6.0)),
           ],

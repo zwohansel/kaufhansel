@@ -10,17 +10,20 @@ import 'package:provider/provider.dart';
 class ShoppingListItemTile extends StatefulWidget {
   final bool _showUserCategory;
   final ShoppingListMode _mode;
+  final bool _enabled;
 
-  const ShoppingListItemTile({bool showUserCategory = false, ShoppingListMode mode = ShoppingListMode.DEFAULT})
+  const ShoppingListItemTile(
+      {bool showUserCategory = false, ShoppingListMode mode = ShoppingListMode.DEFAULT, bool enabled = true})
       : _showUserCategory = showUserCategory,
-        _mode = mode;
+        _mode = mode,
+        _enabled = enabled;
 
   @override
   _ShoppingListItemTileState createState() => _ShoppingListItemTileState();
 }
 
 class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
-  bool _enabled = true;
+  bool _loading = false;
   bool _deleting = false;
 
   @override
@@ -47,66 +50,67 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
       }
 
       if (widget._mode == ShoppingListMode.EDITING) {
-        return ListTile(title: Wrap(children: titleElements), trailing: _buildAction(item, context));
+        return ListTile(title: Wrap(children: titleElements), trailing: _buildAction(item));
       } else {
         return CheckboxListTile(
           title: Wrap(children: titleElements),
           controlAffinity: ListTileControlAffinity.leading,
-          secondary: _buildAction(item, context),
+          secondary: _buildAction(item),
           value: item.checked,
-          onChanged: _enabled ? (checked) => _handleCheckItemPressed(item, checked, context) : null,
+          onChanged: _allowInput() ? (checked) => _checkItem(item, checked) : null,
         );
       }
     });
   }
 
-  Widget _buildAction(ShoppingListItem item, BuildContext context) {
+  bool _allowInput() {
+    return widget._enabled && !_loading;
+  }
+
+  Widget _buildAction(ShoppingListItem item) {
     switch (widget._mode) {
       case ShoppingListMode.EDITING:
         return AsyncOperationIconButton(
-            icon: Icon(Icons.delete),
-            loading: _deleting,
-            onPressed: _enabled ? () => _handleDeleteItemPressed(item, context) : null);
+            icon: Icon(Icons.delete), loading: _deleting, onPressed: _allowInput() ? () => _deleteItem(item) : null);
       case ShoppingListMode.SHOPPING:
         return null;
       case ShoppingListMode.DEFAULT:
       default:
         return AsyncOperationIconButton(
-            icon: Icon(Icons.edit),
-            loading: false,
-            onPressed: _enabled ? () => _handleEditItemPressed(item, context) : null);
+            icon: Icon(Icons.edit), loading: false, onPressed: _allowInput() ? () => _editItem(item) : null);
     }
   }
 
-  void _handleDeleteItemPressed(ShoppingListItem item, BuildContext context) {
+  void _deleteItem(ShoppingListItem item) async {
     setState(() {
-      _enabled = false;
+      _loading = true;
       _deleting = true;
     });
-    _deleteItem(item, context).whenComplete(() => setState(() {
-          _enabled = true;
-          _deleting = false;
-        }));
+    try {
+      final shoppingList = Provider.of<ShoppingList>(context, listen: false);
+      await RestClientWidget.of(context).deleteShoppingListItem(shoppingList.id, item);
+      shoppingList.removeItem(item);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("${item.name} konnte nicht gelöscht werden..."), duration: Duration(seconds: 2)));
+    } finally {
+      setState(() {
+        _loading = false;
+        _deleting = false;
+      });
+    }
   }
 
-  Future<void> _deleteItem(ShoppingListItem item, BuildContext context) async {
+  void _checkItem(ShoppingListItem item, bool checked) {
+    // Checking and un-checking an item should be a fast and work under all circumstances (even if there is not internet connection)
+    // Therefore we do not wait for the server reply and accept that the
+    // checked state of an item may get out of sync with the state stored on the server.
+    item.checked = checked;
     final shoppingList = Provider.of<ShoppingList>(context, listen: false);
-    await RestClientWidget.of(context).deleteShoppingListItem(shoppingList.id, item);
-    shoppingList.removeItem(item);
+    RestClientWidget.of(context).updateShoppingListItem(shoppingList.id, item);
   }
 
-  void _handleCheckItemPressed(ShoppingListItem item, bool checked, BuildContext context) {
-    setState(() => _enabled = false);
-    _checkItem(item, checked, context).whenComplete(() => setState(() => _enabled = true));
-  }
-
-  Future<void> _checkItem(ShoppingListItem item, bool checked, BuildContext context) async {
-    item.checked = checked; // TODO: What if the following request fails?
-    final shoppingList = Provider.of<ShoppingList>(context, listen: false);
-    await RestClientWidget.of(context).updateShoppingListItem(shoppingList.id, item);
-  }
-
-  void _handleEditItemPressed(ShoppingListItem item, BuildContext context) {
+  void _editItem(ShoppingListItem item) {
     final RestClient client = RestClientWidget.of(context);
     final shoppingList = Provider.of<ShoppingList>(context, listen: false);
     showDialog(

@@ -51,6 +51,11 @@ public interface ShoppingListApi {
     ResponseEntity<Void> clearShoppingList(
             @PathVariable String id);
 
+    @PutMapping("/shoppinglist/{id}/moveitem")
+    ResponseEntity<Void> moveShoppingListItem(
+            @PathVariable String id,
+            @RequestBody MoveShoppingListItemDto moveItem);
+
     @PostMapping("/shoppinglist/{id}")
     ResponseEntity<ShoppingListItemDto> addShoppingListItem(
             @PathVariable String id,
