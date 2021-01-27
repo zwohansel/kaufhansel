@@ -67,10 +67,15 @@ public interface ShoppingListApi {
             @PathVariable String itemId,
             @RequestBody ShoppingListItemUpdateDto updateItem);
 
-    @PutMapping("/shoppinglist/{id}/adduser")
+    @PutMapping("/shoppinglist/{id}/user")
     ResponseEntity<ShoppingListUserReferenceDto> addUserToShoppingList(
             @PathVariable String id,
             @RequestBody AddUserToShoppingListDto addUserDto);
+
+    @DeleteMapping("/shoppinglist/{id}/user/{userId}")
+    ResponseEntity<Void> removeUserFromShoppingList(
+            @PathVariable String id,
+            @PathVariable String userId);
 
     @PutMapping("/shoppinglist/{id}/permissions")
     ResponseEntity<ShoppingListUserReferenceDto> changeShoppingListPermissionsForUser(

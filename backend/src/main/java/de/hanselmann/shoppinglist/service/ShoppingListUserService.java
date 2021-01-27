@@ -41,9 +41,10 @@ public class ShoppingListUserService {
         return shoppingListReference;
     }
 
-    public void removeShoppingListFromUser(ShoppingListUser user, ObjectId shoppingListId) {
+    public boolean removeShoppingListFromUser(ShoppingListUser user, ObjectId shoppingListId) {
         user.deleteShoppingList(shoppingListId);
         userRepository.save(user);
+        return true;
     }
 
     public Optional<ShoppingListUser> findByEmailAddress(String emailAddress) {

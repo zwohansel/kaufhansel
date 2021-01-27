@@ -108,7 +108,7 @@ public class ShoppingListService {
         shoppingListRepository.save(list);
     }
 
-    public Optional<ShoppingList> getShoppingList(ObjectId id) {
+    public Optional<ShoppingList> findShoppingList(ObjectId id) {
         return shoppingListRepository.findById(id);
     }
 
@@ -122,18 +122,29 @@ public class ShoppingListService {
     }
 
     private void tryDeleteShoppingList(ObjectId shoppingListId) {
-        ShoppingList list = getShoppingList(shoppingListId).orElseThrow();
+        ShoppingList list = findShoppingList(shoppingListId).orElseThrow();
 
         ShoppingListUser user = userService.getCurrentUser();
         userService.removeShoppingListFromUser(user, shoppingListId);
 
-        list.deleteUser(user.getId());
+        list.removeUserFromShoppingList(user.getId());
 
         if (list.getUsers().isEmpty()) {
             shoppingListRepository.deleteById(shoppingListId);
         } else {
             shoppingListRepository.save(list);
         }
+    }
+
+    public void removeUserFromShoppingList(ObjectId shoppingListId, ObjectId userId) {
+        shoppingListRepository.findById(shoppingListId).ifPresentOrElse(
+                shoppingList -> {
+                    shoppingList.removeUserFromShoppingList(userId);
+                    shoppingListRepository.save(shoppingList);
+                },
+                () -> {
+                    throw new IllegalArgumentException("");
+                });
     }
 
     public @Nullable List<ShoppingListItem> uncheckAllItems(ShoppingList list) {

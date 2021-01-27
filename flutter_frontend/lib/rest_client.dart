@@ -131,7 +131,7 @@ class RestClient {
 
   Future<ShoppingListUserReference> addUserToShoppingList(String shoppingListId, String userEmailAddress) async {
     final body = jsonEncode({'emailAddress': userEmailAddress});
-    var request = await _httpClient.putUrl(_serverUrl.resolve("/shoppinglist/$shoppingListId/adduser"));
+    var request = await _httpClient.putUrl(_serverUrl.resolve("/shoppinglist/$shoppingListId/user"));
     request.headers.contentType = ContentType.json;
     request.write(body);
     var response = await request.close().timeout(timeout);
@@ -141,6 +141,15 @@ class RestClient {
       return ShoppingListUserReference.fromJson(jsonDecode(decoded));
     } else {
       throw Exception('Failed to add user to shopping list');
+    }
+  }
+
+  Future<void> removeUserFromShoppingList(String shoppingListId, String userId) async {
+    var request = await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/user/$userId"));
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode != 204) {
+      throw Exception('Failed to remove user $userId from list $shoppingListId');
     }
   }
 

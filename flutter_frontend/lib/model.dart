@@ -212,6 +212,10 @@ class ShoppingListInfo {
     _users.add(userReference);
   }
 
+  void removeUserFromShoppingList(ShoppingListUserReference user) {
+    _users.removeWhere((ref) => ref.userId == user.userId);
+  }
+
   String get id => _id;
   String get name => _name;
   List<ShoppingListUserReference> get users => UnmodifiableListView(_users);

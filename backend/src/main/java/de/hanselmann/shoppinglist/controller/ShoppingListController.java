@@ -113,7 +113,7 @@ public class ShoppingListController implements ShoppingListApi {
 
     @Override
     public ResponseEntity<Void> uncheckAllShoppingListItems(String id) {
-        return shoppingListService.getShoppingList(new ObjectId(id))
+        return shoppingListService.findShoppingList(new ObjectId(id))
                 .map(this::uncheckAllShoppingListItems)
                 .orElse(ResponseEntity.noContent().build());
     }
@@ -129,7 +129,7 @@ public class ShoppingListController implements ShoppingListApi {
 
     @Override
     public ResponseEntity<Void> removeAllCategoriesFromShoppingList(String id) {
-        return shoppingListService.getShoppingList(new ObjectId(id))
+        return shoppingListService.findShoppingList(new ObjectId(id))
                 .map(this::removeAllCategoriesFromShoppingList)
                 .orElse(ResponseEntity.noContent().build());
     }
@@ -145,7 +145,7 @@ public class ShoppingListController implements ShoppingListApi {
 
     @Override
     public ResponseEntity<Void> clearShoppingList(String id) {
-        return shoppingListService.getShoppingList(new ObjectId(id))
+        return shoppingListService.findShoppingList(new ObjectId(id))
                 .map(this::clearShoppingList)
                 .orElse(ResponseEntity.noContent().build());
     }
@@ -165,7 +165,7 @@ public class ShoppingListController implements ShoppingListApi {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity
-                .of(shoppingListService.getShoppingList(new ObjectId(id)).map(ShoppingList::getItems)
+                .of(shoppingListService.findShoppingList(new ObjectId(id)).map(ShoppingList::getItems)
                         .map(dtoTransformer::map));
     }
 
@@ -174,7 +174,7 @@ public class ShoppingListController implements ShoppingListApi {
         if (!ObjectId.isValid(id)) {
             return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.of(shoppingListService.getShoppingList(new ObjectId(id))
+        return ResponseEntity.of(shoppingListService.findShoppingList(new ObjectId(id))
                 .map(list -> createNewItem(item, list))
                 .map(dtoTransformer::map));
     }
@@ -190,7 +190,7 @@ public class ShoppingListController implements ShoppingListApi {
         if (!ObjectId.isValid(id)) {
             return ResponseEntity.badRequest().build();
         }
-        shoppingListService.getShoppingList(new ObjectId(id)).ifPresent(list -> deleteItem(itemId, list));
+        shoppingListService.findShoppingList(new ObjectId(id)).ifPresent(list -> deleteItem(itemId, list));
         return ResponseEntity.noContent().build();
     }
 
@@ -206,7 +206,7 @@ public class ShoppingListController implements ShoppingListApi {
         if (!ObjectId.isValid(id)) {
             return ResponseEntity.badRequest().build();
         }
-        return shoppingListService.getShoppingList(new ObjectId(id))
+        return shoppingListService.findShoppingList(new ObjectId(id))
                 .map(list -> findAndUpdateItem(itemId, updateItem, list))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -245,6 +245,33 @@ public class ShoppingListController implements ShoppingListApi {
         } else {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @Override
+    public ResponseEntity<Void> removeUserFromShoppingList(String id, String userId) {
+        if (!ObjectId.isValid(id) || !ObjectId.isValid(userId)) {
+            return ResponseEntity.badRequest().build();
+        }
+        ObjectId shoppingListObjectId = new ObjectId(id);
+
+        // TODO: move to @PreAuthorize?
+        if (userService.getRoleForUser(userService.getCurrentUser(), shoppingListObjectId)
+                .orElse(null) != ShoppingListRole.ADMIN) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        ShoppingListUser userToBeRemoved = userService.getUser(new ObjectId(userId));
+        if (userService.getRoleForUser(userToBeRemoved, shoppingListObjectId).orElse(null) == ShoppingListRole.ADMIN) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        if (!userService.removeShoppingListFromUser(userToBeRemoved, shoppingListObjectId)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        shoppingListService.removeUserFromShoppingList(shoppingListObjectId, userToBeRemoved.getId());
+
+        return ResponseEntity.noContent().build();
     }
 
     @Override

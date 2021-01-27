@@ -24,7 +24,8 @@ class ShoppingListDrawer extends StatelessWidget {
       @required Future<void> Function(ShoppingListInfo) onUncheckAllItems,
       @required Future<void> Function(ShoppingListInfo) onRemoveAllCategories,
       @required Future<void> Function(ShoppingListInfo) onRemoveAllItems,
-      @required Future<void> Function(ShoppingListInfo, String, String) onChangeShoppingListPermissions})
+      @required Future<void> Function(ShoppingListInfo, String, String) onChangeShoppingListPermissions,
+      @required Future<void> Function(ShoppingListInfo, ShoppingListUserReference) onRemoveUserFromShoppingList})
       : _onRefreshPressed = onRefreshPressed,
         _filter = filter,
         _onFilterChanged = onFilterChanged,
@@ -36,6 +37,7 @@ class ShoppingListDrawer extends StatelessWidget {
         _onCreateShoppingList = onCreateShoppingList,
         _onDeleteShoppingList = onDeleteShoppingList,
         _onAddUserToShoppingList = onAddUserToShoppingList,
+        _onRemoveUserFromShoppingList = onRemoveUserFromShoppingList,
         _onUncheckAllItems = onUncheckAllItems,
         _onRemoveAllCategories = onRemoveAllCategories,
         _onRemoveAllItems = onRemoveAllItems,
@@ -52,6 +54,7 @@ class ShoppingListDrawer extends StatelessWidget {
   final Future<void> Function(String) _onCreateShoppingList;
   final Future<void> Function(ShoppingListInfo) _onDeleteShoppingList;
   final Future<void> Function(ShoppingListInfo, String) _onAddUserToShoppingList;
+  final Future<void> Function(ShoppingListInfo, ShoppingListUserReference) _onRemoveUserFromShoppingList;
   final Future<void> Function(ShoppingListInfo) _onUncheckAllItems;
   final Future<void> Function(ShoppingListInfo) _onRemoveAllCategories;
   final Future<void> Function(ShoppingListInfo) _onRemoveAllItems;
@@ -76,7 +79,8 @@ class ShoppingListDrawer extends StatelessWidget {
                     onRemoveAllCategories: () => _onRemoveAllCategories(info),
                     onRemoveAllItems: () => _onRemoveAllItems(info),
                     onAddUserToShoppingList: (userEmailAddress) => _onAddUserToShoppingList(info, userEmailAddress),
-                    onChangeShoppingListPermissions: (info, affectedUserId, newRole) =>
+                    onRemoveUserFromShoppingList: (user) => _onRemoveUserFromShoppingList(info, user),
+                    onChangeShoppingListPermissions: (affectedUserId, newRole) =>
                         _onChangeShoppingListPermissions(info, affectedUserId, newRole),
                   );
                 },

@@ -13,12 +13,14 @@ class ShoppingListSettings extends StatefulWidget {
       @required Future<void> Function() onRemoveAllCategories,
       @required Future<void> Function() onRemoveAllItems,
       @required Future<void> Function(String) onAddUserToShoppingList,
-      @required Future<void> Function(ShoppingListInfo, String, String) onChangeShoppingListPermissions})
+      @required Future<void> Function(String, String) onChangeShoppingListPermissions,
+      @required Future<void> Function(ShoppingListUserReference) onRemoveUserFromShoppingList})
       : _onDeleteShoppingList = onDeleteShoppingList,
         _onUncheckAllItems = onUncheckAllItems,
         _onRemoveAllCategories = onRemoveAllCategories,
         _onRemoveAllItems = onRemoveAllItems,
         _onAddUserToShoppingList = onAddUserToShoppingList,
+        _onRemoveUserFromShoppingList = onRemoveUserFromShoppingList,
         _onChangeShoppingListPermissions = onChangeShoppingListPermissions;
 
   final Future<void> Function() _onDeleteShoppingList;
@@ -26,8 +28,8 @@ class ShoppingListSettings extends StatefulWidget {
   final Future<void> Function() _onRemoveAllCategories;
   final Future<void> Function() _onRemoveAllItems;
   final Future<void> Function(String) _onAddUserToShoppingList;
-  final Future<void> Function(ShoppingListInfo info, String affectedUserId, String newRole)
-      _onChangeShoppingListPermissions;
+  final Future<void> Function(ShoppingListUserReference) _onRemoveUserFromShoppingList;
+  final Future<void> Function(String affectedUserId, String newRole) _onChangeShoppingListPermissions;
 
   @override
   _ShoppingListSettingsState createState() => _ShoppingListSettingsState();
@@ -43,11 +45,13 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
   @override
   Widget build(BuildContext context) {
     final sharedUsers = widget._shoppingListInfo.users.map((user) => ListTile(
-          enabled: !_loading,
-          leading: _getIcon(user.permissions.role),
-          title: Text("${user.userName} (${user.userEmailAddress}): ${_mapRole(user.permissions.role)}"),
-          onTap: () => _onChangePermissions(user),
-        ));
+        enabled: !_loading,
+        leading: _getIcon(user.permissions.role),
+        title: Text("${user.userName} (${user.userEmailAddress}): ${_mapRole(user.permissions.role)}"),
+        onTap: () => _onChangePermissions(user),
+        trailing: user.permissions.role == 'ADMIN'
+            ? null
+            : IconButton(icon: Icon(Icons.delete), onPressed: () => _onRemoveUserFromList(user))));
 
     return WillPopScope(
         onWillPop: () async => !_loading,
@@ -116,8 +120,8 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                                             style: Theme.of(context).textTheme.headline6,
                                           ),
                                           SizedBox(height: 12),
-                                          ListView(
-                                            shrinkWrap: true,
+                                          Column(
+                                            mainAxisSize: MainAxisSize.min,
                                             children:
                                                 ListTile.divideTiles(context: context, tiles: sharedUsers).toList(),
                                           ),
@@ -128,7 +132,8 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                                           ),
                                           SizedBox(height: 12),
                                           Text(
-                                              "Wenn du nichts änderst, kann der neue Hansel Dinge hinzufügen, abhaken und entfernen: er ist ein Kaufhansel.",
+                                              "Wenn du nichts änderst, kann der neue Hansel Dinge hinzufügen und entfernen, " +
+                                                  "er darf Haken setzen und entfernen. Er ist ein Schreibhansel.",
                                               style: Theme.of(context).textTheme.subtitle2),
                                           SizedBox(height: 12),
                                           Row(children: [
@@ -373,7 +378,22 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
     try {
       final nextRole = await _buildChangePermissionsDialog(context, user);
       if (nextRole != null && nextRole != user.permissions.role) {
-        await widget._onChangeShoppingListPermissions(widget._shoppingListInfo, user.userId, nextRole);
+        await widget._onChangeShoppingListPermissions(user.userId, nextRole);
+      }
+    } catch (e) {
+      showErrorDialog(context, "Schläft der Server noch oder hast du kein Internet?");
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  void _onRemoveUserFromList(ShoppingListUserReference user) async {
+    setState(() => _loading = true);
+    try {
+      final removeUser = await showConfirmDialog(
+          context, "Möchtest du ${user.userName} wirklich von ${widget._shoppingListInfo.name} entfernen?");
+      if (removeUser) {
+        await widget._onRemoveUserFromShoppingList(user);
       }
     } catch (e) {
       showErrorDialog(context, "Schläft der Server noch oder hast du kein Internet?");

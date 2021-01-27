@@ -71,7 +71,7 @@ public class ShoppingList {
         return copy;
     }
 
-    public void deleteUser(ObjectId userId) {
+    public void removeUserFromShoppingList(ObjectId userId) {
         if (!users.removeIf(user -> user.getUserId().equals(userId))) {
             throw new NoSuchElementException();
         }
