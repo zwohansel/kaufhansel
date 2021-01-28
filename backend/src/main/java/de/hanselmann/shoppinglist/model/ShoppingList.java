@@ -91,7 +91,7 @@ public class ShoppingList {
 
         int correctedTargetIndex = targetIndex > currentIndex ? targetIndex - 1 : targetIndex;
 
-        items.add(Math.min(items.size() - 1, correctedTargetIndex), item);
+        items.add(Math.min(items.size(), correctedTargetIndex), item);
         return true;
     }
 }
