@@ -2,7 +2,7 @@ package de.hanselmann.shoppinglist.restapi.dto;
 
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 
-public class ChangeShoppingListPermissionsDto {
+public class ShoppingListPermissionsUpdateDto {
     String userId;
     ShoppingListRole role;
 

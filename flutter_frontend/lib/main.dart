@@ -112,6 +112,11 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     info.updateShoppingListUser(userReference);
   }
 
+  Future<void> _changeShoppingListName(ShoppingListInfo info, String newName) async {
+    await _client.changeShoppingListName(info.id, newName);
+    info.updateShoppingListName(newName);
+  }
+
   void _fetchShoppingListInfos() async {
     setState(() {
       _shoppingListInfos = null;
@@ -172,6 +177,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               onAddUserToShoppingList: _addUserToShoppingList,
               onRemoveUserFromShoppingList: _removeUserFromShoppingList,
               onChangeShoppingListPermissions: _changeShoppingListPermissions,
+              onChangeShoppingListName: _changeShoppingListName,
             ),
             body: _buildShoppingList(context),
           );

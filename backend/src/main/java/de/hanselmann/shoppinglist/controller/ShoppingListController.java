@@ -17,15 +17,16 @@ import de.hanselmann.shoppinglist.model.ShoppingListItem;
 import de.hanselmann.shoppinglist.model.ShoppingListReference;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
-import de.hanselmann.shoppinglist.restapi.MoveShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.ShoppingListApi;
 import de.hanselmann.shoppinglist.restapi.dto.AddUserToShoppingListDto;
-import de.hanselmann.shoppinglist.restapi.dto.ChangeShoppingListPermissionsDto;
+import de.hanselmann.shoppinglist.restapi.dto.MoveShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListDto;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemUpdateDto;
+import de.hanselmann.shoppinglist.restapi.dto.ShoppingListNameUpdateDto;
+import de.hanselmann.shoppinglist.restapi.dto.ShoppingListPermissionsUpdateDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserReferenceDto;
 import de.hanselmann.shoppinglist.restapi.dto.transformer.DtoTransformer;
 import de.hanselmann.shoppinglist.service.ShoppingListService;
@@ -312,7 +313,7 @@ public class ShoppingListController implements ShoppingListApi {
 
     @Override
     public ResponseEntity<ShoppingListUserReferenceDto> changeShoppingListPermissionsForUser(String id,
-            ChangeShoppingListPermissionsDto permissionsDto) {
+            ShoppingListPermissionsUpdateDto permissionsDto) {
         if (!ObjectId.isValid(id) || !ObjectId.isValid(permissionsDto.getUserId())) {
             return ResponseEntity.badRequest().build();
         }
@@ -332,6 +333,19 @@ public class ShoppingListController implements ShoppingListApi {
         ShoppingListReference reference = userService.changePermission(userToBeChanged, shopingListObjectId,
                 permissionsDto.getRole());
         return ResponseEntity.ok(dtoTransformer.map(userToBeChanged, reference.getRole()));
+    }
+
+    @Override
+    public ResponseEntity<Void> changeShoppingListName(String id, ShoppingListNameUpdateDto shoppingListNameUpdateDto) {
+        if (!ObjectId.isValid(id)) {
+            return ResponseEntity.badRequest().build();
+        }
+        String name = shoppingListNameUpdateDto.getName().trim();
+        if (name.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        shoppingListService.renameList(new ObjectId(id), name);
+        return ResponseEntity.noContent().build();
     }
 
 }

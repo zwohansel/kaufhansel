@@ -208,4 +208,16 @@ class RestClient {
       throw Exception('Failed to add user to shopping list');
     }
   }
+
+  Future<void> changeShoppingListName(String shoppingListId, String newName) async {
+    final body = jsonEncode({'name': newName});
+    var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/name"));
+    request.headers.contentType = ContentType.json;
+    request.write(body);
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode != 204) {
+      throw Exception('Failed to rename list $shoppingListId');
+    }
+  }
 }

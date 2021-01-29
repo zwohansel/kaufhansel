@@ -14,14 +14,16 @@ class ShoppingListSettings extends StatefulWidget {
       @required Future<void> Function() onRemoveAllItems,
       @required Future<void> Function(String) onAddUserToShoppingList,
       @required Future<void> Function(String, String) onChangeShoppingListPermissions,
-      @required Future<void> Function(ShoppingListUserReference) onRemoveUserFromShoppingList})
+      @required Future<void> Function(ShoppingListUserReference) onRemoveUserFromShoppingList,
+      @required Future<void> Function(String) onChangeShoppingListName})
       : _onDeleteShoppingList = onDeleteShoppingList,
         _onUncheckAllItems = onUncheckAllItems,
         _onRemoveAllCategories = onRemoveAllCategories,
         _onRemoveAllItems = onRemoveAllItems,
         _onAddUserToShoppingList = onAddUserToShoppingList,
         _onRemoveUserFromShoppingList = onRemoveUserFromShoppingList,
-        _onChangeShoppingListPermissions = onChangeShoppingListPermissions;
+        _onChangeShoppingListPermissions = onChangeShoppingListPermissions,
+        _onChangeShoppingListName = onChangeShoppingListName;
 
   final Future<void> Function() _onDeleteShoppingList;
   final Future<void> Function() _onUncheckAllItems;
@@ -30,6 +32,7 @@ class ShoppingListSettings extends StatefulWidget {
   final Future<void> Function(String) _onAddUserToShoppingList;
   final Future<void> Function(ShoppingListUserReference) _onRemoveUserFromShoppingList;
   final Future<void> Function(String affectedUserId, String newRole) _onChangeShoppingListPermissions;
+  final Future<void> Function(String) _onChangeShoppingListName;
 
   @override
   _ShoppingListSettingsState createState() => _ShoppingListSettingsState();
@@ -41,18 +44,21 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
   final FocusNode _addUserToShoppingListFocusNode = new FocusNode();
   final _addUserToShoppingListFormKey = GlobalKey<FormState>();
   bool _loading = false;
+  final _shoppingListNameEditingController = new TextEditingController();
+  final _shoppingListNameEditingFocus = new FocusNode();
+  bool _editingShoppingListName = false;
+  bool _newShoppingListNameIsValid = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _shoppingListNameEditingController.addListener(() {
+      setState(() => _newShoppingListNameIsValid = _shoppingListNameEditingController.text.trim().isNotEmpty);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final sharedUsers = widget._shoppingListInfo.users.map((user) => ListTile(
-        enabled: !_loading,
-        leading: _getIcon(user.permissions.role),
-        title: Text("${user.userName} (${user.userEmailAddress}): ${_mapRole(user.permissions.role)}"),
-        onTap: () => _onChangePermissions(user),
-        trailing: user.permissions.role == 'ADMIN'
-            ? null
-            : IconButton(icon: Icon(Icons.delete), onPressed: () => _onRemoveUserFromList(user))));
-
     return WillPopScope(
         onWillPop: () async => !_loading,
         child: Scaffold(
@@ -73,130 +79,205 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 SizedBox(height: 12),
-                                Card(
-                                  child: Padding(
-                                      padding: EdgeInsets.all(18),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                                            Flexible(
-                                                child: Text(
-                                              widget._shoppingListInfo.name,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: Theme.of(context).textTheme.headline5,
-                                            )),
-                                            IconButton(icon: Icon(Icons.drive_file_rename_outline), onPressed: null)
-                                          ]),
-                                          SizedBox(height: 12),
-                                          OutlinedButton(
-                                            onPressed: _loading ? null : _onUncheckAllItemsPressed,
-                                            child: Text("Alle Häckchen entfernen"),
-                                          ),
-                                          SizedBox(height: 6),
-                                          OutlinedButton(
-                                            onPressed: _loading ? null : _onRemoveAllCategoriesPressed,
-                                            child: Text("Alle Kategorien entfernen"),
-                                          ),
-                                          SizedBox(height: 6),
-                                          OutlinedButton(
-                                            onPressed: _loading ? null : _onRemoveAllItemsPressed,
-                                            child: Text("Liste leeren"),
-                                          ),
-                                        ],
-                                      )),
-                                ),
+                                infoCard(context),
                                 SizedBox(height: 12),
-                                Card(
-                                  child: Padding(
-                                      padding: EdgeInsets.all(18),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            "Du teilst die Liste mit",
-                                            style: Theme.of(context).textTheme.headline6,
-                                          ),
-                                          SizedBox(height: 12),
-                                          Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children:
-                                                ListTile.divideTiles(context: context, tiles: sharedUsers).toList(),
-                                          ),
-                                          SizedBox(height: 12),
-                                          Text(
-                                            "Mit einem weiteren Hansel teilen",
-                                            style: Theme.of(context).textTheme.headline6,
-                                          ),
-                                          SizedBox(height: 12),
-                                          Text(
-                                              "Wenn du nichts änderst, kann der neue Hansel Dinge hinzufügen und entfernen, " +
-                                                  "er darf Haken setzen und entfernen. Er ist ein Schreibhansel.",
-                                              style: Theme.of(context).textTheme.subtitle2),
-                                          SizedBox(height: 12),
-                                          Row(children: [
-                                            Expanded(
-                                                child: Form(
-                                                    key: _addUserToShoppingListFormKey,
-                                                    child: TextFormField(
-                                                      focusNode: _addUserToShoppingListFocusNode,
-                                                      controller: _addUserTextEditingController,
-                                                      enabled: !_loading,
-                                                      onFieldSubmitted: (_) => _onAddUserToShoppingList(),
-                                                      decoration: const InputDecoration(
-                                                        hintText: 'Emailadresse vom Hansel',
-                                                      ),
-                                                      validator: (emailAddress) {
-                                                        if (emailAddress.trim().isEmpty ||
-                                                            !emailAddress.contains('@') ||
-                                                            !emailAddress.contains('.')) {
-                                                          return 'Dazu brauchen wir schon eine korrekte Emailadresse...';
-                                                        }
-                                                        return null;
-                                                      },
-                                                    ))),
-                                            IconButton(
-                                              icon: Icon(Icons.add),
-                                              onPressed: _loading ? null : _onAddUserToShoppingList,
-                                            )
-                                          ]),
-                                        ],
-                                      )),
-                                ),
+                                shareCard(context),
                                 SizedBox(height: 12),
-                                Card(
-                                  child: Padding(
-                                      padding: EdgeInsets.all(18),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            "Gefahrenzone",
-                                            style: Theme.of(context).textTheme.headline6,
-                                          ),
-                                          SizedBox(height: 12),
-                                          OutlinedButton(
-                                            child: Text("Liste löschen..."),
-                                            style: OutlinedButton.styleFrom(primary: Colors.red),
-                                            onPressed: _loading ? null : _onDeleteShoppingList,
-                                          ),
-                                          SizedBox(height: 12),
-                                          OutlinedButton(
-                                              child: Text("Liste übertragen..."),
-                                              style: OutlinedButton.styleFrom(primary: Colors.red),
-                                              onPressed: null)
-                                        ],
-                                      )),
-                                )
+                                dangerCard(context)
                               ],
                             ))
                       ])),
                 )
               ],
             )));
+  }
+
+  Card infoCard(BuildContext context) {
+    return Card(
+      child: Padding(
+          padding: EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              buildListName(context),
+              SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: _loading ? null : _onUncheckAllItemsPressed,
+                child: Text("Alle Häckchen entfernen"),
+              ),
+              SizedBox(height: 6),
+              OutlinedButton(
+                onPressed: _loading ? null : _onRemoveAllCategoriesPressed,
+                child: Text("Alle Kategorien entfernen"),
+              ),
+              SizedBox(height: 6),
+              OutlinedButton(
+                onPressed: _loading ? null : _onRemoveAllItemsPressed,
+                child: Text("Liste leeren"),
+              ),
+            ],
+          )),
+    );
+  }
+
+  Row buildListName(BuildContext context) {
+    if (_editingShoppingListName) {
+      return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Flexible(
+            child: TextField(
+          controller: _shoppingListNameEditingController,
+          textCapitalization: TextCapitalization.sentences,
+          style: Theme.of(context).textTheme.headline5.apply(fontFamilyFallback: ['NotoColorEmoji']),
+          focusNode: _shoppingListNameEditingFocus,
+          onSubmitted: (_) => _submitNewShoppingListName(),
+          decoration: InputDecoration(
+              suffixIcon: IconButton(
+            icon: Icon(Icons.check),
+            onPressed: _newShoppingListNameIsValid ? _submitNewShoppingListName : null,
+          )),
+        )),
+      ]);
+    } else {
+      return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Flexible(
+            child: Text(
+          widget._shoppingListInfo.name,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.headline5,
+        )),
+        IconButton(
+            icon: Icon(Icons.drive_file_rename_outline),
+            onPressed: _loading
+                ? null
+                : () => setState(() {
+                      _shoppingListNameEditingController.text = widget._shoppingListInfo.name;
+                      _shoppingListNameEditingController.selection =
+                          TextSelection(baseOffset: 0, extentOffset: widget._shoppingListInfo.name.length);
+                      _newShoppingListNameIsValid = true;
+                      _editingShoppingListName = true;
+                      _shoppingListNameEditingFocus.requestFocus();
+                    }))
+      ]);
+    }
+  }
+
+  void _submitNewShoppingListName() async {
+    if (_newShoppingListNameIsValid) {
+      setState(() => _loading = true);
+      final newName = _shoppingListNameEditingController.text.trim();
+      if (newName == widget._shoppingListInfo.name) {
+        return;
+      }
+      try {
+        await widget._onChangeShoppingListName(newName);
+      } catch (e) {
+        showErrorDialog(context, "Hast du dich vertippt oder schläft der Server noch?");
+      } finally {
+        setState(() {
+          _loading = false;
+          _editingShoppingListName = false;
+        });
+      }
+    } else {
+      _shoppingListNameEditingFocus.requestFocus();
+    }
+  }
+
+  Card shareCard(BuildContext context) {
+    final sharedUsers = widget._shoppingListInfo.users.map((user) => ListTile(
+        enabled: !_loading,
+        leading: _getIcon(user.permissions.role),
+        title: Text("${user.userName} (${user.userEmailAddress}): ${_mapRole(user.permissions.role)}"),
+        onTap: () => _onChangePermissions(user),
+        trailing: user.permissions.role == 'ADMIN'
+            ? null
+            : IconButton(icon: Icon(Icons.delete), onPressed: () => _onRemoveUserFromList(user))));
+
+    return Card(
+      child: Padding(
+          padding: EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Du teilst die Liste mit",
+                style: Theme.of(context).textTheme.headline6,
+              ),
+              SizedBox(height: 12),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: ListTile.divideTiles(context: context, tiles: sharedUsers).toList(),
+              ),
+              SizedBox(height: 12),
+              Text(
+                "Mit einem weiteren Hansel teilen",
+                style: Theme.of(context).textTheme.headline6,
+              ),
+              SizedBox(height: 12),
+              Text(
+                  "Wenn du nichts änderst, kann der neue Hansel Dinge hinzufügen und entfernen, " +
+                      "er darf Haken setzen und entfernen. Er ist ein Schreibhansel.",
+                  style: Theme.of(context).textTheme.subtitle2),
+              SizedBox(height: 12),
+              Row(children: [
+                Expanded(
+                    child: Form(
+                        key: _addUserToShoppingListFormKey,
+                        child: TextFormField(
+                          focusNode: _addUserToShoppingListFocusNode,
+                          controller: _addUserTextEditingController,
+                          enabled: !_loading,
+                          onFieldSubmitted: (_) => _onAddUserToShoppingList(),
+                          decoration: const InputDecoration(
+                            hintText: 'Emailadresse vom Hansel',
+                          ),
+                          validator: (emailAddress) {
+                            if (emailAddress.trim().isEmpty ||
+                                !emailAddress.contains('@') ||
+                                !emailAddress.contains('.')) {
+                              return 'Dazu brauchen wir schon eine korrekte Emailadresse...';
+                            }
+                            return null;
+                          },
+                        ))),
+                IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: _loading ? null : _onAddUserToShoppingList,
+                )
+              ]),
+            ],
+          )),
+    );
+  }
+
+  Card dangerCard(BuildContext context) {
+    return Card(
+      child: Padding(
+          padding: EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Gefahrenzone",
+                style: Theme.of(context).textTheme.headline6,
+              ),
+              SizedBox(height: 12),
+              OutlinedButton(
+                child: Text("Liste löschen..."),
+                style: OutlinedButton.styleFrom(primary: Colors.red),
+                onPressed: _loading ? null : _onDeleteShoppingList,
+              ),
+              SizedBox(height: 12),
+              OutlinedButton(
+                  child: Text("Liste übertragen..."),
+                  style: OutlinedButton.styleFrom(primary: Colors.red),
+                  onPressed: null)
+            ],
+          )),
+    );
   }
 
   Future<String> _buildChangePermissionsDialog(BuildContext context, ShoppingListUserReference user) {

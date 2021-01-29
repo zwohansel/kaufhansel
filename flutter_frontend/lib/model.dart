@@ -188,7 +188,7 @@ class ShoppingListUserReference {
 
 class ShoppingListInfo {
   final String _id;
-  final String _name;
+  String _name;
   final List<ShoppingListUserReference> _users;
 
   ShoppingListInfo(this._id, this._name, this._users);
@@ -218,6 +218,11 @@ class ShoppingListInfo {
     if (index >= 0) {
       _users[index] = changedUser;
     }
+  }
+
+  void updateShoppingListName(String newName) {
+    _name = newName;
+    // TODO: notifyListeners();
   }
 }
 

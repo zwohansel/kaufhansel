@@ -1,4 +1,4 @@
-package de.hanselmann.shoppinglist.restapi;
+package de.hanselmann.shoppinglist.restapi.dto;
 
 public class MoveShoppingListItemDto {
     private String itemId;

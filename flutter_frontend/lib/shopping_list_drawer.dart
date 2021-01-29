@@ -25,7 +25,8 @@ class ShoppingListDrawer extends StatelessWidget {
       @required Future<void> Function(ShoppingListInfo) onRemoveAllCategories,
       @required Future<void> Function(ShoppingListInfo) onRemoveAllItems,
       @required Future<void> Function(ShoppingListInfo, String, String) onChangeShoppingListPermissions,
-      @required Future<void> Function(ShoppingListInfo, ShoppingListUserReference) onRemoveUserFromShoppingList})
+      @required Future<void> Function(ShoppingListInfo, ShoppingListUserReference) onRemoveUserFromShoppingList,
+      @required Future<void> Function(ShoppingListInfo, String) onChangeShoppingListName})
       : _onRefreshPressed = onRefreshPressed,
         _filter = filter,
         _onFilterChanged = onFilterChanged,
@@ -41,7 +42,8 @@ class ShoppingListDrawer extends StatelessWidget {
         _onUncheckAllItems = onUncheckAllItems,
         _onRemoveAllCategories = onRemoveAllCategories,
         _onRemoveAllItems = onRemoveAllItems,
-        _onChangeShoppingListPermissions = onChangeShoppingListPermissions;
+        _onChangeShoppingListPermissions = onChangeShoppingListPermissions,
+        _onChangeShoppingListName = onChangeShoppingListName;
 
   final ShoppingListFilterOption _filter;
   final ShoppingListMode _mode;
@@ -60,6 +62,7 @@ class ShoppingListDrawer extends StatelessWidget {
   final Future<void> Function(ShoppingListInfo) _onRemoveAllItems;
   final Future<void> Function(ShoppingListInfo info, String affectedUserId, String newRole)
       _onChangeShoppingListPermissions;
+  final Future<void> Function(ShoppingListInfo, String) _onChangeShoppingListName;
 
   @override
   Widget build(BuildContext context) {
@@ -72,17 +75,16 @@ class ShoppingListDrawer extends StatelessWidget {
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(
                 builder: (context) {
-                  return ShoppingListSettings(
-                    info,
-                    onDeleteShoppingList: () => _onDeleteShoppingList(info),
-                    onUncheckAllItems: () => _onUncheckAllItems(info),
-                    onRemoveAllCategories: () => _onRemoveAllCategories(info),
-                    onRemoveAllItems: () => _onRemoveAllItems(info),
-                    onAddUserToShoppingList: (userEmailAddress) => _onAddUserToShoppingList(info, userEmailAddress),
-                    onRemoveUserFromShoppingList: (user) => _onRemoveUserFromShoppingList(info, user),
-                    onChangeShoppingListPermissions: (affectedUserId, newRole) =>
-                        _onChangeShoppingListPermissions(info, affectedUserId, newRole),
-                  );
+                  return ShoppingListSettings(info,
+                      onDeleteShoppingList: () => _onDeleteShoppingList(info),
+                      onUncheckAllItems: () => _onUncheckAllItems(info),
+                      onRemoveAllCategories: () => _onRemoveAllCategories(info),
+                      onRemoveAllItems: () => _onRemoveAllItems(info),
+                      onAddUserToShoppingList: (userEmailAddress) => _onAddUserToShoppingList(info, userEmailAddress),
+                      onRemoveUserFromShoppingList: (user) => _onRemoveUserFromShoppingList(info, user),
+                      onChangeShoppingListPermissions: (affectedUserId, newRole) =>
+                          _onChangeShoppingListPermissions(info, affectedUserId, newRole),
+                      onChangeShoppingListName: (newName) => _onChangeShoppingListName(info, newName));
                 },
               ));
             }),

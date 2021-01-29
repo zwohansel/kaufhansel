@@ -196,4 +196,10 @@ public class ShoppingListService {
         }
         return false;
     }
+
+    public void renameList(ObjectId shoppingListId, String name) {
+        ShoppingList list = findShoppingList(shoppingListId).orElseThrow();
+        list.setName(name);
+        shoppingListRepository.save(list);
+    }
 }
