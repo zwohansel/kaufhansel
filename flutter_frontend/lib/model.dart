@@ -339,7 +339,7 @@ class ShoppingListUserInfo {
   ShoppingListUserInfo(this._id, this._username, this._emailAddress);
 
   factory ShoppingListUserInfo.fromJson(Map<String, dynamic> json) {
-    return new ShoppingListUserInfo(json['id'], json['username'], json['emailAddress']);
+    return new ShoppingListUserInfo(json.get('id'), json.get('username'), json.get('emailAddress'));
   }
 
   String get emailAddress => _emailAddress;
