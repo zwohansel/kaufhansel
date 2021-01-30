@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:kaufhansel_client/widgets/editable_text_label.dart';
 
-import '../confirm_dialog.dart';
-import '../error_dialog.dart';
 import '../model.dart';
+import '../widgets/confirm_dialog.dart';
+import '../widgets/error_dialog.dart';
 
 class InfoCard extends StatefulWidget {
   final ShoppingListInfo _shoppingListInfo;
@@ -29,19 +30,6 @@ class InfoCard extends StatefulWidget {
 }
 
 class _InfoCardState extends State<InfoCard> {
-  final _shoppingListNameEditingController = new TextEditingController();
-  final _shoppingListNameEditingFocus = new FocusNode();
-  bool _editingShoppingListName = false;
-  bool _newShoppingListNameIsValid = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _shoppingListNameEditingController.addListener(() {
-      setState(() => _newShoppingListNameIsValid = _shoppingListNameEditingController.text.trim().isNotEmpty);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -51,7 +39,10 @@ class _InfoCardState extends State<InfoCard> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
-              buildListName(context),
+              EditableTextLabel(
+                  text: widget._shoppingListInfo.name,
+                  textStyle: Theme.of(context).textTheme.headline5.apply(fontFamilyFallback: ['NotoColorEmoji']),
+                  onSubmit: (text) => _submitNewShoppingListName(text)),
               SizedBox(height: 12),
               OutlinedButton(
                 onPressed: widget._loading ? null : _onUncheckAllItemsPressed,
@@ -70,47 +61,6 @@ class _InfoCardState extends State<InfoCard> {
             ],
           )),
     );
-  }
-
-  Row buildListName(BuildContext context) {
-    if (_editingShoppingListName) {
-      return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Flexible(
-            child: TextField(
-          controller: _shoppingListNameEditingController,
-          textCapitalization: TextCapitalization.sentences,
-          style: Theme.of(context).textTheme.headline5.apply(fontFamilyFallback: ['NotoColorEmoji']),
-          focusNode: _shoppingListNameEditingFocus,
-          onSubmitted: (_) => _submitNewShoppingListName(),
-          decoration: InputDecoration(
-              suffixIcon: IconButton(
-            icon: Icon(Icons.check),
-            onPressed: _newShoppingListNameIsValid ? _submitNewShoppingListName : null,
-          )),
-        )),
-      ]);
-    } else {
-      return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Flexible(
-            child: Text(
-          widget._shoppingListInfo.name,
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.headline5,
-        )),
-        IconButton(
-            icon: Icon(Icons.drive_file_rename_outline),
-            onPressed: widget._loading
-                ? null
-                : () => setState(() {
-                      _shoppingListNameEditingController.text = widget._shoppingListInfo.name;
-                      _shoppingListNameEditingController.selection =
-                          TextSelection(baseOffset: 0, extentOffset: widget._shoppingListInfo.name.length);
-                      _newShoppingListNameIsValid = true;
-                      _editingShoppingListName = true;
-                      _shoppingListNameEditingFocus.requestFocus();
-                    }))
-      ]);
-    }
   }
 
   void _onUncheckAllItemsPressed() async {
@@ -160,25 +110,13 @@ class _InfoCardState extends State<InfoCard> {
     }
   }
 
-  void _submitNewShoppingListName() async {
-    if (_newShoppingListNameIsValid) {
-      widget._setLoading(true);
-      final newName = _shoppingListNameEditingController.text.trim();
-      if (newName == widget._shoppingListInfo.name) {
-        return;
-      }
-      try {
-        await widget._onChangeShoppingListName(newName);
-      } catch (e) {
-        showErrorDialog(context, "Hast du dich vertippt oder schläft der Server noch?");
-      } finally {
-        widget._setLoading(false);
-        setState(() {
-          _editingShoppingListName = false;
-        });
-      }
-    } else {
-      _shoppingListNameEditingFocus.requestFocus();
+  Future<bool> _submitNewShoppingListName(String newName) async {
+    try {
+      await widget._onChangeShoppingListName(newName);
+      return true;
+    } catch (e) {
+      showErrorDialog(context, "Hast du dich vertippt oder schläft der Server noch?");
+      return false;
     }
   }
 }

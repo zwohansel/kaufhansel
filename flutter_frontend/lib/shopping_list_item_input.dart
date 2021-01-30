@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
-import 'package:kaufhansel_client/async_operation_icon_button.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
+import 'package:kaufhansel_client/widgets/async_operation_icon_button.dart';
 import 'package:provider/provider.dart';
 
 class ShoppingListItemInput extends StatefulWidget {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'error_dialog.dart';
+import 'widgets/error_dialog.dart';
 
 class CreateShoppingListDialog extends StatefulWidget {
   final Future<void> Function(String) _onCreateShoppingList;

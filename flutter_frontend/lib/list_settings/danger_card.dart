@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../confirm_dialog.dart';
-import '../error_dialog.dart';
+import '../widgets/confirm_dialog.dart';
+import '../widgets/error_dialog.dart';
 
 class DangerCard extends StatelessWidget {
   final void Function(bool) _setLoading;

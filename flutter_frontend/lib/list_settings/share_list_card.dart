@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:kaufhansel_client/error_dialog.dart';
+import 'package:kaufhansel_client/widgets/error_dialog.dart';
 
-import '../confirm_dialog.dart';
 import '../model.dart';
+import '../widgets/confirm_dialog.dart';
 
 class ShareListCard extends StatefulWidget {
   final ShoppingListInfo _shoppingListInfo;

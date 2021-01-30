@@ -7,7 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'error_dialog.dart';
+import 'widgets/error_dialog.dart';
 
 class LoginPage extends StatefulWidget {
   final void Function() _loggedIn;
