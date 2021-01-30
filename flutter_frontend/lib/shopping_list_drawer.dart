@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/list_settings/shopping_list_settings.dart';
+import 'package:kaufhansel_client/settings/app_settings.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_filter_selection.dart';
 import 'package:kaufhansel_client/shopping_list_mode.dart';
@@ -165,8 +166,11 @@ class ShoppingListDrawer extends StatelessWidget {
                       primary: Theme.of(context).primaryIconTheme.color,
                       side: BorderSide(color: Theme.of(context).primaryIconTheme.color)),
                   onPressed: () {
-                    //TODO
-                    Navigator.pop(context);
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => new AppSettings(),
+                        ));
                   },
                 )
               ],
