@@ -26,8 +26,7 @@ class ShoppingListApp extends StatefulWidget {
 
 class _ShoppingListAppState extends State<ShoppingListApp> {
   static const _serverUrl = kDebugMode ? "https://localhost:8080" : "https://zwohansel.de/kaufhansel/";
-  final _client = RestClient(Uri.parse(_serverUrl));
-  bool _loggedIn = false;
+  RestClient _client = RestClient(Uri.parse(_serverUrl));
   ShoppingListFilterOption _filter = ShoppingListFilterOption.ALL;
   ShoppingListMode _mode = ShoppingListMode.DEFAULT;
 
@@ -37,6 +36,23 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   ShoppingList _currentShoppingList;
   List<String> _currentShoppingListCategories;
   String _currentShoppingListCategory;
+
+  // if userInfo == null, no user is logged in
+  ShoppingListUserInfo _userInfo;
+  bool _isLoggedIn() {
+    return _userInfo != null;
+  }
+
+  void _logIn(ShoppingListUserInfo fetchedUserInfo) {
+    setState(() => _userInfo = fetchedUserInfo);
+    _fetchShoppingListInfos();
+  }
+
+  void _logOut() {
+    _client.close();
+    setState(() => _userInfo = null);
+    _client = RestClient(Uri.parse(_serverUrl));
+  }
 
   void _setFilter(ShoppingListFilterOption nextFilter) {
     setState(() {
@@ -63,11 +79,6 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
         _fetchCurrentShoppingList();
       });
     }
-  }
-
-  void _setLoggedIn() {
-    setState(() => _loggedIn = true);
-    _fetchShoppingListInfos();
   }
 
   Future<void> _createShoppingList(String shoppingListName) async {
@@ -222,7 +233,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   }
 
   Widget _buildContent(BuildContext context) {
-    if (_loggedIn) {
+    if (_isLoggedIn()) {
       return ChangeNotifierProvider.value(
         value: _currentShoppingList,
         builder: (context, child) {
@@ -249,6 +260,8 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               onRemoveUserFromShoppingList: _removeUserFromShoppingList,
               onChangeShoppingListPermissions: _changeShoppingListPermissions,
               onChangeShoppingListName: _changeShoppingListName,
+              userInfo: _userInfo,
+              onLogOut: _logOut,
             ),
             body: _buildShoppingList(context),
           );
@@ -256,7 +269,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       );
     }
 
-    return LoginPage(loggedIn: _setLoggedIn);
+    return LoginPage(loggedIn: _logIn);
   }
 
   void _handleRetry() {

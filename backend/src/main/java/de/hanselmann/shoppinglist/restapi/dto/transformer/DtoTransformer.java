@@ -10,6 +10,7 @@ import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListPermissionsDto;
+import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserReferenceDto;
 
 @Component
@@ -26,6 +27,10 @@ public class DtoTransformer {
     public ShoppingListUserReferenceDto map(ShoppingListUser user, ShoppingListRole userRole) {
         return new ShoppingListUserReferenceDto(user.getId().toString(), user.getUsername(), user.getEmailAddress(),
                 mapShoppingListUserRole(userRole));
+    }
+
+    public ShoppingListUserInfoDto map(ShoppingListUser user) {
+        return new ShoppingListUserInfoDto(user.getId().toString(), user.getUsername(), user.getEmailAddress());
     }
 
     private ShoppingListPermissionsDto mapShoppingListUserRole(ShoppingListRole userRole) {

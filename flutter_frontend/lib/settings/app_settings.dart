@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:kaufhansel_client/model.dart';
+import 'package:kaufhansel_client/widgets/error_dialog.dart';
 
 import '../title_widget.dart';
 
 class AppSettings extends StatefulWidget {
+  final ShoppingListUserInfo _userInfo;
+  final void Function() _onLogOut;
+
+  AppSettings({@required ShoppingListUserInfo userInfo, @required void Function() onLogOut})
+      : _userInfo = userInfo,
+        _onLogOut = onLogOut;
+
   @override
   _AppSettingsState createState() => _AppSettingsState();
 }
@@ -39,14 +48,26 @@ class _AppSettingsState extends State<AppSettings> {
                                         crossAxisAlignment: CrossAxisAlignment.stretch,
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Text("Einstellungen",
+                                          Text("${widget._userInfo.username}, was willst du ändern?",
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .headline5
                                                   .apply(fontFamilyFallback: ['NotoColorEmoji'])),
                                           SizedBox(height: 12),
-                                          Text(
-                                              "Hier findest du bald Einstellungen, um den Kaufhansel an deine Bedürfnisse anzupassen."),
+                                          Text("Deine Email-Adresse: ${widget._userInfo.emailAddress}"),
+                                          SizedBox(height: 24),
+                                          OutlinedButton(
+                                            child: Text("Ich will mich mal kurz abmelden"),
+                                            style: OutlinedButton.styleFrom(primary: Colors.red),
+                                            onPressed: _onLogOut,
+                                          ),
+                                          SizedBox(height: 12),
+                                          OutlinedButton(
+                                            child: Text("Ich will mein Benutzerkonto löschen..."),
+                                            style: OutlinedButton.styleFrom(primary: Colors.red),
+                                            onPressed: () =>
+                                                showErrorDialog(context, "Schade, aber das geht hier noch nicht."),
+                                          )
                                         ],
                                       )),
                                 )
@@ -56,6 +77,11 @@ class _AppSettingsState extends State<AppSettings> {
                 )
               ],
             )));
+  }
+
+  _onLogOut() {
+    Navigator.pop(context);
+    widget._onLogOut();
   }
 
   Widget _buildProgressBar() {

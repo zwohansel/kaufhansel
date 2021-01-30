@@ -238,3 +238,19 @@ class ShoppingListPermissions {
   bool get canEditItems => _canEditItems;
   bool get canEditList => _canEditList;
 }
+
+class ShoppingListUserInfo {
+  final String _id;
+  final String _username;
+  final String _emailAddress;
+
+  ShoppingListUserInfo(this._id, this._username, this._emailAddress);
+
+  factory ShoppingListUserInfo.fromJson(Map<String, dynamic> json) {
+    return new ShoppingListUserInfo(json['id'], json['username'], json['emailAddress']);
+  }
+
+  String get emailAddress => _emailAddress;
+  String get username => _username;
+  String get id => _id;
+}

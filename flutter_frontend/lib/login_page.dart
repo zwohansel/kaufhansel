@@ -4,15 +4,16 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'widgets/error_dialog.dart';
 
 class LoginPage extends StatefulWidget {
-  final void Function() _loggedIn;
+  final void Function(ShoppingListUserInfo) _loggedIn;
 
-  const LoginPage({@required void Function() loggedIn}) : _loggedIn = loggedIn;
+  const LoginPage({@required void Function(ShoppingListUserInfo) loggedIn}) : _loggedIn = loggedIn;
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -127,8 +128,10 @@ class _LoginPageState extends State<LoginPage> {
 
   void _login(BuildContext context) async {
     try {
-      if (await RestClientWidget.of(context).login(_userNameController.text, _passwordController.text)) {
-        widget._loggedIn();
+      ShoppingListUserInfo userInfo =
+          await RestClientWidget.of(context).login(_userNameController.text, _passwordController.text);
+      if (userInfo != null) {
+        widget._loggedIn(userInfo);
       } else {
         showErrorDialog(context, "Haben wir Deinen Account gelöscht oder hast Du Deine Zugangsdaten vergessen?");
       }

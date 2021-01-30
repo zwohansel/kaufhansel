@@ -19,12 +19,14 @@ import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemUpdateDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListNameUpdateDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListPermissionsUpdateDto;
+import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserReferenceDto;
 
 public interface ShoppingListApi {
 
-    @GetMapping("/rlogin")
-    ResponseEntity<Void> login();
+    // TODO: move to some kind of UserApi
+    @GetMapping("/user")
+    ResponseEntity<ShoppingListUserInfoDto> getUserInfo();
 
     @GetMapping("/shoppinglists")
     ResponseEntity<List<ShoppingListInfoDto>> getShoppingLists();

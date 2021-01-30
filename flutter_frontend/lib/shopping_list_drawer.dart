@@ -28,7 +28,9 @@ class ShoppingListDrawer extends StatelessWidget {
       @required Future<void> Function(ShoppingListInfo) onRemoveAllItems,
       @required Future<void> Function(ShoppingListInfo, String, String) onChangeShoppingListPermissions,
       @required Future<void> Function(ShoppingListInfo, ShoppingListUserReference) onRemoveUserFromShoppingList,
-      @required Future<void> Function(ShoppingListInfo, String) onChangeShoppingListName})
+      @required Future<void> Function(ShoppingListInfo, String) onChangeShoppingListName,
+      @required void Function() onLogOut,
+      @required ShoppingListUserInfo userInfo})
       : _onRefreshPressed = onRefreshPressed,
         _filter = filter,
         _onFilterChanged = onFilterChanged,
@@ -45,7 +47,9 @@ class ShoppingListDrawer extends StatelessWidget {
         _onRemoveAllCategories = onRemoveAllCategories,
         _onRemoveAllItems = onRemoveAllItems,
         _onChangeShoppingListPermissions = onChangeShoppingListPermissions,
-        _onChangeShoppingListName = onChangeShoppingListName;
+        _onChangeShoppingListName = onChangeShoppingListName,
+        _onLogOut = onLogOut,
+        _userInfo = userInfo;
 
   final ShoppingListFilterOption _filter;
   final ShoppingListMode _mode;
@@ -65,6 +69,8 @@ class ShoppingListDrawer extends StatelessWidget {
   final Future<void> Function(ShoppingListInfo info, String affectedUserId, String newRole)
       _onChangeShoppingListPermissions;
   final Future<void> Function(ShoppingListInfo, String) _onChangeShoppingListName;
+  final void Function() _onLogOut;
+  final ShoppingListUserInfo _userInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +175,7 @@ class ShoppingListDrawer extends StatelessWidget {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => new AppSettings(),
+                          builder: (context) => new AppSettings(userInfo: _userInfo, onLogOut: _onLogOut),
                         ));
                   },
                 )

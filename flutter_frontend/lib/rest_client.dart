@@ -20,7 +20,7 @@ class RestClientWidget extends InheritedWidget {
 }
 
 class RestClient {
-  final HttpClient _httpClient;
+  HttpClient _httpClient;
   final Uri _serverUrl;
   final Duration timeout = Duration(seconds: 10);
 
@@ -29,12 +29,25 @@ class RestClient {
     _httpClient.badCertificateCallback = (cert, host, port) => kDebugMode;
   }
 
-  Future<bool> login(String username, String password) async {
+  void close() {
+    _httpClient.close(force: true);
+    _httpClient = null;
+  }
+
+  Future<ShoppingListUserInfo> login(String username, String password) async {
     _httpClient.addCredentials(_serverUrl, "", HttpClientBasicCredentials(username, password));
-    final url = _serverUrl.resolve("rlogin");
+    final url = _serverUrl.resolve("user");
     final request = await _httpClient.getUrl(url);
     final response = await request.close().timeout(timeout);
-    return response.statusCode == 204;
+
+    if (response.statusCode == 200) {
+      final String decoded = await response.transform(utf8.decoder).join();
+      return new ShoppingListUserInfo.fromJson(jsonDecode(decoded));
+    } else if (response.statusCode == 401) {
+      return null;
+    } else {
+      throw Exception("Failed to get user info for $username");
+    }
   }
 
   Future<List<ShoppingListInfo>> getShoppingLists() async {
