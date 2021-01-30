@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:kaufhansel_client/list_settings/shopping_list_settings.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_filter_selection.dart';
 import 'package:kaufhansel_client/shopping_list_mode.dart';
 import 'package:kaufhansel_client/shopping_list_mode_selection.dart';
-import 'package:kaufhansel_client/shopping_list_settings.dart';
 
 import 'create_shopping_list_dialog.dart';
 import 'model.dart';
