@@ -13,7 +13,7 @@ class ShoppingListSettings extends StatefulWidget {
       @required Future<void> Function() onRemoveAllCategories,
       @required Future<void> Function() onRemoveAllItems,
       @required Future<void> Function(String) onAddUserToShoppingList,
-      @required Future<void> Function(String, String) onChangeShoppingListPermissions,
+      @required Future<void> Function(String, ShoppingListRole) onChangeShoppingListPermissions,
       @required Future<void> Function(ShoppingListUserReference) onRemoveUserFromShoppingList,
       @required Future<void> Function(String) onChangeShoppingListName})
       : _onDeleteShoppingList = onDeleteShoppingList,
@@ -31,7 +31,7 @@ class ShoppingListSettings extends StatefulWidget {
   final Future<void> Function() _onRemoveAllItems;
   final Future<void> Function(String) _onAddUserToShoppingList;
   final Future<void> Function(ShoppingListUserReference) _onRemoveUserFromShoppingList;
-  final Future<void> Function(String affectedUserId, String newRole) _onChangeShoppingListPermissions;
+  final Future<void> Function(String affectedUserId, ShoppingListRole newRole) _onChangeShoppingListPermissions;
   final Future<void> Function(String) _onChangeShoppingListName;
 
   @override

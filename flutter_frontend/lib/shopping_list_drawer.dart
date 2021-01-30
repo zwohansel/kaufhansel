@@ -26,7 +26,7 @@ class ShoppingListDrawer extends StatelessWidget {
       @required Future<void> Function(ShoppingListInfo) onUncheckAllItems,
       @required Future<void> Function(ShoppingListInfo) onRemoveAllCategories,
       @required Future<void> Function(ShoppingListInfo) onRemoveAllItems,
-      @required Future<void> Function(ShoppingListInfo, String, String) onChangeShoppingListPermissions,
+      @required Future<void> Function(ShoppingListInfo, String, ShoppingListRole) onChangeShoppingListPermissions,
       @required Future<void> Function(ShoppingListInfo, ShoppingListUserReference) onRemoveUserFromShoppingList,
       @required Future<void> Function(ShoppingListInfo, String) onChangeShoppingListName,
       @required void Function() onLogOut,
@@ -66,7 +66,7 @@ class ShoppingListDrawer extends StatelessWidget {
   final Future<void> Function(ShoppingListInfo) _onUncheckAllItems;
   final Future<void> Function(ShoppingListInfo) _onRemoveAllCategories;
   final Future<void> Function(ShoppingListInfo) _onRemoveAllItems;
-  final Future<void> Function(ShoppingListInfo info, String affectedUserId, String newRole)
+  final Future<void> Function(ShoppingListInfo info, String affectedUserId, ShoppingListRole newRole)
       _onChangeShoppingListPermissions;
   final Future<void> Function(ShoppingListInfo, String) _onChangeShoppingListName;
   final void Function() _onLogOut;

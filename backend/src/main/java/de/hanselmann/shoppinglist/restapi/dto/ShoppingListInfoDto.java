@@ -5,23 +5,46 @@ import java.util.List;
 public class ShoppingListInfoDto {
     private final String id;
     private final String name;
-    private final List<ShoppingListUserReferenceDto> users;
+    private final ShoppingListPermissionsDto permissions;
+    private final List<ShoppingListUserReferenceDto> otherUsers;
 
-    public ShoppingListInfoDto(String id, String name, List<ShoppingListUserReferenceDto> users) {
+    public ShoppingListInfoDto(
+            String id,
+            String name,
+            ShoppingListPermissionsDto permissions,
+            List<ShoppingListUserReferenceDto> otherUsers) {
         this.name = name;
         this.id = id;
-        this.users = users;
+        this.permissions = permissions;
+        this.otherUsers = otherUsers;
     }
 
+    /**
+     * Id of the list
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * Display name of the list.
+     */
     public String getName() {
         return name;
     }
 
-    public List<ShoppingListUserReferenceDto> getUsers() {
-        return users;
+    /**
+     * Permissions of the user who requests this info object.
+     */
+    public ShoppingListPermissionsDto getPermissions() {
+        return permissions;
+    }
+
+    /**
+     * Other users with whom the user that requests this info object shares the
+     * list.
+     */
+    public List<ShoppingListUserReferenceDto> getOtherUsers() {
+        return otherUsers;
     }
 }

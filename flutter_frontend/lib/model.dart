@@ -6,6 +6,16 @@ import 'package:flutter/material.dart';
 
 const CATEGORY_ALL = "Alle";
 
+extension JsonParseExtension<K, V> on Map<K, V> {
+  V get(K key) {
+    V value = this[key];
+    if (value == null) {
+      throw Exception("No element with key $key in map. Available keys: ${this.keys}");
+    }
+    return value;
+  }
+}
+
 class ShoppingListItem extends ChangeNotifier {
   String _id;
   String _name;
@@ -19,7 +29,7 @@ class ShoppingListItem extends ChangeNotifier {
   ShoppingListItem(this._id, this._name, this._checked, this._category);
 
   factory ShoppingListItem.fromJson(Map<String, dynamic> json) {
-    return ShoppingListItem(json['id'], json['name'], json['checked'], json['category']);
+    return ShoppingListItem(json.get('id'), json.get('name'), json.get('checked'), json.get('category'));
   }
 
   String get id => _id;
@@ -160,33 +170,113 @@ class ShoppingList extends ChangeNotifier {
   }
 }
 
+enum ShoppingListRole { ADMIN, READ_WRITE, CHECK_ONLY, READ_ONLY }
+
+const Map<String, ShoppingListRole> _strToRole = {
+  'ADMIN': ShoppingListRole.ADMIN,
+  'READ_WRITE': ShoppingListRole.READ_WRITE,
+  'CHECK_ONLY': ShoppingListRole.CHECK_ONLY,
+  'READ_ONLY': ShoppingListRole.READ_ONLY
+};
+
+extension ShoppingListRoles on ShoppingListRole {
+  static ShoppingListRole fromRoleString(String roleStr) {
+    final role = _strToRole[roleStr];
+    if (role == null) {
+      throw Exception("Unknown role: $roleStr");
+    }
+    return role;
+  }
+
+  String toRoleString() {
+    final roleStr = _strToRole.entries.firstWhere((entry) => entry.value == this)?.key;
+    if (roleStr == null) {
+      throw Exception("No role string for $this");
+    }
+    return roleStr;
+  }
+
+  String toDisplayString() {
+    switch (this) {
+      case ShoppingListRole.ADMIN:
+        return "Chefhansel";
+      case ShoppingListRole.READ_WRITE:
+        return "Schreibhansel";
+      case ShoppingListRole.CHECK_ONLY:
+        return "Kaufhansel";
+      case ShoppingListRole.READ_ONLY:
+        return "Guckhansel";
+      default:
+        return "Unbekannt";
+    }
+  }
+
+  String toDescription() {
+    switch (this) {
+      case ShoppingListRole.ADMIN:
+        return "Darf alles: Dinge hinzufügen und entfernen, Haken setzen und entfernen. Darf neue Hansel zur Liste " +
+            "hinzufügen.\nEinmal Chefhansel, immer Chefhansel: diese Rolle kannst du nicht mehr ändern";
+      case ShoppingListRole.READ_WRITE:
+        return "Darf Dinge hinzufügen und entfernen, darf Haken setzen und entfernen";
+      case ShoppingListRole.CHECK_ONLY:
+        return "Darf Haken setzen und entfernen";
+      case ShoppingListRole.READ_ONLY:
+        return "Darf die Liste anschauen, aber nix ändern";
+      default:
+        return "Diese Rolle kennen wir nicht";
+    }
+  }
+
+  IconData toIcon() {
+    switch (this) {
+      case ShoppingListRole.ADMIN:
+        return Icons.gavel_outlined;
+      case ShoppingListRole.READ_WRITE:
+        return Icons.assignment_outlined;
+      case ShoppingListRole.CHECK_ONLY:
+        return Icons.assignment_turned_in_outlined;
+      case ShoppingListRole.READ_ONLY:
+        return Icons.remove_red_eye_outlined;
+      default:
+        return Icons.radio_button_off_outlined;
+    }
+  }
+
+  bool isRemoveable() {
+    return this != ShoppingListRole.ADMIN;
+  }
+}
+
 class ShoppingListUserReference {
   final String _userId;
   final String _userName;
   final String _userEmailAddress;
-  final ShoppingListPermissions permissions;
+  final ShoppingListRole _userRole;
 
-  ShoppingListUserReference(this._userId, this._userName, this._userEmailAddress, this.permissions);
+  ShoppingListUserReference(this._userId, this._userName, this._userEmailAddress, this._userRole);
 
   factory ShoppingListUserReference.fromJson(Map<String, dynamic> json) {
-    return ShoppingListUserReference(json['userId'], json['userName'], json['userEmailAddress'],
-        new ShoppingListPermissions.fromJson(json['permissions']));
+    return ShoppingListUserReference(json.get('userId'), json.get('userName'), json.get('userEmailAddress'),
+        ShoppingListRoles.fromRoleString(json.get('userRole')));
   }
 
   String get userId => _userId;
   String get userName => _userName;
   String get userEmailAddress => _userEmailAddress;
+  ShoppingListRole get userRole => _userRole;
 }
 
 class ShoppingListInfo extends ChangeNotifier {
   final String _id;
   String _name;
+  final ShoppingListPermissions _permissions;
   final List<ShoppingListUserReference> _users;
 
-  ShoppingListInfo(this._id, this._name, this._users);
+  ShoppingListInfo(this._id, this._name, this._permissions, this._users);
 
   factory ShoppingListInfo.fromJson(Map<String, dynamic> json) {
-    return ShoppingListInfo(json['id'], json['name'], _parseUserReferences(json['users']));
+    return ShoppingListInfo(json.get('id'), json.get('name'), ShoppingListPermissions.fromJson(json.get('permissions')),
+        _parseUserReferences(json.get('otherUsers')));
   }
 
   static List<ShoppingListUserReference> _parseUserReferences(List<dynamic> json) {
@@ -195,6 +285,7 @@ class ShoppingListInfo extends ChangeNotifier {
 
   String get id => _id;
   String get name => _name;
+  ShoppingListPermissions get permissions => _permissions;
   List<ShoppingListUserReference> get users => UnmodifiableListView(_users);
 
   void addUserToShoppingList(ShoppingListUserReference userReference) {
@@ -222,7 +313,7 @@ class ShoppingListInfo extends ChangeNotifier {
 }
 
 class ShoppingListPermissions {
-  final String _role;
+  final ShoppingListRole _role;
   final bool _canEditList;
   final bool _canEditItems;
   final bool _canCheckItems;
@@ -230,10 +321,11 @@ class ShoppingListPermissions {
   ShoppingListPermissions(this._role, this._canEditList, this._canEditItems, this._canCheckItems);
 
   factory ShoppingListPermissions.fromJson(Map<String, dynamic> json) {
-    return new ShoppingListPermissions(json['role'], json['canEditList'], json['canEditItems'], json['canCheckItems']);
+    return new ShoppingListPermissions(ShoppingListRoles.fromRoleString(json.get('role')), json.get('canEditList'),
+        json.get('canEditItems'), json.get('canCheckItems'));
   }
 
-  String get role => _role;
+  ShoppingListRole get role => _role;
   bool get canCheckItems => _canCheckItems;
   bool get canEditItems => _canEditItems;
   bool get canEditList => _canEditList;

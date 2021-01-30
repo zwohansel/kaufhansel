@@ -1,17 +1,19 @@
 package de.hanselmann.shoppinglist.restapi.dto;
 
+import de.hanselmann.shoppinglist.model.ShoppingListRole;
+
 public class ShoppingListUserReferenceDto {
     final String userId;
     final String userName;
     final String userEmailAddress;
-    final ShoppingListPermissionsDto permissions;
+    final ShoppingListRole userRole;
 
     public ShoppingListUserReferenceDto(String userId, String userName, String userEmailAddress,
-            ShoppingListPermissionsDto permissions) {
+            ShoppingListRole userRole) {
         this.userId = userId;
         this.userName = userName;
         this.userEmailAddress = userEmailAddress;
-        this.permissions = permissions;
+        this.userRole = userRole;
     }
 
     public String getUserId() {
@@ -26,8 +28,8 @@ public class ShoppingListUserReferenceDto {
         return userEmailAddress;
     }
 
-    public ShoppingListPermissionsDto getPermissions() {
-        return permissions;
+    public ShoppingListRole getuserRole() {
+        return userRole;
     }
 
 }

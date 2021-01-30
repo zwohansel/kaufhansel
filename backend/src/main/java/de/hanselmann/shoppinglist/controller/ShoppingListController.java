@@ -2,7 +2,6 @@ package de.hanselmann.shoppinglist.controller;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
@@ -26,6 +25,7 @@ import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemUpdateDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListNameUpdateDto;
+import de.hanselmann.shoppinglist.restapi.dto.ShoppingListPermissionsDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListPermissionsUpdateDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserReferenceDto;
@@ -62,10 +62,28 @@ public class ShoppingListController implements ShoppingListApi {
     @Override
     public ResponseEntity<List<ShoppingListInfoDto>> getShoppingLists() {
         final List<ShoppingListInfoDto> infos = shoppingListService.getShoppingListsOfCurrentUser()
-                .map(list -> new ShoppingListInfoDto(list.getId().toString(), list.getName(),
-                        getShoppingListUserReferenceDtos(list)))
+                .map(this::toInfo)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(infos);
+    }
+
+    private ShoppingListInfoDto toInfo(ShoppingList list) {
+        final ShoppingListUser user = userService.getCurrentUser();
+
+        final ShoppingListPermissionsDto userPermissions = user.getShoppingLists().stream()
+                .filter(listRef -> listRef.getShoppingListId().equals(list.getId()))
+                .findAny()
+                .map(ShoppingListReference::getRole)
+                .map(dtoTransformer::map)
+                .orElseThrow(() -> new IllegalArgumentException("User does not know that list."));
+
+        final List<ShoppingListUserReferenceDto> otherUsers = list.getUsers().stream()
+                .filter(userRef -> !userRef.getUserId().equals(user.getId()))
+                .map(userRef -> userService.getUser(userRef.getUserId()))
+                .map(otherUser -> dtoTransformer.map(otherUser, list.getId()))
+                .collect(Collectors.toList());
+
+        return dtoTransformer.map(list, userPermissions, otherUsers);
     }
 
     @Override
@@ -76,29 +94,7 @@ public class ShoppingListController implements ShoppingListApi {
             return ResponseEntity.badRequest().build();
         }
 
-        return ResponseEntity
-                .ok(new ShoppingListInfoDto(newShoppingList.getId().toString(),
-                        newShoppingList.getName(),
-                        getShoppingListUserReferenceDtos(newShoppingList)));
-    }
-
-    private List<ShoppingListUserReferenceDto> getShoppingListUserReferenceDtos(ShoppingList shoppingList) {
-        return shoppingList.getUsers().stream()
-                .map(userRef -> userService.getUser(userRef.getUserId()))
-                .map(user -> getShoppingListUserReferenceDto(shoppingList, user))
-                .collect(Collectors.toList());
-    }
-
-    private ShoppingListUserReferenceDto getShoppingListUserReferenceDto(ShoppingList shoppingList,
-            ShoppingListUser user) {
-        ShoppingListRole userRoleForList = user.getShoppingLists().stream()
-                .filter(listRef -> listRef.getShoppingListId().equals(shoppingList.getId()))
-                .findAny()
-                .map(ShoppingListReference::getRole)
-                .orElseThrow(
-                        () -> new IllegalArgumentException(
-                                "No roles defined for user " + user.getId() + " on list " + shoppingList.getId()));
-        return dtoTransformer.map(user, userRoleForList);
+        return ResponseEntity.ok(toInfo(newShoppingList));
     }
 
     @Override
@@ -272,17 +268,17 @@ public class ShoppingListController implements ShoppingListApi {
             return ResponseEntity.badRequest().build();
         }
 
-        Optional<ShoppingListUser> userOptional = userService.findByEmailAddress(addUserDto.getEmailAddress());
-        if (userOptional.isPresent()) {
-            ShoppingListReference shoppingListReference = shoppingListService.addUserToShoppingList(new ObjectId(id),
-                    userOptional.get());
-            if (shoppingListReference == null) {
-                return ResponseEntity.badRequest().build();
-            }
-            return ResponseEntity.ok(dtoTransformer.map(userOptional.get(), shoppingListReference.getRole()));
-        } else {
-            return ResponseEntity.badRequest().build();
+        return userService.findByEmailAddress(addUserDto.getEmailAddress())
+                .map(user -> addUserToShoppingList(user, new ObjectId(id)))
+                .orElse(ResponseEntity.badRequest().build());
+    }
+
+    private ResponseEntity<ShoppingListUserReferenceDto> addUserToShoppingList(ShoppingListUser user,
+            ObjectId shoppingListId) {
+        if (shoppingListService.addUserToShoppingList(shoppingListId, user)) {
+            return ResponseEntity.ok(dtoTransformer.map(user, shoppingListId));
         }
+        return ResponseEntity.badRequest().build();
     }
 
     @Override
@@ -318,22 +314,21 @@ public class ShoppingListController implements ShoppingListApi {
         if (!ObjectId.isValid(id) || !ObjectId.isValid(permissionsDto.getUserId())) {
             return ResponseEntity.badRequest().build();
         }
-        ObjectId shopingListObjectId = new ObjectId(id);
+        ObjectId shopingListId = new ObjectId(id);
 
         // TODO: move to @PreAuthorize?
-        if (userService.getRoleForUser(userService.getCurrentUser(), shopingListObjectId)
+        if (userService.getRoleForUser(userService.getCurrentUser(), shopingListId)
                 .orElse(null) != ShoppingListRole.ADMIN) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         ShoppingListUser userToBeChanged = userService.getUser(new ObjectId(permissionsDto.getUserId()));
-        if (userService.getRoleForUser(userToBeChanged, shopingListObjectId).orElse(null) == ShoppingListRole.ADMIN) {
+        if (userService.getRoleForUser(userToBeChanged, shopingListId).orElse(null) == ShoppingListRole.ADMIN) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        ShoppingListReference reference = userService.changePermission(userToBeChanged, shopingListObjectId,
-                permissionsDto.getRole());
-        return ResponseEntity.ok(dtoTransformer.map(userToBeChanged, reference.getRole()));
+        userService.changePermission(userToBeChanged, shopingListId, permissionsDto.getRole());
+        return ResponseEntity.ok(dtoTransformer.map(userToBeChanged, shopingListId));
     }
 
     @Override

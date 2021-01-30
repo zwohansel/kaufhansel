@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'dart:math';
 
 import 'package:collection/collection.dart';
@@ -130,7 +131,8 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     info.removeUserFromShoppingList(user);
   }
 
-  Future<void> _changeShoppingListPermissions(ShoppingListInfo info, String affectedUserId, String newRole) async {
+  Future<void> _changeShoppingListPermissions(
+      ShoppingListInfo info, String affectedUserId, ShoppingListRole newRole) async {
     final userReference = await _client.changeShoppingListPermissions(info.id, affectedUserId, newRole);
     info.updateShoppingListUser(userReference);
   }
@@ -158,7 +160,8 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
         _currentShoppingListInfo = lists.isNotEmpty ? lists.first : null;
         _fetchCurrentShoppingList();
       });
-    } catch (e) {
+    } on Exception catch (e) {
+      developer.log("Failed to fetch shopping list infos.", error: e);
       setState(() {
         _error = e.toString();
       });
@@ -188,7 +191,8 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
         _currentShoppingListCategory = _currentShoppingListCategories.first;
         _currentShoppingList.addListener(setCurrentShoppingListCategories);
       });
-    } catch (e) {
+    } on Exception catch (e) {
+      developer.log("Failed to fetch shopping list.", error: e);
       setState(() {
         _error = e.toString();
       });

@@ -207,8 +207,8 @@ class RestClient {
   }
 
   Future<ShoppingListUserReference> changeShoppingListPermissions(
-      String shoppingListId, String affectedUserId, String newRole) async {
-    final body = jsonEncode({'userId': affectedUserId, 'role': newRole});
+      String shoppingListId, String affectedUserId, ShoppingListRole newRole) async {
+    final body = jsonEncode({'userId': affectedUserId, 'role': newRole.toRoleString()});
     var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/permissions"));
     request.headers.contentType = ContentType.json;
     request.write(body);

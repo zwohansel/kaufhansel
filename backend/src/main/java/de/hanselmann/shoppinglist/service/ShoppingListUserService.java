@@ -33,12 +33,11 @@ public class ShoppingListUserService {
         return userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User does not exist."));
     }
 
-    public ShoppingListReference addShoppingListToUser(ShoppingListUser user, ObjectId shoppingListId,
+    public void addShoppingListToUser(ShoppingListUser user, ObjectId shoppingListId,
             ShoppingListRole role) {
         ShoppingListReference shoppingListReference = new ShoppingListReference(shoppingListId, role);
         user.addShoppingList(shoppingListReference);
         userRepository.save(user);
-        return shoppingListReference;
     }
 
     public boolean removeShoppingListFromUser(ShoppingListUser user, ObjectId shoppingListId) {
@@ -61,7 +60,7 @@ public class ShoppingListUserService {
                 .findAny().map(ref -> ref.getRole());
     }
 
-    public ShoppingListReference changePermission(ShoppingListUser userToBeChanged, ObjectId shopingListId,
+    public void changePermission(ShoppingListUser userToBeChanged, ObjectId shopingListId,
             ShoppingListRole role) {
         ShoppingListReference referenceForUserToBeChanged = userToBeChanged.getShoppingLists().stream()
                 .filter(ref -> ref.getShoppingListId().equals(shopingListId))
@@ -69,7 +68,6 @@ public class ShoppingListUserService {
                 .orElseThrow();
         referenceForUserToBeChanged.setRole(role);
         userRepository.save(userToBeChanged);
-        return referenceForUserToBeChanged;
     }
 
 }

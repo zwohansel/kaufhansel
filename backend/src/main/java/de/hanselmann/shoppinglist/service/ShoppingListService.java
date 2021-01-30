@@ -52,7 +52,7 @@ public class ShoppingListService {
         }
     }
 
-    public @Nullable ShoppingListReference addUserToShoppingList(ObjectId shoppingListId, ShoppingListUser user) {
+    public boolean addUserToShoppingList(ObjectId shoppingListId, ShoppingListUser user) {
         try {
             return transactionTemplate.execute(status -> {
                 ShoppingList shoppingList = shoppingListRepository.findById(shoppingListId)
@@ -64,11 +64,12 @@ public class ShoppingListService {
 
                 shoppingList.addUser(new ShoppingListUserReference(user.getId()));
                 shoppingListRepository.save(shoppingList);
-                return userService.addShoppingListToUser(user, shoppingListId, ShoppingListRole.READ_WRITE);
+                userService.addShoppingListToUser(user, shoppingListId, ShoppingListRole.READ_WRITE);
+                return true;
             });
 
         } catch (TransactionException e) {
-            return null;
+            return false;
         }
     }
 
