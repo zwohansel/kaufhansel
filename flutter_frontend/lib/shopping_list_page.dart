@@ -1,68 +1,95 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:kaufhansel_client/default_tab_controller_index_listener.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_mode.dart';
 import 'package:kaufhansel_client/shopping_list_view.dart';
-import 'package:provider/provider.dart';
 
-import 'model.dart';
-
-class ShoppingListPage extends StatelessWidget {
+class ShoppingListPage extends StatefulWidget {
   final ShoppingListFilterOption _filter;
   final ShoppingListMode _mode;
+  final String _initialCategory;
+  final List<String> _categories;
+  final void Function(String) _onCategoryChanged;
 
-  ShoppingListPage({@required ShoppingListFilterOption filter, ShoppingListMode mode = ShoppingListMode.DEFAULT})
-      : _filter = filter,
-        _mode = mode;
+  ShoppingListPage(this._categories, this._filter,
+      {ShoppingListMode mode = ShoppingListMode.DEFAULT,
+      String initialCategory,
+      void Function(String) onCategoryChanged})
+      : _mode = mode,
+        _initialCategory = initialCategory,
+        _onCategoryChanged = onCategoryChanged;
+
+  @override
+  _ShoppingListPageState createState() => _ShoppingListPageState();
+}
+
+class _ShoppingListPageState extends State<ShoppingListPage> with TickerProviderStateMixin {
+  TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _createTabController();
+  }
+
+  @override
+  void didUpdateWidget(covariant ShoppingListPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget._categories.length != widget._categories.length) {
+      _createTabController();
+    }
+  }
+
+  void _createTabController() {
+    // If we had a controller before dispose it.
+    if (_tabController != null) {
+      _tabController.dispose();
+    }
+
+    assert(widget._categories.isNotEmpty, "There must be at least one category.");
+    assert(widget._categories.contains(widget._initialCategory), "Invalid initial category.");
+    final initialIndex = widget._initialCategory != null ? widget._categories.indexOf(widget._initialCategory) : 0;
+    _tabController = TabController(length: widget._categories.length, initialIndex: initialIndex, vsync: this);
+    _tabController.addListener(this._tabControllerChanged);
+  }
+
+  void _tabControllerChanged() {
+    if (!_tabController.indexIsChanging && widget._onCategoryChanged != null) {
+      widget._onCategoryChanged(widget._categories[_tabController.index]);
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Selector<ShoppingList, List<String>>(
-        selector: (_, shoppingList) => shoppingList.getAllCategories(),
-        builder: (context, categories, child) {
-          return DefaultTabController(
-              length: categories.length,
-              initialIndex: min(
-                  Provider.of<ShoppingListTabSelection>(context, listen: false).currentTabIndex, categories.length - 1),
-              child: Builder(
-                builder: (context) {
-                  final tabController = DefaultTabController.of(context);
-                  final tabIndex = tabController.index;
-                  // when we delete the current tab, tab bar view does show the previous view,
-                  // but tab bar marks the tab before the previous one as active.
-                  // Nevertheless tab controller knows correct tab index!
-                  // Setting the index to 0 and then back to the correct one, forces tab bar to re-render.
-                  tabController.index = 0;
-                  tabController.index = tabIndex;
-                  return Column(children: [
-                    DefaultTabControllerIndexListener(),
-                    Container(
-                        decoration: BoxDecoration(color: Theme.of(context).primaryColor, boxShadow: [
-                          BoxShadow(
-                              color: Colors.grey.withOpacity(0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
-                        ]),
-                        child: Material(
-                            type: MaterialType.transparency,
-                            child: TabBar(
-                              tabs: categories.map((category) => Tab(text: category)).toList(),
-                              indicator:
-                                  BoxDecoration(border: Border(bottom: BorderSide(width: 3, color: Colors.white))),
-                            ))),
-                    Expanded(
-                        child: TabBarView(
-                            children: categories
-                                .map((category) => ShoppingListView(
-                                      category: category,
-                                      filter: _filter,
-                                      mode: _mode,
-                                    ))
-                                .toList()))
-                  ]);
-                },
-              ));
-        });
+    return Column(children: [
+      Container(
+          decoration: BoxDecoration(color: Theme.of(context).primaryColor, boxShadow: [
+            BoxShadow(color: Colors.grey.withOpacity(0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
+          ]),
+          child: Material(
+              type: MaterialType.transparency,
+              child: TabBar(
+                controller: _tabController,
+                tabs: widget._categories.map((category) => Tab(text: category)).toList(),
+                indicator: BoxDecoration(border: Border(bottom: BorderSide(width: 3, color: Colors.white))),
+              ))),
+      Expanded(
+          child: TabBarView(
+              controller: _tabController,
+              children: widget._categories
+                  .map((category) => ShoppingListView(
+                        category: category,
+                        filter: widget._filter,
+                        mode: widget._mode,
+                      ))
+                  .toList()))
+    ]);
   }
 }

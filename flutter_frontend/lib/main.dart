@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/login_page.dart';
@@ -31,20 +34,28 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   List<ShoppingListInfo> _shoppingListInfos;
   ShoppingListInfo _currentShoppingListInfo;
   ShoppingList _currentShoppingList;
+  List<String> _currentShoppingListCategories;
+  String _currentShoppingListCategory;
 
-  void _onFilterChanged(ShoppingListFilterOption nextFilter) {
+  void _setFilter(ShoppingListFilterOption nextFilter) {
     setState(() {
       _filter = nextFilter;
     });
   }
 
-  void _onModeChanged(ShoppingListMode nextMode) {
+  void _setMode(ShoppingListMode nextMode) {
     setState(() {
       _mode = nextMode;
     });
   }
 
-  void _onShoppingListSelected(ShoppingListInfo info) {
+  void _setCurrentShoppingListCategory(String nextCategory) {
+    setState(() {
+      _currentShoppingListCategory = nextCategory;
+    });
+  }
+
+  void _selectShoppingList(ShoppingListInfo info) {
     if (info != _currentShoppingListInfo) {
       setState(() {
         _currentShoppingListInfo = info;
@@ -53,7 +64,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     }
   }
 
-  void _onLoggedIn() {
+  void _setLoggedIn() {
     setState(() => _loggedIn = true);
     _fetchShoppingListInfos();
   }
@@ -121,6 +132,8 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     setState(() {
       _shoppingListInfos = null;
       _currentShoppingList = null;
+      _currentShoppingListCategories = null;
+      _currentShoppingListCategory = null;
       _error = null;
     });
 
@@ -138,6 +151,61 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     }
   }
 
+  void _fetchCurrentShoppingList() async {
+    setState(() {
+      _currentShoppingList = null;
+      _currentShoppingListCategories = null;
+      _currentShoppingListCategory = null;
+      _error = null;
+    });
+
+    if (_currentShoppingListInfo == null) {
+      return;
+    }
+
+    try {
+      final fetchedList = await _client.fetchShoppingList(_currentShoppingListInfo.id, _currentShoppingListInfo.name);
+      setState(() {
+        _currentShoppingList = fetchedList;
+        _currentShoppingListCategories = fetchedList.getAllCategories();
+        _currentShoppingListCategory = _currentShoppingListCategories.first;
+        _currentShoppingList.addListener(setCurrentShoppingListCategories);
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    }
+  }
+
+  void setCurrentShoppingListCategories() {
+    if (_currentShoppingList == null) {
+      return;
+    }
+
+    final listEq = const ListEquality().equals;
+    final nextCategories = _currentShoppingList.getAllCategories();
+    if (listEq(nextCategories, _currentShoppingListCategories)) {
+      return;
+    }
+
+    var nextCategory = _currentShoppingListCategory;
+    if (!nextCategories.contains(nextCategory)) {
+      final lastCategoryIndex = _currentShoppingListCategories.indexOf(nextCategory);
+      // If the category no longer exists choose the category that tool the place of the removed category
+      // or the one left to it.
+      // Due to a bug in the TabBarView we can not choose the category left of the removed category
+      // by default. If there is a category that took the place of the removed category
+      // TabBarView will always show that and does not honor the tab index set in the TabController.
+      nextCategory = nextCategories[max(0, min(lastCategoryIndex, nextCategories.length - 1))];
+    }
+
+    setState(() {
+      _currentShoppingListCategories = nextCategories;
+      _currentShoppingListCategory = nextCategory;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -149,26 +217,23 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   Widget _buildContent(BuildContext context) {
     if (_loggedIn) {
-      return MultiProvider(
-        providers: [
-          ChangeNotifierProvider.value(value: _currentShoppingList),
-          ChangeNotifierProvider(create: (context) => ShoppingListTabSelection(0))
-        ],
+      return ChangeNotifierProvider.value(
+        value: _currentShoppingList,
         builder: (context, child) {
           return Scaffold(
             appBar: AppBar(
-              title: ShoppingListTitle(),
+              title: ShoppingListTitle(_currentShoppingListCategory),
               shadowColor: Colors.transparent,
             ),
             endDrawer: ShoppingListDrawer(
               onRefreshPressed: _fetchShoppingListInfos,
               filter: _filter,
-              onFilterChanged: _onFilterChanged,
+              onFilterChanged: _setFilter,
               mode: _mode,
-              onModeChanged: _onModeChanged,
+              onModeChanged: _setMode,
               shoppingLists: _shoppingListInfos,
               selectedShoppingListId: _currentShoppingList?.id,
-              onShoppingListSelected: _onShoppingListSelected,
+              onShoppingListSelected: _selectShoppingList,
               onCreateShoppingList: _createShoppingList,
               onDeleteShoppingList: _deleteShoppingList,
               onUncheckAllItems: _uncheckAllItems,
@@ -185,7 +250,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       );
     }
 
-    return LoginPage(loggedIn: _onLoggedIn);
+    return LoginPage(loggedIn: _setLoggedIn);
   }
 
   void _handleRetry() {
@@ -218,29 +283,13 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     } else if (_shoppingListInfos == null || _currentShoppingList == null) {
       return Center(child: CircularProgressIndicator());
     } else {
-      return ShoppingListPage(filter: _filter, mode: _mode);
-    }
-  }
-
-  void _fetchCurrentShoppingList() async {
-    setState(() {
-      _currentShoppingList = null;
-      _error = null;
-    });
-
-    if (_currentShoppingListInfo == null) {
-      return;
-    }
-
-    try {
-      final fetchedList = await _client.fetchShoppingList(_currentShoppingListInfo.id, _currentShoppingListInfo.name);
-      setState(() {
-        _currentShoppingList = fetchedList;
-      });
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-      });
+      return ShoppingListPage(
+        _currentShoppingListCategories,
+        _filter,
+        mode: _mode,
+        initialCategory: _currentShoppingListCategory,
+        onCategoryChanged: _setCurrentShoppingListCategory,
+      );
     }
   }
 }

@@ -5,6 +5,10 @@ import 'package:provider/provider.dart';
 import 'model.dart';
 
 class ShoppingListTitle extends StatelessWidget {
+  final String _currentCategory;
+
+  const ShoppingListTitle(this._currentCategory);
+
   @override
   Widget build(BuildContext context) {
     return Selector<ShoppingList, _ShoppingListTitleInfo>(
@@ -12,15 +16,12 @@ class ShoppingListTitle extends StatelessWidget {
         if (shoppingList == null) {
           return null;
         }
-        final currentTabIndex = Provider.of<ShoppingListTabSelection>(context, listen: true).currentTabIndex;
-        final categories = shoppingList.getAllCategories();
 
-        if (categories.length <= currentTabIndex) {
+        if (_currentCategory == null) {
           return null;
         }
 
-        final currentCategory = shoppingList.getAllCategories()[currentTabIndex];
-        final itemsInCategory = shoppingList.items.where((item) => item.isInCategory(currentCategory));
+        final itemsInCategory = shoppingList.items.where((item) => item.isInCategory(_currentCategory));
         final checkedItemsInCategory = itemsInCategory.where((item) => item.checked);
         return _ShoppingListTitleInfo(shoppingList.name, itemsInCategory.length, checkedItemsInCategory.length);
       },
