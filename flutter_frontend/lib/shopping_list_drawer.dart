@@ -4,6 +4,7 @@ import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_filter_selection.dart';
 import 'package:kaufhansel_client/shopping_list_mode.dart';
 import 'package:kaufhansel_client/shopping_list_mode_selection.dart';
+import 'package:provider/provider.dart';
 
 import 'create_shopping_list_dialog.dart';
 import 'model.dart';
@@ -32,7 +33,7 @@ class ShoppingListDrawer extends StatelessWidget {
         _onFilterChanged = onFilterChanged,
         _mode = mode,
         _onModeChanged = onModeChanged,
-        _shoppingLists = shoppingLists,
+        _shoppingListInfos = shoppingLists,
         _selectedShoppingListId = selectedShoppingListId,
         _onShoppingListSelected = onShoppingListSelected,
         _onCreateShoppingList = onCreateShoppingList,
@@ -47,7 +48,7 @@ class ShoppingListDrawer extends StatelessWidget {
 
   final ShoppingListFilterOption _filter;
   final ShoppingListMode _mode;
-  final List<ShoppingListInfo> _shoppingLists;
+  final List<ShoppingListInfo> _shoppingListInfos;
   final VoidCallback _onRefreshPressed;
   final void Function(ShoppingListFilterOption nextFilter) _onFilterChanged;
   final void Function(ShoppingListMode nextMode) _onModeChanged;
@@ -66,32 +67,38 @@ class ShoppingListDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final infoTiles = _shoppingLists?.map((info) => ListTile(
-        key: ValueKey(info.id),
-        title: Text(info.name),
-        tileColor: _getTileColor(context, info),
-        trailing: IconButton(
-            icon: Icon(Icons.edit),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(
-                builder: (context) {
-                  return ShoppingListSettings(info,
-                      onDeleteShoppingList: () => _onDeleteShoppingList(info),
-                      onUncheckAllItems: () => _onUncheckAllItems(info),
-                      onRemoveAllCategories: () => _onRemoveAllCategories(info),
-                      onRemoveAllItems: () => _onRemoveAllItems(info),
-                      onAddUserToShoppingList: (userEmailAddress) => _onAddUserToShoppingList(info, userEmailAddress),
-                      onRemoveUserFromShoppingList: (user) => _onRemoveUserFromShoppingList(info, user),
-                      onChangeShoppingListPermissions: (affectedUserId, newRole) =>
-                          _onChangeShoppingListPermissions(info, affectedUserId, newRole),
-                      onChangeShoppingListName: (newName) => _onChangeShoppingListName(info, newName));
-                },
-              ));
-            }),
-        onTap: () {
-          _onShoppingListSelected(info);
-          Navigator.pop(context);
-        }));
+    final infoTiles = _shoppingListInfos?.map((info) => ChangeNotifierProvider.value(
+        value: info,
+        builder: (context, child) => ListTile(
+            key: ValueKey(info.id),
+            title: Consumer<ShoppingListInfo>(builder: (context, info, child) => Text(info.name)),
+            tileColor: _getTileColor(context, info),
+            trailing: IconButton(
+                icon: Icon(Icons.edit),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(
+                    builder: (context) {
+                      // Providers are scoped and not shared between routes. We need to pass it explicitly to the new route
+                      return ChangeNotifierProvider.value(
+                          value: info,
+                          child: ShoppingListSettings(
+                              onDeleteShoppingList: () => _onDeleteShoppingList(info),
+                              onUncheckAllItems: () => _onUncheckAllItems(info),
+                              onRemoveAllCategories: () => _onRemoveAllCategories(info),
+                              onRemoveAllItems: () => _onRemoveAllItems(info),
+                              onAddUserToShoppingList: (userEmailAddress) =>
+                                  _onAddUserToShoppingList(info, userEmailAddress),
+                              onRemoveUserFromShoppingList: (user) => _onRemoveUserFromShoppingList(info, user),
+                              onChangeShoppingListPermissions: (affectedUserId, newRole) =>
+                                  _onChangeShoppingListPermissions(info, affectedUserId, newRole),
+                              onChangeShoppingListName: (newName) => _onChangeShoppingListName(info, newName)));
+                    },
+                  ));
+                }),
+            onTap: () {
+              _onShoppingListSelected(info);
+              Navigator.pop(context);
+            })));
 
     return Drawer(
       child: Column(

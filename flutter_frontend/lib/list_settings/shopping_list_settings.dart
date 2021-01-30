@@ -4,11 +4,10 @@ import 'package:kaufhansel_client/list_settings/info_card.dart';
 import 'package:kaufhansel_client/list_settings/share_list_card.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/title_widget.dart';
+import 'package:provider/provider.dart';
 
 class ShoppingListSettings extends StatefulWidget {
-  final ShoppingListInfo _shoppingListInfo;
-
-  const ShoppingListSettings(this._shoppingListInfo,
+  const ShoppingListSettings(
       {@required Future<void> Function() onDeleteShoppingList,
       @required Future<void> Function() onUncheckAllItems,
       @required Future<void> Function() onRemoveAllCategories,
@@ -69,23 +68,28 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 SizedBox(height: 12),
-                                InfoCard(widget._shoppingListInfo, _loading, _setLoading,
-                                    onChangeShoppingListName: widget._onChangeShoppingListName,
-                                    onRemoveAllCategories: widget._onRemoveAllCategories,
-                                    onRemoveAllItems: widget._onRemoveAllItems,
-                                    onUncheckAllItems: widget._onUncheckAllItems),
+                                Consumer<ShoppingListInfo>(
+                                    builder: (context, shoppingListInfo, child) => InfoCard(
+                                        shoppingListInfo, _loading, _setLoading,
+                                        onChangeShoppingListName: widget._onChangeShoppingListName,
+                                        onRemoveAllCategories: widget._onRemoveAllCategories,
+                                        onRemoveAllItems: widget._onRemoveAllItems,
+                                        onUncheckAllItems: widget._onUncheckAllItems)),
                                 SizedBox(height: 12),
-                                ShareListCard(widget._shoppingListInfo, _loading, _setLoading,
-                                    onAddUserToShoppingList: widget._onAddUserToShoppingList,
-                                    onChangeShoppingListPermissions: widget._onChangeShoppingListPermissions,
-                                    onRemoveUserFromShoppingList: widget._onRemoveUserFromShoppingList),
+                                Consumer<ShoppingListInfo>(
+                                    builder: (context, shoppingListInfo, child) => ShareListCard(
+                                        shoppingListInfo, _loading, _setLoading,
+                                        onAddUserToShoppingList: widget._onAddUserToShoppingList,
+                                        onChangeShoppingListPermissions: widget._onChangeShoppingListPermissions,
+                                        onRemoveUserFromShoppingList: widget._onRemoveUserFromShoppingList)),
                                 SizedBox(height: 12),
-                                DangerCard(
-                                  _loading,
-                                  _setLoading,
-                                  deleteShoppingList: widget._onDeleteShoppingList,
-                                  shoppingListName: widget._shoppingListInfo.name,
-                                )
+                                Consumer<ShoppingListInfo>(
+                                    builder: (context, shoppingListInfo, child) => DangerCard(
+                                          _loading,
+                                          _setLoading,
+                                          deleteShoppingList: widget._onDeleteShoppingList,
+                                          shoppingListName: shoppingListInfo.name,
+                                        ))
                               ],
                             ))
                       ])),

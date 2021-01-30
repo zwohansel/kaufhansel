@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:kaufhansel_client/login_page.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/shopping_list_drawer.dart';
@@ -129,6 +130,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   }
 
   void _fetchShoppingListInfos() async {
+    final oldShoppingList = _currentShoppingList;
     setState(() {
       _shoppingListInfos = null;
       _currentShoppingList = null;
@@ -136,6 +138,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       _currentShoppingListCategory = null;
       _error = null;
     });
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) => oldShoppingList?.dispose());
 
     try {
       final lists = await _client.getShoppingLists();
@@ -152,22 +155,25 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   }
 
   void _fetchCurrentShoppingList() async {
+    final oldShoppingList = _currentShoppingList;
     setState(() {
       _currentShoppingList = null;
       _currentShoppingListCategories = null;
       _currentShoppingListCategory = null;
       _error = null;
     });
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) => oldShoppingList?.dispose());
 
     if (_currentShoppingListInfo == null) {
       return;
     }
 
     try {
-      final fetchedList = await _client.fetchShoppingList(_currentShoppingListInfo.id, _currentShoppingListInfo.name);
+      final items = await _client.fetchShoppingList(_currentShoppingListInfo.id);
+      final shoppingList = new ShoppingList(_currentShoppingListInfo, items);
       setState(() {
-        _currentShoppingList = fetchedList;
-        _currentShoppingListCategories = fetchedList.getAllCategories();
+        _currentShoppingList = shoppingList;
+        _currentShoppingListCategories = shoppingList.getAllCategories();
         _currentShoppingListCategory = _currentShoppingListCategories.first;
         _currentShoppingList.addListener(setCurrentShoppingListCategories);
       });

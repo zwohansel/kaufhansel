@@ -80,20 +80,26 @@ class ShoppingListItem extends ChangeNotifier {
 
 // TODO: Can be modified concurrently... use locks
 class ShoppingList extends ChangeNotifier {
-  final String _id;
-  final String _name;
+  final ShoppingListInfo _info;
   final List<ShoppingListItem> _items;
 
-  ShoppingList(this._id, this._name, this._items) {
+  ShoppingList(this._info, this._items) {
     _items.forEach((item) {
       item.categoryChangedCallback = this.notifyListeners;
       item.checkedChangedCallback = this.notifyListeners;
     });
+    _info.addListener(this.notifyListeners);
   }
 
-  String get id => _id;
+  @override
+  void dispose() {
+    _info.removeListener(this.notifyListeners);
+    super.dispose();
+  }
 
-  String get name => _name;
+  String get id => _info._id;
+
+  String get name => _info.name;
 
   void addItem(ShoppingListItem item) {
     _items.add(item);
@@ -172,7 +178,7 @@ class ShoppingListUserReference {
   String get userEmailAddress => _userEmailAddress;
 }
 
-class ShoppingListInfo {
+class ShoppingListInfo extends ChangeNotifier {
   final String _id;
   String _name;
   final List<ShoppingListUserReference> _users;
@@ -187,28 +193,31 @@ class ShoppingListInfo {
     return json.map((ref) => ShoppingListUserReference.fromJson(ref)).toList();
   }
 
+  String get id => _id;
+  String get name => _name;
+  List<ShoppingListUserReference> get users => UnmodifiableListView(_users);
+
   void addUserToShoppingList(ShoppingListUserReference userReference) {
     _users.add(userReference);
+    notifyListeners();
   }
 
   void removeUserFromShoppingList(ShoppingListUserReference user) {
     _users.removeWhere((ref) => ref.userId == user.userId);
+    notifyListeners();
   }
-
-  String get id => _id;
-  String get name => _name;
-  List<ShoppingListUserReference> get users => UnmodifiableListView(_users);
 
   void updateShoppingListUser(ShoppingListUserReference changedUser) {
     final index = _users.indexWhere((element) => element.userId == changedUser.userId);
     if (index >= 0) {
       _users[index] = changedUser;
+      notifyListeners();
     }
   }
 
   void updateShoppingListName(String newName) {
     _name = newName;
-    // TODO: notifyListeners();
+    notifyListeners();
   }
 }
 
