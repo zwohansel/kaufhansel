@@ -61,7 +61,7 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
         return ListTile(
           title: Wrap(children: titleElements),
           trailing: _buildActionButton(item),
-          onTap: () => _editItem(item),
+          onTap: () => widget._canEditItems ? _editItem(item) : null,
         );
       } else {
         if (widget._canCheckItems) {

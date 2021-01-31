@@ -335,6 +335,19 @@ class ShoppingListPermissions {
   bool get canCheckItems => _canCheckItems;
   bool get canEditItems => _canEditItems;
   bool get canEditList => _canEditList;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ShoppingListPermissions &&
+          runtimeType == other.runtimeType &&
+          _role == other._role &&
+          _canEditList == other._canEditList &&
+          _canEditItems == other._canEditItems &&
+          _canCheckItems == other._canCheckItems;
+
+  @override
+  int get hashCode => _role.hashCode ^ _canEditList.hashCode ^ _canEditItems.hashCode ^ _canCheckItems.hashCode;
 }
 
 class ShoppingListUserInfo {

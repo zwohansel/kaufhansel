@@ -5,6 +5,7 @@ import 'package:kaufhansel_client/shopping_list_item_input.dart';
 import 'package:kaufhansel_client/shopping_list_item_tile.dart';
 import 'package:kaufhansel_client/shopping_list_mode.dart';
 import 'package:provider/provider.dart';
+import 'package:tuple/tuple.dart';
 
 import 'model.dart';
 
@@ -41,36 +42,33 @@ class _ShoppingListViewState extends State<ShoppingListView> {
 
   @override
   Widget build(BuildContext context) {
-    return Selector<ShoppingList, Iterable<ShoppingListItem>>(
-        selector: (_, shoppingList) =>
+    return Selector<ShoppingList, Tuple2<Iterable<ShoppingListItem>, ShoppingListPermissions>>(
+        selector: (_, shoppingList) => Tuple2(
             shoppingList.items.where((item) => item.isInCategory(widget._category)).toList(growable: false),
-        builder: (context, items, child) {
+            shoppingList.info.permissions),
+        builder: (context, tuple, child) {
           return Column(children: [
             _buildProgress(),
-            _buildListView(context, items),
-            _buildItemInput(),
+            _buildListView(context, tuple.item1, tuple.item2.canEditItems),
+            _buildItemInput(tuple.item2.canEditItems),
           ]);
         });
   }
 
-  Widget _buildItemInput() {
-    return Selector<ShoppingList, bool>(
-        selector: (_, shoppingList) => shoppingList.info.permissions.canEditItems,
-        builder: (context, canEditItems, child) {
-          return canEditItems
-              ? Container(
-                  child: Material(
-                      child: ShoppingListItemInput(
-                        shoppingListScrollController: _scrollController,
-                        category: widget._category,
-                        enabled: !_loading,
-                      ),
-                      type: MaterialType.transparency),
-                  decoration: BoxDecoration(color: Colors.white, boxShadow: [
-                    BoxShadow(color: Colors.grey.withOpacity(0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
-                  ]))
-              : Container();
-        });
+  Widget _buildItemInput(bool canEditItems) {
+    return canEditItems
+        ? Container(
+            child: Material(
+                child: ShoppingListItemInput(
+                  shoppingListScrollController: _scrollController,
+                  category: widget._category,
+                  enabled: !_loading,
+                ),
+                type: MaterialType.transparency),
+            decoration: BoxDecoration(color: Colors.white, boxShadow: [
+              BoxShadow(color: Colors.grey.withOpacity(0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
+            ]))
+        : Container();
   }
 
   Widget _buildProgress() {
@@ -80,11 +78,11 @@ class _ShoppingListViewState extends State<ShoppingListView> {
     return Container();
   }
 
-  Widget _buildListView(BuildContext context, List<ShoppingListItem> items) {
+  Widget _buildListView(BuildContext context, List<ShoppingListItem> items, bool canEditItems) {
     final tiles = items.where(_isItemVisible).map(_createListTileForItem);
     final dividedTiles = _divideTilesWithKey(tiles, context).toList();
 
-    if (widget._mode == ShoppingListMode.EDITING) {
+    if (widget._mode == ShoppingListMode.EDITING && canEditItems) {
       return Expanded(
           child: ReorderableListView(
         children: dividedTiles,
