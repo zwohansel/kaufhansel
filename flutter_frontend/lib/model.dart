@@ -36,6 +36,10 @@ class ShoppingListItem extends ChangeNotifier {
     return ShoppingListItem(json.get('id'), json.get('name'), json.get('checked'), json.getOpt('category'));
   }
 
+  ShoppingListItem copy() {
+    return ShoppingListItem(_id, _name, _checked, _category);
+  }
+
   String get id => _id;
 
   set name(String value) {

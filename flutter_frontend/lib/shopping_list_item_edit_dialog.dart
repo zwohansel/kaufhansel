@@ -136,7 +136,11 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
 
   Future<bool> submitNewItemName(String newItemName) async {
     try {
-      await widget._client.updateShoppingListItem(widget._shoppingListId, widget._item);
+      // apply the change to a copy of the actual item and send the copy to the server...
+      final itemCopy = widget._item.copy();
+      itemCopy.name = newItemName;
+      await widget._client.updateShoppingListItem(widget._shoppingListId, itemCopy);
+      // ...change the actual item once we know that the request was successful
       widget._item.name = newItemName;
       return true;
     } on Exception catch (e) {
@@ -163,7 +167,11 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
 
     try {
       setState(() => _loading = true);
-      await widget._client.updateShoppingListItem(widget._shoppingListId, widget._item);
+      // apply the change to a copy of the actual item and send the copy to the server...
+      final itemCopy = widget._item.copy();
+      itemCopy.category = category;
+      await widget._client.updateShoppingListItem(widget._shoppingListId, itemCopy);
+      // ...change the actual item once we know that the request was successful
       widget._item.category = category;
       Navigator.pop(context);
     } on Exception catch (e) {
