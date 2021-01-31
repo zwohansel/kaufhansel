@@ -57,7 +57,7 @@ public class ShoppingListUserService {
     public Optional<ShoppingListRole> getRoleForUser(ShoppingListUser user, ObjectId shoppingListId) {
         return user.getShoppingLists().stream()
                 .filter(refs -> refs.getShoppingListId().equals(shoppingListId))
-                .findAny().map(ref -> ref.getRole());
+                .findAny().map(ShoppingListReference::getRole);
     }
 
     public void changePermission(ShoppingListUser userToBeChanged, ObjectId shopingListId,
