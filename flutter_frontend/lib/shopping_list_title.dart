@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kaufhansel_client/title_widget.dart';
+import 'package:kaufhansel_client/widgets/title_widget.dart';
 import 'package:provider/provider.dart';
 
 import 'model.dart';

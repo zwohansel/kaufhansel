@@ -3,7 +3,7 @@ import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
 import 'package:kaufhansel_client/widgets/link.dart';
 
-import '../title_widget.dart';
+import '../widgets/title_widget.dart';
 
 class AppSettings extends StatefulWidget {
   final ShoppingListUserInfo _userInfo;

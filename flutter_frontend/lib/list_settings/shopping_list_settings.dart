@@ -3,7 +3,7 @@ import 'package:kaufhansel_client/list_settings/danger_card.dart';
 import 'package:kaufhansel_client/list_settings/info_card.dart';
 import 'package:kaufhansel_client/list_settings/share_list_card.dart';
 import 'package:kaufhansel_client/model.dart';
-import 'package:kaufhansel_client/title_widget.dart';
+import 'package:kaufhansel_client/widgets/title_widget.dart';
 import 'package:provider/provider.dart';
 
 class ShoppingListSettings extends StatefulWidget {
