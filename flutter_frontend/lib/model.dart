@@ -14,6 +14,10 @@ extension JsonParseExtension<K, V> on Map<K, V> {
     }
     return value;
   }
+
+  V getOpt(K key) {
+    return this[key];
+  }
 }
 
 class ShoppingListItem extends ChangeNotifier {
@@ -29,7 +33,7 @@ class ShoppingListItem extends ChangeNotifier {
   ShoppingListItem(this._id, this._name, this._checked, this._category);
 
   factory ShoppingListItem.fromJson(Map<String, dynamic> json) {
-    return ShoppingListItem(json.get('id'), json.get('name'), json.get('checked'), json.get('category'));
+    return ShoppingListItem(json.get('id'), json.get('name'), json.get('checked'), json.getOpt('category'));
   }
 
   String get id => _id;
