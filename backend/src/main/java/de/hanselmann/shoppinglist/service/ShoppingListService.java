@@ -124,17 +124,21 @@ public class ShoppingListService {
 
     private void tryDeleteShoppingList(ObjectId shoppingListId) {
         ShoppingList list = findShoppingList(shoppingListId).orElseThrow();
-
         ShoppingListUser user = userService.getCurrentUser();
         userService.removeShoppingListFromUser(user, shoppingListId);
-
         list.removeUserFromShoppingList(user.getId());
 
-        if (list.getUsers().isEmpty()) {
-            shoppingListRepository.deleteById(shoppingListId);
-        } else {
+        boolean containsAdmins = list.getUsers().stream()
+                .map(ref -> userService.getRoleForUser(ref.getUserId(), shoppingListId))
+                .anyMatch(role -> role == ShoppingListRole.ADMIN);
+
+        if (containsAdmins) {
             shoppingListRepository.save(list);
+            return;
         }
+
+        list.getUsers().forEach(ref -> userService.removeShoppingListFromUser(ref.getUserId(), shoppingListId));
+        shoppingListRepository.deleteById(shoppingListId);
     }
 
     public void removeUserFromShoppingList(ObjectId shoppingListId, ObjectId userId) {

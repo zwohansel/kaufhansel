@@ -41,6 +41,11 @@ public class ShoppingListUserService {
         userRepository.save(user);
     }
 
+    public boolean removeShoppingListFromUser(ObjectId userId, ObjectId shoppingListId) {
+        return userRepository.findById(userId).map(user -> removeShoppingListFromUser(user, shoppingListId))
+                .orElse(false);
+    }
+
     public boolean removeShoppingListFromUser(ShoppingListUser user, ObjectId shoppingListId) {
         user.deleteShoppingList(shoppingListId);
         userRepository.save(user);
@@ -53,6 +58,10 @@ public class ShoppingListUserService {
         } else {
             return Optional.empty();
         }
+    }
+
+    public @Nullable ShoppingListRole getRoleForUser(ObjectId userId, ObjectId shoppingListId) {
+        return userRepository.findById(userId).map(user -> getRoleForUser(user, shoppingListId)).orElse(null);
     }
 
     /**
