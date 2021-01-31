@@ -39,6 +39,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
   @override
   void dispose() {
     _newItemNameController.dispose();
+    _focus.dispose();
     super.dispose();
   }
 

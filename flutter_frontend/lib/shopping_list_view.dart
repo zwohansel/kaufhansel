@@ -13,10 +13,8 @@ class ShoppingListView extends StatefulWidget {
       {String category, @required ShoppingListFilterOption filter, ShoppingListMode mode = ShoppingListMode.DEFAULT})
       : _category = category,
         _filter = filter,
-        _mode = mode,
-        _scrollController = ScrollController();
+        _mode = mode;
 
-  final ScrollController _scrollController;
   final String _category;
   final ShoppingListMode _mode;
   final ShoppingListFilterOption _filter;
@@ -27,6 +25,19 @@ class ShoppingListView extends StatefulWidget {
 
 class _ShoppingListViewState extends State<ShoppingListView> {
   bool _loading = false;
+  ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +51,7 @@ class _ShoppingListViewState extends State<ShoppingListView> {
             Container(
                 child: Material(
                     child: ShoppingListItemInput(
-                      shoppingListScrollController: widget._scrollController,
+                      shoppingListScrollController: _scrollController,
                       category: widget._category,
                       enabled: !_loading,
                     ),
@@ -67,16 +78,16 @@ class _ShoppingListViewState extends State<ShoppingListView> {
       return ReorderableListView(
         children: dividedTiles,
         onReorder: (oldIndex, newIndex) => _moveItem(items, oldIndex, newIndex),
-        scrollController: widget._scrollController,
+        scrollController: _scrollController,
       );
     } else {
       return Scrollbar(
           isAlwaysShown: true,
-          controller: widget._scrollController,
+          controller: _scrollController,
           child: ListView(
             shrinkWrap: true,
             children: dividedTiles,
-            controller: widget._scrollController,
+            controller: _scrollController,
           ));
     }
   }

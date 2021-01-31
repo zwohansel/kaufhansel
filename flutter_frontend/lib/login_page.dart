@@ -26,6 +26,13 @@ class _LoginPageState extends State<LoginPage> {
   var _loading = false;
 
   @override
+  void dispose() {
+    _userNameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
