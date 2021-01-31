@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/widgets/link.dart';
+import 'package:package_info/package_info.dart';
 
 import 'widgets/error_dialog.dart';
 
@@ -23,7 +25,23 @@ class _LoginPageState extends State<LoginPage> {
   final _loginFormKey = GlobalKey<FormState>();
   final _userNameController = TextEditingController();
   final _passwordController = TextEditingController();
-  var _loading = false;
+  bool _loading = false;
+  String _version;
+
+  @override
+  void initState() {
+    super.initState();
+    _setVersion();
+  }
+
+  void _setVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      setState(() => _version = info.version);
+    } on Exception catch (e) {
+      log("Could not get app version.", error: e);
+    }
+  }
 
   @override
   void dispose() {
@@ -106,7 +124,13 @@ class _LoginPageState extends State<LoginPage> {
                   )))),
       bottomNavigationBar: SizedBox(
           height: 60,
-          child: Align(alignment: Alignment.center, child: Link('https://zwohansel.de', text: "zwohansel.de"))),
+          child: Align(
+            alignment: Alignment.center,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: _buildBottomInfos(context),
+            ),
+          )),
     );
   }
 
@@ -169,5 +193,13 @@ class _LoginPageState extends State<LoginPage> {
     } else {
       return SizedBox(height: 5);
     }
+  }
+
+  List<Widget> _buildBottomInfos(BuildContext context) {
+    final zwoHanselLink = Link('https://zwohansel.de', text: "zwohansel.de");
+    if (_version == null) {
+      return [zwoHanselLink];
+    }
+    return [Text(_version), zwoHanselLink];
   }
 }

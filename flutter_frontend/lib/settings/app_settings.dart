@@ -1,7 +1,10 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
 import 'package:kaufhansel_client/widgets/link.dart';
+import 'package:package_info/package_info.dart';
 
 import '../widgets/title_widget.dart';
 
@@ -19,7 +22,28 @@ class AppSettings extends StatefulWidget {
 
 class _AppSettingsState extends State<AppSettings> {
   final ScrollController _scrollController = ScrollController();
+  String _version;
   bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _setVersion();
+  }
+
+  void _setVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      setState(() {
+        _version = info.version;
+      });
+    } on Exception catch (e) {
+      log("Could not get app version.", error: e);
+      setState(() {
+        _version = "?.?.?";
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +110,9 @@ class _AppSettingsState extends State<AppSettings> {
                                                   .headline5
                                                   .apply(fontFamilyFallback: ['NotoColorEmoji'])),
                                           SizedBox(height: 12),
-                                          Text("Der Kaufhansel ist noch beta: Version 0.0.2"),
+                                          Builder(
+                                            builder: (context) => _buildVersion(context),
+                                          ),
                                           SizedBox(height: 12),
                                           Link('https://zwohansel.de',
                                               text: "Mehr über die Entwickler auf zwohansel.de"),
@@ -119,5 +145,20 @@ class _AppSettingsState extends State<AppSettings> {
     } else {
       return Container();
     }
+  }
+
+  Widget _buildVersion(BuildContext context) {
+    if (_version != null) {
+      return Text("$_version (Beta)");
+    }
+
+    final textStyle = DefaultTextStyle.of(context);
+    return Padding(
+        padding: EdgeInsets.only(left: 5),
+        child: SizedBox(
+          width: textStyle.style.fontSize,
+          height: textStyle.style.fontSize,
+          child: CircularProgressIndicator(),
+        ));
   }
 }
