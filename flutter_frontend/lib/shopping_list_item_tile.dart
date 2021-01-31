@@ -59,7 +59,7 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
         ));
       }
 
-      if (widget._mode == ShoppingListMode.EDITING) {
+      if (widget._mode == ShoppingListMode.EDITING && widget._canEditItems) {
         return ListTile(
           title: Wrap(children: titleElements),
           trailing: _buildActionButton(item),

@@ -33,12 +33,12 @@ class ShoppingListDrawer extends StatelessWidget {
       @required ShoppingListUserInfo userInfo})
       : _onRefreshPressed = onRefreshPressed,
         _filter = filter,
-        _onFilterChanged = onFilterChanged,
+        _changeFilter = onFilterChanged,
         _mode = mode,
-        _onModeChanged = onModeChanged,
+        _changeMode = onModeChanged,
         _shoppingListInfos = shoppingLists,
         _selectedShoppingListId = selectedShoppingListId,
-        _onShoppingListSelected = onShoppingListSelected,
+        _selectShoppingList = onShoppingListSelected,
         _onCreateShoppingList = onCreateShoppingList,
         _onDeleteShoppingList = onDeleteShoppingList,
         _onAddUserToShoppingList = onAddUserToShoppingList,
@@ -55,9 +55,9 @@ class ShoppingListDrawer extends StatelessWidget {
   final ShoppingListMode _mode;
   final List<ShoppingListInfo> _shoppingListInfos;
   final VoidCallback _onRefreshPressed;
-  final void Function(ShoppingListFilterOption nextFilter) _onFilterChanged;
-  final void Function(ShoppingListMode nextMode) _onModeChanged;
-  final void Function(ShoppingListInfo info) _onShoppingListSelected;
+  final void Function(ShoppingListFilterOption nextFilter) _changeFilter;
+  final void Function(ShoppingListMode nextMode) _changeMode;
+  final void Function(ShoppingListInfo info) _selectShoppingList;
   final String _selectedShoppingListId;
   final Future<void> Function(String) _onCreateShoppingList;
   final Future<void> Function(ShoppingListInfo) _onDeleteShoppingList;
@@ -80,6 +80,9 @@ class ShoppingListDrawer extends StatelessWidget {
             key: ValueKey(info.id),
             title: Consumer<ShoppingListInfo>(builder: (context, info, child) => Text(info.name)),
             tileColor: _getTileColor(context, info),
+            leading: Tooltip(
+                message: info.permissions.role.toDisplayString(),
+                child: Icon(info.permissions.role.toIcon(), size: 18)),
             trailing: IconButton(
                 icon: Icon(Icons.edit),
                 onPressed: () {
@@ -102,10 +105,7 @@ class ShoppingListDrawer extends StatelessWidget {
                     },
                   ));
                 }),
-            onTap: () {
-              _onShoppingListSelected(info);
-              Navigator.pop(context);
-            })));
+            onTap: () => _onShoppingListSelected(context, info))));
 
     return Drawer(
       child: Column(
@@ -124,7 +124,7 @@ class ShoppingListDrawer extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    ShoppingListFilterSelection(_onFilterChanged, _filter),
+                    ShoppingListFilterSelection((nextFilter) => _onFilterChanged(context, nextFilter), _filter),
                     buildShoppingListModeSelection(),
                     IconButton(
                       icon: Icon(Icons.refresh),
@@ -189,16 +189,46 @@ class ShoppingListDrawer extends StatelessWidget {
     );
   }
 
+  void _onShoppingListSelected(BuildContext context, ShoppingListInfo info) {
+    _selectShoppingList(info);
+
+    if (info.permissions.role == ShoppingListRole.READ_ONLY || info.permissions.role == ShoppingListRole.CHECK_ONLY) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        duration: Duration(seconds: 3),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Hier bist du ${info.permissions.role.toDisplayString()}:"),
+            Text(info.permissions.role.toDescription()),
+          ],
+        ),
+      ));
+    }
+
+    Navigator.pop(context);
+  }
+
+  void _onFilterChanged(BuildContext context, ShoppingListFilterOption nextFilter) {
+    _changeFilter(nextFilter);
+    Navigator.pop(context);
+  }
+
   Widget buildShoppingListModeSelection() {
     return Selector<ShoppingList, bool>(
         selector: (_, shoppingList) => shoppingList != null ? shoppingList.info.permissions.canEditItems : false,
         builder: (context, canEditItems, child) {
           if (canEditItems) {
-            return ShoppingListModeSelection(_onModeChanged, _mode);
+            return ShoppingListModeSelection((nextMode) => _onModeChanged(context, nextMode), _mode);
           } else {
             return Container();
           }
         });
+  }
+
+  void _onModeChanged(BuildContext context, ShoppingListMode nextMode) {
+    _changeMode(nextMode);
+    Navigator.pop(context);
   }
 
   Color _getTileColor(BuildContext context, ShoppingListInfo info) {

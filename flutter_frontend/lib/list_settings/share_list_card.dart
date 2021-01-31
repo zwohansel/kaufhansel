@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/list_settings/card_style.dart';
 import 'package:kaufhansel_client/list_settings/user_role_tile.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
@@ -142,17 +143,19 @@ class _ShareListCardState extends State<ShareListCard> {
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Icon(role.toIcon()),
             SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text(
-                  role.toDisplayString(),
-                  style: Theme.of(context).textTheme.headline6,
-                ),
-                Text(role.toDescription())
-              ],
-            )
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    role.toDisplayString(),
+                    style: Theme.of(context).textTheme.headline6,
+                  ),
+                  Text(role.toDescription())
+                ],
+              ),
+            ),
           ]),
           onPressed: () => Navigator.pop(context, role),
         ));
