@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/widgets/editable_text_label.dart';
 
@@ -121,8 +123,9 @@ class _InfoCardState extends State<InfoCard> {
     try {
       await widget._onChangeShoppingListName(newName);
       return true;
-    } catch (e) {
-      showErrorDialog(context, "Hast du dich vertippt oder schläft der Server noch?");
+    } on Exception catch (e) {
+      developer.log("Could not change shopping list name to $newName", error: e);
+      showErrorDialog(context, "Möchte die Liste lieber ihren alten Namen behalten oder ist etwas schief gegangen?");
       return false;
     }
   }

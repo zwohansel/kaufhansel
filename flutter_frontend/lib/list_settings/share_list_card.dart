@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/list_settings/card_style.dart';
 import 'package:kaufhansel_client/list_settings/user_role_tile.dart';
@@ -167,7 +169,8 @@ class _ShareListCardState extends State<ShareListCard> {
       final userEmail = _addUserTextEditingController.value.text.trim().toLowerCase();
       await widget._onAddUserToShoppingList(userEmail);
       _addUserTextEditingController.clear();
-    } catch (e) {
+    } on Exception catch (e) {
+      log("Could not add user to shopping list.", error: e);
       showErrorDialog(context, "Hast du dich vertippt oder können wir den Hansel nicht finden?");
     } finally {
       widget._setLoading(false);
@@ -181,7 +184,8 @@ class _ShareListCardState extends State<ShareListCard> {
       if (nextRole != null && nextRole != user.userRole) {
         await widget._onChangeShoppingListPermissions(user.userId, nextRole);
       }
-    } catch (e) {
+    } on Exception catch (e) {
+      log("Could not change user permissions.", error: e);
       showErrorDialog(context, "Schläft der Server noch oder hast du kein Internet?");
     } finally {
       widget._setLoading(false);
@@ -196,7 +200,8 @@ class _ShareListCardState extends State<ShareListCard> {
       if (removeUser) {
         await widget._onRemoveUserFromShoppingList(user);
       }
-    } catch (e) {
+    } on Exception catch (e) {
+      log("Could not remove user from shopping list.", error: e);
       showErrorDialog(context, "Schläft der Server noch oder hast du kein Internet?");
     } finally {
       widget._setLoading(false);
