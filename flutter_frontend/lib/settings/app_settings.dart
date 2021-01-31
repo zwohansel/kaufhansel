@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
+import 'package:kaufhansel_client/widgets/link.dart';
 
 import '../title_widget.dart';
 
@@ -70,11 +71,37 @@ class _AppSettingsState extends State<AppSettings> {
                                           )
                                         ],
                                       )),
-                                )
+                                ),
+                                SizedBox(height: 12),
+                                Card(
+                                  child: Padding(
+                                      padding: EdgeInsets.all(18),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text("Über den Kaufhansel",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .headline5
+                                                  .apply(fontFamilyFallback: ['NotoColorEmoji'])),
+                                          SizedBox(height: 12),
+                                          Text("Der Kaufhansel ist noch beta: Version 0.0.2"),
+                                          SizedBox(height: 12),
+                                          Link('https://zwohansel.de',
+                                              text: "Mehr über die Entwickler auf zwohansel.de"),
+                                          SizedBox(height: 12),
+                                          Link('https://github.com/zwohansel', text: "ZwoHansel auf GitHub"),
+                                          SizedBox(height: 12),
+                                          Link('https://github.com/zwohansel/kaufhansel',
+                                              text: "Der Kaufhansel auf GitHub"),
+                                        ],
+                                      )),
+                                ),
                               ],
                             ))
                       ])),
-                )
+                ),
               ],
             )));
   }

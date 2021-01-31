@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:kaufhansel_client/widgets/link.dart';
 
 import 'widgets/error_dialog.dart';
 
@@ -99,15 +99,7 @@ class _LoginPageState extends State<LoginPage> {
                   )))),
       bottomNavigationBar: SizedBox(
           height: 60,
-          child: Align(
-              alignment: Alignment.center,
-              child: InkWell(
-                child: Text(
-                  'zwohansel.de',
-                  style: Theme.of(context).textTheme.subtitle2.apply(decoration: TextDecoration.underline),
-                ),
-                onTap: () => launch('https://zwohansel.de'),
-              ))),
+          child: Align(alignment: Alignment.center, child: Link('https://zwohansel.de', text: "zwohansel.de"))),
     );
   }
 
