@@ -47,19 +47,29 @@ class _ShoppingListViewState extends State<ShoppingListView> {
         builder: (context, items, child) {
           return Column(children: [
             _buildProgress(),
-            Expanded(child: _buildListView(items, context)),
-            Container(
-                child: Material(
-                    child: ShoppingListItemInput(
-                      shoppingListScrollController: _scrollController,
-                      category: widget._category,
-                      enabled: !_loading,
-                    ),
-                    type: MaterialType.transparency),
-                decoration: BoxDecoration(color: Colors.white, boxShadow: [
-                  BoxShadow(color: Colors.grey.withOpacity(0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
-                ])),
+            _buildListView(context, items),
+            _buildItemInput(),
           ]);
+        });
+  }
+
+  Widget _buildItemInput() {
+    return Selector<ShoppingList, bool>(
+        selector: (_, shoppingList) => shoppingList.info.permissions.canEditItems,
+        builder: (context, canEditItems, child) {
+          return canEditItems
+              ? Container(
+                  child: Material(
+                      child: ShoppingListItemInput(
+                        shoppingListScrollController: _scrollController,
+                        category: widget._category,
+                        enabled: !_loading,
+                      ),
+                      type: MaterialType.transparency),
+                  decoration: BoxDecoration(color: Colors.white, boxShadow: [
+                    BoxShadow(color: Colors.grey.withOpacity(0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
+                  ]))
+              : Container();
         });
   }
 
@@ -70,25 +80,27 @@ class _ShoppingListViewState extends State<ShoppingListView> {
     return Container();
   }
 
-  Widget _buildListView(List<ShoppingListItem> items, BuildContext context) {
+  Widget _buildListView(BuildContext context, List<ShoppingListItem> items) {
     final tiles = items.where(_isItemVisible).map(_createListTileForItem);
     final dividedTiles = _divideTilesWithKey(tiles, context).toList();
 
     if (widget._mode == ShoppingListMode.EDITING) {
-      return ReorderableListView(
+      return Expanded(
+          child: ReorderableListView(
         children: dividedTiles,
         onReorder: (oldIndex, newIndex) => _moveItem(items, oldIndex, newIndex),
         scrollController: _scrollController,
-      );
+      ));
     } else {
-      return Scrollbar(
-          isAlwaysShown: true,
-          controller: _scrollController,
-          child: ListView(
-            shrinkWrap: true,
-            children: dividedTiles,
-            controller: _scrollController,
-          ));
+      return Expanded(
+          child: Scrollbar(
+              isAlwaysShown: true,
+              controller: _scrollController,
+              child: ListView(
+                shrinkWrap: true,
+                children: dividedTiles,
+                controller: _scrollController,
+              )));
     }
   }
 
@@ -108,11 +120,15 @@ class _ShoppingListViewState extends State<ShoppingListView> {
     return ChangeNotifierProvider<ShoppingListItem>.value(
         value: item,
         key: ValueKey(item.id),
-        child: ShoppingListItemTile(
-          mode: widget._mode,
-          enabled: !_loading,
-          showUserCategory: widget._category == CATEGORY_ALL,
-        ));
+        child: Selector<ShoppingList, ShoppingListPermissions>(
+            selector: (_, shoppingList) => shoppingList.info.permissions,
+            builder: (context, permissions, child) => ShoppingListItemTile(
+                  mode: widget._mode,
+                  enabled: !_loading,
+                  showUserCategory: widget._category == CATEGORY_ALL,
+                  canCheckItems: permissions.canCheckItems,
+                  canEditItems: permissions.canEditItems,
+                )));
   }
 
   void _moveItem(List<ShoppingListItem> itemsOfThisList, int oldIndexInThisList, int newIndexInThisList) async {

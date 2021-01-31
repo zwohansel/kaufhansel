@@ -125,7 +125,7 @@ class ShoppingListDrawer extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     ShoppingListFilterSelection(_onFilterChanged, _filter),
-                    ShoppingListModeSelection(_onModeChanged, _mode),
+                    buildShoppingListModeSelection(),
                     IconButton(
                       icon: Icon(Icons.refresh),
                       color: Theme.of(context).primaryIconTheme.color,
@@ -187,6 +187,18 @@ class ShoppingListDrawer extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget buildShoppingListModeSelection() {
+    return Selector<ShoppingList, bool>(
+        selector: (_, shoppingList) => shoppingList != null ? shoppingList.info.permissions.canEditItems : false,
+        builder: (context, canEditItems, child) {
+          if (canEditItems) {
+            return ShoppingListModeSelection(_onModeChanged, _mode);
+          } else {
+            return Container();
+          }
+        });
   }
 
   Color _getTileColor(BuildContext context, ShoppingListInfo info) {

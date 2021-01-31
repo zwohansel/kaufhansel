@@ -115,6 +115,8 @@ class ShoppingList extends ChangeNotifier {
 
   String get name => _info.name;
 
+  ShoppingListInfo get info => _info;
+
   void addItem(ShoppingListItem item) {
     _items.add(item);
     item.categoryChangedCallback = notifyListeners;

@@ -33,7 +33,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   String _error;
   List<ShoppingListInfo> _shoppingListInfos;
-  ShoppingListInfo _currentShoppingListInfo;
+  ShoppingListInfo _currentShoppingListInfo; // TODO: unnecessary, also contained in _currentShoppingList
   ShoppingList _currentShoppingList;
   List<String> _currentShoppingListCategories;
   String _currentShoppingListCategory;
@@ -159,7 +159,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       setState(() {
         _shoppingListInfos = lists;
         _currentShoppingListInfo = lists.firstWhere(
-          (list) => list.id == oldShoppingList.id,
+          (list) => list.id == oldShoppingList?.id,
           orElse: () => lists.firstOrNull,
         );
         _fetchCurrentShoppingList(initialCategory: oldCategory);

@@ -11,12 +11,20 @@ class ShoppingListItemTile extends StatefulWidget {
   final bool _showUserCategory;
   final ShoppingListMode _mode;
   final bool _enabled;
+  final bool _canEditItems;
+  final bool _canCheckItems;
 
   const ShoppingListItemTile(
-      {bool showUserCategory = false, ShoppingListMode mode = ShoppingListMode.DEFAULT, bool enabled = true})
+      {bool showUserCategory = false,
+      ShoppingListMode mode = ShoppingListMode.DEFAULT,
+      bool enabled = true,
+      @required bool canEditItems,
+      @required bool canCheckItems})
       : _showUserCategory = showUserCategory,
         _mode = mode,
-        _enabled = enabled;
+        _enabled = enabled,
+        _canEditItems = canEditItems,
+        _canCheckItems = canCheckItems;
 
   @override
   _ShoppingListItemTileState createState() => _ShoppingListItemTileState();
@@ -52,26 +60,46 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
       if (widget._mode == ShoppingListMode.EDITING) {
         return ListTile(
           title: Wrap(children: titleElements),
-          trailing: _buildAction(item),
+          trailing: _buildActionButton(item),
           onTap: () => _editItem(item),
         );
       } else {
-        return CheckboxListTile(
-          title: Wrap(children: titleElements),
-          controlAffinity: ListTileControlAffinity.leading,
-          secondary: _buildAction(item),
-          value: item.checked,
-          onChanged: _allowInput() ? (checked) => _checkItem(item, checked) : null,
-        );
+        if (widget._canCheckItems) {
+          return buildCheckboxListTitle(titleElements, item);
+        } else {
+          return buildListTile(titleElements, item);
+        }
       }
     });
+  }
+
+  CheckboxListTile buildCheckboxListTitle(List<Widget> titleElements, ShoppingListItem item) {
+    return CheckboxListTile(
+      title: Wrap(children: titleElements),
+      controlAffinity: ListTileControlAffinity.leading,
+      secondary: _buildActionButton(item),
+      value: item.checked,
+      onChanged: _allowInput() ? (checked) => _checkItem(item, checked) : null,
+    );
+  }
+
+  ListTile buildListTile(List<Widget> titleElements, ShoppingListItem item) {
+    return ListTile(
+      title: Wrap(children: titleElements),
+      leading: item.checked ? Icon(Icons.check_box_outlined) : Icon(Icons.check_box_outline_blank),
+      trailing: _buildActionButton(item),
+    );
   }
 
   bool _allowInput() {
     return widget._enabled && !_loading;
   }
 
-  Widget _buildAction(ShoppingListItem item) {
+  Widget _buildActionButton(ShoppingListItem item) {
+    if (!widget._canEditItems) {
+      return null;
+    }
+
     switch (widget._mode) {
       case ShoppingListMode.EDITING:
         return AsyncOperationIconButton(
