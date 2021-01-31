@@ -144,6 +144,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   void _fetchShoppingListInfos() async {
     final oldShoppingList = _currentShoppingList;
+    final oldCategory = _currentShoppingListCategory;
     setState(() {
       _shoppingListInfos = null;
       _currentShoppingList = null;
@@ -157,8 +158,11 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       final lists = await _client.getShoppingLists();
       setState(() {
         _shoppingListInfos = lists;
-        _currentShoppingListInfo = lists.isNotEmpty ? lists.first : null;
-        _fetchCurrentShoppingList();
+        _currentShoppingListInfo = lists.firstWhere(
+          (list) => list.id == oldShoppingList.id,
+          orElse: () => lists.firstOrNull,
+        );
+        _fetchCurrentShoppingList(initialCategory: oldCategory);
       });
     } on Exception catch (e) {
       developer.log("Failed to fetch shopping list infos.", error: e);
@@ -168,7 +172,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     }
   }
 
-  void _fetchCurrentShoppingList() async {
+  void _fetchCurrentShoppingList({String initialCategory}) async {
     final oldShoppingList = _currentShoppingList;
     setState(() {
       _currentShoppingList = null;
@@ -188,7 +192,11 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       setState(() {
         _currentShoppingList = shoppingList;
         _currentShoppingListCategories = shoppingList.getAllCategories();
-        _currentShoppingListCategory = _currentShoppingListCategories.first;
+        if (initialCategory != null && _currentShoppingListCategories.contains(initialCategory)) {
+          _currentShoppingListCategory = initialCategory;
+        } else {
+          _currentShoppingListCategory = _currentShoppingListCategories.first;
+        }
         _currentShoppingList.addListener(setCurrentShoppingListCategories);
       });
     } on Exception catch (e) {
