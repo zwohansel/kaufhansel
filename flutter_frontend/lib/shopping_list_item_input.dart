@@ -1,9 +1,12 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/widgets/async_operation_icon_button.dart';
+import 'package:kaufhansel_client/widgets/error_dialog.dart';
 import 'package:provider/provider.dart';
 
 class ShoppingListItemInput extends StatefulWidget {
@@ -46,27 +49,34 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
   void addNewItemIfValid() {
     final name = _newItemNameController.value.text.trim();
     if (name.isNotEmpty) {
-      setState(() => _submitting = true);
-      addNewItem(name).whenComplete(() => setState(() => _submitting = false));
+      addNewItem(name);
     } else {
       _focus.requestFocus();
     }
   }
 
   Future<void> addNewItem(String name) async {
-    final shoppingList = Provider.of<ShoppingList>(context, listen: false);
-    // category CATEGORY_ALL is virtual, do not add it to items
-    final category = widget._category == CATEGORY_ALL ? null : widget._category;
-    ShoppingListItem shoppingListItem =
-        await RestClientWidget.of(context).createShoppingListItem(shoppingList.id, name, category);
-    shoppingList.addItem(shoppingListItem);
-    _newItemNameController.clear();
-    // Scroll to the new element after it has been added and rendered (at the end of this frame).
-    // TODO: Does not work reliably (e.g. after hot reload)
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      widget._shoppingListScrollController.animateTo(widget._shoppingListScrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
-    });
+    setState(() => _submitting = true);
+    try {
+      final shoppingList = Provider.of<ShoppingList>(context, listen: false);
+      // category CATEGORY_ALL is virtual, do not add it to items
+      final category = widget._category == CATEGORY_ALL ? null : widget._category;
+      ShoppingListItem shoppingListItem =
+          await RestClientWidget.of(context).createShoppingListItem(shoppingList.id, name, category);
+      shoppingList.addItem(shoppingListItem);
+      _newItemNameController.clear();
+      // Scroll to the new element after it has been added and rendered (at the end of this frame).
+      // TODO: Does not work reliably (e.g. after hot reload)
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        widget._shoppingListScrollController.animateTo(widget._shoppingListScrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+      });
+    } on Exception catch (e) {
+      developer.log("Could not add $name to list.", error: e);
+      showErrorDialog(context, "\"$name\" konnte nicht hinzugefügt werden... ist das schon Zensur?");
+    } finally {
+      setState(() => _submitting = false);
+    }
   }
 
   @override

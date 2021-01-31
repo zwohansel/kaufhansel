@@ -6,6 +6,18 @@ import 'package:flutter/widgets.dart';
 
 import 'model.dart';
 
+class HttpResponseException implements Exception {
+  final int _statusCode;
+  final String _message;
+
+  HttpResponseException(this._statusCode, {String message = "Request failed"}) : _message = message;
+
+  @override
+  String toString() {
+    return "$_message - HTTP status code: $_statusCode";
+  }
+}
+
 class RestClientWidget extends InheritedWidget {
   final RestClient client;
 
@@ -46,7 +58,7 @@ class RestClient {
     } else if (response.statusCode == 401) {
       return null;
     } else {
-      throw Exception("Failed to get user info for $username");
+      throw HttpResponseException(response.statusCode, message: "Failed to get user info for $username");
     }
   }
 
@@ -59,7 +71,7 @@ class RestClient {
       List<dynamic> lists = jsonDecode(decoded);
       return lists.map((json) => ShoppingListInfo.fromJson(json)).toList();
     } else {
-      throw Exception('Failed to load shopping list info');
+      throw HttpResponseException(response.statusCode, message: 'Failed to load shopping list infos');
     }
   }
 
@@ -73,9 +85,12 @@ class RestClient {
       List<dynamic> items = jsonDecode(decoded);
       return items.map((e) => ShoppingListItem.fromJson(e)).toList();
     } else if (response.statusCode == 404) {
-      throw Exception('Failed to load shopping list: could not find any list with the given id');
+      throw HttpResponseException(
+        response.statusCode,
+        message: "Could not find list $shoppingListId",
+      );
     } else {
-      throw Exception('Failed to load shopping list');
+      throw HttpResponseException(response.statusCode, message: 'Failed to load list $shoppingListId');
     }
   }
 
@@ -91,7 +106,10 @@ class RestClient {
       final decoded = await response.transform(utf8.decoder).join();
       return ShoppingListItem.fromJson(jsonDecode(decoded));
     } else {
-      throw Exception('Failed to create new item: ' + name);
+      throw HttpResponseException(
+        response.statusCode,
+        message: "Failed to create new item $name in category $category for list $shoppingListId",
+      );
     }
   }
 
@@ -100,7 +118,10 @@ class RestClient {
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
-      throw Exception("Failed to delete item: ${item.name}");
+      throw HttpResponseException(
+        response.statusCode,
+        message: "Failed to delete item ${item.name} (${item.id}) in list $shoppingListId",
+      );
     }
   }
 
@@ -113,7 +134,10 @@ class RestClient {
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
-      throw Exception("Failed to update item: ${item.name}");
+      throw HttpResponseException(
+        response.statusCode,
+        message: "Failed to update item ${item.id} in list $shoppingListId",
+      );
     }
   }
 
@@ -126,7 +150,10 @@ class RestClient {
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
-      throw Exception("Failed to move item: ${item.name}");
+      throw HttpResponseException(
+        response.statusCode,
+        message: "Failed to move item ${item.name} (${item.id}) to $targetIndex in list $shoppingListId",
+      );
     }
   }
 
@@ -142,7 +169,8 @@ class RestClient {
       final String decoded = await response.transform(utf8.decoder).join();
       return ShoppingListInfo.fromJson(jsonDecode(decoded));
     } else {
-      throw Exception("Failed to create new list: $shoppingListName");
+      throw HttpResponseException(response.statusCode,
+          message: "Failed to create new list with name $shoppingListName");
     }
   }
 
@@ -151,7 +179,7 @@ class RestClient {
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
-      throw Exception('Failed to delete shopping list');
+      throw HttpResponseException(response.statusCode, message: "Failed to delete list $shoppingListId");
     }
   }
 
@@ -166,7 +194,10 @@ class RestClient {
       final String decoded = await response.transform(utf8.decoder).join();
       return ShoppingListUserReference.fromJson(jsonDecode(decoded));
     } else {
-      throw Exception('Failed to add user to shopping list');
+      throw HttpResponseException(
+        response.statusCode,
+        message: "Failed to add $userEmailAddress to list $shoppingListId.",
+      );
     }
   }
 
@@ -175,7 +206,10 @@ class RestClient {
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
-      throw Exception('Failed to remove user $userId from list $shoppingListId');
+      throw HttpResponseException(
+        response.statusCode,
+        message: 'Failed to remove user $userId from list $shoppingListId',
+      );
     }
   }
 
@@ -184,7 +218,10 @@ class RestClient {
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
-      throw Exception('Failed to uncheck all items in the shopping list');
+      throw HttpResponseException(
+        response.statusCode,
+        message: 'Failed to uncheck all items in list $shoppingListId',
+      );
     }
   }
 
@@ -193,7 +230,10 @@ class RestClient {
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
-      throw Exception('Failed to remove all categories from the shopping list');
+      throw HttpResponseException(
+        response.statusCode,
+        message: 'Failed to remove all categories from list $shoppingListId',
+      );
     }
   }
 
@@ -202,7 +242,10 @@ class RestClient {
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
-      throw Exception('Failed to remove all items from the shopping list');
+      throw HttpResponseException(
+        response.statusCode,
+        message: 'Failed to remove all items from the shopping list $shoppingListId',
+      );
     }
   }
 
@@ -218,7 +261,10 @@ class RestClient {
       final String decoded = await response.transform(utf8.decoder).join();
       return ShoppingListUserReference.fromJson(jsonDecode(decoded));
     } else {
-      throw Exception('Failed to add user to shopping list');
+      throw HttpResponseException(
+        response.statusCode,
+        message: 'Could not change role of user $affectedUserId to $newRole in list $shoppingListId',
+      );
     }
   }
 
@@ -230,7 +276,7 @@ class RestClient {
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
-      throw Exception('Failed to rename list $shoppingListId');
+      throw HttpResponseException(response.statusCode, message: 'Failed to rename list $shoppingListId to $newName');
     }
   }
 }
