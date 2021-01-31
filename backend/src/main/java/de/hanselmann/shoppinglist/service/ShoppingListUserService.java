@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -54,10 +55,19 @@ public class ShoppingListUserService {
         }
     }
 
-    public Optional<ShoppingListRole> getRoleForUser(ShoppingListUser user, ObjectId shoppingListId) {
+    /**
+     * Role of the user in the shopping list with the given id.
+     *
+     * @param user           a shopping list user
+     * @param shoppingListId the id of a shopping list
+     * @return the role of the user in the shopping list or {@code null} if the user
+     *         does not know the list.
+     */
+    public @Nullable ShoppingListRole getRoleForUser(ShoppingListUser user, ObjectId shoppingListId) {
         return user.getShoppingLists().stream()
                 .filter(refs -> refs.getShoppingListId().equals(shoppingListId))
-                .findAny().map(ShoppingListReference::getRole);
+                .findAny().map(ShoppingListReference::getRole)
+                .orElse(null);
     }
 
     public void changePermission(ShoppingListUser userToBeChanged, ObjectId shopingListId,

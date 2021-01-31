@@ -289,13 +289,13 @@ public class ShoppingListController implements ShoppingListApi {
         ObjectId shoppingListObjectId = new ObjectId(id);
 
         // TODO: move to @PreAuthorize?
-        if (userService.getRoleForUser(userService.getCurrentUser(), shoppingListObjectId)
-                .orElse(null) != ShoppingListRole.ADMIN) {
+        if (userService.getRoleForUser(userService.getCurrentUser(), shoppingListObjectId) != ShoppingListRole.ADMIN) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         ShoppingListUser userToBeRemoved = userService.getUser(new ObjectId(userId));
-        if (userService.getRoleForUser(userToBeRemoved, shoppingListObjectId).orElse(null) == ShoppingListRole.ADMIN) {
+
+        if (userService.getRoleForUser(userToBeRemoved, shoppingListObjectId) == ShoppingListRole.ADMIN) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -317,13 +317,12 @@ public class ShoppingListController implements ShoppingListApi {
         ObjectId shopingListId = new ObjectId(id);
 
         // TODO: move to @PreAuthorize?
-        if (userService.getRoleForUser(userService.getCurrentUser(), shopingListId)
-                .orElse(null) != ShoppingListRole.ADMIN) {
+        if (userService.getRoleForUser(userService.getCurrentUser(), shopingListId) != ShoppingListRole.ADMIN) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         ShoppingListUser userToBeChanged = userService.getUser(new ObjectId(permissionsDto.getUserId()));
-        if (userService.getRoleForUser(userToBeChanged, shopingListId).orElse(null) == ShoppingListRole.ADMIN) {
+        if (userService.getRoleForUser(userToBeChanged, shopingListId) == ShoppingListRole.ADMIN) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
