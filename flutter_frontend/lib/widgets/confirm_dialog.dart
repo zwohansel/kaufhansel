@@ -28,6 +28,7 @@ class _ConfirmationDialog extends StatelessWidget {
       Padding(
           padding: EdgeInsets.only(left: 24, right: 24, top: 12),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(_text),
               SizedBox(height: 20),

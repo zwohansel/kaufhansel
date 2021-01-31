@@ -64,33 +64,40 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                       child: ListView(children: [
                         Padding(
                             padding: EdgeInsets.all(24),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                SizedBox(height: 12),
-                                Consumer<ShoppingListInfo>(
-                                    builder: (context, shoppingListInfo, child) => InfoCard(
-                                        shoppingListInfo, _loading, _setLoading,
-                                        onChangeShoppingListName: widget._onChangeShoppingListName,
-                                        onRemoveAllCategories: widget._onRemoveAllCategories,
-                                        onRemoveAllItems: widget._onRemoveAllItems,
-                                        onUncheckAllItems: widget._onUncheckAllItems)),
-                                SizedBox(height: 12),
-                                Consumer<ShoppingListInfo>(
-                                    builder: (context, shoppingListInfo, child) => ShareListCard(
-                                        shoppingListInfo, _loading, _setLoading,
-                                        onAddUserToShoppingList: widget._onAddUserToShoppingList,
-                                        onChangeShoppingListPermissions: widget._onChangeShoppingListPermissions,
-                                        onRemoveUserFromShoppingList: widget._onRemoveUserFromShoppingList)),
-                                SizedBox(height: 12),
-                                Consumer<ShoppingListInfo>(
-                                    builder: (context, shoppingListInfo, child) => DangerCard(
-                                          _loading,
-                                          _setLoading,
-                                          deleteShoppingList: widget._onDeleteShoppingList,
-                                          shoppingListName: shoppingListInfo.name,
-                                        ))
-                              ],
+                            child: Consumer<ShoppingListInfo>(
+                              builder: (context, info, child) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    SizedBox(height: 12),
+                                    InfoCard(
+                                      info,
+                                      _loading,
+                                      _setLoading,
+                                      onChangeShoppingListName: widget._onChangeShoppingListName,
+                                      onRemoveAllCategories: widget._onRemoveAllCategories,
+                                      onRemoveAllItems: widget._onRemoveAllItems,
+                                      onUncheckAllItems: widget._onUncheckAllItems,
+                                    ),
+                                    SizedBox(height: 12),
+                                    ShareListCard(
+                                      info,
+                                      _loading,
+                                      _setLoading,
+                                      onAddUserToShoppingList: widget._onAddUserToShoppingList,
+                                      onChangeShoppingListPermissions: widget._onChangeShoppingListPermissions,
+                                      onRemoveUserFromShoppingList: widget._onRemoveUserFromShoppingList,
+                                    ),
+                                    SizedBox(height: 12),
+                                    DangerCard(
+                                      _loading,
+                                      _setLoading,
+                                      deleteShoppingList: widget._onDeleteShoppingList,
+                                      shoppingListInfo: info,
+                                    )
+                                  ],
+                                );
+                              },
                             ))
                       ])),
                 )

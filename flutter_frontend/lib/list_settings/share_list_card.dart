@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kaufhansel_client/list_settings/card_style.dart';
 import 'package:kaufhansel_client/list_settings/user_role_tile.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
 
@@ -81,15 +82,12 @@ class _ShareListCardState extends State<ShareListCard> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            "Mit einem weiteren Hansel teilen",
-            style: Theme.of(context).textTheme.headline6,
-          ),
+          Text("Mit einem weiteren Hansel teilen", style: getCardHeadlineStyle(context)),
           SizedBox(height: 12),
           Text(
               "Wenn du nichts änderst, kann der neue Hansel Dinge hinzufügen und entfernen, " +
                   "er darf Haken setzen und entfernen. Er ist ein Schreibhansel.",
-              style: Theme.of(context).textTheme.subtitle2),
+              style: getCardSubtitleStyle(context)),
           SizedBox(height: 12),
           Row(children: [
             Expanded(

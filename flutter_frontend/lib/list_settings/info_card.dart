@@ -42,20 +42,27 @@ class _InfoCardState extends State<InfoCard> {
               EditableTextLabel(
                   text: widget._shoppingListInfo.name,
                   textStyle: Theme.of(context).textTheme.headline5.apply(fontFamilyFallback: ['NotoColorEmoji']),
+                  enabled: widget._shoppingListInfo.permissions.canEditList,
                   onSubmit: (text) => _submitNewShoppingListName(text)),
               SizedBox(height: 12),
               OutlinedButton(
-                onPressed: widget._loading ? null : _onUncheckAllItemsPressed,
+                onPressed: widget._loading || !widget._shoppingListInfo.permissions.canCheckItems
+                    ? null
+                    : _onUncheckAllItemsPressed,
                 child: Text("Alle Häckchen entfernen"),
               ),
               SizedBox(height: 6),
               OutlinedButton(
-                onPressed: widget._loading ? null : _onRemoveAllCategoriesPressed,
+                onPressed: widget._loading || !widget._shoppingListInfo.permissions.canEditItems
+                    ? null
+                    : _onRemoveAllCategoriesPressed,
                 child: Text("Alle Kategorien entfernen"),
               ),
               SizedBox(height: 6),
               OutlinedButton(
-                onPressed: widget._loading ? null : _onRemoveAllItemsPressed,
+                onPressed: widget._loading || !widget._shoppingListInfo.permissions.canEditItems
+                    ? null
+                    : _onRemoveAllItemsPressed,
                 child: Text("Liste leeren"),
               ),
             ],

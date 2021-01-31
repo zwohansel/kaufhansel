@@ -4,12 +4,17 @@ class EditableTextLabel extends StatefulWidget {
   final String _initialText;
   final Future<bool> Function(String) _onSubmit;
   final TextStyle _textStyle;
+  final bool _enabled;
 
   const EditableTextLabel(
-      {@required String text, @required void Function(String) onSubmit, @required TextStyle textStyle})
+      {@required String text,
+      @required void Function(String) onSubmit,
+      @required TextStyle textStyle,
+      bool enabled = true})
       : _initialText = text,
         _onSubmit = onSubmit,
-        _textStyle = textStyle;
+        _textStyle = textStyle,
+        _enabled = enabled;
 
   @override
   _EditableTextLabelState createState() => _EditableTextLabelState(_initialText);
@@ -53,6 +58,7 @@ class _EditableTextLabelState extends State<EditableTextLabel> {
         Flexible(
             child: TextField(
           controller: _textEditingController,
+          enabled: widget._enabled,
           textCapitalization: TextCapitalization.sentences,
           style: widget._textStyle,
           focusNode: _focusNode,
@@ -72,20 +78,27 @@ class _EditableTextLabelState extends State<EditableTextLabel> {
           overflow: TextOverflow.ellipsis,
           style: widget._textStyle,
         )),
-        IconButton(
-            icon: Icon(Icons.drive_file_rename_outline),
-            onPressed: _loading
-                ? null
-                : () => setState(() {
-                      //_textEditingController.text = widget._text;
-                      _textEditingController.selection =
-                          TextSelection(baseOffset: 0, extentOffset: _textEditingController.text.length);
-                      _valid = true;
-                      _editing = true;
-                      _focusNode.requestFocus();
-                    }))
+        _buildEditIcon()
       ]);
     }
+  }
+
+  Widget _buildEditIcon() {
+    if (!widget._enabled) {
+      return Container();
+    }
+    return IconButton(
+        icon: Icon(Icons.drive_file_rename_outline),
+        onPressed: _loading
+            ? null
+            : () => setState(() {
+                  //_textEditingController.text = widget._text;
+                  _textEditingController.selection =
+                      TextSelection(baseOffset: 0, extentOffset: _textEditingController.text.length);
+                  _valid = true;
+                  _editing = true;
+                  _focusNode.requestFocus();
+                }));
   }
 
   void _submit() async {
