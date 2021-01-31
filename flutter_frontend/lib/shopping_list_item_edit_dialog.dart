@@ -89,7 +89,7 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(padding: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 5), child: title),
+        Padding(padding: EdgeInsets.only(left: 10, right: 10, top: 10), child: title),
         _buildProgress(),
         Padding(padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: bottomMargin), child: subTitle),
         Flexible(

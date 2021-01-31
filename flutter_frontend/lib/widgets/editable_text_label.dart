@@ -20,6 +20,9 @@ class EditableTextLabel extends StatefulWidget {
   _EditableTextLabelState createState() => _EditableTextLabelState(_initialText);
 }
 
+const _iconSize = 24.0;
+const _iconPadding = EdgeInsets.all(8.0);
+
 class _EditableTextLabelState extends State<EditableTextLabel> {
   final TextEditingController _textEditingController;
   final _focusNode = new FocusNode();
@@ -42,44 +45,69 @@ class _EditableTextLabelState extends State<EditableTextLabel> {
 
   @override
   Widget build(BuildContext context) {
+    return SizedBox(
+      height: 48,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: _buildRow(context),
+      ),
+    );
+  }
+
+  List<Widget> _buildRow(BuildContext context) {
     if (_loading) {
-      return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      return [
         Flexible(
-            child: Text(
-          _textEditingController.text,
-          overflow: TextOverflow.ellipsis,
-          style: widget._textStyle,
-        )),
-        CircularProgressIndicator()
-      ]);
+          child: Text(
+            _textEditingController.text,
+            overflow: TextOverflow.ellipsis,
+            style: widget._textStyle,
+          ),
+        ),
+        Padding(
+          padding: _iconPadding,
+          child: SizedBox(
+            height: _iconSize,
+            width: _iconSize,
+            child: CircularProgressIndicator(),
+          ),
+        )
+      ];
     }
     if (_editing) {
-      return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      return [
         Flexible(
-            child: TextField(
-          controller: _textEditingController,
-          enabled: widget._enabled,
-          textCapitalization: TextCapitalization.sentences,
-          style: widget._textStyle,
-          focusNode: _focusNode,
-          onSubmitted: (_) => _submit(),
-          decoration: InputDecoration(
+          child: TextField(
+            controller: _textEditingController,
+            enabled: widget._enabled,
+            textCapitalization: TextCapitalization.sentences,
+            style: widget._textStyle,
+            focusNode: _focusNode,
+            onSubmitted: (_) => _submit(),
+            decoration: InputDecoration(
               suffixIcon: IconButton(
-            icon: Icon(Icons.check),
-            onPressed: _valid ? _submit : null,
-          )),
-        )),
-      ]);
+                icon: Icon(Icons.check),
+                iconSize: _iconSize,
+                padding: _iconPadding,
+                splashRadius: _iconSize,
+                onPressed: _valid ? _submit : null,
+              ),
+            ),
+          ),
+        ),
+      ];
     } else {
-      return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      return [
         Flexible(
-            child: Text(
-          _textEditingController.text,
-          overflow: TextOverflow.ellipsis,
-          style: widget._textStyle,
-        )),
-        _buildEditIcon()
-      ]);
+          child: Text(
+            _textEditingController.text,
+            overflow: TextOverflow.ellipsis,
+            style: widget._textStyle,
+          ),
+        ),
+        _buildEditIcon(),
+      ];
     }
   }
 
@@ -89,6 +117,9 @@ class _EditableTextLabelState extends State<EditableTextLabel> {
     }
     return IconButton(
         icon: Icon(Icons.drive_file_rename_outline),
+        iconSize: _iconSize,
+        padding: _iconPadding,
+        splashRadius: _iconSize,
         onPressed: _loading
             ? null
             : () => setState(() {
