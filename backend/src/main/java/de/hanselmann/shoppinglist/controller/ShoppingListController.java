@@ -2,6 +2,7 @@ package de.hanselmann.shoppinglist.controller;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
@@ -39,6 +40,7 @@ import de.hanselmann.shoppinglist.service.ShoppingListUserService;
 public class ShoppingListController implements ShoppingListApi {
     private final ShoppingListService shoppingListService;
     private final ShoppingListUserService userService;
+    private final ShoppingListGuard guard;
     private final DtoTransformer dtoTransformer;
     private final ShoppingListSubscribers shoppingListSubscribers;
 
@@ -46,10 +48,12 @@ public class ShoppingListController implements ShoppingListApi {
     public ShoppingListController(
             ShoppingListService shoppingListService,
             ShoppingListUserService userService,
+            ShoppingListGuard guard,
             DtoTransformer dtoTransformer,
             ShoppingListSubscribers shoppingListSubscribers) {
         this.shoppingListService = shoppingListService;
         this.userService = userService;
+        this.guard = guard;
         this.dtoTransformer = dtoTransformer;
         this.shoppingListSubscribers = shoppingListSubscribers;
     }
@@ -97,6 +101,7 @@ public class ShoppingListController implements ShoppingListApi {
         return ResponseEntity.ok(toInfo(newShoppingList));
     }
 
+    @PreAuthorize("@shoppingListGuard.canEditShoppingList(#id)")
     @Override
     public ResponseEntity<Void> deleteShoppingList(String id) {
         if (!ObjectId.isValid(id)) {
@@ -110,6 +115,7 @@ public class ShoppingListController implements ShoppingListApi {
         }
     }
 
+    @PreAuthorize("@shoppingListGuard.canCheckItemsInShoppingList(#id)")
     @Override
     public ResponseEntity<Void> uncheckAllShoppingListItems(String id) {
         if (!ObjectId.isValid(id)) {
@@ -129,6 +135,7 @@ public class ShoppingListController implements ShoppingListApi {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("@shoppingListGuard.canEditItemsInShoppingList(#id)")
     @Override
     public ResponseEntity<Void> removeAllCategoriesFromShoppingList(String id) {
         if (!ObjectId.isValid(id)) {
@@ -148,6 +155,7 @@ public class ShoppingListController implements ShoppingListApi {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("@shoppingListGuard.canEditItemsInShoppingList(#id)")
     @Override
     public ResponseEntity<Void> clearShoppingList(String id) {
         if (!ObjectId.isValid(id)) {
@@ -167,6 +175,7 @@ public class ShoppingListController implements ShoppingListApi {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("@shoppingListGuard.canEditItemsInShoppingList(#id)")
     @Override
     public ResponseEntity<Void> moveShoppingListItem(String id, MoveShoppingListItemDto moveItem) {
         if (!ObjectId.isValid(id)) {
@@ -193,6 +202,7 @@ public class ShoppingListController implements ShoppingListApi {
         return ResponseEntity.badRequest().build();
     }
 
+    @PreAuthorize("@shoppingListGuard.canAccessShoppingList(#id)")
     @Override
     public ResponseEntity<List<ShoppingListItemDto>> getShoppingListItems(String id) {
         if (!ObjectId.isValid(id)) {
@@ -203,6 +213,7 @@ public class ShoppingListController implements ShoppingListApi {
                         .map(dtoTransformer::map));
     }
 
+    @PreAuthorize("@shoppingListGuard.canEditItemsInShoppingList(#id)")
     @Override
     public ResponseEntity<ShoppingListItemDto> addShoppingListItem(String id, NewShoppingListItemDto item) {
         if (!ObjectId.isValid(id)) {
@@ -219,6 +230,7 @@ public class ShoppingListController implements ShoppingListApi {
         return newItem;
     }
 
+    @PreAuthorize("@shoppingListGuard.canEditItemsInShoppingList(#id)")
     @Override
     public ResponseEntity<Void> deleteShoppingListItem(String id, String itemId) {
         if (!ObjectId.isValid(id)) {
@@ -235,6 +247,7 @@ public class ShoppingListController implements ShoppingListApi {
         });
     }
 
+    @PreAuthorize("@shoppingListGuard.canAccessShoppingList(#id)")
     @Override
     public ResponseEntity<Void> updateShoppingListItem(String id, String itemId, ShoppingListItemUpdateDto updateItem) {
         if (!ObjectId.isValid(id)) {
@@ -253,14 +266,27 @@ public class ShoppingListController implements ShoppingListApi {
 
     private ResponseEntity<Void> updateItem(ShoppingListItem item, ShoppingListItemUpdateDto updateItem,
             ShoppingList list) {
+        boolean nameChanged = Objects.equals(updateItem.getName(), item.getName());
+        boolean categoryChanged = Objects.equals(updateItem.getCategory(), item.getAssignee());
+        boolean checkedStateChanged = Objects.equals(updateItem.isChecked(), item.isChecked());
+
+        if ((nameChanged || categoryChanged) && !guard.canEditItemsInShoppingList(list.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        if (checkedStateChanged && !guard.canCheckItemsInShoppingList(list.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         item.setName(updateItem.getName());
         item.setChecked(updateItem.isChecked());
         item.setAssignee(updateItem.getCategory());
+
         shoppingListService.saveShoppingList(list);
         shoppingListSubscribers.notifyItemsChanged(list, Collections.singletonList(item));
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("@shoppingListGuard.canEditShoppingList(#id)")
     @Override
     public ResponseEntity<ShoppingListUserReferenceDto> addUserToShoppingList(String id,
             AddUserToShoppingListDto addUserDto) {
@@ -281,17 +307,13 @@ public class ShoppingListController implements ShoppingListApi {
         return ResponseEntity.badRequest().build();
     }
 
+    @PreAuthorize("@shoppingListGuard.canEditShoppingList(#id)")
     @Override
     public ResponseEntity<Void> removeUserFromShoppingList(String id, String userId) {
         if (!ObjectId.isValid(id) || !ObjectId.isValid(userId)) {
             return ResponseEntity.badRequest().build();
         }
         ObjectId shoppingListObjectId = new ObjectId(id);
-
-        // TODO: move to @PreAuthorize?
-        if (userService.getRoleForUser(userService.getCurrentUser(), shoppingListObjectId) != ShoppingListRole.ADMIN) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
 
         ShoppingListUser userToBeRemoved = userService.getUser(new ObjectId(userId));
 
@@ -308,6 +330,7 @@ public class ShoppingListController implements ShoppingListApi {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("@shoppingListGuard.canEditShoppingList(#id)")
     @Override
     public ResponseEntity<ShoppingListUserReferenceDto> changeShoppingListPermissionsForUser(String id,
             ShoppingListPermissionsUpdateDto permissionsDto) {
@@ -315,11 +338,6 @@ public class ShoppingListController implements ShoppingListApi {
             return ResponseEntity.badRequest().build();
         }
         ObjectId shopingListId = new ObjectId(id);
-
-        // TODO: move to @PreAuthorize?
-        if (userService.getRoleForUser(userService.getCurrentUser(), shopingListId) != ShoppingListRole.ADMIN) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
 
         ShoppingListUser userToBeChanged = userService.getUser(new ObjectId(permissionsDto.getUserId()));
         if (userService.getRoleForUser(userToBeChanged, shopingListId) == ShoppingListRole.ADMIN) {
@@ -330,6 +348,7 @@ public class ShoppingListController implements ShoppingListApi {
         return ResponseEntity.ok(dtoTransformer.map(userToBeChanged, shopingListId));
     }
 
+    @PreAuthorize("@shoppingListGuard.canEditShoppingList(#id)")
     @Override
     public ResponseEntity<Void> changeShoppingListName(String id, ShoppingListNameUpdateDto shoppingListNameUpdateDto) {
         if (!ObjectId.isValid(id)) {

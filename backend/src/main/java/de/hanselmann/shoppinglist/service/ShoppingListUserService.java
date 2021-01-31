@@ -25,13 +25,24 @@ public class ShoppingListUserService {
     }
 
     public ShoppingListUser getCurrentUser() {
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        Authentication auth = securityContext.getAuthentication();
-        return getUser(new ObjectId(auth.getName()));
+        return findCurrentUser().orElseThrow(() -> new IllegalArgumentException("User is not logged in."));
     }
 
     public ShoppingListUser getUser(ObjectId userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User does not exist."));
+        return findUser(userId).orElseThrow(() -> new IllegalArgumentException("User does not exist."));
+    }
+
+    public Optional<ShoppingListUser> findCurrentUser() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        Authentication auth = securityContext.getAuthentication();
+        if (auth == null) {
+            return Optional.empty();
+        }
+        return findUser(new ObjectId(auth.getName()));
+    }
+
+    public Optional<ShoppingListUser> findUser(ObjectId userId) {
+        return userRepository.findById(userId);
     }
 
     public void addShoppingListToUser(ShoppingListUser user, ObjectId shoppingListId,

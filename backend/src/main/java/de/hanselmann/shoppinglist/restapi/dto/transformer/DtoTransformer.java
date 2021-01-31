@@ -47,17 +47,7 @@ public class DtoTransformer {
     }
 
     public ShoppingListPermissionsDto map(ShoppingListRole userRole) {
-        switch (userRole) {
-        case ADMIN:
-            return new ShoppingListPermissionsDto(ShoppingListRole.ADMIN, true, true, true);
-        case READ_WRITE:
-            return new ShoppingListPermissionsDto(ShoppingListRole.READ_WRITE, false, true, true);
-        case CHECK_ONLY:
-            return new ShoppingListPermissionsDto(ShoppingListRole.CHECK_ONLY, false, false, true);
-        case READ_ONLY:
-        default:
-            return new ShoppingListPermissionsDto(ShoppingListRole.READ_ONLY, false, false, false);
-        }
+        return new ShoppingListPermissionsDto(userRole);
     }
 
     public ShoppingListInfoDto map(

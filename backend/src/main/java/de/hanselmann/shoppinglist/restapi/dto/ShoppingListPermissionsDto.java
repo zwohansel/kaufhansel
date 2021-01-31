@@ -4,16 +4,9 @@ import de.hanselmann.shoppinglist.model.ShoppingListRole;
 
 public class ShoppingListPermissionsDto {
     final ShoppingListRole role;
-    final boolean canEditList;
-    final boolean canEditItems;
-    final boolean canCheckItems;
 
-    public ShoppingListPermissionsDto(ShoppingListRole role, boolean canEditList, boolean canEditItems,
-            boolean canCheckItems) {
+    public ShoppingListPermissionsDto(ShoppingListRole role) {
         this.role = role;
-        this.canEditList = canEditList;
-        this.canEditItems = canEditItems;
-        this.canCheckItems = canCheckItems;
     }
 
     public ShoppingListRole getRole() {
@@ -21,14 +14,14 @@ public class ShoppingListPermissionsDto {
     }
 
     public boolean isCanEditList() {
-        return canEditList;
+        return role.canEditList();
     }
 
     public boolean isCanEditItems() {
-        return canEditItems;
+        return role.canEditItems();
     }
 
     public boolean isCanCheckItems() {
-        return canCheckItems;
+        return role.canCheckItems();
     }
 }
