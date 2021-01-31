@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/model.dart';
@@ -138,8 +140,16 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
     // Therefore we do not wait for the server reply and accept that the
     // checked state of an item may get out of sync with the state stored on the server.
     item.checked = checked;
-    final shoppingList = Provider.of<ShoppingList>(context, listen: false);
-    RestClientWidget.of(context).updateShoppingListItem(shoppingList.id, item);
+    _performCheckItemRequest(item, checked);
+  }
+
+  void _performCheckItemRequest(ShoppingListItem item, bool checked) async {
+    try {
+      final shoppingList = Provider.of<ShoppingList>(context, listen: false);
+      await RestClientWidget.of(context).updateShoppingListItem(shoppingList.id, item);
+    } on Exception catch (e) {
+      log("Could not check or uncheck item.", error: e);
+    }
   }
 
   void _editItem(ShoppingListItem item) {

@@ -8,7 +8,7 @@ class EditableTextLabel extends StatefulWidget {
 
   const EditableTextLabel(
       {@required String text,
-      @required void Function(String) onSubmit,
+      @required Future<bool> Function(String) onSubmit,
       @required TextStyle textStyle,
       bool enabled = true})
       : _initialText = text,
@@ -102,24 +102,26 @@ class _EditableTextLabelState extends State<EditableTextLabel> {
   }
 
   void _submit() async {
-    if (_valid) {
+    if (!_valid) {
+      _focusNode.requestFocus();
+      return;
+    }
+    try {
       setState(() => _loading = true);
       final newText = _textEditingController.text.trim();
       if (newText == currentText) {
-        setState(() => _loading = false);
         setState(() => _editing = false);
         return;
       }
 
       if (await widget._onSubmit(newText)) {
         currentText = newText;
-        setState(() => _loading = false);
         setState(() => _editing = false);
       } else {
         _focusNode.requestFocus();
       }
-    } else {
-      _focusNode.requestFocus();
+    } finally {
+      setState(() => _loading = false);
     }
   }
 }

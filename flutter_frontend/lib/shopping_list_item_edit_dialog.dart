@@ -1,8 +1,11 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/widgets/editable_text_label.dart';
+import 'package:kaufhansel_client/widgets/error_dialog.dart';
 
 class EditShoppingListItemDialog extends StatefulWidget {
   final String _shoppingListId;
@@ -29,6 +32,7 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
   final FocusNode _newCategoryEditionFocus = FocusNode();
   bool _newCategoryIsValid = false;
   final ScrollController _scrollController = ScrollController();
+  bool _loading = false;
 
   @override
   void initState() {
@@ -42,107 +46,138 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
   }
 
   @override
+  void dispose() {
+    _newCategoryEditingController.dispose();
+    _newCategoryEditionFocus.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     const bottomMargin = 10.0;
 
-    final title = Container(
-      child: EditableTextLabel(
-        text: widget._item.name,
-        textStyle: theme.textTheme.headline6.apply(fontFamilyFallback: ['NotoColorEmoji']),
-        onSubmit: (text) => submitNewItemName(text),
-      ),
-      margin: EdgeInsets.only(bottom: bottomMargin),
+    final title = EditableTextLabel(
+      text: widget._item.name,
+      textStyle: theme.textTheme.headline6.apply(fontFamilyFallback: ['NotoColorEmoji']),
+      onSubmit: (text) => submitNewItemName(text),
+      enabled: !_loading,
     );
 
-    final subTitle = Container(
-      child: Text(
-        "Wähle eine Kategorie",
-        style: theme.textTheme.subtitle2,
-      ),
-      margin: EdgeInsets.only(bottom: bottomMargin),
+    final subTitle = Text(
+      "Wähle eine Kategorie",
+      style: theme.textTheme.subtitle2,
     );
 
     final categoryButtons = widget._categories.map((category) {
       final currentItemCategory = widget._item.category == category;
       final color = currentItemCategory ? Theme.of(context).accentColor : Theme.of(context).unselectedWidgetColor;
-      return OutlinedButton(
-          onPressed: () {
-            setItemCategory(category);
-            Navigator.pop(context);
-          },
-          child: Text(category),
-          style: OutlinedButton.styleFrom(
-              textStyle: TextStyle(color: color),
-              primary: color,
-              side: BorderSide(color: color, width: currentItemCategory ? 2.0 : 1.0)));
+      return Padding(
+        child: OutlinedButton(
+            onPressed: !_loading ? () => setItemCategory(category) : null,
+            child: Text(category),
+            style: OutlinedButton.styleFrom(
+                textStyle: TextStyle(color: color),
+                primary: color,
+                side: BorderSide(color: color, width: currentItemCategory ? 2.0 : 1.0))),
+        padding: EdgeInsets.only(bottom: bottomMargin),
+      );
     }).toList();
 
-    final dialogContent = Container(
-        padding: EdgeInsets.all(10.0),
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          title,
-          subTitle,
-          Flexible(
-              child: Padding(
-                  child: Scrollbar(
-                      controller: _scrollController,
-                      child: ListView(
-                        shrinkWrap: true,
-                        controller: _scrollController,
-                        children: categoryButtons,
-                      )),
-                  padding: EdgeInsets.only(bottom: bottomMargin))),
-          Container(
-            child: OutlinedButton(
-              onPressed: () {
-                setItemCategory(null);
-                Navigator.pop(context);
-              },
-              child: Text("Keine"),
-              style: OutlinedButton.styleFrom(primary: Colors.orange, side: BorderSide(color: Colors.orange)),
-            ),
-            margin: EdgeInsets.only(bottom: bottomMargin),
+    final dialogContent = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(padding: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 5), child: title),
+        _buildProgress(),
+        Padding(padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: bottomMargin), child: subTitle),
+        Flexible(
+          child: Padding(
+            padding: EdgeInsets.only(left: 10, right: 10),
+            child: Scrollbar(
+                controller: _scrollController,
+                child: ListView(
+                  shrinkWrap: true,
+                  controller: _scrollController,
+                  children: categoryButtons,
+                )),
           ),
-          Container(
-            child: TextField(
-              controller: _newCategoryEditingController,
-              focusNode: _newCategoryEditionFocus,
-              textCapitalization: TextCapitalization.sentences,
-              onSubmitted: (_) => submitNewCategory(),
-              decoration: InputDecoration(
-                  labelText: "Neue Kategorie",
-                  isDense: true,
-                  border: OutlineInputBorder(),
-                  suffixIcon:
-                      IconButton(icon: Icon(Icons.check), onPressed: _newCategoryIsValid ? submitNewCategory : null)),
-            ),
+        ),
+        Padding(
+          padding: EdgeInsets.only(left: 10, right: 10, bottom: bottomMargin),
+          child: OutlinedButton(
+            onPressed: !_loading ? () => setItemCategory(null) : null,
+            child: Text("Keine"),
+            style: OutlinedButton.styleFrom(primary: Colors.orange, side: BorderSide(color: Colors.orange)),
           ),
-        ]));
+        ),
+        Padding(
+          padding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
+          child: TextField(
+            controller: _newCategoryEditingController,
+            focusNode: _newCategoryEditionFocus,
+            textCapitalization: TextCapitalization.sentences,
+            onSubmitted: (_) => submitNewCategory(),
+            enabled: !_loading,
+            decoration: InputDecoration(
+                labelText: "Neue Kategorie",
+                isDense: true,
+                border: OutlineInputBorder(),
+                suffixIcon: IconButton(
+                    icon: Icon(Icons.check), onPressed: !_loading && _newCategoryIsValid ? submitNewCategory : null)),
+          ),
+        ),
+      ],
+    );
 
     return Dialog(child: ConstrainedBox(constraints: BoxConstraints(maxWidth: 150), child: dialogContent));
   }
 
   Future<bool> submitNewItemName(String newItemName) async {
-    // TODO: What if the following request fails?
-    widget._item.name = newItemName;
-    await widget._client.updateShoppingListItem(widget._shoppingListId, widget._item);
-    return true;
+    try {
+      await widget._client.updateShoppingListItem(widget._shoppingListId, widget._item);
+      widget._item.name = newItemName;
+      return true;
+    } on Exception catch (e) {
+      developer.log("Could not set item name.", error: e);
+      showErrorDialog(context, "Findet der Server \"$newItemName\" doof oder hast du kein Internet?");
+      return false;
+    }
   }
 
   void submitNewCategory() async {
     if (_newCategoryIsValid) {
       final category = _newCategoryEditingController.text.trim();
-      setItemCategory(category);
-      Navigator.pop(context);
+      await setItemCategory(category);
     } else {
       _newCategoryEditionFocus.requestFocus();
     }
   }
 
-  void setItemCategory(String category) async {
-    // TODO: What if the following request fails?
-    widget._item.category = category;
-    await widget._client.updateShoppingListItem(widget._shoppingListId, widget._item);
+  Future<void> setItemCategory(String category) async {
+    if (category == widget._item.category) {
+      Navigator.pop(context);
+      return;
+    }
+
+    try {
+      setState(() => _loading = true);
+      await widget._client.updateShoppingListItem(widget._shoppingListId, widget._item);
+      widget._item.category = category;
+      Navigator.pop(context);
+    } on Exception catch (e) {
+      developer.log("Could not set item category.", error: e);
+      showErrorDialog(context, "Das hat nicht funktioniert. Hast du vllt. kein Internet?");
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  Widget _buildProgress() {
+    if (_loading) {
+      return LinearProgressIndicator(minHeight: 5);
+    }
+    return SizedBox(height: 5);
   }
 }
