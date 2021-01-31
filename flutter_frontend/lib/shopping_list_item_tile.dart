@@ -50,7 +50,11 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
       }
 
       if (widget._mode == ShoppingListMode.EDITING) {
-        return ListTile(title: Wrap(children: titleElements), trailing: _buildAction(item));
+        return ListTile(
+          title: Wrap(children: titleElements),
+          trailing: _buildAction(item),
+          onTap: () => _editItem(item),
+        );
       } else {
         return CheckboxListTile(
           title: Wrap(children: titleElements),
