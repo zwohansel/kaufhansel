@@ -101,7 +101,7 @@ public class ShoppingListController implements ShoppingListApi {
         return ResponseEntity.ok(toInfo(newShoppingList));
     }
 
-    @PreAuthorize("@shoppingListGuard.canEditShoppingList(#id)")
+    @PreAuthorize("@shoppingListGuard.canAccessShoppingList(#id)")
     @Override
     public ResponseEntity<Void> deleteShoppingList(String id) {
         if (!ObjectId.isValid(id)) {
