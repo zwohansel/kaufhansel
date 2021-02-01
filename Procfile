@@ -1,1 +1,1 @@
-web: java -Dserver.port=$PORT $JAVA_OPTS -jar backend/build/libs/backend-0.0.3.jar
+web: java -Dserver.port=$PORT $JAVA_OPTS -jar backend/build/libs/backend-0.0.4.jar
