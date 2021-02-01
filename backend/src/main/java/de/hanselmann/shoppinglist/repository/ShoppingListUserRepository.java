@@ -11,4 +11,6 @@ public interface ShoppingListUserRepository extends MongoRepository<ShoppingList
     Optional<ShoppingListUser> findUserByUsername(String username);
 
     Optional<ShoppingListUser> findUserByEmailAddress(String emailAddress);
+
+    boolean existsByEmailAddress(String emailAddress);
 }

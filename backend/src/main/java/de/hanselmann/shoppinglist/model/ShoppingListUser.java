@@ -1,5 +1,6 @@
 package de.hanselmann.shoppinglist.model;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,7 +15,20 @@ public class ShoppingListUser {
     private String username;
     private String password;
     private String emailAddress;
+    private LocalDateTime registrationDate;
     private List<ShoppingListReference> shoppingLists = new ArrayList<>();
+
+    public static ShoppingListUser create(PendingRegistration pendingRegistration) {
+        if (pendingRegistration.isExpired()) {
+            throw new IllegalArgumentException("Pending registration is expired");
+        }
+        ShoppingListUser user = new ShoppingListUser();
+        user.emailAddress = pendingRegistration.getEmailAddress();
+        user.username = pendingRegistration.getUserName();
+        user.password = pendingRegistration.getPassword();
+        user.registrationDate = LocalDateTime.now();
+        return user;
+    }
 
     public ObjectId getId() {
         return id;
@@ -22,10 +36,6 @@ public class ShoppingListUser {
 
     public String getUsername() {
         return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public String getPassword() {
@@ -44,8 +54,8 @@ public class ShoppingListUser {
         return emailAddress;
     }
 
-    public void setEmailAddress(String email) {
-        this.emailAddress = email;
+    public LocalDateTime getRegistrationDate() {
+        return registrationDate;
     }
 
     public List<ShoppingListReference> getShoppingLists() {

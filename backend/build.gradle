@@ -21,6 +21,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'io.projectreactor:reactor-core:3.3.5.RELEASE'
     implementation 'org.springframework.boot:spring-boot-starter-websocket:2.3.0.RELEASE'
+    implementation 'com.aventrix.jnanoid:jnanoid:2.0.0'
 
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'

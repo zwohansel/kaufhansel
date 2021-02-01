@@ -25,7 +25,12 @@ class _LoginPageState extends State<LoginPage> {
   final _loginFormKey = GlobalKey<FormState>();
   final _userNameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _inviteCodeController = TextEditingController();
+  final _userEmailAddressController = TextEditingController();
+  final _setPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _loading = false;
+  bool _registerMode = false;
   String _version;
 
   @override
@@ -47,6 +52,10 @@ class _LoginPageState extends State<LoginPage> {
   void dispose() {
     _userNameController.dispose();
     _passwordController.dispose();
+    _inviteCodeController.dispose();
+    _userEmailAddressController.dispose();
+    _setPasswordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -60,8 +69,7 @@ class _LoginPageState extends State<LoginPage> {
                   key: _loginFormKey,
                   child: ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: 300),
-                    child: AutofillGroup(
-                        child: Column(
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -83,44 +91,10 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         _buildProgressBar(context),
-                        TextFormField(
-                          controller: _userNameController,
-                          autofillHints: [AutofillHints.username],
-                          decoration: const InputDecoration(
-                            hintText: 'Nutzername',
-                          ),
-                          validator: (userName) {
-                            if (userName.trim().isEmpty) {
-                              return 'Gibstu Nutzernamen ein!?';
-                            }
-                            return null;
-                          },
-                        ),
-                        TextFormField(
-                          controller: _passwordController,
-                          autofillHints: [AutofillHints.password],
-                          decoration: const InputDecoration(
-                            hintText: 'Kennwort',
-                          ),
-                          obscureText: true,
-                          validator: (password) {
-                            if (password.isEmpty) {
-                              return 'Gibstu Kennwort ein!?';
-                            }
-                            return null;
-                          },
-                          onFieldSubmitted: (_) => _buildLoginFunction(context)?.call(),
-                        ),
-                        Padding(
-                            padding: EdgeInsets.only(top: 15),
-                            child: ElevatedButton(child: Text("Anmelden"), onPressed: _buildLoginFunction(context))),
-                        Padding(
-                          padding: EdgeInsets.only(top: 10),
-                          child:
-                              OutlinedButton(child: Text("Registrieren"), onPressed: _buildRegisterFunction(context)),
-                        )
+                        ..._buildInputs(),
+                        ..._buildButtons()
                       ],
-                    )),
+                    ),
                   )))),
       bottomNavigationBar: SizedBox(
           height: 60,
@@ -134,22 +108,171 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Function _buildLoginFunction(BuildContext context) {
+  List<Widget> _buildInputs() {
+    if (_registerMode) {
+      return [
+        TextFormField(
+          controller: _userNameController,
+          enabled: !_loading,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: const InputDecoration(hintText: 'Nutzername'),
+          validator: (userName) {
+            if (userName.trim().isEmpty) {
+              return 'Gibstu Nutzernamen ein!?';
+            }
+            return null;
+          },
+        ),
+        TextFormField(
+          controller: _inviteCodeController,
+          decoration: const InputDecoration(
+            hintText: 'Einladungs-Code',
+          ),
+          validator: (inviteCode) {
+            if (inviteCode.isEmpty) {
+              return 'Gibstu exklusiven Einladungs-Code ein!?';
+            }
+            return null;
+          },
+        ),
+        TextFormField(
+          controller: _userEmailAddressController,
+          enabled: !_loading,
+          decoration: const InputDecoration(
+            hintText: 'Email',
+          ),
+          validator: (emailAddress) {
+            final address = emailAddress.trim();
+            if (address.length < 5 || !address.contains('@') || !address.contains('.') || address.contains(' ')) {
+              return 'Gibstu gültige Email ein!?';
+            }
+            return null;
+          },
+        ),
+        TextFormField(
+          controller: _setPasswordController,
+          enabled: !_loading,
+          decoration: const InputDecoration(
+            hintText: 'Kennwort',
+          ),
+          obscureText: true,
+          validator: (password) {
+            if (password.length < 8) {
+              return 'Gibstu Kennwort ein!? Mindestens 8 Zeichen!';
+            }
+            return null;
+          },
+        ),
+        TextFormField(
+          controller: _confirmPasswordController,
+          enabled: !_loading,
+          decoration: const InputDecoration(
+            hintText: 'Kennwort bestätigen',
+          ),
+          obscureText: true,
+          validator: (password) {
+            if (password.isEmpty || password != _setPasswordController.text) {
+              return 'Gibstu Kennwort nochmal ein!?';
+            }
+            return null;
+          },
+          onFieldSubmitted: (_) => _register(),
+        )
+      ];
+    }
+
+    // Login
+    return [
+      AutofillGroup(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextFormField(
+              controller: _userNameController,
+              enabled: !_loading,
+              autofillHints: [AutofillHints.username],
+              decoration: const InputDecoration(
+                hintText: 'Nutzername',
+              ),
+              validator: (userName) {
+                if (userName.trim().isEmpty) {
+                  return 'Gibstu Nutzernamen ein!?';
+                }
+                return null;
+              },
+            ),
+            TextFormField(
+                controller: _passwordController,
+                enabled: !_loading,
+                autofillHints: [AutofillHints.password],
+                decoration: const InputDecoration(
+                  hintText: 'Kennwort',
+                ),
+                obscureText: true,
+                validator: (password) {
+                  if (password.isEmpty) {
+                    return 'Gibstu Kennwort ein!?';
+                  }
+                  return null;
+                },
+                onFieldSubmitted: (_) => _login())
+          ],
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> _buildButtons() {
+    if (_registerMode) {
+      return [
+        Padding(
+            padding: EdgeInsets.only(top: 15),
+            child: ElevatedButton(child: Text("Registrieren"), onPressed: _loading ? null : _register)),
+        Padding(
+          padding: EdgeInsets.only(top: 10),
+          child: OutlinedButton(
+              child: Text("Zurück zur Anmeldung"),
+              onPressed: _loading ? null : () => setState(() => _registerMode = false)),
+        )
+      ];
+    }
+
+    // Login:
+    return [
+      Padding(
+          padding: EdgeInsets.only(top: 15),
+          child: ElevatedButton(child: Text("Anmelden"), onPressed: _loading ? null : _login)),
+      Padding(
+        padding: EdgeInsets.only(top: 10),
+        child: OutlinedButton(
+            child: Text("Registrieren"), onPressed: _loading ? null : () => setState(() => _registerMode = true)),
+      )
+    ];
+  }
+
+  Widget _buildProgressBar(BuildContext context) {
     if (_loading) {
-      return null;
+      return LinearProgressIndicator(minHeight: 5, backgroundColor: Theme.of(context).scaffoldBackgroundColor);
     } else {
-      return () {
-        if (_loginFormKey.currentState.validate()) {
-          setState(() {
-            _loading = true;
-          });
-          _login(context);
-        }
-      };
+      return SizedBox(height: 5);
     }
   }
 
-  void _login(BuildContext context) async {
+  List<Widget> _buildBottomInfos(BuildContext context) {
+    final zwoHanselLink = Link('https://zwohansel.de', text: "zwohansel.de");
+    if (_version == null) {
+      return [zwoHanselLink];
+    }
+    return [Text(_version), zwoHanselLink];
+  }
+
+  void _login() async {
+    if (!_loginFormKey.currentState.validate()) {
+      return;
+    }
+    setState(() => _loading = true);
+
     try {
       ShoppingListUserInfo userInfo =
           await RestClientWidget.of(context).login(_userNameController.text, _passwordController.text);
@@ -179,27 +302,12 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Function _buildRegisterFunction(BuildContext context) {
-    if (_loading) {
-      return null;
-    } else {
-      return () => showErrorDialog(context, "Die Registrierung zum Kaufhansel wird bald für Dich verfügbar sein!");
+  void _register() {
+    if (!_loginFormKey.currentState.validate()) {
+      return;
     }
-  }
+    //setState(() => _loading = true); TODO
 
-  Widget _buildProgressBar(BuildContext context) {
-    if (_loading) {
-      return LinearProgressIndicator(minHeight: 5, backgroundColor: Theme.of(context).scaffoldBackgroundColor);
-    } else {
-      return SizedBox(height: 5);
-    }
-  }
-
-  List<Widget> _buildBottomInfos(BuildContext context) {
-    final zwoHanselLink = Link('https://zwohansel.de', text: "zwohansel.de");
-    if (_version == null) {
-      return [zwoHanselLink];
-    }
-    return [Text(_version), zwoHanselLink];
+    showErrorDialog(context, "Nö");
   }
 }
