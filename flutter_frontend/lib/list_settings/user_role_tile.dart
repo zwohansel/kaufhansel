@@ -23,10 +23,14 @@ class UserRoleTile extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Widget> subTitleChildren = [];
     if (_subTitle != null) {
-      subTitleChildren.add(Padding(
-        child: _subTitle,
-        padding: EdgeInsets.only(bottom: 5),
-      ));
+      subTitleChildren.add(
+        Flexible(
+          child: Padding(
+            child: _subTitle,
+            padding: EdgeInsets.only(bottom: 5),
+          ),
+        ),
+      );
     }
     subTitleChildren.add(Text(_userRole.toDisplayString()));
 
@@ -34,8 +38,11 @@ class UserRoleTile extends StatelessWidget {
         enabled: _enabled,
         leading: Icon(_userRole.toIcon()),
         title: Padding(child: _title, padding: EdgeInsets.only(bottom: 5)),
-        subtitle: Wrap(
-          direction: Axis.vertical,
+        horizontalTitleGap: 0,
+        contentPadding: EdgeInsets.zero,
+        subtitle: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: subTitleChildren,
         ),
         onTap: _onChangePermissionPressed,
