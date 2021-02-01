@@ -185,7 +185,7 @@ class RestClient {
 
   Future<ShoppingListUserReference> addUserToShoppingList(String shoppingListId, String userEmailAddress) async {
     final body = jsonEncode({'emailAddress': userEmailAddress});
-    var request = await _httpClient.putUrl(_serverUrl.resolve("/shoppinglist/$shoppingListId/user"));
+    var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/user"));
     request.headers.contentType = ContentType.json;
     request.write(body);
     var response = await request.close().timeout(timeout);
