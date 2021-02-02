@@ -31,15 +31,15 @@ public class ShoppingListAuthenticationService implements AuthenticationProvider
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        String username = authentication.getName();
-        String password = authentication.getCredentials().toString();
+        final String emailAddress = authentication.getName();
+        final String password = authentication.getCredentials().toString();
 
-        Optional<ShoppingListUser> optionalUser = userRepository.findUserByUsername(username);
+        Optional<ShoppingListUser> optionalUser = userRepository.findUserByEmailAddress(emailAddress);
         if (optionalUser.isEmpty()) {
             throw new BadCredentialsException("Falsche Logindaten");
         }
 
-        ShoppingListUser user = optionalUser.get();
+        final ShoppingListUser user = optionalUser.get();
 
         if (!user.hasPassword()) {
             setPassword(user, password);

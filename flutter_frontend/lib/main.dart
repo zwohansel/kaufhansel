@@ -87,17 +87,21 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     setState(() {
       _shoppingListInfos.add(info);
     });
+    if (_currentShoppingListInfo == null) {
+      _currentShoppingListInfo = _shoppingListInfos.first;
+      _fetchCurrentShoppingList();
+    }
   }
 
   Future<void> _deleteShoppingList(ShoppingListInfo info) async {
     await _client.deleteShoppingList(info.id);
     setState(() {
       _shoppingListInfos.remove(info);
-      if (_currentShoppingListInfo == info) {
-        _currentShoppingListInfo = _shoppingListInfos.isNotEmpty ? _shoppingListInfos.first : null;
-        _fetchCurrentShoppingList();
-      }
     });
+    if (_currentShoppingListInfo == info) {
+      _currentShoppingListInfo = _shoppingListInfos.isNotEmpty ? _shoppingListInfos.first : null;
+      _fetchCurrentShoppingList();
+    }
   }
 
   Future<void> _uncheckAllItems(ShoppingListInfo info) async {
@@ -311,8 +315,35 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               padding: EdgeInsets.all(20))
         ],
       ));
-    } else if (_shoppingListInfos == null || _currentShoppingList == null) {
+    } else if (_shoppingListInfos == null) {
       return Center(child: CircularProgressIndicator());
+    } else if (_currentShoppingList == null) {
+      if (_shoppingListInfos.isEmpty) {
+        return Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  "🌽🥦🧀",
+                  style: TextStyle(
+                      fontFamilyFallback: ["NotoColorEmoji"], fontSize: Theme.of(context).textTheme.headline2.fontSize),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Text(
+                "Du hast noch keine Einkaufsliste.\nIm Menü oben rechts kannst du neue Listen anlegen.",
+                style: Theme.of(context).textTheme.headline6,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        );
+      } else {
+        return Center(child: CircularProgressIndicator());
+      }
     } else {
       return ShoppingListPage(
         _currentShoppingListCategories,

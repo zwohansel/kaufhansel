@@ -46,8 +46,8 @@ class RestClient {
     _httpClient = null;
   }
 
-  Future<ShoppingListUserInfo> login(String username, String password) async {
-    _httpClient.addCredentials(_serverUrl, "", HttpClientBasicCredentials(username, password));
+  Future<ShoppingListUserInfo> login(String userEmail, String password) async {
+    _httpClient.addCredentials(_serverUrl, "", HttpClientBasicCredentials(userEmail, password));
     final url = _serverUrl.resolve("user");
     final request = await _httpClient.getUrl(url);
     final response = await request.close().timeout(timeout);
@@ -58,7 +58,7 @@ class RestClient {
     } else if (response.statusCode == 401) {
       return null;
     } else {
-      throw HttpResponseException(response.statusCode, message: "Failed to get user info for $username");
+      throw HttpResponseException(response.statusCode, message: "Failed to get user info for $userEmail");
     }
   }
 

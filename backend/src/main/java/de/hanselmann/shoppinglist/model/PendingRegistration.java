@@ -49,4 +49,8 @@ public class PendingRegistration {
         return LocalDateTime.now().isAfter(creationDate.plusWeeks(2));
     }
 
+    public boolean isNotExpired() {
+        return !isExpired();
+    }
+
 }

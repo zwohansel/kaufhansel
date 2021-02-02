@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
+import 'package:kaufhansel_client/utils/input_validation.dart';
 import 'package:kaufhansel_client/widgets/link.dart';
 import 'package:package_info/package_info.dart';
 
@@ -84,39 +85,54 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-          padding: EdgeInsets.only(top: 60),
-          child: Center(
-              child: Form(
-                  key: _loginFormKey,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 300),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 0),
-                          child: Wrap(
-                            direction: Axis.horizontal,
-                            alignment: WrapAlignment.spaceBetween,
-                            children: [
-                              Icon(
-                                Icons.shopping_cart_outlined,
-                                size: Theme.of(context).textTheme.headline3.fontSize,
-                              ),
-                              Text(
-                                "Kaufhansel",
-                                style: Theme.of(context).textTheme.headline3,
-                              ),
-                            ],
-                          ),
+        padding: EdgeInsets.only(top: 60),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 300),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(bottom: 0),
+                  child: Wrap(
+                    direction: Axis.horizontal,
+                    alignment: WrapAlignment.spaceBetween,
+                    children: [
+                      Icon(
+                        Icons.shopping_cart_outlined,
+                        size: Theme.of(context).textTheme.headline3.fontSize,
+                      ),
+                      Text(
+                        "Kaufhansel",
+                        style: Theme.of(context).textTheme.headline3,
+                      ),
+                    ],
+                  ),
+                ),
+                _buildProgressBar(context),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Form(
+                      key: _loginFormKey,
+                      child: AutofillGroup(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            ..._buildInputs(),
+                            ..._buildButtons(),
+                          ],
                         ),
-                        _buildProgressBar(context),
-                        ..._buildInputs(),
-                        ..._buildButtons()
-                      ],
+                      ),
                     ),
-                  )))),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
       bottomNavigationBar: SizedBox(
           height: 60,
           child: Align(
@@ -147,12 +163,12 @@ class _LoginPageState extends State<LoginPage> {
         TextFormField(
           controller: _userEmailAddressController,
           enabled: !_loading,
+          autofillHints: !_loading ? [AutofillHints.newUsername] : null,
           decoration: const InputDecoration(
             hintText: 'Email',
           ),
-          validator: (emailAddress) {
-            final address = emailAddress.trim();
-            if (address.length < 5 || !address.contains('@') || !address.contains('.') || address.contains(' ')) {
+          validator: (address) {
+            if (!isValidEMailAddress(address)) {
               return 'Gibstu gültige Email ein!?';
             }
             if (_emailAddressInvalid) {
@@ -164,6 +180,7 @@ class _LoginPageState extends State<LoginPage> {
         TextFormField(
           controller: _setPasswordController,
           enabled: !_loading,
+          autofillHints: !_loading ? [AutofillHints.newPassword] : null,
           decoration: const InputDecoration(
             hintText: 'Kennwort',
           ),
@@ -198,6 +215,7 @@ class _LoginPageState extends State<LoginPage> {
           decoration: const InputDecoration(
             hintText: 'Einladungs-Code',
           ),
+          textCapitalization: TextCapitalization.characters,
           validator: (inviteCode) {
             if (inviteCode.isEmpty) {
               return 'Gibstu Einladungs-Code ein!?';
@@ -213,42 +231,40 @@ class _LoginPageState extends State<LoginPage> {
 
     // Login
     return [
-      AutofillGroup(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextFormField(
-              controller: _userNameController,
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextFormField(
+            controller: _userEmailAddressController,
+            enabled: !_loading,
+            autofillHints: !_loading ? [AutofillHints.username] : null,
+            decoration: const InputDecoration(
+              hintText: 'Email',
+            ),
+            validator: (address) {
+              if (!isValidEMailAddress(address)) {
+                return 'Gibstu gültige Email ein!?';
+              }
+              return null;
+            },
+          ),
+          TextFormField(
+              controller: _passwordController,
               enabled: !_loading,
-              autofillHints: [AutofillHints.username],
+              autofillHints: !_loading ? [AutofillHints.password] : null,
               decoration: const InputDecoration(
-                hintText: 'Nutzername',
+                hintText: 'Kennwort',
               ),
-              validator: (userName) {
-                if (userName.trim().isEmpty) {
-                  return 'Gibstu Nutzernamen ein!?';
+              obscureText: true,
+              validator: (password) {
+                if (password.isEmpty) {
+                  return 'Gibstu Kennwort ein!?';
                 }
                 return null;
               },
-            ),
-            TextFormField(
-                controller: _passwordController,
-                enabled: !_loading,
-                autofillHints: [AutofillHints.password],
-                decoration: const InputDecoration(
-                  hintText: 'Kennwort',
-                ),
-                obscureText: true,
-                validator: (password) {
-                  if (password.isEmpty) {
-                    return 'Gibstu Kennwort ein!?';
-                  }
-                  return null;
-                },
-                onFieldSubmitted: (_) => _login())
-          ],
-        ),
+              onFieldSubmitted: (_) => _login())
+        ],
       ),
     ];
   }
@@ -305,7 +321,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       ShoppingListUserInfo userInfo =
-          await RestClientWidget.of(context).login(_userNameController.text, _passwordController.text);
+          await RestClientWidget.of(context).login(_userEmailAddressController.text, _passwordController.text);
       if (userInfo != null) {
         widget._loggedIn(userInfo);
       } else {
