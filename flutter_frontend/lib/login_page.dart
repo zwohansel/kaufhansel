@@ -25,18 +25,39 @@ class _LoginPageState extends State<LoginPage> {
   final _loginFormKey = GlobalKey<FormState>();
   final _userNameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _inviteCodeController = TextEditingController();
   final _userEmailAddressController = TextEditingController();
+  final _inviteCodeController = TextEditingController();
   final _setPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _loading = false;
   bool _registerMode = false;
+  bool _inviteCodeInvalid = false;
+  bool _emailAddressInvalid = false;
+  bool _passwordInvalid = false;
   String _version;
 
   @override
   void initState() {
     super.initState();
     _setVersion();
+    _userEmailAddressController.addListener(() {
+      if (_emailAddressInvalid) {
+        setState(() => _emailAddressInvalid = false);
+        _loginFormKey.currentState.validate();
+      }
+    });
+    _inviteCodeController.addListener(() {
+      if (_inviteCodeInvalid) {
+        setState(() => _inviteCodeInvalid = false);
+        _loginFormKey.currentState.validate();
+      }
+    });
+    _setPasswordController.addListener(() {
+      if (_passwordInvalid) {
+        setState(() => _passwordInvalid = false);
+        _loginFormKey.currentState.validate();
+      }
+    });
   }
 
   void _setVersion() async {
@@ -124,18 +145,6 @@ class _LoginPageState extends State<LoginPage> {
           },
         ),
         TextFormField(
-          controller: _inviteCodeController,
-          decoration: const InputDecoration(
-            hintText: 'Einladungs-Code',
-          ),
-          validator: (inviteCode) {
-            if (inviteCode.isEmpty) {
-              return 'Gibstu exklusiven Einladungs-Code ein!?';
-            }
-            return null;
-          },
-        ),
-        TextFormField(
           controller: _userEmailAddressController,
           enabled: !_loading,
           decoration: const InputDecoration(
@@ -145,6 +154,9 @@ class _LoginPageState extends State<LoginPage> {
             final address = emailAddress.trim();
             if (address.length < 5 || !address.contains('@') || !address.contains('.') || address.contains(' ')) {
               return 'Gibstu gültige Email ein!?';
+            }
+            if (_emailAddressInvalid) {
+              return 'Nimm eine andere.';
             }
             return null;
           },
@@ -158,7 +170,10 @@ class _LoginPageState extends State<LoginPage> {
           obscureText: true,
           validator: (password) {
             if (password.length < 8) {
-              return 'Gibstu Kennwort ein!? Mindestens 8 Zeichen!';
+              return 'Mindestens 8 Zeichen!';
+            }
+            if (_passwordInvalid) {
+              return 'Denk dir was besseres aus.';
             }
             return null;
           },
@@ -177,7 +192,22 @@ class _LoginPageState extends State<LoginPage> {
             return null;
           },
           onFieldSubmitted: (_) => _register(),
-        )
+        ),
+        TextFormField(
+          controller: _inviteCodeController,
+          decoration: const InputDecoration(
+            hintText: 'Einladungs-Code',
+          ),
+          validator: (inviteCode) {
+            if (inviteCode.isEmpty) {
+              return 'Gibstu Einladungs-Code ein!?';
+            }
+            if (_inviteCodeInvalid) {
+              return 'Der Einladungs-Code stimmt nicht!';
+            }
+            return null;
+          },
+        ),
       ];
     }
 
@@ -302,12 +332,53 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void _register() {
+  void _register() async {
     if (!_loginFormKey.currentState.validate()) {
       return;
     }
-    //setState(() => _loading = true); TODO
+    setState(() => _loading = true);
 
-    showErrorDialog(context, "Nö");
+    try {
+      final registration = await RestClientWidget.of(context).register(_userNameController.text,
+          _userEmailAddressController.text, _setPasswordController.text, _inviteCodeController.text);
+
+      if (registration.isSuccess()) {
+        setState(() => _registerMode = false);
+        showRegistrationSuccessMessage(_userEmailAddressController.text);
+        _userEmailAddressController.clear();
+        _setPasswordController.clear();
+        _confirmPasswordController.clear();
+        _inviteCodeController.clear();
+      } else if (registration.isInviteCodeInvalid()) {
+        setState(() => _inviteCodeInvalid = true);
+        _loginFormKey.currentState.validate();
+      } else if (registration.isEMailAddressInvalid()) {
+        setState(() => _emailAddressInvalid = true);
+        _loginFormKey.currentState.validate();
+      } else if (registration.isPasswordInvalid()) {
+        setState(() => _passwordInvalid = true);
+        _loginFormKey.currentState.validate();
+      } else {
+        showErrorDialog(context,
+            "Wollen wir nicht, dass du dich registrierst oder hast du etwas falsch gemacht?\nProbiere es einfach später nochmal.");
+      }
+    } on Exception catch (e) {
+      log("Registration failed.", error: e);
+      showErrorDialog(context, "Irgendetwas stimmt nicht. Probiere es einfach später nochmal.");
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  void showRegistrationSuccessMessage(String emailAddress) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(
+          "Wir haben dir eine E-Mail an $emailAddress geschickt... folge dem Aktivierungs-Link, dann kannst du dich anmelden."),
+      duration: Duration(days: 1),
+      action: SnackBarAction(
+        label: "Mach ich",
+        onPressed: () => ScaffoldMessenger.of(context).removeCurrentSnackBar(),
+      ),
+    ));
   }
 }

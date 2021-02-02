@@ -279,4 +279,22 @@ class RestClient {
       throw HttpResponseException(response.statusCode, message: 'Failed to rename list $shoppingListId to $newName');
     }
   }
+
+  Future<RegistrationResult> register(String userName, String emailAddress, String password, String inviteCode) async {
+    final body = jsonEncode(
+        {'userName': userName, 'emailAddress': emailAddress, 'password': password, 'inviteCode': inviteCode});
+
+    var request = await _httpClient.postUrl(_serverUrl.resolve("register"));
+    request.headers.contentType = ContentType.json;
+    request.write(body);
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode == 200) {
+      final String decoded = await response.transform(utf8.decoder).join();
+      return RegistrationResult.fromJson(jsonDecode(decoded));
+    } else {
+      throw HttpResponseException(response.statusCode,
+          message: "Failed to register user $emailAddress with name $userName and invite code $inviteCode.");
+    }
+  }
 }

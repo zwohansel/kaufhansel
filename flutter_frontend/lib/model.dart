@@ -369,3 +369,40 @@ class ShoppingListUserInfo {
   String get username => _username;
   String get id => _id;
 }
+
+enum _RegistrationResultStatus { SUCCESS, EMAIL_INVALID, INVITE_CODE_INVALID, PASSWORD_INVALID, FAILURE }
+
+const Map<String, _RegistrationResultStatus> _strToStatus = {
+  'SUCCESS': _RegistrationResultStatus.SUCCESS,
+  'EMAIL_INVALID': _RegistrationResultStatus.EMAIL_INVALID,
+  'INVITE_CODE_INVALID': _RegistrationResultStatus.INVITE_CODE_INVALID,
+  'PASSWORD_INVALID': _RegistrationResultStatus.PASSWORD_INVALID,
+};
+
+extension _RegistrationResultStates on _RegistrationResultStatus {
+  static _RegistrationResultStatus fromString(String statusStr) {
+    final status = _strToStatus[statusStr];
+    if (status == null) {
+      return _RegistrationResultStatus.FAILURE;
+    }
+    return status;
+  }
+}
+
+class RegistrationResult {
+  final _RegistrationResultStatus _status;
+
+  RegistrationResult(this._status);
+
+  factory RegistrationResult.fromJson(Map<String, dynamic> json) {
+    return new RegistrationResult(_RegistrationResultStates.fromString(json.get("status")));
+  }
+
+  bool isSuccess() => _status == _RegistrationResultStatus.SUCCESS;
+
+  bool isInviteCodeInvalid() => _status == _RegistrationResultStatus.INVITE_CODE_INVALID;
+
+  bool isEMailAddressInvalid() => _status == _RegistrationResultStatus.EMAIL_INVALID;
+
+  bool isPasswordInvalid() => _status == _RegistrationResultStatus.PASSWORD_INVALID;
+}
