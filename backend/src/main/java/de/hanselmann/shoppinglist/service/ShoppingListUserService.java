@@ -100,4 +100,12 @@ public class ShoppingListUserService {
         userRepository.save(userToBeChanged);
     }
 
+    public boolean existsUserWithEmailAddress(String emailAddress) {
+        return userRepository.existsByEmailAddress(emailAddress);
+    }
+
+    public void save(ShoppingListUser user) {
+        userRepository.save(user);
+    }
+
 }

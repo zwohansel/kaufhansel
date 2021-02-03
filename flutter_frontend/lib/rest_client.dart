@@ -297,4 +297,17 @@ class RestClient {
           message: "Failed to register user $emailAddress with name $userName and invite code $inviteCode.");
     }
   }
+
+  Future<String> generateInviteCode() async {
+    var request = await _httpClient.getUrl(_serverUrl.resolve("invite")).timeout(timeout);
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode == 200) {
+      final String decoded = await response.transform(utf8.decoder).join();
+      final Map<String, dynamic> json = jsonDecode(decoded);
+      return json.get('code');
+    } else {
+      throw HttpResponseException(response.statusCode, message: "Failed to generate invite code.");
+    }
+  }
 }

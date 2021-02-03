@@ -7,9 +7,11 @@ import java.nio.charset.StandardCharsets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.hanselmann.shoppinglist.restapi.RegistrationApi;
+import de.hanselmann.shoppinglist.restapi.dto.InviteCodeDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationDataDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationResultDto;
 import de.hanselmann.shoppinglist.service.RegistrationService;
@@ -60,6 +62,13 @@ public class RegistrationController implements RegistrationApi {
             return ResponseEntity.ok(activationSuccessPage);
         }
         return ResponseEntity.ok(activationFailurePage);
+    }
+
+    @PreAuthorize("hasRole('SHOPPER')")
+    @Override
+    public ResponseEntity<InviteCodeDto> generateInvite() {
+        String code = registrationService.generateInviteCode();
+        return ResponseEntity.ok(new InviteCodeDto(code));
     }
 
 }

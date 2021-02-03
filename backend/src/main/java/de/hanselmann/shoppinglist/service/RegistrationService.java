@@ -4,27 +4,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import de.hanselmann.shoppinglist.model.Invite;
 import de.hanselmann.shoppinglist.model.PendingRegistration;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.repository.InviteRepository;
 import de.hanselmann.shoppinglist.repository.PendingRegistrationRepository;
-import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
 
 @Service
 public class RegistrationService {
     private final InviteRepository inviteRepository;
-    private final ShoppingListUserRepository userRepository;
+    private final ShoppingListUserService userService;
     private final PendingRegistrationRepository pendingRegistrationRepository;
     private final PasswordEncoder passwordEncoder;
     private final CodeGenerator codeGenerator;
     private final EMailService emailService;
 
     @Autowired
-    public RegistrationService(InviteRepository inviteRepository, ShoppingListUserRepository userRepository,
+    public RegistrationService(InviteRepository inviteRepository, ShoppingListUserService userService,
             PendingRegistrationRepository pendingRegistrationRepository,
             PasswordEncoder passwordEncoder, CodeGenerator codeGenerator, EMailService emailService) {
         this.inviteRepository = inviteRepository;
-        this.userRepository = userRepository;
+        this.userService = userService;
         this.pendingRegistrationRepository = pendingRegistrationRepository;
         this.passwordEncoder = passwordEncoder;
         this.codeGenerator = codeGenerator;
@@ -36,7 +36,7 @@ public class RegistrationService {
     }
 
     public boolean isEmailAddressValid(String emailAddress) {
-        return !userRepository.existsByEmailAddress(emailAddress)
+        return !userService.existsUserWithEmailAddress(emailAddress)
                 && !pendingRegistrationRepository.existsByEmailAddress(emailAddress);
     }
 
@@ -77,9 +77,16 @@ public class RegistrationService {
 
     private boolean createUser(PendingRegistration pendingRegistration) {
         ShoppingListUser user = ShoppingListUser.create(pendingRegistration);
-        userRepository.save(user);
+        userService.save(user);
         pendingRegistrationRepository.delete(pendingRegistration);
         return true;
+    }
+
+    public String generateInviteCode() {
+        String code = codeGenerator.generateInviteCode();
+        Invite invite = Invite.create(code, userService.getCurrentUser());
+        inviteRepository.save(invite);
+        return code;
     }
 
 }

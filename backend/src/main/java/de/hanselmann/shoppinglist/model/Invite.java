@@ -12,12 +12,16 @@ public class Invite {
     private ObjectId generatedByUser;
     private LocalDateTime generatedAt;
 
+    public static Invite create(String code, ShoppingListUser invitor) {
+        return new Invite(code, invitor.getId(), LocalDateTime.now());
+    }
+
     public Invite() {
     }
 
-    public Invite(String code, ShoppingListUser generatedByUser, LocalDateTime generatedAt) {
+    private Invite(String code, ObjectId generatedByUserId, LocalDateTime generatedAt) {
         this.code = code;
-        this.generatedByUser = generatedByUser.getId();
+        this.generatedByUser = generatedByUserId;
         this.generatedAt = generatedAt;
     }
 

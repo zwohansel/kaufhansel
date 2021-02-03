@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/list_settings/shopping_list_settings.dart';
+import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/settings/app_settings.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_filter_selection.dart';
 import 'package:kaufhansel_client/shopping_list_mode.dart';
 import 'package:kaufhansel_client/shopping_list_mode_selection.dart';
+import 'package:kaufhansel_client/widgets/invite_dialog.dart';
 import 'package:provider/provider.dart';
 
 import 'create_shopping_list_dialog.dart';
@@ -163,6 +165,21 @@ class ShoppingListDrawer extends StatelessWidget {
                         return CreateShoppingListDialog(_onCreateShoppingList);
                       },
                     );
+                  },
+                ),
+                SizedBox(height: 10),
+                OutlinedButton(
+                  child: Text("Einladungs-Code generieren"),
+                  style: OutlinedButton.styleFrom(
+                      primary: Theme.of(context).primaryIconTheme.color,
+                      side: BorderSide(color: Theme.of(context).primaryIconTheme.color)),
+                  onPressed: () {
+                    final RestClient client = RestClientWidget.of(context);
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return InviteDialog(client);
+                        });
                   },
                 ),
                 SizedBox(height: 10),
