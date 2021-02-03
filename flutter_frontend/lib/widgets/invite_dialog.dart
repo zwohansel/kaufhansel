@@ -1,8 +1,10 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
+import 'package:share/share.dart';
 
 class InviteDialog extends StatefulWidget {
   final RestClient _client;
@@ -25,11 +27,27 @@ class _InviteDialogState extends State<InviteDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return SimpleDialog(title: Text("Einladungs-Code"), children: [
+    return SimpleDialog(title: _buildTitle(), children: [
       Padding(
           padding: EdgeInsets.only(left: 24, right: 24, top: 12),
           child: _loading ? _buildGenerateCode() : _buildShowCode(context))
     ]);
+  }
+
+  Widget _buildTitle() {
+    List<Widget> children = [Text("Einladungs-Code")];
+
+    if (!_loading && (Platform.isAndroid || Platform.isIOS || Platform.isFuchsia)) {
+      children.add(IconButton(
+          icon: Icon(Icons.share),
+          onPressed: () => Share.share(_code, subject: "Werde mit diesem Code zum Kaufhansel!")));
+    }
+
+    return Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: children,
+    );
   }
 
   Center _buildGenerateCode() {
@@ -53,7 +71,9 @@ class _InviteDialogState extends State<InviteDialog> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Center(child: SelectableText(_code, style: Theme.of(context).textTheme.headline3)),
+        Center(
+          child: SelectableText(_code, style: Theme.of(context).textTheme.headline3),
+        ),
         SizedBox(height: 20),
         Flexible(
             child: Text("Schicke anderen Hanseln diesen Code, damit sie sich beim Kaufhansel registrieren können.")),
