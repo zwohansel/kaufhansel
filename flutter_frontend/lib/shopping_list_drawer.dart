@@ -24,7 +24,7 @@ class ShoppingListDrawer extends StatelessWidget {
       @required void Function(ShoppingListInfo info) onShoppingListSelected,
       @required Future<void> Function(String) onCreateShoppingList,
       @required Future<void> Function(ShoppingListInfo) onDeleteShoppingList,
-      @required Future<void> Function(ShoppingListInfo, String) onAddUserToShoppingList,
+      @required Future<bool> Function(ShoppingListInfo, String) onAddUserToShoppingListIfPresent,
       @required Future<void> Function(ShoppingListInfo) onUncheckAllItems,
       @required Future<void> Function(ShoppingListInfo) onRemoveAllCategories,
       @required Future<void> Function(ShoppingListInfo) onRemoveAllItems,
@@ -43,7 +43,7 @@ class ShoppingListDrawer extends StatelessWidget {
         _selectShoppingList = onShoppingListSelected,
         _onCreateShoppingList = onCreateShoppingList,
         _onDeleteShoppingList = onDeleteShoppingList,
-        _onAddUserToShoppingList = onAddUserToShoppingList,
+        _onAddUserToShoppingListIfPresent = onAddUserToShoppingListIfPresent,
         _onRemoveUserFromShoppingList = onRemoveUserFromShoppingList,
         _onUncheckAllItems = onUncheckAllItems,
         _onRemoveAllCategories = onRemoveAllCategories,
@@ -63,7 +63,7 @@ class ShoppingListDrawer extends StatelessWidget {
   final String _selectedShoppingListId;
   final Future<void> Function(String) _onCreateShoppingList;
   final Future<void> Function(ShoppingListInfo) _onDeleteShoppingList;
-  final Future<void> Function(ShoppingListInfo, String) _onAddUserToShoppingList;
+  final Future<bool> Function(ShoppingListInfo, String) _onAddUserToShoppingListIfPresent;
   final Future<void> Function(ShoppingListInfo, ShoppingListUserReference) _onRemoveUserFromShoppingList;
   final Future<void> Function(ShoppingListInfo) _onUncheckAllItems;
   final Future<void> Function(ShoppingListInfo) _onRemoveAllCategories;
@@ -88,22 +88,25 @@ class ShoppingListDrawer extends StatelessWidget {
             trailing: IconButton(
                 icon: Icon(Icons.edit),
                 onPressed: () {
+                  final client = RestClientWidget.of(context);
                   Navigator.push(context, MaterialPageRoute(
                     builder: (context) {
                       // Providers are scoped and not shared between routes. We need to pass it explicitly to the new route
                       return ChangeNotifierProvider.value(
                           value: info,
-                          child: ShoppingListSettings(
-                              onDeleteShoppingList: () => _onDeleteShoppingList(info),
-                              onUncheckAllItems: () => _onUncheckAllItems(info),
-                              onRemoveAllCategories: () => _onRemoveAllCategories(info),
-                              onRemoveAllItems: () => _onRemoveAllItems(info),
-                              onAddUserToShoppingList: (userEmailAddress) =>
-                                  _onAddUserToShoppingList(info, userEmailAddress),
-                              onRemoveUserFromShoppingList: (user) => _onRemoveUserFromShoppingList(info, user),
-                              onChangeShoppingListPermissions: (affectedUserId, newRole) =>
-                                  _onChangeShoppingListPermissions(info, affectedUserId, newRole),
-                              onChangeShoppingListName: (newName) => _onChangeShoppingListName(info, newName)));
+                          child: RestClientWidget(
+                              client: client,
+                              child: ShoppingListSettings(
+                                  onDeleteShoppingList: () => _onDeleteShoppingList(info),
+                                  onUncheckAllItems: () => _onUncheckAllItems(info),
+                                  onRemoveAllCategories: () => _onRemoveAllCategories(info),
+                                  onRemoveAllItems: () => _onRemoveAllItems(info),
+                                  onAddUserToShoppingListIfPresent: (userEmailAddress) =>
+                                      _onAddUserToShoppingListIfPresent(info, userEmailAddress),
+                                  onRemoveUserFromShoppingList: (user) => _onRemoveUserFromShoppingList(info, user),
+                                  onChangeShoppingListPermissions: (affectedUserId, newRole) =>
+                                      _onChangeShoppingListPermissions(info, affectedUserId, newRole),
+                                  onChangeShoppingListName: (newName) => _onChangeShoppingListName(info, newName))));
                     },
                   ));
                 }),

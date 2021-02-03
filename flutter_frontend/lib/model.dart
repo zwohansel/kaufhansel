@@ -6,6 +6,16 @@ import 'package:flutter/material.dart';
 
 const CATEGORY_ALL = "Alle";
 
+class Optional<T> {
+  final T _t;
+
+  factory Optional.empty() => Optional(null);
+  Optional(T t) : this._t = t;
+
+  T get get => _t;
+  bool isPresent() => _t != null;
+}
+
 extension JsonParseExtension<K, V> on Map<K, V> {
   V get(K key) {
     V value = this[key];

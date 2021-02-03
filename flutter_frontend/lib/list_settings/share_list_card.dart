@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/list_settings/card_style.dart';
 import 'package:kaufhansel_client/list_settings/user_role_tile.dart';
+import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
 
 import '../model.dart';
@@ -14,7 +15,7 @@ class ShareListCard extends StatefulWidget {
   final void Function(bool) _setLoading;
   final bool _loading;
 
-  final Future<void> Function(String) _onAddUserToShoppingList;
+  final Future<bool> Function(String) _onAddUserToShoppingListIfPresent;
   final Future<void> Function(ShoppingListUserReference) _onRemoveUserFromShoppingList;
   final Future<void> Function(String affectedUserId, ShoppingListRole newRole) _onChangeShoppingListPermissions;
 
@@ -22,10 +23,10 @@ class ShareListCard extends StatefulWidget {
     this._shoppingListInfo,
     this._loading,
     this._setLoading, {
-    @required Future<void> Function(String) onAddUserToShoppingList,
+    @required Future<bool> Function(String) onAddUserToShoppingListIfPresent,
     @required Future<void> Function(String, ShoppingListRole) onChangeShoppingListPermissions,
     @required Future<void> Function(ShoppingListUserReference) onRemoveUserFromShoppingList,
-  })  : _onAddUserToShoppingList = onAddUserToShoppingList,
+  })  : _onAddUserToShoppingListIfPresent = onAddUserToShoppingListIfPresent,
         _onRemoveUserFromShoppingList = onRemoveUserFromShoppingList,
         _onChangeShoppingListPermissions = onChangeShoppingListPermissions;
 
@@ -170,13 +171,37 @@ class _ShareListCardState extends State<ShareListCard> {
     widget._setLoading(true);
     try {
       final userEmail = _addUserTextEditingController.value.text.trim().toLowerCase();
-      await widget._onAddUserToShoppingList(userEmail);
+      final userExists = await widget._onAddUserToShoppingListIfPresent(userEmail);
+      if (!userExists) {
+        await _inviteUserToList(userEmail);
+      }
       _addUserTextEditingController.clear();
     } on Exception catch (e) {
       log("Could not add user to shopping list.", error: e);
       showErrorDialog(context, "Hast du dich vertippt oder können wir den Hansel nicht finden?");
     } finally {
       widget._setLoading(false);
+    }
+  }
+
+  Future<void> _inviteUserToList(String emailAddress) async {
+    final inviteUser = await showConfirmDialog(
+        context,
+        "Hast du dich vertippt? Diese Emailadresse kennen wir noch nicht.\n\nOder möchtest du, dass wir an $emailAddress eine Einladung schicken?"
+        "\nWenn sich der Hansel registriert, hat er Zugriff auf diese Liste.",
+        cancelBtnLabel: "Jetzt nicht",
+        confirmBtnLabel: "Ja, gerne!",
+        confirmBtnColor: Theme.of(context).primaryColor,
+        title: "Wer ist $emailAddress ???");
+    if (inviteUser) {
+      try {
+        RestClient client = RestClientWidget.of(context);
+        await client.sendInvite(emailAddress, shoppingListId: widget._shoppingListInfo.id);
+      } on Exception catch (e) {
+        log("Failed to send list invite", error: e);
+        showErrorDialog(context,
+            "Das Verschicken der Einladungs-Email hat leider nicht geklappt. Ruf den Hansel doch einfach mal an.");
+      }
     }
   }
 

@@ -125,9 +125,14 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     }
   }
 
-  Future<void> _addUserToShoppingList(ShoppingListInfo info, String userEmailAddress) async {
+  Future<bool> _addUserToShoppingList(ShoppingListInfo info, String userEmailAddress) async {
     final userReference = await _client.addUserToShoppingList(info.id, userEmailAddress);
-    info.addUserToShoppingList(userReference);
+    if (userReference.isPresent()) {
+      info.addUserToShoppingList(userReference.get);
+      return true;
+    } else {
+      return false;
+    }
   }
 
   Future<void> _removeUserFromShoppingList(ShoppingListInfo info, ShoppingListUserReference user) async {
@@ -272,7 +277,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               onUncheckAllItems: _uncheckAllItems,
               onRemoveAllCategories: _removeAllCategories,
               onRemoveAllItems: _removeAllItems,
-              onAddUserToShoppingList: _addUserToShoppingList,
+              onAddUserToShoppingListIfPresent: _addUserToShoppingList,
               onRemoveUserFromShoppingList: _removeUserFromShoppingList,
               onChangeShoppingListPermissions: _changeShoppingListPermissions,
               onChangeShoppingListName: _changeShoppingListName,

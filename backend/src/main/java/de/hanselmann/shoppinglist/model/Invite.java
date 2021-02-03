@@ -1,6 +1,9 @@
 package de.hanselmann.shoppinglist.model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -11,9 +14,24 @@ public class Invite {
     private String code;
     private ObjectId generatedByUser;
     private LocalDateTime generatedAt;
+    private String inviteeEmailAddress;
+    private final List<ObjectId> invitedToShoppingLists = new ArrayList<>();
 
     public static Invite create(String code, ShoppingListUser invitor) {
         return new Invite(code, invitor.getId(), LocalDateTime.now());
+    }
+
+    public static Invite createForEmailAddress(String code, ShoppingListUser invitor, String inviteeEmailAddress) {
+        Invite invite = create(code, invitor);
+        invite.inviteeEmailAddress = inviteeEmailAddress;
+        return invite;
+    }
+
+    public static Invite createForEmailAddressAndList(String code, ShoppingListUser invitor, String inviteeEmailAddress,
+            ObjectId shoppingListId) {
+        Invite invite = createForEmailAddress(code, invitor, inviteeEmailAddress);
+        invite.invitedToShoppingLists.add(shoppingListId);
+        return invite;
     }
 
     public Invite() {
@@ -39,6 +57,14 @@ public class Invite {
 
     public LocalDateTime getGeneratedAt() {
         return generatedAt;
+    }
+
+    public String getInviteeEmailAddress() {
+        return inviteeEmailAddress;
+    }
+
+    public List<ObjectId> getInvitedToShoppingLists() {
+        return Collections.unmodifiableList(invitedToShoppingLists);
     }
 
 }

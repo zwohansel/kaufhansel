@@ -183,7 +183,8 @@ class RestClient {
     }
   }
 
-  Future<ShoppingListUserReference> addUserToShoppingList(String shoppingListId, String userEmailAddress) async {
+  Future<Optional<ShoppingListUserReference>> addUserToShoppingList(
+      String shoppingListId, String userEmailAddress) async {
     final body = jsonEncode({'emailAddress': userEmailAddress});
     var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/user"));
     request.headers.contentType = ContentType.json;
@@ -192,7 +193,9 @@ class RestClient {
 
     if (response.statusCode == 200) {
       final String decoded = await response.transform(utf8.decoder).join();
-      return ShoppingListUserReference.fromJson(jsonDecode(decoded));
+      return Optional(ShoppingListUserReference.fromJson(jsonDecode(decoded)));
+    } else if (response.statusCode == 404) {
+      return Optional.empty();
     } else {
       throw HttpResponseException(
         response.statusCode,
@@ -308,6 +311,20 @@ class RestClient {
       return json.get('code');
     } else {
       throw HttpResponseException(response.statusCode, message: "Failed to generate invite code.");
+    }
+  }
+
+  Future<void> sendInvite(String emailAddress, {String shoppingListId}) async {
+    final body = jsonEncode({'emailAddress': emailAddress, 'shoppingListId': shoppingListId});
+
+    var request = await _httpClient.postUrl(_serverUrl.resolve("invite"));
+    request.headers.contentType = ContentType.json;
+    request.write(body);
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode != 204) {
+      throw HttpResponseException(response.statusCode,
+          message: "Failed to invite user $emailAddress to shopping list $shoppingListId.");
     }
   }
 }

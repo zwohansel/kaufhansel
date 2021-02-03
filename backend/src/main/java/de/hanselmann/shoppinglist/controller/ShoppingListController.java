@@ -296,7 +296,7 @@ public class ShoppingListController implements ShoppingListApi {
 
         return userService.findByEmailAddress(addUserDto.getEmailAddress())
                 .map(user -> addUserToShoppingList(user, new ObjectId(id)))
-                .orElse(ResponseEntity.badRequest().build());
+                .orElse(ResponseEntity.notFound().build());
     }
 
     private ResponseEntity<ShoppingListUserReferenceDto> addUserToShoppingList(ShoppingListUser user,

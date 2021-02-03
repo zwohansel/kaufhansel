@@ -12,7 +12,7 @@ class ShoppingListSettings extends StatefulWidget {
       @required Future<void> Function() onUncheckAllItems,
       @required Future<void> Function() onRemoveAllCategories,
       @required Future<void> Function() onRemoveAllItems,
-      @required Future<void> Function(String) onAddUserToShoppingList,
+      @required Future<bool> Function(String) onAddUserToShoppingListIfPresent,
       @required Future<void> Function(String, ShoppingListRole) onChangeShoppingListPermissions,
       @required Future<void> Function(ShoppingListUserReference) onRemoveUserFromShoppingList,
       @required Future<void> Function(String) onChangeShoppingListName})
@@ -20,7 +20,7 @@ class ShoppingListSettings extends StatefulWidget {
         _onUncheckAllItems = onUncheckAllItems,
         _onRemoveAllCategories = onRemoveAllCategories,
         _onRemoveAllItems = onRemoveAllItems,
-        _onAddUserToShoppingList = onAddUserToShoppingList,
+        _onAddUserToShoppingListIfPresent = onAddUserToShoppingListIfPresent,
         _onRemoveUserFromShoppingList = onRemoveUserFromShoppingList,
         _onChangeShoppingListPermissions = onChangeShoppingListPermissions,
         _onChangeShoppingListName = onChangeShoppingListName;
@@ -29,7 +29,7 @@ class ShoppingListSettings extends StatefulWidget {
   final Future<void> Function() _onUncheckAllItems;
   final Future<void> Function() _onRemoveAllCategories;
   final Future<void> Function() _onRemoveAllItems;
-  final Future<void> Function(String) _onAddUserToShoppingList;
+  final Future<bool> Function(String) _onAddUserToShoppingListIfPresent;
   final Future<void> Function(ShoppingListUserReference) _onRemoveUserFromShoppingList;
   final Future<void> Function(String affectedUserId, ShoppingListRole newRole) _onChangeShoppingListPermissions;
   final Future<void> Function(String) _onChangeShoppingListName;
@@ -84,7 +84,7 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                                       info,
                                       _loading,
                                       _setLoading,
-                                      onAddUserToShoppingList: widget._onAddUserToShoppingList,
+                                      onAddUserToShoppingListIfPresent: widget._onAddUserToShoppingListIfPresent,
                                       onChangeShoppingListPermissions: widget._onChangeShoppingListPermissions,
                                       onRemoveUserFromShoppingList: widget._onRemoveUserFromShoppingList,
                                     ),

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import de.hanselmann.shoppinglist.restapi.dto.InviteCodeDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationDataDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationResultDto;
+import de.hanselmann.shoppinglist.restapi.dto.SendInviteDto;
 
 public interface RegistrationApi {
 
@@ -21,5 +22,9 @@ public interface RegistrationApi {
 
     @GetMapping("/invite")
     ResponseEntity<InviteCodeDto> generateInvite();
+
+    @PostMapping("/invite")
+    ResponseEntity<Void> sendInvite(
+            @RequestBody SendInviteDto sendInvite);
 
 }

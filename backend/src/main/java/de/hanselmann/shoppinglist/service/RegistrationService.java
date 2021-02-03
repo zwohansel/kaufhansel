@@ -1,5 +1,6 @@
 package de.hanselmann.shoppinglist.service;
 
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import de.hanselmann.shoppinglist.repository.PendingRegistrationRepository;
 public class RegistrationService {
     private final InviteRepository inviteRepository;
     private final ShoppingListUserService userService;
+    private final ShoppingListService shoppingListService;
     private final PendingRegistrationRepository pendingRegistrationRepository;
     private final PasswordEncoder passwordEncoder;
     private final CodeGenerator codeGenerator;
@@ -21,10 +23,12 @@ public class RegistrationService {
 
     @Autowired
     public RegistrationService(InviteRepository inviteRepository, ShoppingListUserService userService,
+            ShoppingListService shoppingListService,
             PendingRegistrationRepository pendingRegistrationRepository,
             PasswordEncoder passwordEncoder, CodeGenerator codeGenerator, EMailService emailService) {
         this.inviteRepository = inviteRepository;
         this.userService = userService;
+        this.shoppingListService = shoppingListService;
         this.pendingRegistrationRepository = pendingRegistrationRepository;
         this.passwordEncoder = passwordEncoder;
         this.codeGenerator = codeGenerator;
@@ -87,6 +91,25 @@ public class RegistrationService {
         Invite invite = Invite.create(code, userService.getCurrentUser());
         inviteRepository.save(invite);
         return code;
+    }
+
+    public void sendInvite(String emailAddress) {
+        // TODO: check: no Invite, PendigRegistration nor User with this email address
+        // exists
+        String code = codeGenerator.generateInviteCode();
+        Invite invite = Invite.createForEmailAddress(code, userService.getCurrentUser(), emailAddress);
+        inviteRepository.save(invite);
+        // TODO: send mail
+    }
+
+    public void sendInviteForShoppingList(String emailAddress, ObjectId shoppingListId) {
+        // TODO: check: no Invite, PendigRegistration nor User with this email address
+        // exists
+        String code = codeGenerator.generateInviteCode();
+        Invite invite = Invite.createForEmailAddressAndList(code, userService.getCurrentUser(), emailAddress,
+                shoppingListId);
+        inviteRepository.save(invite);
+        // TODO: send mail
     }
 
 }
