@@ -44,14 +44,14 @@ public class EMailService {
         message.setTo(toAddress);
         message.setSubject(MessageFormat.format("{0} lädt dich zum Kaufhansel ein", from));
         message.setText(MessageFormat.format("Hi,"
-                + "\n\n{0} lädt dich ein den Kaufhansel zu verwenden."
+                + "\n\n{0} lädt dich zum Kaufhansel ein."
                 + "\nMit dem Kaufhansel kannst du ganz einfach Einkaufslisten erstellen und sie mit deinen Freunden teilen."
                 + "\nGehe auf https://www.zwohansel.de/kaufhansel/download und lade dir die App für dein "
                 + "Telefon oder für deinen PC herunter."
                 // + "\nWenn du den Kaufhansel lieber im Web nutzen willst gehe auf
                 // https://www.zwohansel.de/kaufhansel."
                 + "\nNutze den folgenden Code um dich zu registrieren:"
-                + "\n\n{1}\\n"
+                + "\n\n{1}\n"
                 + EMAIL_FOOTER, from, activationCode));
         emailSender.send(message);
     }
@@ -61,11 +61,11 @@ public class EMailService {
         message.setFrom(SENDER_EMAIL_ADDRESS);
         message.setTo(user.getEmailAddress());
         message.setSubject(MessageFormat.format("Willkommen beim Kaufhansel {0}", user.getUsername()));
-        message.setText("Herzlichen Glückwunsch,"
+        message.setText(MessageFormat.format("Herzlichen Glückwunsch {0},"
                 + "\n\ndu hast dich erfolgreich beim Kaufhansel registriert."
-                + "\nDu kannst dich nun mit deiner EMail Addresse und dem Passwort, dass du bei der Registrierung vergeben hast, anmelden."
+                + "\nMit deiner Email-Addresse und deinem Passwort kannst du dich nun anmelden."
                 + "\n\nViel Spaß beim Einkaufen!"
-                + EMAIL_FOOTER);
+                + EMAIL_FOOTER, user.getUsername()));
         emailSender.send(message);
     }
 

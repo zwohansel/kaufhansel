@@ -296,7 +296,8 @@ class RestClient {
     }
   }
 
-  Future<RegistrationResult> register(String userName, String emailAddress, String password, String inviteCode) async {
+  Future<RegistrationResult> register(String userName, String password, String inviteCode,
+      {String emailAddress}) async {
     final body = jsonEncode(
         {'userName': userName, 'emailAddress': emailAddress, 'password': password, 'inviteCode': inviteCode});
 

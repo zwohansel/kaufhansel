@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
@@ -52,19 +53,22 @@ class _LoginPageState extends State<LoginPage> {
     _userEmailAddressController.addListener(() {
       if (_emailAddressInvalid) {
         setState(() => _emailAddressInvalid = false);
-        _loginFormKey.currentState.validate();
+        _loginFormKey.currentState?.validate();
+        _registerFullFormKey.currentState?.validate();
       }
     });
     _inviteCodeController.addListener(() {
       if (_inviteCodeInvalid) {
         setState(() => _inviteCodeInvalid = false);
-        _loginFormKey.currentState.validate();
+        _checkInviteCodeFormKey.currentState.validate();
       }
     });
     _setPasswordController.addListener(() {
       if (_passwordInvalid) {
         setState(() => _passwordInvalid = false);
-        _loginFormKey.currentState.validate();
+        _loginFormKey.currentState?.validate();
+        _registerFullFormKey.currentState?.validate();
+        _registerWithoutEmailFormKey.currentState?.validate();
       }
     });
   }
@@ -224,9 +228,12 @@ class _LoginPageState extends State<LoginPage> {
             enabled: !_loading,
             textCapitalization: TextCapitalization.characters,
             decoration: const InputDecoration(hintText: 'Einladungs-Code'),
+            onFieldSubmitted: (_) => _checkInviteCode(),
             validator: (code) {
               if (code.trim().isEmpty) {
                 return 'Gib deinen Einladungs-Code ein';
+              } else if (_inviteCodeInvalid) {
+                return 'Der Code stimmt nicht';
               }
               return null;
             },
@@ -265,6 +272,7 @@ class _LoginPageState extends State<LoginPage> {
         case RegistrationProcessType.INVALID:
         default:
           setState(() => _inviteCodeInvalid = true);
+          _checkInviteCodeFormKey.currentState.validate();
       }
     } on Exception catch (e) {
       log("Get registration process type failed.", error: e);
@@ -476,8 +484,9 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _loading = true);
 
     try {
-      final registration = await RestClientWidget.of(context).register(_userNameController.text,
-          _userEmailAddressController.text, _setPasswordController.text, _inviteCodeController.text);
+      final registration = await RestClientWidget.of(context).register(
+          _userNameController.text, _setPasswordController.text, _inviteCodeController.text,
+          emailAddress: _userEmailAddressController.text);
 
       if (registration.isSuccess()) {
         setState(() => _pageMode = _PageMode.LOGIN);
@@ -491,7 +500,7 @@ class _LoginPageState extends State<LoginPage> {
           _inviteCodeInvalid = true;
           _pageMode = _PageMode.CHECK_INVITE;
         });
-        _checkInviteCodeFormKey.currentState.validate();
+        SchedulerBinding.instance.addPostFrameCallback((_) => _checkInviteCodeFormKey.currentState.validate());
       } else if (registration.isEMailAddressInvalid()) {
         setState(() => _emailAddressInvalid = true);
         _registerFullFormKey.currentState.validate();
@@ -529,13 +538,12 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _loading = true);
 
     try {
-      final registration = await RestClientWidget.of(context).register(_userNameController.text,
-          _userEmailAddressController.text, _setPasswordController.text, _inviteCodeController.text);
+      final registration = await RestClientWidget.of(context)
+          .register(_userNameController.text, _setPasswordController.text, _inviteCodeController.text);
 
       if (registration.isSuccess()) {
         setState(() => _pageMode = _PageMode.LOGIN);
         showRegistrationWithoutEmailSuccessMessage();
-        _userEmailAddressController.clear();
         _setPasswordController.clear();
         _confirmPasswordController.clear();
         _inviteCodeController.clear();
@@ -564,11 +572,6 @@ class _LoginPageState extends State<LoginPage> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(
           "Deine Registrierung ist abgeschlossen. Du kannst dich nun mit deiner Email-Adresse und deinem Passwort anmelden."),
-      duration: Duration(days: 1),
-      action: SnackBarAction(
-        label: "Geht klar",
-        onPressed: () => ScaffoldMessenger.of(context).removeCurrentSnackBar(),
-      ),
     ));
   }
 }

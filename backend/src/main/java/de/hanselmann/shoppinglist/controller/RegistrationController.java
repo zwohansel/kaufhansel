@@ -51,7 +51,9 @@ public class RegistrationController implements RegistrationApi {
             return ResponseEntity.ok(RegistrationResultDto.inviteCodeInvalid());
         }
 
-        if (!registrationService.isEmailAddressValid(registrationData.getEmailAddress())) {
+        String emailAddress = registrationData.getEmailAddress().orElse(null);
+
+        if (emailAddress != null && !registrationService.isEmailAddressUnused(emailAddress)) {
             return ResponseEntity.ok(RegistrationResultDto.emailInvalid());
         }
 
@@ -59,11 +61,21 @@ public class RegistrationController implements RegistrationApi {
             return ResponseEntity.ok(RegistrationResultDto.passwordInvalid());
         }
 
-        if (registrationService.registerUser(
-                registrationData.getInviteCode(),
-                registrationData.getEmailAddress(),
-                registrationData.getUserName(),
-                registrationData.getPassword())) {
+        boolean success;
+        if (emailAddress == null) {
+            success = registrationService.registerUserWithEMailAddressFromInvite(
+                    registrationData.getInviteCode(),
+                    registrationData.getUserName(),
+                    registrationData.getPassword());
+        } else {
+            success = registrationService.registerUser(
+                    registrationData.getInviteCode(),
+                    emailAddress,
+                    registrationData.getUserName(),
+                    registrationData.getPassword());
+        }
+
+        if (success) {
             return ResponseEntity.ok(RegistrationResultDto.success());
         } else {
             return ResponseEntity.ok(RegistrationResultDto.fail());

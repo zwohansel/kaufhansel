@@ -55,7 +55,7 @@ public class RegistrationService {
         }).orElse(RegistrationProcessType.INVALID);
     }
 
-    public boolean isEmailAddressValid(String emailAddress) {
+    public boolean isEmailAddressUnused(String emailAddress) {
         return !userService.existsUserWithEmailAddress(emailAddress)
                 && !pendingRegistrationRepository.existsByEmailAddress(emailAddress);
     }
@@ -101,7 +101,7 @@ public class RegistrationService {
 
         if (requireActivation) {
             synchronized (this) {
-                if (!isEmailAddressValid(pendingRegistration.getEmailAddress())) {
+                if (!isEmailAddressUnused(pendingRegistration.getEmailAddress())) {
                     return false;
                 }
                 pendingRegistrationRepository.save(pendingRegistration);
@@ -123,7 +123,13 @@ public class RegistrationService {
     public boolean activate(String activationCode) {
         return pendingRegistrationRepository.findByActivationCode(activationCode)
                 .filter(PendingRegistration::isNotExpired)
-                .map(this::createUser)
+                .map(pendingRegistration -> {
+                    try {
+                        return createUser(pendingRegistration);
+                    } finally {
+                        pendingRegistrationRepository.delete(pendingRegistration);
+                    }
+                })
                 .orElse(false);
     }
 
@@ -136,7 +142,6 @@ public class RegistrationService {
             pendingRegistration.getInvitedToShoppingLists()
                     .forEach(list -> shoppingListService.addUserToShoppingList(list, user));
         } finally {
-            pendingRegistrationRepository.delete(pendingRegistration);
             emailService.sendWelcomeEmail(user);
         }
         return true;
