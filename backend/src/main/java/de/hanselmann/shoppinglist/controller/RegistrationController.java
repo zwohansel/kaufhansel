@@ -15,23 +15,28 @@ import org.springframework.web.bind.annotation.RestController;
 import de.hanselmann.shoppinglist.restapi.RegistrationApi;
 import de.hanselmann.shoppinglist.restapi.dto.InviteCodeDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationDataDto;
+import de.hanselmann.shoppinglist.restapi.dto.RegistrationProcessTypeDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationResultDto;
 import de.hanselmann.shoppinglist.restapi.dto.SendInviteDto;
+import de.hanselmann.shoppinglist.restapi.dto.transformer.DtoTransformer;
 import de.hanselmann.shoppinglist.service.RegistrationService;
 
 @RestController
 public class RegistrationController implements RegistrationApi {
     private final RegistrationService registrationService;
     private final ShoppingListGuard guard;
+    private final DtoTransformer dtoTransformer;
     private final String activationSuccessPage;
     private final String activationFailurePage;
 
     @Autowired
     public RegistrationController(RegistrationService registrationService, ShoppingListGuard guard,
+            DtoTransformer dtoTransformer,
             ResourceLoader resourceLoader)
             throws IOException {
         this.registrationService = registrationService;
         this.guard = guard;
+        this.dtoTransformer = dtoTransformer;
         try (InputStream in = resourceLoader.getResource("classpath:static/activation_success.html").getInputStream()) {
             this.activationSuccessPage = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }
@@ -99,5 +104,10 @@ public class RegistrationController implements RegistrationApi {
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @Override
+    public ResponseEntity<RegistrationProcessTypeDto> getRegistrationProcessType(String inviteCode) {
+        return ResponseEntity.ok(dtoTransformer.map(registrationService.getTypeOfRegistrationProcess(inviteCode)));
     }
 }

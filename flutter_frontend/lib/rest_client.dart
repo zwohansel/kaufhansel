@@ -283,6 +283,19 @@ class RestClient {
     }
   }
 
+  Future<RegistrationProcessType> checkInviteCode(String inviteCode) async {
+    var request = await _httpClient.getUrl(_serverUrl.resolve("register/type/$inviteCode")).timeout(timeout);
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode == 200) {
+      final String decoded = await response.transform(utf8.decoder).join();
+      final Map<String, dynamic> json = jsonDecode(decoded);
+      return RegistrationProcessTypes.fromString(json.get('type'));
+    } else {
+      throw HttpResponseException(response.statusCode, message: "Failed to check invite code.");
+    }
+  }
+
   Future<RegistrationResult> register(String userName, String emailAddress, String password, String inviteCode) async {
     final body = jsonEncode(
         {'userName': userName, 'emailAddress': emailAddress, 'password': password, 'inviteCode': inviteCode});

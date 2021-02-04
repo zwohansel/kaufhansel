@@ -35,8 +35,24 @@ public class RegistrationService {
         this.emailService = emailService;
     }
 
+    public enum RegistrationProcessType {
+        INVALID,
+        FULL_REGISTRATION,
+        WITHOUT_EMAIL
+    }
+
     public boolean isInviteCodeValid(String inviteCode) {
         return inviteRepository.findByCode(inviteCode).isPresent();
+    }
+
+    public RegistrationProcessType getTypeOfRegistrationProcess(String inviteCode) {
+        return inviteRepository.findByCode(inviteCode).map(invite -> {
+            if (invite.getInviteeEmailAddress() == null) {
+                return RegistrationProcessType.FULL_REGISTRATION;
+            } else {
+                return RegistrationProcessType.WITHOUT_EMAIL;
+            }
+        }).orElse(RegistrationProcessType.INVALID);
     }
 
     public boolean isEmailAddressValid(String emailAddress) {

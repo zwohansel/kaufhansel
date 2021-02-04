@@ -380,6 +380,24 @@ class ShoppingListUserInfo {
   String get id => _id;
 }
 
+enum RegistrationProcessType { INVALID, FULL_REGISTRATION, WITHOUT_EMAIL }
+
+const Map<String, RegistrationProcessType> _strToType = {
+  'INVALID': RegistrationProcessType.INVALID,
+  'FULL_REGISTRATION': RegistrationProcessType.FULL_REGISTRATION,
+  'WITHOUT_EMAIL': RegistrationProcessType.WITHOUT_EMAIL,
+};
+
+extension RegistrationProcessTypes on RegistrationProcessType {
+  static RegistrationProcessType fromString(String typeStr) {
+    final type = _strToType[typeStr];
+    if (type == null) {
+      return RegistrationProcessType.INVALID;
+    }
+    return type;
+  }
+}
+
 enum _RegistrationResultStatus { SUCCESS, EMAIL_INVALID, INVITE_CODE_INVALID, PASSWORD_INVALID, FAILURE }
 
 const Map<String, _RegistrationResultStatus> _strToStatus = {

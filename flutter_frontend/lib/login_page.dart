@@ -22,16 +22,24 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
+enum _PageMode { LOGIN, CHECK_INVITE, REGISTRATION_FULL, REGISTRATION_WITHOUT_EMAIL }
+
 class _LoginPageState extends State<LoginPage> {
   final _loginFormKey = GlobalKey<FormState>();
+  final _checkInviteCodeFormKey = GlobalKey<FormState>();
+  final _registerFullFormKey = GlobalKey<FormState>();
+  final _registerWithoutEmailFormKey = GlobalKey<FormState>();
+
   final _userNameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _userEmailAddressController = TextEditingController();
   final _inviteCodeController = TextEditingController();
+  final _userEmailAddressController = TextEditingController();
   final _setPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
+  _PageMode _pageMode = _PageMode.LOGIN;
+
   bool _loading = false;
-  bool _registerMode = false;
   bool _inviteCodeInvalid = false;
   bool _emailAddressInvalid = false;
   bool _passwordInvalid = false;
@@ -112,21 +120,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 _buildProgressBar(context),
                 Flexible(
-                  child: SingleChildScrollView(
-                    child: Form(
-                      key: _loginFormKey,
-                      child: AutofillGroup(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            ..._buildInputs(),
-                            ..._buildButtons(),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  child: SingleChildScrollView(child: _buildForm()),
                 ),
               ],
             ),
@@ -145,156 +139,285 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  List<Widget> _buildInputs() {
-    if (_registerMode) {
-      return [
-        TextFormField(
-          controller: _userNameController,
-          enabled: !_loading,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(hintText: 'Nutzername'),
-          validator: (userName) {
-            if (userName.trim().isEmpty) {
-              return 'Gibstu Nutzernamen ein!?';
-            }
-            return null;
-          },
-        ),
-        TextFormField(
-          controller: _userEmailAddressController,
-          enabled: !_loading,
-          autofillHints: !_loading ? [AutofillHints.newUsername] : null,
-          decoration: const InputDecoration(
-            hintText: 'Email',
-          ),
-          validator: (address) {
-            if (!isValidEMailAddress(address)) {
-              return 'Gibstu gültige Email ein!?';
-            }
-            if (_emailAddressInvalid) {
-              return 'Nimm eine andere.';
-            }
-            return null;
-          },
-        ),
-        TextFormField(
-          controller: _setPasswordController,
-          enabled: !_loading,
-          autofillHints: !_loading ? [AutofillHints.newPassword] : null,
-          decoration: const InputDecoration(
-            hintText: 'Kennwort',
-          ),
-          obscureText: true,
-          validator: (password) {
-            if (password.length < 8) {
-              return 'Mindestens 8 Zeichen!';
-            }
-            if (_passwordInvalid) {
-              return 'Denk dir was besseres aus.';
-            }
-            return null;
-          },
-        ),
-        TextFormField(
-          controller: _confirmPasswordController,
-          enabled: !_loading,
-          decoration: const InputDecoration(
-            hintText: 'Kennwort bestätigen',
-          ),
-          obscureText: true,
-          validator: (password) {
-            if (password.isEmpty || password != _setPasswordController.text) {
-              return 'Gibstu Kennwort nochmal ein!?';
-            }
-            return null;
-          },
-          onFieldSubmitted: (_) => _register(),
-        ),
-        TextFormField(
-          controller: _inviteCodeController,
-          decoration: const InputDecoration(
-            hintText: 'Einladungs-Code',
-          ),
-          textCapitalization: TextCapitalization.characters,
-          validator: (inviteCode) {
-            if (inviteCode.isEmpty) {
-              return 'Gibstu Einladungs-Code ein!?';
-            }
-            if (_inviteCodeInvalid) {
-              return 'Der Einladungs-Code stimmt nicht!';
-            }
-            return null;
-          },
-        ),
-      ];
+  Widget _buildForm() {
+    switch (_pageMode) {
+      case _PageMode.LOGIN:
+        return _buildLoginForm();
+      case _PageMode.CHECK_INVITE:
+        return _buildCheckInviteCodeForm();
+      case _PageMode.REGISTRATION_FULL:
+        return _buildRegistrationFullForm();
+      case _PageMode.REGISTRATION_WITHOUT_EMAIL:
+        return _buildRegistrationWithoutEmailForm();
+      default:
+        return Container();
     }
+  }
 
-    // Login
-    return [
-      Column(
+  Form _buildLoginForm() {
+    return Form(
+      key: _loginFormKey,
+      child: AutofillGroup(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextFormField(
+                  controller: _userEmailAddressController,
+                  enabled: !_loading,
+                  autofillHints: !_loading ? [AutofillHints.username] : null,
+                  decoration: const InputDecoration(
+                    hintText: 'Email',
+                  ),
+                  validator: (address) {
+                    if (!isValidEMailAddress(address)) {
+                      return 'Gib eine gültige Email-Adresse ein';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                    controller: _passwordController,
+                    enabled: !_loading,
+                    autofillHints: !_loading ? [AutofillHints.password] : null,
+                    decoration: const InputDecoration(
+                      hintText: 'Kennwort',
+                    ),
+                    obscureText: true,
+                    validator: (password) {
+                      if (password.isEmpty) {
+                        return 'Gib dein Kennwort richtig ein';
+                      }
+                      return null;
+                    },
+                    onFieldSubmitted: (_) => _login())
+              ],
+            ),
+            Padding(
+                padding: EdgeInsets.only(top: 15),
+                child: ElevatedButton(child: Text("Anmelden"), onPressed: _loading ? null : _login)),
+            Padding(
+              padding: EdgeInsets.only(top: 10),
+              child: OutlinedButton(
+                  child: Text("Registrieren"),
+                  onPressed: _loading ? null : () => setState(() => _pageMode = _PageMode.CHECK_INVITE)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Form _buildCheckInviteCodeForm() {
+    return Form(
+      key: _checkInviteCodeFormKey,
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TextFormField(
-            controller: _userEmailAddressController,
+            controller: _inviteCodeController,
             enabled: !_loading,
-            autofillHints: !_loading ? [AutofillHints.username] : null,
-            decoration: const InputDecoration(
-              hintText: 'Email',
-            ),
-            validator: (address) {
-              if (!isValidEMailAddress(address)) {
-                return 'Gibstu gültige Email ein!?';
+            textCapitalization: TextCapitalization.characters,
+            decoration: const InputDecoration(hintText: 'Einladungs-Code'),
+            validator: (code) {
+              if (code.trim().isEmpty) {
+                return 'Gib deinen Einladungs-Code ein';
+              }
+              return null;
+            },
+          ),
+          Padding(
+              padding: EdgeInsets.only(top: 15),
+              child: ElevatedButton(child: Text("Weiter"), onPressed: _loading ? null : _checkInviteCode)),
+          Padding(
+            padding: EdgeInsets.only(top: 10),
+            child: OutlinedButton(
+                child: Text("Zurück zur Anmeldung"),
+                onPressed: _loading ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _checkInviteCode() async {
+    if (!_checkInviteCodeFormKey.currentState.validate()) {
+      return;
+    }
+
+    setState(() => _loading = true);
+
+    try {
+      RegistrationProcessType registrationProcessType =
+          await RestClientWidget.of(context).checkInviteCode(_inviteCodeController.text);
+      switch (registrationProcessType) {
+        case RegistrationProcessType.FULL_REGISTRATION:
+          setState(() => _pageMode = _PageMode.REGISTRATION_FULL);
+          break;
+        case RegistrationProcessType.WITHOUT_EMAIL:
+          setState(() => _pageMode = _PageMode.REGISTRATION_WITHOUT_EMAIL);
+          break;
+        case RegistrationProcessType.INVALID:
+        default:
+          setState(() => _inviteCodeInvalid = true);
+      }
+    } on Exception catch (e) {
+      log("Get registration process type failed.", error: e);
+      showErrorDialog(context, "Das hat nicht geklappt. Probier es später noch einmal.");
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  Form _buildRegistrationFullForm() {
+    return Form(
+      key: _registerFullFormKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextFormField(
+            controller: _userNameController,
+            enabled: !_loading,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: const InputDecoration(hintText: 'Nutzername'),
+            validator: (userName) {
+              if (userName.trim().isEmpty) {
+                return 'Gib einen Nutzernamen ein';
               }
               return null;
             },
           ),
           TextFormField(
-              controller: _passwordController,
-              enabled: !_loading,
-              autofillHints: !_loading ? [AutofillHints.password] : null,
-              decoration: const InputDecoration(
-                hintText: 'Kennwort',
-              ),
-              obscureText: true,
-              validator: (password) {
-                if (password.isEmpty) {
-                  return 'Gibstu Kennwort ein!?';
-                }
-                return null;
-              },
-              onFieldSubmitted: (_) => _login())
+            controller: _userEmailAddressController,
+            enabled: !_loading,
+            decoration: const InputDecoration(
+              hintText: 'Email',
+            ),
+            validator: (address) {
+              if (!isValidEMailAddress(address)) {
+                return 'Gib eine gültige Email-Adresse ein';
+              }
+              if (_emailAddressInvalid) {
+                return 'Nimm eine andere.';
+              }
+              return null;
+            },
+          ),
+          TextFormField(
+            controller: _setPasswordController,
+            enabled: !_loading,
+            decoration: const InputDecoration(
+              hintText: 'Kennwort',
+            ),
+            obscureText: true,
+            validator: (password) {
+              if (password.length < 8) {
+                return 'Mindestens 8 Zeichen!';
+              }
+              if (_passwordInvalid) {
+                return 'Denk dir was besseres aus.';
+              }
+              return null;
+            },
+          ),
+          TextFormField(
+            controller: _confirmPasswordController,
+            enabled: !_loading,
+            decoration: const InputDecoration(
+              hintText: 'Kennwort bestätigen',
+            ),
+            obscureText: true,
+            validator: (password) {
+              if (password.isEmpty || password != _setPasswordController.text) {
+                return 'Gib dein Kennwort nochmal ein';
+              }
+              return null;
+            },
+            onFieldSubmitted: (_) => _registerFull(),
+          ),
+          Padding(
+              padding: EdgeInsets.only(top: 15),
+              child: ElevatedButton(child: Text("Registrieren"), onPressed: _loading ? null : _registerFull)),
+          Padding(
+            padding: EdgeInsets.only(top: 10),
+            child: OutlinedButton(
+                child: Text("Zurück zur Anmeldung"),
+                onPressed: _loading ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
+          ),
         ],
       ),
-    ];
+    );
   }
 
-  List<Widget> _buildButtons() {
-    if (_registerMode) {
-      return [
-        Padding(
-            padding: EdgeInsets.only(top: 15),
-            child: ElevatedButton(child: Text("Registrieren"), onPressed: _loading ? null : _register)),
-        Padding(
-          padding: EdgeInsets.only(top: 10),
-          child: OutlinedButton(
-              child: Text("Zurück zur Anmeldung"),
-              onPressed: _loading ? null : () => setState(() => _registerMode = false)),
-        )
-      ];
-    }
-
-    // Login:
-    return [
-      Padding(
-          padding: EdgeInsets.only(top: 15),
-          child: ElevatedButton(child: Text("Anmelden"), onPressed: _loading ? null : _login)),
-      Padding(
-        padding: EdgeInsets.only(top: 10),
-        child: OutlinedButton(
-            child: Text("Registrieren"), onPressed: _loading ? null : () => setState(() => _registerMode = true)),
-      )
-    ];
+  Form _buildRegistrationWithoutEmailForm() {
+    return Form(
+      key: _registerWithoutEmailFormKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextFormField(
+            controller: _userNameController,
+            enabled: !_loading,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: const InputDecoration(hintText: 'Nutzername'),
+            validator: (userName) {
+              if (userName.trim().isEmpty) {
+                return 'Gib einen Nutzernamen ein';
+              }
+              return null;
+            },
+          ),
+          TextFormField(
+            controller: _setPasswordController,
+            enabled: !_loading,
+            decoration: const InputDecoration(
+              hintText: 'Kennwort',
+            ),
+            obscureText: true,
+            validator: (password) {
+              if (password.length < 8) {
+                return 'Mindestens 8 Zeichen!';
+              }
+              if (_passwordInvalid) {
+                return 'Denk dir was besseres aus.';
+              }
+              return null;
+            },
+          ),
+          TextFormField(
+            controller: _confirmPasswordController,
+            enabled: !_loading,
+            decoration: const InputDecoration(
+              hintText: 'Kennwort bestätigen',
+            ),
+            obscureText: true,
+            validator: (password) {
+              if (password.isEmpty || password != _setPasswordController.text) {
+                return 'Gib dein Kennwort nochmal ein';
+              }
+              return null;
+            },
+            onFieldSubmitted: (_) => _registerWithoutEmail(),
+          ),
+          Padding(
+              padding: EdgeInsets.only(top: 15),
+              child: ElevatedButton(child: Text("Registrieren"), onPressed: _loading ? null : _registerWithoutEmail)),
+          Padding(
+            padding: EdgeInsets.only(top: 10),
+            child: OutlinedButton(
+                child: Text("Zurück zur Anmeldung"),
+                onPressed: _loading ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildProgressBar(BuildContext context) {
@@ -342,14 +465,12 @@ class _LoginPageState extends State<LoginPage> {
       showErrorDialog(context,
           "Haben wir einen Fehler eingebaut oder hast du etwas falsch gemacht?\nComputer sagt: " + e.toString());
     } finally {
-      setState(() {
-        _loading = false;
-      });
+      setState(() => _loading = false);
     }
   }
 
-  void _register() async {
-    if (!_loginFormKey.currentState.validate()) {
+  void _registerFull() async {
+    if (!_registerFullFormKey.currentState.validate()) {
       return;
     }
     setState(() => _loading = true);
@@ -359,21 +480,24 @@ class _LoginPageState extends State<LoginPage> {
           _userEmailAddressController.text, _setPasswordController.text, _inviteCodeController.text);
 
       if (registration.isSuccess()) {
-        setState(() => _registerMode = false);
-        showRegistrationSuccessMessage(_userEmailAddressController.text);
+        setState(() => _pageMode = _PageMode.LOGIN);
+        _showFullRegistrationSuccessMessage(_userEmailAddressController.text);
         _userEmailAddressController.clear();
         _setPasswordController.clear();
         _confirmPasswordController.clear();
         _inviteCodeController.clear();
       } else if (registration.isInviteCodeInvalid()) {
-        setState(() => _inviteCodeInvalid = true);
-        _loginFormKey.currentState.validate();
+        setState(() {
+          _inviteCodeInvalid = true;
+          _pageMode = _PageMode.CHECK_INVITE;
+        });
+        _checkInviteCodeFormKey.currentState.validate();
       } else if (registration.isEMailAddressInvalid()) {
         setState(() => _emailAddressInvalid = true);
-        _loginFormKey.currentState.validate();
+        _registerFullFormKey.currentState.validate();
       } else if (registration.isPasswordInvalid()) {
         setState(() => _passwordInvalid = true);
-        _loginFormKey.currentState.validate();
+        _registerFullFormKey.currentState.validate();
       } else {
         showErrorDialog(context,
             "Wollen wir nicht, dass du dich registrierst oder hast du etwas falsch gemacht?\nProbiere es einfach später nochmal.");
@@ -386,13 +510,63 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void showRegistrationSuccessMessage(String emailAddress) {
+  void _showFullRegistrationSuccessMessage(String emailAddress) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(
           "Wir haben dir eine E-Mail an $emailAddress geschickt... folge dem Aktivierungs-Link, dann kannst du dich anmelden."),
       duration: Duration(days: 1),
       action: SnackBarAction(
         label: "Mach ich",
+        onPressed: () => ScaffoldMessenger.of(context).removeCurrentSnackBar(),
+      ),
+    ));
+  }
+
+  void _registerWithoutEmail() async {
+    if (!_registerWithoutEmailFormKey.currentState.validate()) {
+      return;
+    }
+    setState(() => _loading = true);
+
+    try {
+      final registration = await RestClientWidget.of(context).register(_userNameController.text,
+          _userEmailAddressController.text, _setPasswordController.text, _inviteCodeController.text);
+
+      if (registration.isSuccess()) {
+        setState(() => _pageMode = _PageMode.LOGIN);
+        showRegistrationWithoutEmailSuccessMessage();
+        _userEmailAddressController.clear();
+        _setPasswordController.clear();
+        _confirmPasswordController.clear();
+        _inviteCodeController.clear();
+      } else if (registration.isInviteCodeInvalid()) {
+        setState(() {
+          _inviteCodeInvalid = true;
+          _pageMode = _PageMode.CHECK_INVITE;
+        });
+        _checkInviteCodeFormKey.currentState.validate();
+      } else if (registration.isPasswordInvalid()) {
+        setState(() => _passwordInvalid = true);
+        _registerWithoutEmailFormKey.currentState.validate();
+      } else {
+        showErrorDialog(context,
+            "Wollen wir nicht, dass du dich registrierst oder hast du etwas falsch gemacht?\nProbiere es einfach später nochmal.");
+      }
+    } on Exception catch (e) {
+      log("Registration failed.", error: e);
+      showErrorDialog(context, "Irgendetwas stimmt nicht. Probiere es einfach später nochmal.");
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  void showRegistrationWithoutEmailSuccessMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(
+          "Deine Registrierung ist abgeschlossen. Du kannst dich nun mit deiner Email-Adresse und deinem Passwort anmelden."),
+      duration: Duration(days: 1),
+      action: SnackBarAction(
+        label: "Geht klar",
         onPressed: () => ScaffoldMessenger.of(context).removeCurrentSnackBar(),
       ),
     ));
