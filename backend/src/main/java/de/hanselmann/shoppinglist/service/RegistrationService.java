@@ -112,8 +112,10 @@ public class RegistrationService {
     }
 
     private boolean createUser(PendingRegistration pendingRegistration) {
-        ShoppingListUser user = ShoppingListUser.create(pendingRegistration);
-        userService.save(user); // TODO: Synchronize user creation to prevent duplicates
+        ShoppingListUser user = userService.createNewUser(pendingRegistration);
+        if (user == null) {
+            return false;
+        }
         try {
             pendingRegistration.getInvitedToShoppingLists()
                     .forEach(list -> shoppingListService.addUserToShoppingList(list, user));

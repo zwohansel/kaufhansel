@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import de.hanselmann.shoppinglist.model.PendingRegistration;
 import de.hanselmann.shoppinglist.model.ShoppingListReference;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
@@ -43,6 +44,17 @@ public class ShoppingListUserService {
 
     public Optional<ShoppingListUser> findUser(ObjectId userId) {
         return userRepository.findById(userId);
+    }
+
+    public ShoppingListUser createNewUser(PendingRegistration pendingRegistration) {
+        ShoppingListUser user = ShoppingListUser.create(pendingRegistration);
+        synchronized (this) {
+            if (userRepository.existsByEmailAddress(pendingRegistration.getEmailAddress())) {
+                return null;
+            }
+            userRepository.save(user);
+        }
+        return user;
     }
 
     public void addShoppingListToUser(ShoppingListUser user, ObjectId shoppingListId,
@@ -102,10 +114,6 @@ public class ShoppingListUserService {
 
     public boolean existsUserWithEmailAddress(String emailAddress) {
         return userRepository.existsByEmailAddress(emailAddress);
-    }
-
-    public void save(ShoppingListUser user) {
-        userRepository.save(user);
     }
 
 }
