@@ -121,6 +121,7 @@ public class RegistrationService {
                     .forEach(list -> shoppingListService.addUserToShoppingList(list, user));
         } finally {
             pendingRegistrationRepository.delete(pendingRegistration);
+            emailService.sendWelcomeEmail(user);
         }
         return true;
     }

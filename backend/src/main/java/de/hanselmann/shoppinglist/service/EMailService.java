@@ -8,6 +8,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import de.hanselmann.shoppinglist.model.PendingRegistration;
+import de.hanselmann.shoppinglist.model.ShoppingListUser;
 
 @Service
 public class EMailService {
@@ -50,9 +51,21 @@ public class EMailService {
                 // + "\nWenn du den Kaufhansel lieber im Web nutzen willst gehe auf
                 // https://www.zwohansel.de/kaufhansel."
                 + "\nNutze den folgenden Code um dich zu registrieren:"
-                + "\n\n{1}"
-                + "\n\nViel Spaß beim Einkaufen!"
+                + "\n\n{1}\\n"
                 + EMAIL_FOOTER, from, activationCode));
+        emailSender.send(message);
+    }
+
+    public void sendWelcomeEmail(ShoppingListUser user) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(SENDER_EMAIL_ADDRESS);
+        message.setTo(user.getEmailAddress());
+        message.setSubject(MessageFormat.format("Willkommen beim Kaufhansel {0}", user.getUsername()));
+        message.setText("Herzlichen Glückwunsch,"
+                + "\n\ndu hast dich erfolgreich beim Kaufhansel registriert."
+                + "\nDu kannst dich nun mit deiner EMail Addresse und dem Passwort, dass du bei der Registrierung vergeben hast, anmelden."
+                + "\n\nViel Spaß beim Einkaufen!"
+                + EMAIL_FOOTER);
         emailSender.send(message);
     }
 
