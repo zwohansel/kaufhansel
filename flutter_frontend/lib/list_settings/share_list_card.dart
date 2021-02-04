@@ -197,6 +197,8 @@ class _ShareListCardState extends State<ShareListCard> {
       try {
         RestClient client = RestClientWidget.of(context);
         await client.sendInvite(emailAddress, shoppingListId: widget._shoppingListInfo.id);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Wir haben eine Einladung an $emailAddress geschickt.")));
       } on Exception catch (e) {
         log("Failed to send list invite", error: e);
         showErrorDialog(context,
