@@ -48,27 +48,57 @@ public class RegistrationService {
         return password != null && password.strip().length() >= 8;
     }
 
-    public boolean registerUser(String emailAddress, String userName, String password) {
+    public boolean registerUser(String inviteCode, String emailAddress, String userName, String password) {
+        return inviteRepository.findByCode(inviteCode)
+                .map(invite -> invite.forEmailAddress(emailAddress))
+                .map(invite -> registerUser(invite, userName, password, true))
+                .orElse(false);
+    }
+
+    public boolean registerUserWithEMailAddressFromInvite(String inviteCode, String userName, String password) {
+        return inviteRepository.findByCode(inviteCode)
+                .map(invite -> {
+                    if (registerUser(invite, userName, password, false)) {
+                        inviteRepository.delete(invite);
+                        return true;
+                    }
+                    return false;
+
+                })
+                .orElse(false);
+    }
+
+    private boolean registerUser(Invite invite, String userName, String password, boolean requireActivation) {
+        if (invite.getInviteeEmailAddress() == null) {
+            return false;
+        }
+
         if (!isPasswordValid(password)) {
             return false;
         }
 
-        PendingRegistration pendingRegistration;
-        synchronized (this) {
-            if (!isEmailAddressValid(emailAddress)) {
-                return false;
+        final PendingRegistration pendingRegistration = PendingRegistration.create(
+                invite,
+                userName,
+                passwordEncoder.encode(password),
+                codeGenerator.generateRegistrationActivationCode());
+
+        if (requireActivation) {
+            synchronized (this) {
+                if (!isEmailAddressValid(pendingRegistration.getEmailAddress())) {
+                    return false;
+                }
+                pendingRegistrationRepository.save(pendingRegistration);
             }
-            pendingRegistration = PendingRegistration.create(emailAddress, userName,
-                    passwordEncoder.encode(password), codeGenerator.generateRegistrationActivationCode());
 
-            pendingRegistrationRepository.save(pendingRegistration);
-        }
-
-        try {
-            emailService.sendRegistrationActivationMail(pendingRegistration);
-        } catch (Exception e) {
-            pendingRegistrationRepository.delete(pendingRegistration);
-            throw e;
+            try {
+                emailService.sendRegistrationActivationMail(pendingRegistration);
+            } catch (Exception e) {
+                pendingRegistrationRepository.delete(pendingRegistration);
+                throw e;
+            }
+        } else {
+            return createUser(pendingRegistration);
         }
 
         return true;
@@ -76,13 +106,20 @@ public class RegistrationService {
 
     public boolean activate(String activationCode) {
         return pendingRegistrationRepository.findByActivationCode(activationCode)
-                .filter(PendingRegistration::isNotExpired).map(this::createUser).orElse(false);
+                .filter(PendingRegistration::isNotExpired)
+                .map(this::createUser)
+                .orElse(false);
     }
 
     private boolean createUser(PendingRegistration pendingRegistration) {
         ShoppingListUser user = ShoppingListUser.create(pendingRegistration);
-        userService.save(user);
-        pendingRegistrationRepository.delete(pendingRegistration);
+        userService.save(user); // TODO: Synchronize user creation to prevent duplicates
+        try {
+            pendingRegistration.getInvitedToShoppingLists()
+                    .forEach(list -> shoppingListService.addUserToShoppingList(list, user));
+        } finally {
+            pendingRegistrationRepository.delete(pendingRegistration);
+        }
         return true;
     }
 
@@ -93,23 +130,48 @@ public class RegistrationService {
         return code;
     }
 
-    public void sendInvite(String emailAddress) {
-        // TODO: check: no Invite, PendigRegistration nor User with this email address
-        // exists
+    public boolean sendInvite(String emailAddress) {
+        if (isEmailAddressAlreadyInUse(emailAddress)) {
+            return false;
+        }
         String code = codeGenerator.generateInviteCode();
         Invite invite = Invite.createForEmailAddress(code, userService.getCurrentUser(), emailAddress);
         inviteRepository.save(invite);
-        // TODO: send mail
+
+        try {
+            emailService.sendInviteMail(emailAddress, code, userService.getCurrentUser().getUsername());
+        } catch (Exception e) {
+            inviteRepository.delete(invite);
+            return false;
+        }
+        return true;
     }
 
-    public void sendInviteForShoppingList(String emailAddress, ObjectId shoppingListId) {
-        // TODO: check: no Invite, PendigRegistration nor User with this email address
-        // exists
+    private boolean isEmailAddressAlreadyInUse(String emailAddress) {
+        return inviteRepository.existsByInviteeEmailAddress(emailAddress) ||
+                pendingRegistrationRepository.existsByEmailAddress(emailAddress) ||
+                userService.existsUserWithEmailAddress(emailAddress);
+    }
+
+    public boolean sendInviteForShoppingList(String emailAddress, ObjectId shoppingListId) {
+        if (isEmailAddressAlreadyInUse(emailAddress)) {
+            return false;
+        }
         String code = codeGenerator.generateInviteCode();
-        Invite invite = Invite.createForEmailAddressAndList(code, userService.getCurrentUser(), emailAddress,
+        Invite invite = Invite.createForEmailAddressAndList(
+                code,
+                userService.getCurrentUser(),
+                emailAddress,
                 shoppingListId);
         inviteRepository.save(invite);
-        // TODO: send mail
+
+        try {
+            emailService.sendInviteMail(emailAddress, code, userService.getCurrentUser().getUsername());
+        } catch (Exception e) {
+            inviteRepository.delete(invite);
+            throw e;
+        }
+        return true;
     }
 
 }

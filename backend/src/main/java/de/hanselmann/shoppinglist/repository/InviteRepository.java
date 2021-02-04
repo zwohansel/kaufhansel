@@ -11,4 +11,6 @@ public interface InviteRepository extends MongoRepository<Invite, ObjectId> {
     Optional<Invite> findByCode(String code);
 
     boolean existsByCode(String code);
+
+    boolean existsByInviteeEmailAddress(String emailAddress);
 }

@@ -54,7 +54,10 @@ public class RegistrationController implements RegistrationApi {
             return ResponseEntity.ok(RegistrationResultDto.passwordInvalid());
         }
 
-        if (registrationService.registerUser(registrationData.getEmailAddress(), registrationData.getUserName(),
+        if (registrationService.registerUser(
+                registrationData.getInviteCode(),
+                registrationData.getEmailAddress(),
+                registrationData.getUserName(),
                 registrationData.getPassword())) {
             return ResponseEntity.ok(RegistrationResultDto.success());
         } else {
@@ -81,17 +84,18 @@ public class RegistrationController implements RegistrationApi {
     @Override
     public ResponseEntity<Void> sendInvite(SendInviteDto sendInvite) {
         try {
+            boolean success = false;
             if (sendInvite.getShoppingListId().isPresent()) {
                 String shoppingListId = sendInvite.getShoppingListId().get();
                 if (!guard.canEditShoppingList(shoppingListId)) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
                 }
-                registrationService.sendInviteForShoppingList(sendInvite.getEmailAddress(),
+                success = registrationService.sendInviteForShoppingList(sendInvite.getEmailAddress(),
                         new ObjectId(shoppingListId));
             } else {
-                registrationService.sendInvite(sendInvite.getEmailAddress());
+                success = registrationService.sendInvite(sendInvite.getEmailAddress());
             }
-            return ResponseEntity.noContent().build();
+            return success ? ResponseEntity.noContent().build() : ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }

@@ -15,32 +15,48 @@ public class Invite {
     private ObjectId generatedByUser;
     private LocalDateTime generatedAt;
     private String inviteeEmailAddress;
-    private final List<ObjectId> invitedToShoppingLists = new ArrayList<>();
+    private List<ObjectId> invitedToShoppingLists = new ArrayList<>();
 
     public static Invite create(String code, ShoppingListUser invitor) {
-        return new Invite(code, invitor.getId(), LocalDateTime.now());
+        return createForEmailAddress(code, invitor, null);
     }
 
     public static Invite createForEmailAddress(String code, ShoppingListUser invitor, String inviteeEmailAddress) {
-        Invite invite = create(code, invitor);
-        invite.inviteeEmailAddress = inviteeEmailAddress;
-        return invite;
+        return new Invite(code, invitor.getId(), LocalDateTime.now(), inviteeEmailAddress);
     }
 
-    public static Invite createForEmailAddressAndList(String code, ShoppingListUser invitor, String inviteeEmailAddress,
+    public static Invite createForEmailAddressAndList(
+            String code,
+            ShoppingListUser invitor,
+            String inviteeEmailAddress,
             ObjectId shoppingListId) {
         Invite invite = createForEmailAddress(code, invitor, inviteeEmailAddress);
         invite.invitedToShoppingLists.add(shoppingListId);
         return invite;
     }
 
-    public Invite() {
-    }
-
-    private Invite(String code, ObjectId generatedByUserId, LocalDateTime generatedAt) {
+    private Invite(String code, ObjectId generatedByUserId, LocalDateTime generatedAt, String inviteeEmailAddress) {
         this.code = code;
         this.generatedByUser = generatedByUserId;
         this.generatedAt = generatedAt;
+        this.inviteeEmailAddress = inviteeEmailAddress;
+    }
+
+    public Invite() {
+        this(null, null, null, null);
+    }
+
+    private Invite(Invite invite, String emailAddress) {
+        this.code = invite.code;
+        this.generatedByUser = invite.generatedByUser;
+        this.generatedAt = invite.generatedAt;
+        this.inviteeEmailAddress = emailAddress;
+        this.invitedToShoppingLists.addAll(invite.invitedToShoppingLists);
+
+    }
+
+    public Invite forEmailAddress(String emailAddress) {
+        return new Invite(this, emailAddress);
     }
 
     public ObjectId getId() {

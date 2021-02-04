@@ -16,6 +16,7 @@ public class ShoppingListUser {
     private String password;
     private String emailAddress;
     private LocalDateTime registrationDate;
+    private ObjectId invitedBy;
     private List<ShoppingListReference> shoppingLists = new ArrayList<>();
 
     public static ShoppingListUser create(PendingRegistration pendingRegistration) {
@@ -26,6 +27,7 @@ public class ShoppingListUser {
         user.emailAddress = pendingRegistration.getEmailAddress();
         user.username = pendingRegistration.getUserName();
         user.password = pendingRegistration.getPassword();
+        user.invitedBy = pendingRegistration.getInvitedBy();
         user.registrationDate = LocalDateTime.now();
         return user;
     }
@@ -56,6 +58,10 @@ public class ShoppingListUser {
 
     public LocalDateTime getRegistrationDate() {
         return registrationDate;
+    }
+
+    public ObjectId getInvitedBy() {
+        return invitedBy;
     }
 
     public List<ShoppingListReference> getShoppingLists() {
