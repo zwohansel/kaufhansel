@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 
 const CATEGORY_ALL = "Alle";
 
@@ -433,4 +434,55 @@ class RegistrationResult {
   bool isEMailAddressInvalid() => _status == _RegistrationResultStatus.EMAIL_INVALID;
 
   bool isPasswordInvalid() => _status == _RegistrationResultStatus.PASSWORD_INVALID;
+}
+
+enum InfoMessageSeverity { CRITICAL, INFO }
+
+const Map<String, InfoMessageSeverity> _strToSeverity = {
+  'CRITICAL': InfoMessageSeverity.CRITICAL,
+  'INFO': InfoMessageSeverity.INFO,
+};
+
+extension _InfoMessageSeverities on _RegistrationResultStatus {
+  static InfoMessageSeverity fromString(String severityStr) {
+    final severity = _strToSeverity[severityStr];
+    if (severity == null) {
+      return InfoMessageSeverity.INFO;
+    }
+    return severity;
+  }
+}
+
+class InfoMessage {
+  final InfoMessageSeverity _severity;
+  final String _message;
+  final String _dismissLabel;
+
+  InfoMessage(this._severity, this._message, this._dismissLabel);
+
+  factory InfoMessage.fromJson(Map<String, dynamic> json) {
+    if (json == null) {
+      return null;
+    }
+    return new InfoMessage(
+        _InfoMessageSeverities.fromString(json.get("severity")), json.get("message"), json.getOpt("dismissLabel"));
+  }
+
+  InfoMessageSeverity get severity => _severity;
+  String get message => _message;
+  String get dismissLabel => _dismissLabel;
+}
+
+class BackendInfo {
+  final Version _version;
+  final InfoMessage _message;
+
+  BackendInfo(this._version, this._message);
+
+  factory BackendInfo.fromJson(Map<String, dynamic> json) {
+    return new BackendInfo(Version.fromString(json.get("apiVersion")), InfoMessage.fromJson(json.getOpt("message")));
+  }
+
+  InfoMessage get message => _message;
+  Version get version => _version;
 }

@@ -5,12 +5,21 @@ plugins {
 }
 
 group = 'de.hanselmann'
-version = '0.0.4'
+version = '1.0.0'
 sourceCompatibility = '11'
 
 repositories {
     mavenCentral()
 }
+
+springBoot {    
+    buildInfo() 
+}
+
+
+//eclipse {
+//    autoBuildTasks bootBuildInfo
+//}
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'

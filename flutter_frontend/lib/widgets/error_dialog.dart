@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
-void showErrorDialog(BuildContext context, String text) {
-  showDialog(
+Future<void> showErrorDialog(BuildContext context, String text) {
+  return showCustomErrorDialog(context, Text(text, textAlign: TextAlign.center));
+}
+
+Future<void> showCustomErrorDialog(BuildContext context, Widget child,
+    {String closeLabel = "Ist dann halt schon so..."}) {
+  return showDialog(
       context: context,
       builder: (context) => AlertDialog(
           title: Center(
@@ -12,10 +17,9 @@ void showErrorDialog(BuildContext context, String text) {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(text, textAlign: TextAlign.center),
+              child,
               SizedBox(height: 24, width: 24),
-              Center(
-                  child: TextButton(onPressed: () => Navigator.pop(context), child: Text("Ist dann halt schon so...")))
+              Center(child: TextButton(onPressed: () => Navigator.pop(context), child: Text(closeLabel)))
             ],
           )));
 }

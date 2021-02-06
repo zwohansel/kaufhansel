@@ -37,10 +37,10 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   ShoppingList _currentShoppingList;
   List<String> _currentShoppingListCategories;
   String _currentShoppingListCategory;
-
-  // if userInfo == null, no user is logged in
   ShoppingListUserInfo _userInfo;
+
   bool _isLoggedIn() {
+    // if userInfo == null, no user is logged in
     return _userInfo != null;
   }
 
@@ -303,23 +303,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   Widget _buildShoppingList(BuildContext context) {
     if (_error != null) {
-      return Center(
-          child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            child: Text("🤷‍♂️", style: TextStyle(fontFamilyFallback: ["NotoColorEmoji"], fontSize: 100)),
-            padding: EdgeInsets.all(20),
-          ),
-          Text(
-            "Oh nein! Haben wir Deine Einkaufslisten etwa verlegt?",
-            style: Theme.of(context).textTheme.headline6,
-          ),
-          Padding(
-              child: ElevatedButton(child: Text("Nochmal versuchen"), onPressed: _handleRetry),
-              padding: EdgeInsets.all(20))
-        ],
-      ));
+      return _buildErrorView();
     } else if (_shoppingListInfos == null) {
       return Center(child: CircularProgressIndicator());
     } else if (_currentShoppingList == null) {
@@ -358,5 +342,25 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
         onCategoryChanged: _setCurrentShoppingListCategory,
       );
     }
+  }
+
+  Widget _buildErrorView() {
+    return Center(
+        child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          child: Text("🤷‍♂️", style: TextStyle(fontFamilyFallback: ["NotoColorEmoji"], fontSize: 100)),
+          padding: EdgeInsets.all(20),
+        ),
+        Text(
+          "Oh nein! Haben wir Deine Einkaufslisten etwa verlegt?",
+          style: Theme.of(context).textTheme.headline6,
+        ),
+        Padding(
+            child: ElevatedButton(child: Text("Nochmal versuchen"), onPressed: _handleRetry),
+            padding: EdgeInsets.all(20))
+      ],
+    ));
   }
 }

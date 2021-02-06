@@ -341,4 +341,16 @@ class RestClient {
           message: "Failed to invite user $emailAddress to shopping list $shoppingListId.");
     }
   }
+
+  Future<BackendInfo> getBackendInfo() async {
+    var request = await _httpClient.getUrl(_serverUrl.resolve("info")).timeout(timeout);
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode == 200) {
+      final String decoded = await response.transform(utf8.decoder).join();
+      return BackendInfo.fromJson(jsonDecode(decoded));
+    } else {
+      throw HttpResponseException(response.statusCode, message: "Failed to get backend info.");
+    }
+  }
 }

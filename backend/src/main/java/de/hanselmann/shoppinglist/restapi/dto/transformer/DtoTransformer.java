@@ -6,11 +6,15 @@ import java.util.stream.Collectors;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
 
+import de.hanselmann.shoppinglist.model.InfoMessage;
+import de.hanselmann.shoppinglist.model.InfoMessage.Severity;
 import de.hanselmann.shoppinglist.model.ShoppingList;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
 import de.hanselmann.shoppinglist.model.ShoppingListReference;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
+import de.hanselmann.shoppinglist.restapi.dto.InfoDto.InfoMessageDto;
+import de.hanselmann.shoppinglist.restapi.dto.InfoDto.SeverityDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationProcessTypeDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
@@ -67,6 +71,20 @@ public class DtoTransformer {
             return RegistrationProcessTypeDto.withoutEmail();
         default:
             return RegistrationProcessTypeDto.inviteInvalid();
+        }
+    }
+
+    public InfoMessageDto map(InfoMessage message) {
+        return new InfoMessageDto(map(message.getSeverity()), message.getMessage(), message.getDismissLabel());
+    }
+
+    private SeverityDto map(Severity severity) {
+        switch (severity) {
+        case CRITICAL:
+            return SeverityDto.CRITICAL;
+        case INFO:
+        default:
+            return SeverityDto.INFO;
         }
     }
 

@@ -9,6 +9,8 @@ import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/utils/input_validation.dart';
+import 'package:kaufhansel_client/utils/semantic_versioning.dart';
+import 'package:kaufhansel_client/widgets/confirm_dialog.dart';
 import 'package:kaufhansel_client/widgets/link.dart';
 import 'package:package_info/package_info.dart';
 
@@ -22,6 +24,8 @@ class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
 }
+
+const String _DownloadLink = "https://www.zwohansel.de/kaufhansel/download";
 
 enum _PageMode { LOGIN, CHECK_INVITE, REGISTRATION_FULL, REGISTRATION_WITHOUT_EMAIL }
 
@@ -40,16 +44,19 @@ class _LoginPageState extends State<LoginPage> {
 
   _PageMode _pageMode = _PageMode.LOGIN;
 
-  bool _loading = false;
+  bool _loading = true;
   bool _inviteCodeInvalid = false;
   bool _emailAddressInvalid = false;
   bool _passwordInvalid = false;
-  String _version;
+
+  Version _frontendVersion;
+  Version _backendVersion;
+  String _infoMessage;
+  String _infoMessageDismissLabel;
 
   @override
   void initState() {
     super.initState();
-    _setVersion();
     _userEmailAddressController.addListener(() {
       if (_emailAddressInvalid) {
         setState(() => _emailAddressInvalid = false);
@@ -71,15 +78,7 @@ class _LoginPageState extends State<LoginPage> {
         _registerWithoutEmailFormKey.currentState?.validate();
       }
     });
-  }
-
-  void _setVersion() async {
-    try {
-      final info = await PackageInfo.fromPlatform();
-      setState(() => _version = info.version);
-    } on Exception catch (e) {
-      log("Could not get app version.", error: e);
-    }
+    _fetchBackendInfo();
   }
 
   @override
@@ -124,7 +123,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 _buildProgressBar(context),
                 Flexible(
-                  child: SingleChildScrollView(child: _buildForm()),
+                  child: SingleChildScrollView(child: _buildContent()),
                 ),
               ],
             ),
@@ -143,6 +142,43 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  Widget _buildContent() {
+    List<Widget> infoMessages = [];
+    if (_infoMessage != null) {
+      infoMessages.add(
+        Container(
+          color: Theme.of(context).secondaryHeaderColor,
+          child: Padding(
+            padding: EdgeInsets.only(left: 10, top: 5, right: 10, bottom: 2),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(_infoMessage),
+                Align(
+                  alignment: Alignment.center,
+                  child: TextButton(
+                    style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                    onPressed: () => setState(() => _infoMessage = null),
+                    child: Text(_infoMessageDismissLabel ?? "Ok"),
+                  ),
+                )
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ...infoMessages,
+        _buildForm(),
+      ],
+    );
+  }
+
   Widget _buildForm() {
     switch (_pageMode) {
       case _PageMode.LOGIN:
@@ -156,6 +192,10 @@ class _LoginPageState extends State<LoginPage> {
       default:
         return Container();
     }
+  }
+
+  bool isLoading() {
+    return _loading;
   }
 
   Form _buildLoginForm() {
@@ -172,8 +212,8 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 TextFormField(
                   controller: _userEmailAddressController,
-                  enabled: !_loading,
-                  autofillHints: !_loading ? [AutofillHints.username] : null,
+                  enabled: !isLoading(),
+                  autofillHints: !isLoading() ? [AutofillHints.username] : null,
                   decoration: const InputDecoration(
                     hintText: 'Email',
                   ),
@@ -186,8 +226,8 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 TextFormField(
                     controller: _passwordController,
-                    enabled: !_loading,
-                    autofillHints: !_loading ? [AutofillHints.password] : null,
+                    enabled: !isLoading(),
+                    autofillHints: !isLoading() ? [AutofillHints.password] : null,
                     decoration: const InputDecoration(
                       hintText: 'Kennwort',
                     ),
@@ -203,12 +243,12 @@ class _LoginPageState extends State<LoginPage> {
             ),
             Padding(
                 padding: EdgeInsets.only(top: 15),
-                child: ElevatedButton(child: Text("Anmelden"), onPressed: _loading ? null : _login)),
+                child: ElevatedButton(child: Text("Anmelden"), onPressed: isLoading() ? null : _login)),
             Padding(
               padding: EdgeInsets.only(top: 10),
               child: OutlinedButton(
                   child: Text("Registrieren"),
-                  onPressed: _loading ? null : () => setState(() => _pageMode = _PageMode.CHECK_INVITE)),
+                  onPressed: isLoading() ? null : () => setState(() => _pageMode = _PageMode.CHECK_INVITE)),
             ),
           ],
         ),
@@ -225,7 +265,7 @@ class _LoginPageState extends State<LoginPage> {
         children: [
           TextFormField(
             controller: _inviteCodeController,
-            enabled: !_loading,
+            enabled: !isLoading(),
             textCapitalization: TextCapitalization.characters,
             decoration: const InputDecoration(hintText: 'Einladungs-Code'),
             onFieldSubmitted: (_) => _checkInviteCode(),
@@ -240,12 +280,12 @@ class _LoginPageState extends State<LoginPage> {
           ),
           Padding(
               padding: EdgeInsets.only(top: 15),
-              child: ElevatedButton(child: Text("Weiter"), onPressed: _loading ? null : _checkInviteCode)),
+              child: ElevatedButton(child: Text("Weiter"), onPressed: isLoading() ? null : _checkInviteCode)),
           Padding(
             padding: EdgeInsets.only(top: 10),
             child: OutlinedButton(
                 child: Text("Zurück zur Anmeldung"),
-                onPressed: _loading ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
+                onPressed: isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
           ),
         ],
       ),
@@ -291,7 +331,7 @@ class _LoginPageState extends State<LoginPage> {
         children: [
           TextFormField(
             controller: _userNameController,
-            enabled: !_loading,
+            enabled: !isLoading(),
             textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(hintText: 'Nutzername'),
             validator: (userName) {
@@ -303,7 +343,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           TextFormField(
             controller: _userEmailAddressController,
-            enabled: !_loading,
+            enabled: !isLoading(),
             decoration: const InputDecoration(
               hintText: 'Email',
             ),
@@ -319,7 +359,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           TextFormField(
             controller: _setPasswordController,
-            enabled: !_loading,
+            enabled: !isLoading(),
             decoration: const InputDecoration(
               hintText: 'Kennwort',
             ),
@@ -336,7 +376,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           TextFormField(
             controller: _confirmPasswordController,
-            enabled: !_loading,
+            enabled: !isLoading(),
             decoration: const InputDecoration(
               hintText: 'Kennwort bestätigen',
             ),
@@ -351,12 +391,12 @@ class _LoginPageState extends State<LoginPage> {
           ),
           Padding(
               padding: EdgeInsets.only(top: 15),
-              child: ElevatedButton(child: Text("Registrieren"), onPressed: _loading ? null : _registerFull)),
+              child: ElevatedButton(child: Text("Registrieren"), onPressed: isLoading() ? null : _registerFull)),
           Padding(
             padding: EdgeInsets.only(top: 10),
             child: OutlinedButton(
                 child: Text("Zurück zur Anmeldung"),
-                onPressed: _loading ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
+                onPressed: isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
           ),
         ],
       ),
@@ -372,7 +412,7 @@ class _LoginPageState extends State<LoginPage> {
         children: [
           TextFormField(
             controller: _userNameController,
-            enabled: !_loading,
+            enabled: !isLoading(),
             textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(hintText: 'Nutzername'),
             validator: (userName) {
@@ -384,7 +424,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           TextFormField(
             controller: _setPasswordController,
-            enabled: !_loading,
+            enabled: !isLoading(),
             decoration: const InputDecoration(
               hintText: 'Kennwort',
             ),
@@ -401,7 +441,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           TextFormField(
             controller: _confirmPasswordController,
-            enabled: !_loading,
+            enabled: !isLoading(),
             decoration: const InputDecoration(
               hintText: 'Kennwort bestätigen',
             ),
@@ -416,12 +456,13 @@ class _LoginPageState extends State<LoginPage> {
           ),
           Padding(
               padding: EdgeInsets.only(top: 15),
-              child: ElevatedButton(child: Text("Registrieren"), onPressed: _loading ? null : _registerWithoutEmail)),
+              child:
+                  ElevatedButton(child: Text("Registrieren"), onPressed: isLoading() ? null : _registerWithoutEmail)),
           Padding(
             padding: EdgeInsets.only(top: 10),
             child: OutlinedButton(
                 child: Text("Zurück zur Anmeldung"),
-                onPressed: _loading ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
+                onPressed: isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
           ),
         ],
       ),
@@ -429,7 +470,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildProgressBar(BuildContext context) {
-    if (_loading) {
+    if (isLoading()) {
       return LinearProgressIndicator(minHeight: 5, backgroundColor: Theme.of(context).scaffoldBackgroundColor);
     } else {
       return SizedBox(height: 5);
@@ -438,10 +479,19 @@ class _LoginPageState extends State<LoginPage> {
 
   List<Widget> _buildBottomInfos(BuildContext context) {
     final zwoHanselLink = Link('https://zwohansel.de', text: "zwohansel.de");
-    if (_version == null) {
+    if (_frontendVersion == null) {
       return [zwoHanselLink];
     }
-    return [Text(_version), zwoHanselLink];
+    if (_backendVersion != null && _backendVersion.isMoreRecentThan(_frontendVersion)) {
+      return [
+        Text(_frontendVersion.toString()),
+        Link(_DownloadLink,
+            text: "Version ${_backendVersion.toString()} ist verfügbar.",
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        zwoHanselLink
+      ];
+    }
+    return [Text(_frontendVersion.toString()), zwoHanselLink];
   }
 
   void _login() async {
@@ -474,6 +524,80 @@ class _LoginPageState extends State<LoginPage> {
           "Haben wir einen Fehler eingebaut oder hast du etwas falsch gemacht?\nComputer sagt: " + e.toString());
     } finally {
       setState(() => _loading = false);
+    }
+  }
+
+  void _fetchBackendInfo() async {
+    try {
+      final frontendVersion = await _getVersion();
+      setState(() => _frontendVersion = frontendVersion);
+      final backendInfo = await RestClientWidget.of(context).getBackendInfo();
+      setState(() => _backendVersion = backendInfo.version);
+      if (frontendVersion != null) {
+        await checkCompatibility(frontendVersion, backendInfo.version);
+      }
+      if (backendInfo.message?.severity == InfoMessageSeverity.CRITICAL) {
+        showConfirmDialog(
+          context,
+          backendInfo.message.message,
+          title: "Wichtige Durchsage",
+          confirmBtnLabel: backendInfo.message.dismissLabel ?? "Ok",
+          hideCancelBtn: true,
+          confirmBtnColor: Theme.of(context).primaryColor,
+        );
+      } else if (backendInfo.message?.severity == InfoMessageSeverity.INFO) {
+        setState(() {
+          _infoMessage = backendInfo.message?.message;
+          _infoMessageDismissLabel = backendInfo.message.dismissLabel;
+        });
+      }
+      setState(() => _loading = false);
+    } on Exception catch (e) {
+      log("Failed to fetch backend info.", error: e);
+      await showErrorDialog(context,
+          "Hast du kein Internet oder ist der Server nicht erreichbar?\nWir können es ja nochmal versuchen...");
+      await Future.delayed(Duration(seconds: 5)); // Don't let the user DDOS the server
+      _fetchBackendInfo();
+    }
+  }
+
+  Future<Version> _getVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      return Version.fromString(info.version);
+    } on Exception catch (e) {
+      log("Could not get app version.", error: e);
+      return null;
+    }
+  }
+
+  Future<void> checkCompatibility(Version frontendVersion, Version backendVersion) async {
+    if (frontendVersion == null) {
+      return;
+    }
+    if (!backendVersion.isCompatibleTo(frontendVersion)) {
+      showCustomErrorDialog(
+          context,
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                "Du verwendest immer noch die Kaufhanselversion ${frontendVersion.toString()} ???\n\nDie ist doch schon viel zu alt."
+                " Hol dir die neu viel bessere Version ${backendVersion.toString()} von",
+                textAlign: TextAlign.center,
+              ),
+              Padding(
+                  padding: EdgeInsets.only(top: 10),
+                  child: Link(
+                    _DownloadLink,
+                    text: "zwohansel.de",
+                    style: Theme.of(context).textTheme.headline6,
+                    textAlign: TextAlign.center,
+                  ))
+            ],
+          ),
+          closeLabel: "Mache ich sofort!");
     }
   }
 
