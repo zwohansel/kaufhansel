@@ -40,7 +40,9 @@ class _InviteDialogState extends State<InviteDialog> {
     if (!_loading && (Platform.isAndroid || Platform.isIOS || Platform.isFuchsia)) {
       children.add(IconButton(
           icon: Icon(Icons.share),
-          onPressed: () => Share.share(_code, subject: "Werde mit diesem Code zum Kaufhansel!")));
+          onPressed: () => Share.share(_code,
+              subject: "Werde mit diesem Code zum Kaufhansel! "
+                  "Lade dir den Kaufhansel von www.zwohansel.de/kaufhansel/download runter.")));
     }
 
     return Wrap(
@@ -77,6 +79,15 @@ class _InviteDialogState extends State<InviteDialog> {
         SizedBox(height: 20),
         Flexible(
             child: Text("Schicke anderen Hanseln diesen Code, damit sie sich beim Kaufhansel registrieren können.")),
+        SizedBox(height: 20),
+        Flexible(
+          child: Row(
+            children: [
+              Text("Die Downloads gibts hier: "),
+              SelectableText("www.zwohansel.de/kaufhansel/download"),
+            ],
+          ),
+        ),
         SizedBox(height: 20),
         Align(
             alignment: Alignment.bottomRight,

@@ -86,7 +86,7 @@ class ShoppingListDrawer extends StatelessWidget {
                 message: info.permissions.role.toDisplayString(),
                 child: Icon(info.permissions.role.toIcon(), size: 18)),
             trailing: IconButton(
-                icon: Icon(Icons.edit),
+                icon: Icon(Icons.settings),
                 onPressed: () {
                   final client = RestClientWidget.of(context);
                   Navigator.push(context, MaterialPageRoute(

@@ -250,6 +250,15 @@ class _LoginPageState extends State<LoginPage> {
                   child: Text("Registrieren"),
                   onPressed: isLoading() ? null : () => setState(() => _pageMode = _PageMode.CHECK_INVITE)),
             ),
+            Padding(
+              padding: EdgeInsets.only(top: 10),
+              child: OutlinedButton(
+                  child: Text("Passwort vergessen"),
+                  onPressed: isLoading()
+                      ? null
+                      : () => showErrorDialog(
+                          context, "Hast du Kopf wie Sieb? Aber Passwort Zurücksetzen geht noch nicht.")),
+            ),
           ],
         ),
       ),
@@ -647,7 +656,7 @@ class _LoginPageState extends State<LoginPage> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(
           "Wir haben dir eine E-Mail an $emailAddress geschickt... folge dem Aktivierungs-Link, dann kannst du dich anmelden."),
-      duration: Duration(days: 1),
+      duration: Duration(seconds: 10),
       action: SnackBarAction(
         label: "Mach ich",
         onPressed: () => ScaffoldMessenger.of(context).removeCurrentSnackBar(),
