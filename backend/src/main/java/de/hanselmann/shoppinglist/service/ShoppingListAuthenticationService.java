@@ -38,7 +38,7 @@ public class ShoppingListAuthenticationService implements AuthenticationProvider
             throw new BadCredentialsException("Falsche Logindaten");
         }
 
-        final String emailAddress = authentication.getName().toLowerCase();
+        final String emailAddress = authentication.getName().strip().toLowerCase();
         final String password = authentication.getCredentials().toString();
 
         Optional<ShoppingListUser> optionalUser = userRepository.findUserByEmailAddress(emailAddress);
