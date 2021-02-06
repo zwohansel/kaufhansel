@@ -1,5 +1,7 @@
 package de.hanselmann.shoppinglist.service;
 
+import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -32,12 +34,17 @@ public class ShoppingListAuthenticationService implements AuthenticationProvider
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        final String emailAddress = authentication.getName();
+        if (authentication.getName() == null || authentication.getCredentials() == null) {
+            throw new BadCredentialsException("Falsche Logindaten");
+        }
+
+        final String emailAddress = authentication.getName().toLowerCase();
         final String password = authentication.getCredentials().toString();
 
-        Optional<ShoppingListUser> optionalUser = userRepository.findUserByEmailAddress(emailAddress.toLowerCase());
+        Optional<ShoppingListUser> optionalUser = userRepository.findUserByEmailAddress(emailAddress);
         if (optionalUser.isEmpty()) {
-            Logger.getGlobal().warning("Login attempt with invalid EMail address: " + emailAddress.toLowerCase());
+            Logger.getGlobal().warning(MessageFormat.format("Login attempt with invalid EMail address: \"{0}\" ({1})",
+                    emailAddress, Arrays.toString(emailAddress.getBytes(StandardCharsets.UTF_8))));
             throw new BadCredentialsException("Falsche Logindaten");
         }
 
@@ -52,7 +59,7 @@ public class ShoppingListAuthenticationService implements AuthenticationProvider
                     Arrays.asList(new SimpleGrantedAuthority("ROLE_SHOPPER")));
         }
 
-        Logger.getGlobal().warning("Failed login attempt for EMail address: " + emailAddress.toLowerCase());
+        Logger.getGlobal().warning("Failed login attempt for EMail address: \"" + emailAddress + "\"");
 
         throw new BadCredentialsException("Falsche Logindaten");
     }

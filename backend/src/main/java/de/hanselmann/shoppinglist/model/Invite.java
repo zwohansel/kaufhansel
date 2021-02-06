@@ -39,7 +39,7 @@ public class Invite {
         this.code = code;
         this.generatedByUser = generatedByUserId;
         this.generatedAt = generatedAt;
-        this.inviteeEmailAddress = inviteeEmailAddress.toLowerCase().strip();
+        this.inviteeEmailAddress = inviteeEmailAddress != null ? inviteeEmailAddress.toLowerCase().strip() : null;
     }
 
     public Invite() {
