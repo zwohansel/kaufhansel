@@ -2,6 +2,7 @@ package de.hanselmann.shoppinglist.service;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -34,8 +35,9 @@ public class ShoppingListAuthenticationService implements AuthenticationProvider
         final String emailAddress = authentication.getName();
         final String password = authentication.getCredentials().toString();
 
-        Optional<ShoppingListUser> optionalUser = userRepository.findUserByEmailAddress(emailAddress);
+        Optional<ShoppingListUser> optionalUser = userRepository.findUserByEmailAddress(emailAddress.toLowerCase());
         if (optionalUser.isEmpty()) {
+            Logger.getGlobal().warning("Login attempt with invalid EMail address: " + emailAddress.toLowerCase());
             throw new BadCredentialsException("Falsche Logindaten");
         }
 
@@ -49,6 +51,8 @@ public class ShoppingListAuthenticationService implements AuthenticationProvider
             return new UsernamePasswordAuthenticationToken(user.getId(), user.getPassword(),
                     Arrays.asList(new SimpleGrantedAuthority("ROLE_SHOPPER")));
         }
+
+        Logger.getGlobal().warning("Failed login attempt for EMail address: " + emailAddress.toLowerCase());
 
         throw new BadCredentialsException("Falsche Logindaten");
     }
