@@ -47,9 +47,9 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: frontend-android
-          path: ${{runner.workspace}}/build/app/outputs/apk/release/app-release.apk
+          path: ${{runner.workspace}}/flutter_frontend/build/app/outputs/apk/release/app-release.apk
           
       - uses: actions/upload-artifact@v2
         with:
           name: frontend-linux
-          path: ${{runner.workspace}}/build/linux/release/bundle/ 
+          path: ${{runner.workspace}}/flutter_frontend/build/linux/release/bundle/
