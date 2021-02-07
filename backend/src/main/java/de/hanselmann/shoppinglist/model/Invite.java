@@ -47,12 +47,8 @@ public class Invite {
     }
 
     private Invite(Invite invite, String emailAddress) {
-        this.code = invite.code;
-        this.generatedByUser = invite.generatedByUser;
-        this.generatedAt = invite.generatedAt;
-        this.inviteeEmailAddress = emailAddress;
+        this(invite.code, invite.generatedByUser, invite.generatedAt, emailAddress);
         this.invitedToShoppingLists.addAll(invite.invitedToShoppingLists);
-
     }
 
     public Invite forEmailAddress(String emailAddress) {

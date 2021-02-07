@@ -27,7 +27,7 @@ public class ShoppingListUser {
             throw new IllegalArgumentException("Pending registration is expired");
         }
         ShoppingListUser user = new ShoppingListUser();
-        user.emailAddress = pendingRegistration.getEmailAddress();
+        user.emailAddress = pendingRegistration.getEmailAddress().toLowerCase().strip();
         user.username = pendingRegistration.getUserName();
         user.password = pendingRegistration.getPassword();
         user.invitedBy = pendingRegistration.getInvitedBy();
