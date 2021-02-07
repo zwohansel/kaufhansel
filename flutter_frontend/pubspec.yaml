@@ -44,8 +44,6 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  integration_test:
-    sdk: flutter
   flutter_launcher_icons: ^0.8.1
 
 # https://pub.dev/packages/flutter_launcher_icons
