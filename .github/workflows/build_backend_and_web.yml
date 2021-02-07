@@ -31,7 +31,7 @@ jobs:
           node-version: '12'
       
       - name: Install Build Tools
-        run: sudo npm install -g yarn webpack-merge
+        run: sudo npm install -g yarn
 
       # Runs a set of commands using the runners shell
       - name: Build
