@@ -25,7 +25,7 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
-const String _DownloadLink = "https://www.zwohansel.de/kaufhansel/download";
+const String _downloadLink = "https://zwohansel.de/kaufhansel/download";
 
 enum _PageMode {
   LOGIN,
@@ -672,10 +672,10 @@ class _LoginPageState extends State<LoginPage> {
     if (_frontendVersion == null) {
       return [zwoHanselLink];
     }
-    if (_backendVersion != null && _backendVersion.isMoreRecentThan(_frontendVersion)) {
+    if (_backendVersion != null && _backendVersion.isMoreRecentIgnoringPatchLevelThan(_frontendVersion)) {
       return [
         Text(_frontendVersion.toString()),
-        Link(_DownloadLink,
+        Link(_downloadLink,
             text: "Version ${_backendVersion.toString()} ist verfügbar.",
             style: TextStyle(fontWeight: FontWeight.bold)),
         zwoHanselLink
@@ -773,14 +773,14 @@ class _LoginPageState extends State<LoginPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                "Du verwendest immer noch die Kaufhanselversion ${frontendVersion.toString()} ???\n\nDie ist doch schon viel zu alt."
-                " Hol dir die neu viel bessere Version ${backendVersion.toString()} von",
+                "Du verwendest vom Kaufhansel immer noch die Version ${frontendVersion.toString()} ???\n\nDie ist doch schon viel zu alt."
+                " Hol dir die neue und viel bessere Version ${backendVersion.toString()} von",
                 textAlign: TextAlign.center,
               ),
               Padding(
                   padding: EdgeInsets.only(top: 10),
                   child: Link(
-                    _DownloadLink,
+                    _downloadLink,
                     text: "zwohansel.de",
                     style: Theme.of(context).textTheme.headline6,
                     textAlign: TextAlign.center,

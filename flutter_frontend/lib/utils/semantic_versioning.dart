@@ -17,16 +17,12 @@ class Version {
     return _major == other._major;
   }
 
-  bool isMoreRecentThan(Version other) {
+  bool isMoreRecentIgnoringPatchLevelThan(Version other) {
     if (_major > other._major) {
       return true;
     }
 
-    if (_minor > other._minor) {
-      return true;
-    }
-
-    return _patch > other._patch;
+    return _minor > other._minor;
   }
 
   String toString() {
