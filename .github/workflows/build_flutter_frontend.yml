@@ -47,8 +47,8 @@ jobs:
       - run: flutter config --enable-linux-desktop
       - run: flutter pub get
       - run: flutter test
-      - run: flutter build linux --release --split-debug-info=build/debuginfo/linux/ --build-name ${{env.kaufhansel_version}} --build-number ${{env.GITHUB_RUN_NUMBER}}
-      - run: flutter build apk --release --split-debug-info=build/debuginfo/android/ --build-name ${{env.kaufhansel_version}} --build-number ${{env.GITHUB_RUN_NUMBER}}
+      - run: flutter build linux --release --split-debug-info=build/debuginfo/linux/
+      - run: flutter build apk --release --split-debug-info=build/debuginfo/android/ --build-name ${{env.kaufhansel_version}} --build-number $GITHUB_RUN_NUMBER
         
       - uses: actions/upload-artifact@v2
         with:
