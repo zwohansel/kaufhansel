@@ -26,6 +26,9 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+      - name: Set version variable
+        run: echo "kaufhansel_version=$(git describe --abbrev=0 --tags | grep -Eo '[0-9]+\.[0-9]+\.[0-9]')" >> $GITHUB_ENV
+
       - uses: actions/setup-java@v1
         with:
           java-version: '12.x'
@@ -41,8 +44,8 @@ jobs:
       - run: flutter config --enable-linux-desktop
       - run: flutter pub get
       - run: flutter test
-      - run: flutter build linux --release --split-debug-info=build/debuginfo/linux/
-      - run: flutter build apk --release --split-debug-info=build/debuginfo/android/
+      - run: flutter build linux --release --split-debug-info=build/debuginfo/linux/ --build-name ${{env.kaufhansel_version}}
+      - run: flutter build apk --release --split-debug-info=build/debuginfo/android/ --build-name ${{env.kaufhansel_version}}
         
       - uses: actions/upload-artifact@v2
         with:
