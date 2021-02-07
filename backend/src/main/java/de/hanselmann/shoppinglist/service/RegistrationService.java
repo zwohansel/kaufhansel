@@ -61,7 +61,7 @@ public class RegistrationService {
     }
 
     public boolean isPasswordValid(String password) {
-        return password != null && password.strip().length() >= 8;
+        return userService.isPasswordValid(password);
     }
 
     public boolean registerUser(String inviteCode, String emailAddress, String userName, String password) {

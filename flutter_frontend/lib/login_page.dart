@@ -643,7 +643,10 @@ class _LoginPageState extends State<LoginPage> {
       _showPasswordResetSuccessMessage();
     } on Exception catch (e) {
       log("Set new password failed.", error: e);
-      showErrorDialog(context, "Das hat nicht geklappt. Probier es später noch einmal.");
+      showErrorDialog(
+          context,
+          "Das hat nicht geklappt.\n\nStimmt die Email-Adresse?\nIst der Wiederherstellungs-Code richtig?"
+          "\nHast du ein vernünftiges Passwort gewählt?\nDenk auch daran, dass der Wiederherstellungs-Code nur eine Stunde gültig ist.");
     } finally {
       setState(() => _loading = false);
     }

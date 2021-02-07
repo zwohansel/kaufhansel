@@ -134,20 +134,24 @@ public class ShoppingListUserService {
     }
 
     public boolean resetPassword(ShoppingListUser user, String resetCode, String password) {
-        if (user.getPasswordResetCode()
+        boolean isResetCodeValid = user.getPasswordResetCode()
                 .map(code -> code.equals(resetCode.strip()))
-                .orElse(false)) {
-            if (user.getPasswordResetRequestedAt()
-                    .map(at -> LocalDateTime.now().isBefore(at.plusHours(1)))
-                    .orElse(false)) {
-                user.setPassword(passwordEncoder.encode(password));
-                user.clearPasswordResetCode();
-                userRepository.save(user);
-                emailService.sendPasswortSuccessfullyChangedMail(user);
-                return true;
-            }
+                .orElse(false);
+        boolean isResetCodeNotExpired = user.getPasswordResetRequestedAt()
+                .map(at -> LocalDateTime.now().isBefore(at.plusHours(1)))
+                .orElse(false);
+        if (isResetCodeValid && isResetCodeNotExpired && isPasswordValid(password)) {
+            user.setPassword(passwordEncoder.encode(password));
+            user.clearPasswordResetCode();
+            userRepository.save(user);
+            emailService.sendPasswortSuccessfullyChangedMail(user);
+            return true;
         }
         return false;
+    }
+
+    public boolean isPasswordValid(String password) {
+        return password != null && password.strip().length() >= 8;
     }
 
 }
