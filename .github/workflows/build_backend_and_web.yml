@@ -16,6 +16,11 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set kaufhansel_version environment variable
+        run: echo "kaufhansel_version=$(git describe --abbrev=0 --tags | grep -Eo '[0-9]+\.[0-9]+\.[0-9]')" >> $GITHUB_ENV
 
       - uses: actions/setup-java@v1
         with:
