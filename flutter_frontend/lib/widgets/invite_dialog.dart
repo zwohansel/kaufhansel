@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
+import 'package:kaufhansel_client/widgets/link.dart';
 import 'package:share/share.dart';
 
 class InviteDialog extends StatefulWidget {
@@ -42,7 +43,7 @@ class _InviteDialogState extends State<InviteDialog> {
           icon: Icon(Icons.share),
           onPressed: () => Share.share(_code,
               subject: "Werde mit diesem Code zum Kaufhansel! "
-                  "Lade dir den Kaufhansel von www.zwohansel.de/kaufhansel/download runter.")));
+                  "Lade dir den Kaufhansel von https://zwohansel.de/kaufhansel/download runter.")));
     }
 
     return Wrap(
@@ -80,14 +81,8 @@ class _InviteDialogState extends State<InviteDialog> {
         Flexible(
             child: Text("Schicke anderen Hanseln diesen Code, damit sie sich beim Kaufhansel registrieren können.")),
         SizedBox(height: 20),
-        Flexible(
-          child: Row(
-            children: [
-              Text("Die Downloads gibts hier: "),
-              SelectableText("www.zwohansel.de/kaufhansel/download"),
-            ],
-          ),
-        ),
+        Flexible(child: Text("Die Downloads gibts hier: ")),
+        Flexible(child: Link("https://zwohansel.de/kaufhansel/download", selectable: true)),
         SizedBox(height: 20),
         Align(
             alignment: Alignment.bottomRight,
