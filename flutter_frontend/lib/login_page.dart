@@ -58,6 +58,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _inviteCodeInvalid = false;
   bool _emailAddressInvalid = false;
   bool _passwordInvalid = false;
+  bool _obscurePassword = true;
 
   Version _frontendVersion;
   Version _backendVersion;
@@ -211,7 +212,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  bool isLoading() {
+  bool _isLoading() {
     return _loading;
   }
 
@@ -229,8 +230,8 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 TextFormField(
                   controller: _userEmailAddressController,
-                  enabled: !isLoading(),
-                  autofillHints: !isLoading() ? [AutofillHints.username] : null,
+                  enabled: !_isLoading(),
+                  autofillHints: !_isLoading() ? [AutofillHints.username] : null,
                   decoration: const InputDecoration(
                     hintText: 'Email',
                   ),
@@ -243,35 +244,39 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 TextFormField(
                     controller: _passwordController,
-                    enabled: !isLoading(),
-                    autofillHints: !isLoading() ? [AutofillHints.password] : null,
-                    decoration: const InputDecoration(
+                    enabled: !_isLoading(),
+                    autofillHints: !_isLoading() ? [AutofillHints.password] : null,
+                    decoration: InputDecoration(
+                      suffixIcon: IconButton(
+                        icon: _obscurePassword ? Icon(Icons.remove_red_eye) : Icon(Icons.remove_red_eye_outlined),
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      ),
                       hintText: 'Kennwort',
                     ),
-                    obscureText: true,
+                    obscureText: _obscurePassword,
                     validator: (password) {
                       if (password.isEmpty) {
                         return 'Gib dein Kennwort richtig ein';
                       }
                       return null;
                     },
-                    onFieldSubmitted: (_) => _login())
+                    onFieldSubmitted: (_) => _login()),
               ],
             ),
             Padding(
                 padding: EdgeInsets.only(top: 15),
-                child: ElevatedButton(child: Text("Anmelden"), onPressed: isLoading() ? null : _login)),
+                child: ElevatedButton(child: Text("Anmelden"), onPressed: _isLoading() ? null : _login)),
             Padding(
               padding: EdgeInsets.only(top: 10),
               child: OutlinedButton(
                   child: Text("Registrieren"),
-                  onPressed: isLoading() ? null : () => setState(() => _pageMode = _PageMode.CHECK_INVITE)),
+                  onPressed: _isLoading() ? null : () => setState(() => _pageMode = _PageMode.CHECK_INVITE)),
             ),
             Padding(
               padding: EdgeInsets.only(top: 10),
               child: OutlinedButton(
                   child: Text("Kennwort vergessen"),
-                  onPressed: isLoading() ? null : () => setState(() => _pageMode = _PageMode.RESET_PASSWORD_REQUEST)),
+                  onPressed: _isLoading() ? null : () => setState(() => _pageMode = _PageMode.RESET_PASSWORD_REQUEST)),
             ),
           ],
         ),
@@ -288,7 +293,7 @@ class _LoginPageState extends State<LoginPage> {
         children: [
           TextFormField(
             controller: _inviteCodeController,
-            enabled: !isLoading(),
+            enabled: !_isLoading(),
             textCapitalization: TextCapitalization.characters,
             decoration: const InputDecoration(hintText: 'Einladungs-Code'),
             onFieldSubmitted: (_) => _checkInviteCode(),
@@ -303,12 +308,12 @@ class _LoginPageState extends State<LoginPage> {
           ),
           Padding(
               padding: EdgeInsets.only(top: 15),
-              child: ElevatedButton(child: Text("Weiter"), onPressed: isLoading() ? null : _checkInviteCode)),
+              child: ElevatedButton(child: Text("Weiter"), onPressed: _isLoading() ? null : _checkInviteCode)),
           Padding(
             padding: EdgeInsets.only(top: 10),
             child: OutlinedButton(
                 child: Text("Zurück zur Anmeldung"),
-                onPressed: isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
+                onPressed: _isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
           ),
         ],
       ),
@@ -354,7 +359,7 @@ class _LoginPageState extends State<LoginPage> {
         children: [
           TextFormField(
             controller: _userNameController,
-            enabled: !isLoading(),
+            enabled: !_isLoading(),
             textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(hintText: 'Nutzername'),
             validator: (userName) {
@@ -366,7 +371,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           TextFormField(
             controller: _userEmailAddressController,
-            enabled: !isLoading(),
+            enabled: !_isLoading(),
             decoration: const InputDecoration(
               hintText: 'Email',
             ),
@@ -382,7 +387,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           TextFormField(
             controller: _setPasswordController,
-            enabled: !isLoading(),
+            enabled: !_isLoading(),
             decoration: const InputDecoration(
               hintText: 'Kennwort',
             ),
@@ -399,7 +404,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           TextFormField(
             controller: _confirmPasswordController,
-            enabled: !isLoading(),
+            enabled: !_isLoading(),
             decoration: const InputDecoration(
               hintText: 'Kennwort bestätigen',
             ),
@@ -414,12 +419,12 @@ class _LoginPageState extends State<LoginPage> {
           ),
           Padding(
               padding: EdgeInsets.only(top: 15),
-              child: ElevatedButton(child: Text("Registrieren"), onPressed: isLoading() ? null : _registerFull)),
+              child: ElevatedButton(child: Text("Registrieren"), onPressed: _isLoading() ? null : _registerFull)),
           Padding(
             padding: EdgeInsets.only(top: 10),
             child: OutlinedButton(
                 child: Text("Zurück zur Anmeldung"),
-                onPressed: isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
+                onPressed: _isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
           ),
         ],
       ),
@@ -435,7 +440,7 @@ class _LoginPageState extends State<LoginPage> {
         children: [
           TextFormField(
             controller: _userNameController,
-            enabled: !isLoading(),
+            enabled: !_isLoading(),
             textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(hintText: 'Nutzername'),
             validator: (userName) {
@@ -447,7 +452,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           TextFormField(
             controller: _setPasswordController,
-            enabled: !isLoading(),
+            enabled: !_isLoading(),
             decoration: const InputDecoration(
               hintText: 'Kennwort',
             ),
@@ -464,7 +469,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           TextFormField(
             controller: _confirmPasswordController,
-            enabled: !isLoading(),
+            enabled: !_isLoading(),
             decoration: const InputDecoration(
               hintText: 'Kennwort bestätigen',
             ),
@@ -480,12 +485,12 @@ class _LoginPageState extends State<LoginPage> {
           Padding(
               padding: EdgeInsets.only(top: 15),
               child:
-                  ElevatedButton(child: Text("Registrieren"), onPressed: isLoading() ? null : _registerWithoutEmail)),
+                  ElevatedButton(child: Text("Registrieren"), onPressed: _isLoading() ? null : _registerWithoutEmail)),
           Padding(
             padding: EdgeInsets.only(top: 10),
             child: OutlinedButton(
                 child: Text("Zurück zur Anmeldung"),
-                onPressed: isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
+                onPressed: _isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
           ),
         ],
       ),
@@ -501,7 +506,7 @@ class _LoginPageState extends State<LoginPage> {
         children: [
           TextFormField(
             controller: _userEmailAddressController,
-            enabled: !isLoading(),
+            enabled: !_isLoading(),
             decoration: const InputDecoration(hintText: 'Email-Adresse'),
             onFieldSubmitted: (_) => _requestPasswordReset(),
             validator: (emailAddress) {
@@ -514,18 +519,18 @@ class _LoginPageState extends State<LoginPage> {
           Padding(
               padding: EdgeInsets.only(top: 15),
               child: ElevatedButton(
-                  child: Text("Kennwort zurücksetzen"), onPressed: isLoading() ? null : _requestPasswordReset)),
+                  child: Text("Kennwort zurücksetzen"), onPressed: _isLoading() ? null : _requestPasswordReset)),
           Padding(
             padding: EdgeInsets.only(top: 10),
             child: OutlinedButton(
                 child: Text("Wiederherstellungs-Code eingeben"),
-                onPressed: isLoading() ? null : () => setState(() => _pageMode = _PageMode.RESET_PASSWORD)),
+                onPressed: _isLoading() ? null : () => setState(() => _pageMode = _PageMode.RESET_PASSWORD)),
           ),
           Padding(
             padding: EdgeInsets.only(top: 10),
             child: OutlinedButton(
                 child: Text("Zurück zur Anmeldung"),
-                onPressed: isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
+                onPressed: _isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
           ),
         ],
       ),
@@ -562,7 +567,7 @@ class _LoginPageState extends State<LoginPage> {
               "Gib den Code hier ein, um dein Kennwort zurückzusetzen."),
           TextFormField(
             controller: _userEmailAddressController,
-            enabled: !isLoading(),
+            enabled: !_isLoading(),
             decoration: const InputDecoration(hintText: 'Email-Adresse'),
             onFieldSubmitted: (_) => _requestPasswordReset(),
             validator: (emailAddress) {
@@ -574,7 +579,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           TextFormField(
             controller: _resetPasswordCodeController,
-            enabled: !isLoading(),
+            enabled: !_isLoading(),
             decoration: const InputDecoration(hintText: 'Wiederherstellungs-Code'),
             onFieldSubmitted: (_) => _resetPassword(),
             validator: (code) {
@@ -586,7 +591,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           TextFormField(
             controller: _setPasswordController,
-            enabled: !isLoading(),
+            enabled: !_isLoading(),
             decoration: const InputDecoration(
               hintText: 'Neues Kennwort',
             ),
@@ -603,7 +608,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           TextFormField(
             controller: _confirmPasswordController,
-            enabled: !isLoading(),
+            enabled: !_isLoading(),
             decoration: const InputDecoration(
               hintText: 'Neues Kennwort bestätigen',
             ),
@@ -618,12 +623,12 @@ class _LoginPageState extends State<LoginPage> {
           ),
           Padding(
               padding: EdgeInsets.only(top: 15),
-              child: ElevatedButton(child: Text("Kennwort ändern"), onPressed: isLoading() ? null : _resetPassword)),
+              child: ElevatedButton(child: Text("Kennwort ändern"), onPressed: _isLoading() ? null : _resetPassword)),
           Padding(
             padding: EdgeInsets.only(top: 10),
             child: OutlinedButton(
                 child: Text("Zurück zur Anmeldung"),
-                onPressed: isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
+                onPressed: _isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
           ),
         ],
       ),
@@ -660,7 +665,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildProgressBar(BuildContext context) {
-    if (isLoading()) {
+    if (_isLoading()) {
       return LinearProgressIndicator(minHeight: 5, backgroundColor: Theme.of(context).scaffoldBackgroundColor);
     } else {
       return SizedBox(height: 5);
