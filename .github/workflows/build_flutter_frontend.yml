@@ -35,10 +35,11 @@ jobs:
         with:
           channel: 'dev'
   
+      - run: flutter config --enable-linux-desktop
       - run: flutter pub get
       - run: flutter test
       - run: flutter build apk --release --split-debug-info=build/debuginfo/android/
-      - run: flutter build linux  --release --split-debug-info=build/debuginfo/linux/
+      - run: flutter build linux --release --split-debug-info=build/debuginfo/linux/
         
       - uses: actions/upload-artifact@v2
         with:
