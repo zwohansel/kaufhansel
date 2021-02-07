@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: FlutterFrontEnd
+name: Build Flutter FrontEnd
 
 # Controls when the action will run. 
 on:
@@ -32,6 +32,8 @@ jobs:
         
       - name: flutter-build
         uses: subosito/flutter-action@v1.4.0
+        with:
+          channel: 'dev'
   
       - run: flutter pub get
       - run: flutter test
