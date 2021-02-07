@@ -12,29 +12,36 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.hanselmann.shoppinglist.restapi.RegistrationApi;
+import de.hanselmann.shoppinglist.restapi.UserApi;
 import de.hanselmann.shoppinglist.restapi.dto.InviteCodeDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationDataDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationProcessTypeDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationResultDto;
+import de.hanselmann.shoppinglist.restapi.dto.RequestUserPasswordResetDto;
 import de.hanselmann.shoppinglist.restapi.dto.SendInviteDto;
+import de.hanselmann.shoppinglist.restapi.dto.UserPasswordResetDto;
 import de.hanselmann.shoppinglist.restapi.dto.transformer.DtoTransformer;
 import de.hanselmann.shoppinglist.service.RegistrationService;
+import de.hanselmann.shoppinglist.service.ShoppingListUserService;
 
 @RestController
-public class RegistrationController implements RegistrationApi {
+public class UserController implements UserApi {
     private final RegistrationService registrationService;
+    private final ShoppingListUserService userService;
     private final ShoppingListGuard guard;
     private final DtoTransformer dtoTransformer;
     private final String activationSuccessPage;
     private final String activationFailurePage;
 
     @Autowired
-    public RegistrationController(RegistrationService registrationService, ShoppingListGuard guard,
+    public UserController(RegistrationService registrationService,
+            ShoppingListUserService userService,
+            ShoppingListGuard guard,
             DtoTransformer dtoTransformer,
             ResourceLoader resourceLoader)
             throws IOException {
         this.registrationService = registrationService;
+        this.userService = userService;
         this.guard = guard;
         this.dtoTransformer = dtoTransformer;
         try (InputStream in = resourceLoader.getResource("classpath:static/activation_success.html").getInputStream()) {
@@ -121,5 +128,33 @@ public class RegistrationController implements RegistrationApi {
     @Override
     public ResponseEntity<RegistrationProcessTypeDto> getRegistrationProcessType(String inviteCode) {
         return ResponseEntity.ok(dtoTransformer.map(registrationService.getTypeOfRegistrationProcess(inviteCode)));
+    }
+
+    @Override
+    public ResponseEntity<Void> requestUserPasswordResetCode(RequestUserPasswordResetDto requestUserPasswordReset) {
+        try {
+            userService.findByEmailAddress(requestUserPasswordReset.getEmailAddress().toLowerCase().strip())
+                    .ifPresent(userService::requestPasswordReset);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @Override
+    public ResponseEntity<Void> resetUserPassword(UserPasswordResetDto userPasswordReset) {
+        try {
+            boolean success = userService.findByEmailAddress(userPasswordReset.getEmailAddress().toLowerCase().strip())
+                    .map(user -> userService.resetPassword(user, userPasswordReset.getResetCode(),
+                            userPasswordReset.getPassword()))
+                    .orElse(false);
+            if (success) {
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.badRequest().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

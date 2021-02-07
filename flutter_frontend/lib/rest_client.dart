@@ -63,7 +63,7 @@ class RestClient {
   }
 
   Future<List<ShoppingListInfo>> getShoppingLists() async {
-    var request = await _httpClient.getUrl(_serverUrl.resolve("shoppinglists"));
+    var request = await _httpClient.getUrl(_serverUrl.resolve("shoppinglists")).timeout(timeout);
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode == 200) {
@@ -76,7 +76,7 @@ class RestClient {
   }
 
   Future<List<ShoppingListItem>> fetchShoppingList(String shoppingListId) async {
-    var request = await _httpClient.getUrl(_serverUrl.resolve("shoppinglist/$shoppingListId"));
+    var request = await _httpClient.getUrl(_serverUrl.resolve("shoppinglist/$shoppingListId")).timeout(timeout);
     request.headers.contentType = ContentType.json;
     var response = await request.close().timeout(timeout);
 
@@ -97,7 +97,7 @@ class RestClient {
   Future<ShoppingListItem> createShoppingListItem(String shoppingListId, String name, String category) async {
     final body = jsonEncode({'name': name, 'category': category});
 
-    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId"));
+    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId")).timeout(timeout);
     request.headers.contentType = ContentType.json;
     request.write(body);
     var response = await request.close().timeout(timeout);
@@ -114,7 +114,9 @@ class RestClient {
   }
 
   Future<void> deleteShoppingListItem(String shoppingListId, ShoppingListItem item) async {
-    var request = await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/item/${item.id}"));
+    var request = await _httpClient
+        .deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/item/${item.id}"))
+        .timeout(timeout);
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
@@ -128,7 +130,8 @@ class RestClient {
   Future<void> updateShoppingListItem(String shoppingListId, ShoppingListItem item) async {
     final body = jsonEncode({'name': item.name, 'checked': item.checked, 'category': item.category});
 
-    var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/item/${item.id}"));
+    var request =
+        await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/item/${item.id}")).timeout(timeout);
     request.headers.contentType = ContentType.json;
     request.write(body);
     var response = await request.close().timeout(timeout);
@@ -144,7 +147,8 @@ class RestClient {
   Future<void> moveShoppingListItem(String shoppingListId, ShoppingListItem item, int targetIndex) async {
     final body = jsonEncode({'itemId': item.id, 'targetIndex': targetIndex});
 
-    var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/moveitem"));
+    var request =
+        await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/moveitem")).timeout(timeout);
     request.headers.contentType = ContentType.json;
     request.write(body);
     var response = await request.close().timeout(timeout);
@@ -160,7 +164,7 @@ class RestClient {
   Future<ShoppingListInfo> createShoppingList(String shoppingListName) async {
     final body = jsonEncode({'name': shoppingListName});
 
-    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist"));
+    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist")).timeout(timeout);
     request.headers.contentType = ContentType.json;
     request.write(body);
     var response = await request.close().timeout(timeout);
@@ -175,7 +179,7 @@ class RestClient {
   }
 
   Future<void> deleteShoppingList(String shoppingListId) async {
-    var request = await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId"));
+    var request = await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId")).timeout(timeout);
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
@@ -186,7 +190,7 @@ class RestClient {
   Future<Optional<ShoppingListUserReference>> addUserToShoppingList(
       String shoppingListId, String userEmailAddress) async {
     final body = jsonEncode({'emailAddress': userEmailAddress});
-    var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/user"));
+    var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/user")).timeout(timeout);
     request.headers.contentType = ContentType.json;
     request.write(body);
     var response = await request.close().timeout(timeout);
@@ -205,7 +209,8 @@ class RestClient {
   }
 
   Future<void> removeUserFromShoppingList(String shoppingListId, String userId) async {
-    var request = await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/user/$userId"));
+    var request =
+        await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/user/$userId")).timeout(timeout);
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
@@ -217,7 +222,8 @@ class RestClient {
   }
 
   Future<void> uncheckAllItems(String shoppingListId) async {
-    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/uncheckallitems"));
+    var request =
+        await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/uncheckallitems")).timeout(timeout);
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
@@ -229,7 +235,9 @@ class RestClient {
   }
 
   Future<void> removeAllCategories(String shoppingListId) async {
-    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/removeallcategories"));
+    var request = await _httpClient
+        .postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/removeallcategories"))
+        .timeout(timeout);
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
@@ -241,7 +249,7 @@ class RestClient {
   }
 
   Future<void> removeAllItems(String shoppingListId) async {
-    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/clear"));
+    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/clear")).timeout(timeout);
     var response = await request.close().timeout(timeout);
 
     if (response.statusCode != 204) {
@@ -255,7 +263,8 @@ class RestClient {
   Future<ShoppingListUserReference> changeShoppingListPermissions(
       String shoppingListId, String affectedUserId, ShoppingListRole newRole) async {
     final body = jsonEncode({'userId': affectedUserId, 'role': newRole.toRoleString()});
-    var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/permissions"));
+    var request =
+        await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/permissions")).timeout(timeout);
     request.headers.contentType = ContentType.json;
     request.write(body);
     var response = await request.close().timeout(timeout);
@@ -273,7 +282,7 @@ class RestClient {
 
   Future<void> changeShoppingListName(String shoppingListId, String newName) async {
     final body = jsonEncode({'name': newName});
-    var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/name"));
+    var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/name")).timeout(timeout);
     request.headers.contentType = ContentType.json;
     request.write(body);
     var response = await request.close().timeout(timeout);
@@ -301,7 +310,7 @@ class RestClient {
     final body = jsonEncode(
         {'userName': userName, 'emailAddress': emailAddress, 'password': password, 'inviteCode': inviteCode});
 
-    var request = await _httpClient.postUrl(_serverUrl.resolve("register"));
+    var request = await _httpClient.postUrl(_serverUrl.resolve("register")).timeout(timeout);
     request.headers.contentType = ContentType.json;
     request.write(body);
     var response = await request.close().timeout(timeout);
@@ -331,7 +340,7 @@ class RestClient {
   Future<void> sendInvite(String emailAddress, {String shoppingListId}) async {
     final body = jsonEncode({'emailAddress': emailAddress, 'shoppingListId': shoppingListId});
 
-    var request = await _httpClient.postUrl(_serverUrl.resolve("invite"));
+    var request = await _httpClient.postUrl(_serverUrl.resolve("invite")).timeout(timeout);
     request.headers.contentType = ContentType.json;
     request.write(body);
     var response = await request.close().timeout(timeout);
@@ -351,6 +360,38 @@ class RestClient {
       return BackendInfo.fromJson(jsonDecode(decoded));
     } else {
       throw HttpResponseException(response.statusCode, message: "Failed to get backend info.");
+    }
+  }
+
+  Future<void> requestPasswordReset(String emailAddress) async {
+    final body = jsonEncode({'emailAddress': emailAddress});
+
+    var request = await _httpClient.postUrl(_serverUrl.resolve("user/requestpasswordreset")).timeout(timeout);
+    request.headers.contentType = ContentType.json;
+    request.write(body);
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode != 200) {
+      throw HttpResponseException(
+        response.statusCode,
+        message: "Failed to request password request code for $emailAddress.",
+      );
+    }
+  }
+
+  Future<void> resetPassword(String emailAddress, String resetCode, String password) async {
+    final body = jsonEncode({'emailAddress': emailAddress, 'resetCode': resetCode, 'password': password});
+
+    var request = await _httpClient.postUrl(_serverUrl.resolve("user/passwordreset")).timeout(timeout);
+    request.headers.contentType = ContentType.json;
+    request.write(body);
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode != 200) {
+      throw HttpResponseException(
+        response.statusCode,
+        message: "Failed attempt to reset password for $emailAddress.",
+      );
     }
   }
 }

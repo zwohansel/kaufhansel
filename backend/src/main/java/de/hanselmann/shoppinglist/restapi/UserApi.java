@@ -10,9 +10,11 @@ import de.hanselmann.shoppinglist.restapi.dto.InviteCodeDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationDataDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationProcessTypeDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationResultDto;
+import de.hanselmann.shoppinglist.restapi.dto.RequestUserPasswordResetDto;
 import de.hanselmann.shoppinglist.restapi.dto.SendInviteDto;
+import de.hanselmann.shoppinglist.restapi.dto.UserPasswordResetDto;
 
-public interface RegistrationApi {
+public interface UserApi {
 
     @PostMapping("/register")
     ResponseEntity<RegistrationResultDto> register(
@@ -33,4 +35,11 @@ public interface RegistrationApi {
     ResponseEntity<Void> sendInvite(
             @RequestBody SendInviteDto sendInvite);
 
+    @PostMapping("/user/requestpasswordreset")
+    ResponseEntity<Void> requestUserPasswordResetCode(
+            @RequestBody RequestUserPasswordResetDto requestUserPasswordReset);
+
+    @PostMapping("/user/passwordreset")
+    ResponseEntity<Void> resetUserPassword(
+            @RequestBody UserPasswordResetDto userPasswordReset);
 }

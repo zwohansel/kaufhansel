@@ -69,4 +69,35 @@ public class EMailService {
         emailSender.send(message);
     }
 
+    public void sendPasswortResetCodeMail(ShoppingListUser user, String resetCode) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(SENDER_EMAIL_ADDRESS);
+        message.setTo(user.getEmailAddress());
+        message.setSubject(MessageFormat.format("{0}, möchtest du dein Kennwort für den Kaufhansel zurücksetzen?",
+                user.getUsername()));
+        message.setText(MessageFormat.format("Hallo {0},"
+                + "\n\njeder vergisst mal ein Kennwort. Hier ist dein Wiederherstellungs-Code, um dein Kennwort zu ändern:"
+                + "\n\n{1}"
+                + "\n\nDer Code ist nur begrenzt gültig, schließe den Vorgang also bald ab! "
+                + "Falls du dein Kennwort nicht zurücksetzen möchtest, kannst du diese Nachricht ignorieren."
+                + "\n\nViel Spaß beim Einkaufen!"
+                + EMAIL_FOOTER, user.getUsername(), resetCode));
+        emailSender.send(message);
+    }
+
+    public void sendPasswortSuccessfullyChangedMail(ShoppingListUser user) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(SENDER_EMAIL_ADDRESS);
+        message.setTo(user.getEmailAddress());
+        message.setSubject(MessageFormat.format("{0}, du hast dein Kennwort für den Kaufhansel geändert",
+                user.getUsername()));
+        message.setText(MessageFormat.format("Hallo {0},"
+                + "\n\ndu hast dein Kennwort für den Kaufhansel erfolgreich geändert."
+                + "\n\nFalls du dein Kennwort nicht eben geändert hast, geht irgendwas Merkwürdiges vor. "
+                + "Dann solltest du dein Kennwort für den Kaufhansel jetzt ändern."
+                + "\n\nViel Spaß beim Einkaufen!"
+                + EMAIL_FOOTER, user.getUsername()));
+        emailSender.send(message);
+    }
+
 }

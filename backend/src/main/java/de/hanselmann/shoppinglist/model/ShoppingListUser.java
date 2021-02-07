@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -18,6 +19,8 @@ public class ShoppingListUser {
     private LocalDateTime registrationDate;
     private ObjectId invitedBy;
     private List<ShoppingListReference> shoppingLists = new ArrayList<>();
+    private String passwordResetCode;
+    private LocalDateTime passwordResetRequestedAt;
 
     public static ShoppingListUser create(PendingRegistration pendingRegistration) {
         if (pendingRegistration.isExpired()) {
@@ -76,6 +79,24 @@ public class ShoppingListUser {
         if (!shoppingLists.removeIf(ref -> ref.getShoppingListId().equals(shoppingListId))) {
             throw new NoSuchElementException();
         }
+    }
+
+    public void setPasswordResetCode(String code) {
+        passwordResetCode = code;
+        passwordResetRequestedAt = LocalDateTime.now();
+    }
+
+    public Optional<String> getPasswordResetCode() {
+        return Optional.ofNullable(passwordResetCode);
+    }
+
+    public Optional<LocalDateTime> getPasswordResetRequestedAt() {
+        return Optional.ofNullable(passwordResetRequestedAt);
+    }
+
+    public void clearPasswordResetCode() {
+        passwordResetCode = null;
+        passwordResetRequestedAt = null;
     }
 
 }

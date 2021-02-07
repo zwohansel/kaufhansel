@@ -27,13 +27,22 @@ class LoginPage extends StatefulWidget {
 
 const String _DownloadLink = "https://www.zwohansel.de/kaufhansel/download";
 
-enum _PageMode { LOGIN, CHECK_INVITE, REGISTRATION_FULL, REGISTRATION_WITHOUT_EMAIL }
+enum _PageMode {
+  LOGIN,
+  CHECK_INVITE,
+  REGISTRATION_FULL,
+  REGISTRATION_WITHOUT_EMAIL,
+  RESET_PASSWORD_REQUEST,
+  RESET_PASSWORD
+}
 
 class _LoginPageState extends State<LoginPage> {
   final _loginFormKey = GlobalKey<FormState>();
   final _checkInviteCodeFormKey = GlobalKey<FormState>();
   final _registerFullFormKey = GlobalKey<FormState>();
   final _registerWithoutEmailFormKey = GlobalKey<FormState>();
+  final _requestPasswordResetFormKey = GlobalKey<FormState>();
+  final _resetPasswordFormKey = GlobalKey<FormState>();
 
   final _userNameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -41,6 +50,7 @@ class _LoginPageState extends State<LoginPage> {
   final _userEmailAddressController = TextEditingController();
   final _setPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _resetPasswordCodeController = TextEditingController();
 
   _PageMode _pageMode = _PageMode.LOGIN;
 
@@ -89,6 +99,7 @@ class _LoginPageState extends State<LoginPage> {
     _userEmailAddressController.dispose();
     _setPasswordController.dispose();
     _confirmPasswordController.dispose();
+    _resetPasswordCodeController.dispose();
     super.dispose();
   }
 
@@ -189,8 +200,14 @@ class _LoginPageState extends State<LoginPage> {
         return _buildRegistrationFullForm();
       case _PageMode.REGISTRATION_WITHOUT_EMAIL:
         return _buildRegistrationWithoutEmailForm();
+      case _PageMode.RESET_PASSWORD_REQUEST:
+        return _buildRequestPasswordResetForm();
+      case _PageMode.RESET_PASSWORD:
+        return _buildResetPasswordForm();
       default:
-        return Container();
+        return Container(
+          child: Text("Jetzt ist der Kaufhansel abgestürzt."),
+        );
     }
   }
 
@@ -253,11 +270,8 @@ class _LoginPageState extends State<LoginPage> {
             Padding(
               padding: EdgeInsets.only(top: 10),
               child: OutlinedButton(
-                  child: Text("Passwort vergessen"),
-                  onPressed: isLoading()
-                      ? null
-                      : () => showErrorDialog(
-                          context, "Hast du Kopf wie Sieb? Aber Passwort Zurücksetzen geht noch nicht.")),
+                  child: Text("Kennwort vergessen"),
+                  onPressed: isLoading() ? null : () => setState(() => _pageMode = _PageMode.RESET_PASSWORD_REQUEST)),
             ),
           ],
         ),
@@ -478,6 +492,170 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  Form _buildRequestPasswordResetForm() {
+    return Form(
+      key: _requestPasswordResetFormKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextFormField(
+            controller: _userEmailAddressController,
+            enabled: !isLoading(),
+            decoration: const InputDecoration(hintText: 'Email-Adresse'),
+            onFieldSubmitted: (_) => _requestPasswordReset(),
+            validator: (emailAddress) {
+              if (!isValidEMailAddress(emailAddress)) {
+                return "Gib eine gültige Email-Adresse ein";
+              }
+              return null;
+            },
+          ),
+          Padding(
+              padding: EdgeInsets.only(top: 15),
+              child: ElevatedButton(
+                  child: Text("Kennwort zurücksetzen"), onPressed: isLoading() ? null : _requestPasswordReset)),
+          Padding(
+            padding: EdgeInsets.only(top: 10),
+            child: OutlinedButton(
+                child: Text("Wiederherstellungs-Code eingeben"),
+                onPressed: isLoading() ? null : () => setState(() => _pageMode = _PageMode.RESET_PASSWORD)),
+          ),
+          Padding(
+            padding: EdgeInsets.only(top: 10),
+            child: OutlinedButton(
+                child: Text("Zurück zur Anmeldung"),
+                onPressed: isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _requestPasswordReset() async {
+    if (!_requestPasswordResetFormKey.currentState.validate()) {
+      return;
+    }
+    setState(() => _loading = true);
+
+    try {
+      await RestClientWidget.of(context).requestPasswordReset(_userEmailAddressController.text);
+      setState(() => _pageMode = _PageMode.RESET_PASSWORD);
+    } on Exception catch (e) {
+      log("Reset password failed.", error: e);
+      showErrorDialog(context, "Das hat nicht geklappt. Probier es später noch einmal.");
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  Form _buildResetPasswordForm() {
+    return Form(
+      key: _resetPasswordFormKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(height: 20),
+          Text(
+              "Falls du beim Kaufhansel registriert bist, haben wir dir eine Email mit einem Wiederherstellungs-Code geschickt. "
+              "Gib den Code hier ein, um dein Kennwort zurückzusetzen."),
+          TextFormField(
+            controller: _userEmailAddressController,
+            enabled: !isLoading(),
+            decoration: const InputDecoration(hintText: 'Email-Adresse'),
+            onFieldSubmitted: (_) => _requestPasswordReset(),
+            validator: (emailAddress) {
+              if (!isValidEMailAddress(emailAddress)) {
+                return "Gib eine gültige Email-Adresse ein";
+              }
+              return null;
+            },
+          ),
+          TextFormField(
+            controller: _resetPasswordCodeController,
+            enabled: !isLoading(),
+            decoration: const InputDecoration(hintText: 'Wiederherstellungs-Code'),
+            onFieldSubmitted: (_) => _resetPassword(),
+            validator: (code) {
+              if (code.isEmpty) {
+                return "Gib den Wiederherstellungs-Code ein";
+              }
+              return null;
+            },
+          ),
+          TextFormField(
+            controller: _setPasswordController,
+            enabled: !isLoading(),
+            decoration: const InputDecoration(
+              hintText: 'Neues Kennwort',
+            ),
+            obscureText: true,
+            validator: (password) {
+              if (password.length < 8) {
+                return 'Mindestens 8 Zeichen!';
+              }
+              if (_passwordInvalid) {
+                return 'Denk dir was besseres aus.';
+              }
+              return null;
+            },
+          ),
+          TextFormField(
+            controller: _confirmPasswordController,
+            enabled: !isLoading(),
+            decoration: const InputDecoration(
+              hintText: 'Neues Kennwort bestätigen',
+            ),
+            obscureText: true,
+            validator: (password) {
+              if (password.isEmpty || password != _setPasswordController.text) {
+                return 'Gib dein neues Kennwort nochmal ein';
+              }
+              return null;
+            },
+            onFieldSubmitted: (_) => _resetPassword(),
+          ),
+          Padding(
+              padding: EdgeInsets.only(top: 15),
+              child: ElevatedButton(child: Text("Kennwort ändern"), onPressed: isLoading() ? null : _resetPassword)),
+          Padding(
+            padding: EdgeInsets.only(top: 10),
+            child: OutlinedButton(
+                child: Text("Zurück zur Anmeldung"),
+                onPressed: isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _resetPassword() async {
+    if (!_resetPasswordFormKey.currentState.validate()) {
+      return;
+    }
+    setState(() => _loading = true);
+
+    try {
+      await RestClientWidget.of(context).resetPassword(
+          _userEmailAddressController.text, _resetPasswordCodeController.text, _confirmPasswordController.text);
+      setState(() => _pageMode = _PageMode.LOGIN);
+      _showPasswordResetSuccessMessage();
+    } on Exception catch (e) {
+      log("Set new password failed.", error: e);
+      showErrorDialog(context, "Das hat nicht geklappt. Probier es später noch einmal.");
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  void _showPasswordResetSuccessMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text("Du hast dein Kennwort erfolgreich geändert."),
+      duration: Duration(seconds: 5),
+    ));
+  }
+
   Widget _buildProgressBar(BuildContext context) {
     if (isLoading()) {
       return LinearProgressIndicator(minHeight: 5, backgroundColor: Theme.of(context).scaffoldBackgroundColor);
@@ -656,7 +834,7 @@ class _LoginPageState extends State<LoginPage> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(
           "Wir haben dir eine E-Mail an $emailAddress geschickt... folge dem Aktivierungs-Link, dann kannst du dich anmelden."),
-      duration: Duration(seconds: 10),
+      duration: Duration(seconds: 15),
       action: SnackBarAction(
         label: "Mach ich",
         onPressed: () => ScaffoldMessenger.of(context).removeCurrentSnackBar(),

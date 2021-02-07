@@ -1,5 +1,6 @@
 package de.hanselmann.shoppinglist.service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.bson.types.ObjectId;
@@ -8,6 +9,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import de.hanselmann.shoppinglist.model.PendingRegistration;
@@ -19,10 +21,18 @@ import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
 @Service
 public class ShoppingListUserService {
     private final ShoppingListUserRepository userRepository;
+    private final CodeGenerator codeGenerator;
+    private final PasswordEncoder passwordEncoder;
+    private final EMailService emailService;
 
     @Autowired
-    public ShoppingListUserService(ShoppingListUserRepository userRepository) {
+    public ShoppingListUserService(ShoppingListUserRepository userRepository, CodeGenerator codeGenerator,
+            PasswordEncoder passwordEncoder,
+            EMailService emailService) {
         this.userRepository = userRepository;
+        this.codeGenerator = codeGenerator;
+        this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     public ShoppingListUser getCurrentUser() {
@@ -114,6 +124,30 @@ public class ShoppingListUserService {
 
     public boolean existsUserWithEmailAddress(String emailAddress) {
         return userRepository.existsByEmailAddress(emailAddress);
+    }
+
+    public void requestPasswordReset(ShoppingListUser user) {
+        String resetCode = codeGenerator.generatePasswordResetCode();
+        user.setPasswordResetCode(resetCode);
+        userRepository.save(user);
+        emailService.sendPasswortResetCodeMail(user, resetCode);
+    }
+
+    public boolean resetPassword(ShoppingListUser user, String resetCode, String password) {
+        if (user.getPasswordResetCode()
+                .map(code -> code.equals(resetCode.strip()))
+                .orElse(false)) {
+            if (user.getPasswordResetRequestedAt()
+                    .map(at -> LocalDateTime.now().isBefore(at.plusHours(1)))
+                    .orElse(false)) {
+                user.setPassword(passwordEncoder.encode(password));
+                user.clearPasswordResetCode();
+                userRepository.save(user);
+                emailService.sendPasswortSuccessfullyChangedMail(user);
+                return true;
+            }
+        }
+        return false;
     }
 
 }

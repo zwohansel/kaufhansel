@@ -41,4 +41,8 @@ public class CodeGenerator {
         return code;
     }
 
+    public String generatePasswordResetCode() {
+        return NanoIdUtils.randomNanoId(random, alphabet, 8);
+    }
+
 }

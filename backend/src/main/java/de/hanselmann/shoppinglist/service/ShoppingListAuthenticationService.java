@@ -51,7 +51,9 @@ public class ShoppingListAuthenticationService implements AuthenticationProvider
         final ShoppingListUser user = optionalUser.get();
 
         if (!user.hasPassword()) {
-            setPassword(user, password);
+            Logger.getGlobal().warning(
+                    "Failed login attempt for user without password for EMail address: \"" + emailAddress + "\"");
+            throw new BadCredentialsException("Anmeldung ohne gesetztes Kennwort nicht möglich");
         }
 
         if (isPasswordCorrect(user, password)) {
@@ -60,21 +62,12 @@ public class ShoppingListAuthenticationService implements AuthenticationProvider
         }
 
         Logger.getGlobal().warning("Failed login attempt for EMail address: \"" + emailAddress + "\"");
-
         throw new BadCredentialsException("Falsche Logindaten");
     }
 
     @Override
     public boolean supports(Class<?> authentication) {
         return authentication.equals(UsernamePasswordAuthenticationToken.class);
-    }
-
-    private void setPassword(ShoppingListUser user, String password) {
-        if (password.isEmpty()) {
-            return;
-        }
-        user.setPassword(passwordEncoder.encode(password));
-        userRepository.save(user);
     }
 
     private boolean isPasswordCorrect(ShoppingListUser user, String password) {
