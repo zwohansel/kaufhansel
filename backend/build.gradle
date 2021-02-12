@@ -2,6 +2,7 @@ plugins {
     id 'org.springframework.boot' version '2.2.6.RELEASE'
     id 'io.spring.dependency-management' version '1.0.9.RELEASE'
     id 'java'
+    id 'eclipse'
 }
 
 group = 'de.hanselmann'
@@ -16,10 +17,27 @@ springBoot {
     buildInfo() 
 }
 
+// bootBuildInfo generates the META-INF/build-info.properties from which the BuildInfo bean
+// is created. However; bootBuildInfo generates it in build/resources/main/ which is not on
+// the classpath when the application is executed in eclipse.
+// Therefore we have to convince eclipse to generate and copy that file whenever the version info
+// changes:
 
-//eclipse {
-//    autoBuildTasks bootBuildInfo
-//}
+// This task copies the output of bootBuildInfo (the build-info.properties file) into
+// the build directory of eclipse which is always on the classpath when the application is started
+// with eclipse.
+task copyBuildPropertiesForEclipse(type: Copy) {
+    from bootBuildInfo
+    into 'bin/main/META-INF/'
+}
+
+// Tell eclipse to execute the copy task whenever something in the workspace changes.
+// Since copyBuildPropertiesForEclipse depends on bootBuildInfo,
+// bootBuildInfo will be executed before copyBuildPropertiesForEclipse (thats why we wrote
+// "from bootBuildInfo" instead of "from 'build/resources/main/META-INF/build-info.properties')
+eclipse {
+    autoBuildTasks copyBuildPropertiesForEclipse
+}
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'

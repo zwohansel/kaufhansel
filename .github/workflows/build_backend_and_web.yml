@@ -40,4 +40,8 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: backend
-          path: ${{runner.workspace}}/kaufhansel/backend/build/libs/*.jar
+          path: |
+            ${{runner.workspace}}/kaufhansel/backend/build/libs/*.jar
+            ${{runner.workspace}}/kaufhansel/backend/kaufhansel.service
+            ${{runner.workspace}}/kaufhansel/backend/kaufhansel_service_config
+          if-no-files-found: error

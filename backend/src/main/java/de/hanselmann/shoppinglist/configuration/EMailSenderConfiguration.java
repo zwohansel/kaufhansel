@@ -46,6 +46,9 @@ public class EMailSenderConfiguration {
         properties.put("mail.smtp.auth", "true");
         properties.put("mail.transport.protocol", "smtp");
         properties.put("mail.debug", "true");
+        properties.put("mail.smtp.timeout", 5000);
+        properties.put("mail.smtp.connectiontimeout", 5000);
+        properties.put("mail.smtp.writetimeout", 5000);
         sender.setJavaMailProperties(properties);
 
         return sender;

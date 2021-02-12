@@ -54,8 +54,10 @@ jobs:
         with:
           name: frontend-android
           path: ${{runner.workspace}}/kaufhansel/flutter_frontend/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
           
       - uses: actions/upload-artifact@v2
         with:
           name: frontend-linux
           path: ${{runner.workspace}}/kaufhansel/flutter_frontend/build/linux/release/bundle/
+          if-no-files-found: error
