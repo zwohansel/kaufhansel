@@ -28,6 +28,7 @@ class ShoppingListView extends StatefulWidget {
 class _ShoppingListViewState extends State<ShoppingListView> {
   bool _loading = false;
   ScrollController _scrollController;
+  String _shoppingListItemInputText;
 
   @override
   void initState() {
@@ -64,6 +65,7 @@ class _ShoppingListViewState extends State<ShoppingListView> {
                   shoppingListScrollController: _scrollController,
                   category: widget._category,
                   enabled: !_loading,
+                  onChange: (text) => setState(() => _shoppingListItemInputText = text),
                 ),
                 type: MaterialType.transparency),
             decoration: BoxDecoration(color: Colors.white, boxShadow: [
@@ -80,8 +82,13 @@ class _ShoppingListViewState extends State<ShoppingListView> {
   }
 
   Widget _buildListView(BuildContext context, List<ShoppingListItem> items, bool canEditItems) {
-    final tiles = items.where(_isItemVisible).map(_createListTileForItem);
-    final dividedTiles = _divideTilesWithKey(tiles, context).toList();
+    Iterable<ShoppingListItem> visibleItems = items.where(_isItemVisible);
+    if (_shoppingListItemInputText != null && _shoppingListItemInputText.isNotEmpty) {
+      final filterText = _shoppingListItemInputText.trim().toLowerCase();
+      visibleItems = visibleItems.where((item) => item.name.toLowerCase().contains(filterText));
+    }
+
+    final dividedTiles = _divideTilesWithKey(visibleItems.map(_createListTileForItem), context).toList();
 
     if (widget._mode == ShoppingListMode.EDITING && canEditItems) {
       return Expanded(

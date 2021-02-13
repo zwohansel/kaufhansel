@@ -85,7 +85,7 @@
   "shoppingListEmptyText": "Du hast noch keine Einkaufsliste.\nIm Menü oben rechts kannst du neue Listen anlegen.",
   "shoppingListError": "Oh nein! Haben wir Deine Einkaufslisten etwa verlegt?",
   "shoppingListCreateNew": "Neue Liste",
-  "shoppingListNeededHint": "Das brauche ich noch...",
+  "shoppingListNeededHint": "Suchen oder hinzufügen",
   "shoppingListFilterNeeded":"Was muss ich noch kaufen",
   "shoppingListFilterAlreadyInCart": "Was ist schon im Einkaufswagen",
   "shoppingListModeShopping": "Einkaufsmodus",

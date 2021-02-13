@@ -14,11 +14,17 @@ class ShoppingListItemInput extends StatefulWidget {
   final ScrollController _shoppingListScrollController;
   final String _category;
   final bool _enabled;
+  final void Function(String) _onChange;
 
-  ShoppingListItemInput({@required ScrollController shoppingListScrollController, String category, bool enabled = true})
+  ShoppingListItemInput(
+      {@required ScrollController shoppingListScrollController,
+      String category,
+      bool enabled = true,
+      void Function(String) onChange})
       : _shoppingListScrollController = shoppingListScrollController,
         _category = category,
-        _enabled = enabled;
+        _enabled = enabled,
+        _onChange = onChange;
 
   @override
   _ShoppingListItemInputState createState() => _ShoppingListItemInputState();
@@ -37,6 +43,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
     super.initState();
     _newItemNameController.addListener(() {
       setState(() => _nameValid = _newItemNameController.text.trim().isNotEmpty);
+      widget._onChange(_newItemNameController.text.trim());
     });
   }
 

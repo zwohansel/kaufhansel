@@ -105,9 +105,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final bottomNavBarHeight = 105.0;
     return Scaffold(
       body: Padding(
-        padding: EdgeInsets.only(top: 60),
+        padding: EdgeInsets.only(top: bottomNavBarHeight),
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: 300),
@@ -142,7 +143,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
       bottomNavigationBar: SizedBox(
-          height: 60,
+          height: bottomNavBarHeight,
           child: Align(
             alignment: Alignment.center,
             child: Column(
@@ -684,9 +685,12 @@ class _LoginPageState extends State<LoginPage> {
     if (_backendVersion != null && _backendVersion.isMoreRecentIgnoringPatchLevelThan(_frontendVersion)) {
       return [
         Text(_frontendVersion.toString()),
+        SizedBox(height: 10),
         Link(AppLocalizations.of(context).downloadLink,
             text: AppLocalizations.of(context).newerVersionAvailable(_backendVersion.toString()),
-            style: TextStyle(fontWeight: FontWeight.bold)),
+            style: TextStyle(fontWeight: FontWeight.bold),
+            trailingIcon: Icons.get_app),
+        SizedBox(height: 10),
         zwoHanselLink
       ];
     }
