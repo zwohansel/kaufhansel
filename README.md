@@ -33,12 +33,23 @@ Lets start with the backend first:
 
 Always start the mongo database and the mail server before starting the backend application.
 
-### App-Frontend
+#### Build and the frontend application
 
-Install [Flutter](https://flutter.dev/) open the flutter project in `flutter_frontend` and start the application.
-In debug mode the application will run against `localhost` where you dev-backend should be running.
+1. Install [Flutter](https://flutter.dev/).
+2. Open the flutter project in `flutter_frontend`.
+3. Start the application in debug mode.
+4. Login with the test user:
+   ```
+   EMail:    test@test.de
+   Password: test
+   ```
 
-### Web-Frontend
+> In debug mode the application will run against `localhost` where your dev-backend should be running.
+
+#### Web-Frontend
+
+> Work in progress
+
 
 [Aria Roles](https://github.com/A11yance/aria-query#elements-to-roles)
 
