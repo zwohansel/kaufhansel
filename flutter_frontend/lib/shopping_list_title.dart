@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kaufhansel_client/widgets/title_widget.dart';
 import 'package:provider/provider.dart';
 
@@ -26,7 +27,8 @@ class ShoppingListTitle extends StatelessWidget {
         return _ShoppingListTitleInfo(shoppingList.name, itemsInCategory.length, checkedItemsInCategory.length);
       },
       builder: (context, titleInfo, child) {
-        return TitleWidget(subTitle: _buildShoppingListSubtitle(context, titleInfo));
+        return TitleWidget(AppLocalizations.of(context).appTitle,
+            subTitle: _buildShoppingListSubtitle(context, titleInfo));
       },
     );
   }

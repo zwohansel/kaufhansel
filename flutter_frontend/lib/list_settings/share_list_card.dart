@@ -2,9 +2,11 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kaufhansel_client/list_settings/card_style.dart';
 import 'package:kaufhansel_client/list_settings/user_role_tile.dart';
 import 'package:kaufhansel_client/rest_client.dart';
+import 'package:kaufhansel_client/utils/input_validation.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
 
 import '../model.dart';
@@ -42,7 +44,8 @@ class _ShareListCardState extends State<ShareListCard> {
   @override
   Widget build(BuildContext context) {
     final currentUserCanEditList = widget._shoppingListInfo.permissions.canEditList;
-    final currentUser = UserRoleTile(widget._shoppingListInfo.permissions.role, Text("Dir"));
+    final currentUser = UserRoleTile(
+        widget._shoppingListInfo.permissions.role, Text(AppLocalizations.of(context).listSettingsSharingWithSelf));
     final otherUsers = widget._shoppingListInfo.users.map((user) => UserRoleTile(
           user.userRole,
           Text(user.userName),
@@ -60,10 +63,7 @@ class _ShareListCardState extends State<ShareListCard> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                "Du teilst die Liste mit",
-                style: Theme.of(context).textTheme.headline6,
-              ),
+              Text(AppLocalizations.of(context).listSettingsSharingWith, style: Theme.of(context).textTheme.headline6),
               SizedBox(height: 12),
               Column(
                 mainAxisSize: MainAxisSize.min,
@@ -86,12 +86,9 @@ class _ShareListCardState extends State<ShareListCard> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text("Mit einem weiteren Hansel teilen", style: getCardHeadlineStyle(context)),
+          Text(AppLocalizations.of(context).listSettingsShareWithOther, style: getCardHeadlineStyle(context)),
           SizedBox(height: 12),
-          Text(
-              "Wenn du nichts änderst, kann der neue Hansel Dinge hinzufügen und entfernen, " +
-                  "er darf Haken setzen und entfernen. Er ist ein Schreibhansel.",
-              style: getCardSubtitleStyle(context)),
+          Text(AppLocalizations.of(context).listSettingsShareWithOtherInfo, style: getCardSubtitleStyle(context)),
           SizedBox(height: 12),
           Row(children: [
             Expanded(
@@ -102,12 +99,12 @@ class _ShareListCardState extends State<ShareListCard> {
                       controller: _addUserTextEditingController,
                       enabled: !widget._loading,
                       onFieldSubmitted: (_) => _onAddUserToShoppingList(),
-                      decoration: const InputDecoration(
-                        hintText: 'Emailadresse vom Hansel',
+                      decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context).listSettingsAddUserToListEmailAddressHint,
                       ),
                       validator: (emailAddress) {
-                        if (emailAddress.trim().isEmpty || !emailAddress.contains('@') || !emailAddress.contains('.')) {
-                          return 'Dazu brauchen wir schon eine korrekte Emailadresse...';
+                        if (!isValidEMailAddress(emailAddress)) {
+                          return AppLocalizations.of(context).emailInvalid;
                         }
                         return null;
                       },
@@ -124,14 +121,14 @@ class _ShareListCardState extends State<ShareListCard> {
 
   Future<ShoppingListRole> _buildChangePermissionsDialog(BuildContext context, ShoppingListUserReference user) {
     if (user.userRole == ShoppingListRole.ADMIN) {
-      showErrorDialog(context, "Einmal Chefhansel, immer Chefhansel. Daran kannst du nichts mehr ändern.");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionCantChangeAdminRole);
       return null;
     }
 
     return showDialog<ShoppingListRole>(
         context: context,
         builder: (context) => SimpleDialog(
-            title: Text("Was ist ${user.userName} für ein Hansel?"),
+            title: Text(AppLocalizations.of(context).listSettingsChangeUserRole(user.userName)),
             children: ShoppingListRole.values
                 .map((role) => _buildRoleOption(context, role, user.userRole == role))
                 .toList()));
@@ -150,10 +147,10 @@ class _ShareListCardState extends State<ShareListCard> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text(
-                    role.toDisplayString(),
+                    role.toDisplayString(context),
                     style: Theme.of(context).textTheme.headline6,
                   ),
-                  Text(role.toDescription())
+                  Text(role.toDescription(context))
                 ],
               ),
             ),
@@ -178,7 +175,7 @@ class _ShareListCardState extends State<ShareListCard> {
       _addUserTextEditingController.clear();
     } on Exception catch (e) {
       log("Could not add user to shopping list.", error: e);
-      showErrorDialog(context, "Hast du dich vertippt oder können wir den Hansel nicht finden?");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionCantFindOtherUser);
     } finally {
       widget._setLoading(false);
     }
@@ -186,23 +183,20 @@ class _ShareListCardState extends State<ShareListCard> {
 
   Future<void> _inviteUserToList(String emailAddress) async {
     final inviteUser = await showConfirmDialog(
-        context,
-        "Hast du dich vertippt? Diese Emailadresse kennen wir noch nicht.\n\nOder möchtest du, dass wir an $emailAddress eine Einladung schicken?"
-        "\nWenn sich der Hansel registriert, hat er Zugriff auf diese Liste.",
-        cancelBtnLabel: "Jetzt nicht",
-        confirmBtnLabel: "Ja, gerne!",
+        context, AppLocalizations.of(context).listSettingsSendListInvitationText(emailAddress),
+        cancelBtnLabel: AppLocalizations.of(context).listSettingsSendListInvitationNo,
+        confirmBtnLabel: AppLocalizations.of(context).listSettingsSendListInvitationYes,
         confirmBtnColor: Theme.of(context).primaryColor,
-        title: "Wer ist $emailAddress ???");
+        title: AppLocalizations.of(context).listSettingsSendListInvitationTitle(emailAddress));
     if (inviteUser) {
       try {
         RestClient client = RestClientWidget.of(context);
         await client.sendInvite(emailAddress, shoppingListId: widget._shoppingListInfo.id);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Wir haben eine Einladung an $emailAddress geschickt.")));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(AppLocalizations.of(context).listSettingsListInvitationSent(emailAddress))));
       } on Exception catch (e) {
         log("Failed to send list invite", error: e);
-        showErrorDialog(context,
-            "Das Verschicken der Einladungs-Email hat leider nicht geklappt. Ruf den Hansel doch einfach mal an.");
+        showErrorDialog(context, AppLocalizations.of(context).exceptionSendListInvitationFailed);
       }
     }
   }
@@ -216,7 +210,7 @@ class _ShareListCardState extends State<ShareListCard> {
       }
     } on Exception catch (e) {
       log("Could not change user permissions.", error: e);
-      showErrorDialog(context, "Schläft der Server noch oder hast du kein Internet?");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralServerSleeping);
     } finally {
       widget._setLoading(false);
     }
@@ -225,14 +219,14 @@ class _ShareListCardState extends State<ShareListCard> {
   void _onRemoveUserFromList(ShoppingListUserReference user) async {
     widget._setLoading(true);
     try {
-      final removeUser = await showConfirmDialog(
-          context, "Möchtest du ${user.userName} wirklich von ${widget._shoppingListInfo.name} entfernen?");
+      final removeUser = await showConfirmDialog(context,
+          AppLocalizations.of(context).listSettingsRemoveUserFromList(user.userName, widget._shoppingListInfo.name));
       if (removeUser) {
         await widget._onRemoveUserFromShoppingList(user);
       }
     } on Exception catch (e) {
       log("Could not remove user from shopping list.", error: e);
-      showErrorDialog(context, "Schläft der Server noch oder hast du kein Internet?");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralServerSleeping);
     } finally {
       widget._setLoading(false);
     }

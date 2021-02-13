@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/widgets/async_operation_icon_button.dart';
@@ -73,7 +74,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
       });
     } on Exception catch (e) {
       developer.log("Could not add $name to list.", error: e);
-      showErrorDialog(context, "\"$name\" konnte nicht hinzugefügt werden... ist das schon Zensur?");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionAddItemFailed(name));
     } finally {
       setState(() => _submitting = false);
     }
@@ -100,7 +101,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
                         isDense: true,
                         contentPadding: EdgeInsets.fromLTRB(12, 8, 12, 8),
                         border: OutlineInputBorder(),
-                        hintText: "Das brauche ich noch..."),
+                        hintText: AppLocalizations.of(context).shoppingListNeededHint),
                     controller: _newItemNameController,
                     enabled: !_submitting && widget._enabled,
                     onSubmitted: (_) => addNewItemIfValid())),

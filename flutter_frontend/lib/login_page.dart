@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/utils/input_validation.dart';
@@ -24,8 +25,6 @@ class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
 }
-
-const String _downloadLink = "https://zwohansel.de/kaufhansel/download";
 
 enum _PageMode {
   LOGIN,
@@ -127,7 +126,7 @@ class _LoginPageState extends State<LoginPage> {
                         size: Theme.of(context).textTheme.headline3.fontSize,
                       ),
                       Text(
-                        "Kaufhansel",
+                        AppLocalizations.of(context).appTitle,
                         style: Theme.of(context).textTheme.headline3,
                       ),
                     ],
@@ -172,7 +171,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: TextButton(
                     style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
                     onPressed: () => setState(() => _infoMessage = null),
-                    child: Text(_infoMessageDismissLabel ?? "Ok"),
+                    child: Text(_infoMessageDismissLabel ?? AppLocalizations.of(context).ok),
                   ),
                 )
               ],
@@ -207,7 +206,7 @@ class _LoginPageState extends State<LoginPage> {
         return _buildResetPasswordForm();
       default:
         return Container(
-          child: Text("Jetzt ist der Kaufhansel abgestürzt."),
+          child: Text(AppLocalizations.of(context).exceptionFatal),
         );
     }
   }
@@ -232,12 +231,12 @@ class _LoginPageState extends State<LoginPage> {
                   controller: _userEmailAddressController,
                   enabled: !_isLoading(),
                   autofillHints: !_isLoading() ? [AutofillHints.username] : null,
-                  decoration: const InputDecoration(
-                    hintText: 'Email',
+                  decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context).emailHint,
                   ),
                   validator: (address) {
                     if (!isValidEMailAddress(address)) {
-                      return 'Gib eine gültige Email-Adresse ein';
+                      return AppLocalizations.of(context).emailInvalid;
                     }
                     return null;
                   },
@@ -251,12 +250,12 @@ class _LoginPageState extends State<LoginPage> {
                         icon: _obscurePassword ? Icon(Icons.remove_red_eye) : Icon(Icons.remove_red_eye_outlined),
                         onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                       ),
-                      hintText: 'Kennwort',
+                      hintText: AppLocalizations.of(context).passwordHint,
                     ),
                     obscureText: _obscurePassword,
                     validator: (password) {
                       if (password.isEmpty) {
-                        return 'Gib dein Kennwort richtig ein';
+                        return AppLocalizations.of(context).passwordEmpty;
                       }
                       return null;
                     },
@@ -265,17 +264,18 @@ class _LoginPageState extends State<LoginPage> {
             ),
             Padding(
                 padding: EdgeInsets.only(top: 15),
-                child: ElevatedButton(child: Text("Anmelden"), onPressed: _isLoading() ? null : _login)),
+                child: ElevatedButton(
+                    child: Text(AppLocalizations.of(context).buttonLogin), onPressed: _isLoading() ? null : _login)),
             Padding(
               padding: EdgeInsets.only(top: 10),
               child: OutlinedButton(
-                  child: Text("Registrieren"),
+                  child: Text(AppLocalizations.of(context).buttonRegister),
                   onPressed: _isLoading() ? null : () => setState(() => _pageMode = _PageMode.CHECK_INVITE)),
             ),
             Padding(
               padding: EdgeInsets.only(top: 10),
               child: OutlinedButton(
-                  child: Text("Kennwort vergessen"),
+                  child: Text(AppLocalizations.of(context).buttonPasswordForgotten),
                   onPressed: _isLoading() ? null : () => setState(() => _pageMode = _PageMode.RESET_PASSWORD_REQUEST)),
             ),
           ],
@@ -295,24 +295,26 @@ class _LoginPageState extends State<LoginPage> {
             controller: _inviteCodeController,
             enabled: !_isLoading(),
             textCapitalization: TextCapitalization.characters,
-            decoration: const InputDecoration(hintText: 'Einladungs-Code'),
+            decoration: InputDecoration(hintText: AppLocalizations.of(context).invitationCodeHint),
             onFieldSubmitted: (_) => _checkInviteCode(),
             validator: (code) {
               if (code.trim().isEmpty) {
-                return 'Gib deinen Einladungs-Code ein';
+                return AppLocalizations.of(context).invitationCodeEmpty;
               } else if (_inviteCodeInvalid) {
-                return 'Der Code stimmt nicht';
+                return AppLocalizations.of(context).invitationCodeInvalid;
               }
               return null;
             },
           ),
           Padding(
               padding: EdgeInsets.only(top: 15),
-              child: ElevatedButton(child: Text("Weiter"), onPressed: _isLoading() ? null : _checkInviteCode)),
+              child: ElevatedButton(
+                  child: Text(AppLocalizations.of(context).buttonForward),
+                  onPressed: _isLoading() ? null : _checkInviteCode)),
           Padding(
             padding: EdgeInsets.only(top: 10),
             child: OutlinedButton(
-                child: Text("Zurück zur Anmeldung"),
+                child: Text(AppLocalizations.of(context).buttonBackToLogin),
                 onPressed: _isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
           ),
         ],
@@ -344,7 +346,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     } on Exception catch (e) {
       log("Get registration process type failed.", error: e);
-      showErrorDialog(context, "Das hat nicht geklappt. Probier es später noch einmal.");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralTryAgainLater);
     } finally {
       setState(() => _loading = false);
     }
@@ -361,10 +363,10 @@ class _LoginPageState extends State<LoginPage> {
             controller: _userNameController,
             enabled: !_isLoading(),
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(hintText: 'Nutzername'),
+            decoration: InputDecoration(hintText: AppLocalizations.of(context).userNameHint),
             validator: (userName) {
               if (userName.trim().isEmpty) {
-                return 'Gib einen Nutzernamen ein';
+                return AppLocalizations.of(context).userNameInvalid;
               }
               return null;
             },
@@ -372,15 +374,15 @@ class _LoginPageState extends State<LoginPage> {
           TextFormField(
             controller: _userEmailAddressController,
             enabled: !_isLoading(),
-            decoration: const InputDecoration(
-              hintText: 'Email',
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context).emailHint,
             ),
             validator: (address) {
               if (!isValidEMailAddress(address)) {
-                return 'Gib eine gültige Email-Adresse ein';
+                return AppLocalizations.of(context).emailInvalid;
               }
               if (_emailAddressInvalid) {
-                return 'Nimm eine andere.';
+                return AppLocalizations.of(context).emailAlreadyInUse;
               }
               return null;
             },
@@ -388,16 +390,16 @@ class _LoginPageState extends State<LoginPage> {
           TextFormField(
             controller: _setPasswordController,
             enabled: !_isLoading(),
-            decoration: const InputDecoration(
-              hintText: 'Kennwort',
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context).passwordHint,
             ),
             obscureText: true,
             validator: (password) {
               if (password.length < 8) {
-                return 'Mindestens 8 Zeichen!';
+                return AppLocalizations.of(context).passwordToShort;
               }
               if (_passwordInvalid) {
-                return 'Denk dir was besseres aus.';
+                return AppLocalizations.of(context).passwordInvalid;
               }
               return null;
             },
@@ -405,13 +407,13 @@ class _LoginPageState extends State<LoginPage> {
           TextFormField(
             controller: _confirmPasswordController,
             enabled: !_isLoading(),
-            decoration: const InputDecoration(
-              hintText: 'Kennwort bestätigen',
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context).passwordConfirmationHint,
             ),
             obscureText: true,
             validator: (password) {
               if (password.isEmpty || password != _setPasswordController.text) {
-                return 'Gib dein Kennwort nochmal ein';
+                return AppLocalizations.of(context).passwordConfirmationInvalid;
               }
               return null;
             },
@@ -419,11 +421,13 @@ class _LoginPageState extends State<LoginPage> {
           ),
           Padding(
               padding: EdgeInsets.only(top: 15),
-              child: ElevatedButton(child: Text("Registrieren"), onPressed: _isLoading() ? null : _registerFull)),
+              child: ElevatedButton(
+                  child: Text(AppLocalizations.of(context).buttonRegister),
+                  onPressed: _isLoading() ? null : _registerFull)),
           Padding(
             padding: EdgeInsets.only(top: 10),
             child: OutlinedButton(
-                child: Text("Zurück zur Anmeldung"),
+                child: Text(AppLocalizations.of(context).buttonBackToLogin),
                 onPressed: _isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
           ),
         ],
@@ -442,10 +446,10 @@ class _LoginPageState extends State<LoginPage> {
             controller: _userNameController,
             enabled: !_isLoading(),
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(hintText: 'Nutzername'),
+            decoration: InputDecoration(hintText: AppLocalizations.of(context).userNameHint),
             validator: (userName) {
               if (userName.trim().isEmpty) {
-                return 'Gib einen Nutzernamen ein';
+                return AppLocalizations.of(context).userNameInvalid;
               }
               return null;
             },
@@ -453,16 +457,16 @@ class _LoginPageState extends State<LoginPage> {
           TextFormField(
             controller: _setPasswordController,
             enabled: !_isLoading(),
-            decoration: const InputDecoration(
-              hintText: 'Kennwort',
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context).passwordHint,
             ),
             obscureText: true,
             validator: (password) {
               if (password.length < 8) {
-                return 'Mindestens 8 Zeichen!';
+                return AppLocalizations.of(context).passwordToShort;
               }
               if (_passwordInvalid) {
-                return 'Denk dir was besseres aus.';
+                return AppLocalizations.of(context).passwordInvalid;
               }
               return null;
             },
@@ -470,13 +474,13 @@ class _LoginPageState extends State<LoginPage> {
           TextFormField(
             controller: _confirmPasswordController,
             enabled: !_isLoading(),
-            decoration: const InputDecoration(
-              hintText: 'Kennwort bestätigen',
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context).passwordHint,
             ),
             obscureText: true,
             validator: (password) {
               if (password.isEmpty || password != _setPasswordController.text) {
-                return 'Gib dein Kennwort nochmal ein';
+                return AppLocalizations.of(context).passwordConfirmationInvalid;
               }
               return null;
             },
@@ -484,12 +488,13 @@ class _LoginPageState extends State<LoginPage> {
           ),
           Padding(
               padding: EdgeInsets.only(top: 15),
-              child:
-                  ElevatedButton(child: Text("Registrieren"), onPressed: _isLoading() ? null : _registerWithoutEmail)),
+              child: ElevatedButton(
+                  child: Text(AppLocalizations.of(context).buttonRegister),
+                  onPressed: _isLoading() ? null : _registerWithoutEmail)),
           Padding(
             padding: EdgeInsets.only(top: 10),
             child: OutlinedButton(
-                child: Text("Zurück zur Anmeldung"),
+                child: Text(AppLocalizations.of(context).buttonBackToLogin),
                 onPressed: _isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
           ),
         ],
@@ -507,11 +512,11 @@ class _LoginPageState extends State<LoginPage> {
           TextFormField(
             controller: _userEmailAddressController,
             enabled: !_isLoading(),
-            decoration: const InputDecoration(hintText: 'Email-Adresse'),
+            decoration: InputDecoration(hintText: AppLocalizations.of(context).emailHint),
             onFieldSubmitted: (_) => _requestPasswordReset(),
             validator: (emailAddress) {
               if (!isValidEMailAddress(emailAddress)) {
-                return "Gib eine gültige Email-Adresse ein";
+                return AppLocalizations.of(context).emailInvalid;
               }
               return null;
             },
@@ -519,17 +524,18 @@ class _LoginPageState extends State<LoginPage> {
           Padding(
               padding: EdgeInsets.only(top: 15),
               child: ElevatedButton(
-                  child: Text("Kennwort zurücksetzen"), onPressed: _isLoading() ? null : _requestPasswordReset)),
+                  child: Text(AppLocalizations.of(context).buttonPasswordReset),
+                  onPressed: _isLoading() ? null : _requestPasswordReset)),
           Padding(
             padding: EdgeInsets.only(top: 10),
             child: OutlinedButton(
-                child: Text("Wiederherstellungs-Code eingeben"),
+                child: Text(AppLocalizations.of(context).buttonPasswordResetCode),
                 onPressed: _isLoading() ? null : () => setState(() => _pageMode = _PageMode.RESET_PASSWORD)),
           ),
           Padding(
             padding: EdgeInsets.only(top: 10),
             child: OutlinedButton(
-                child: Text("Zurück zur Anmeldung"),
+                child: Text(AppLocalizations.of(context).buttonBackToLogin),
                 onPressed: _isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
           ),
         ],
@@ -548,7 +554,7 @@ class _LoginPageState extends State<LoginPage> {
       setState(() => _pageMode = _PageMode.RESET_PASSWORD);
     } on Exception catch (e) {
       log("Reset password failed.", error: e);
-      showErrorDialog(context, "Das hat nicht geklappt. Probier es später noch einmal.");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralTryAgainLater);
     } finally {
       setState(() => _loading = false);
     }
@@ -562,17 +568,15 @@ class _LoginPageState extends State<LoginPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SizedBox(height: 20),
-          Text(
-              "Falls du beim Kaufhansel registriert bist, haben wir dir eine Email mit einem Wiederherstellungs-Code geschickt. "
-              "Gib den Code hier ein, um dein Kennwort zurückzusetzen."),
+          Text(AppLocalizations.of(context).passwordResetInfo),
           TextFormField(
             controller: _userEmailAddressController,
             enabled: !_isLoading(),
-            decoration: const InputDecoration(hintText: 'Email-Adresse'),
+            decoration: InputDecoration(hintText: AppLocalizations.of(context).emailHint),
             onFieldSubmitted: (_) => _requestPasswordReset(),
             validator: (emailAddress) {
               if (!isValidEMailAddress(emailAddress)) {
-                return "Gib eine gültige Email-Adresse ein";
+                return AppLocalizations.of(context).emailInvalid;
               }
               return null;
             },
@@ -580,11 +584,11 @@ class _LoginPageState extends State<LoginPage> {
           TextFormField(
             controller: _resetPasswordCodeController,
             enabled: !_isLoading(),
-            decoration: const InputDecoration(hintText: 'Wiederherstellungs-Code'),
+            decoration: InputDecoration(hintText: AppLocalizations.of(context).passwordResetCodeHint),
             onFieldSubmitted: (_) => _resetPassword(),
             validator: (code) {
               if (code.isEmpty) {
-                return "Gib den Wiederherstellungs-Code ein";
+                return AppLocalizations.of(context).passwordResetCodeInvalid;
               }
               return null;
             },
@@ -592,16 +596,16 @@ class _LoginPageState extends State<LoginPage> {
           TextFormField(
             controller: _setPasswordController,
             enabled: !_isLoading(),
-            decoration: const InputDecoration(
-              hintText: 'Neues Kennwort',
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context).passwordNewHint,
             ),
             obscureText: true,
             validator: (password) {
               if (password.length < 8) {
-                return 'Mindestens 8 Zeichen!';
+                return AppLocalizations.of(context).passwordToShort;
               }
               if (_passwordInvalid) {
-                return 'Denk dir was besseres aus.';
+                return AppLocalizations.of(context).passwordInvalid;
               }
               return null;
             },
@@ -609,13 +613,13 @@ class _LoginPageState extends State<LoginPage> {
           TextFormField(
             controller: _confirmPasswordController,
             enabled: !_isLoading(),
-            decoration: const InputDecoration(
-              hintText: 'Neues Kennwort bestätigen',
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context).passwordNewConfirmationHint,
             ),
             obscureText: true,
             validator: (password) {
               if (password.isEmpty || password != _setPasswordController.text) {
-                return 'Gib dein neues Kennwort nochmal ein';
+                return AppLocalizations.of(context).passwordNewConfirmationInvalid;
               }
               return null;
             },
@@ -623,11 +627,13 @@ class _LoginPageState extends State<LoginPage> {
           ),
           Padding(
               padding: EdgeInsets.only(top: 15),
-              child: ElevatedButton(child: Text("Kennwort ändern"), onPressed: _isLoading() ? null : _resetPassword)),
+              child: ElevatedButton(
+                  child: Text(AppLocalizations.of(context).buttonPasswordChange),
+                  onPressed: _isLoading() ? null : _resetPassword)),
           Padding(
             padding: EdgeInsets.only(top: 10),
             child: OutlinedButton(
-                child: Text("Zurück zur Anmeldung"),
+                child: Text(AppLocalizations.of(context).buttonBackToLogin),
                 onPressed: _isLoading() ? null : () => setState(() => _pageMode = _PageMode.LOGIN)),
           ),
         ],
@@ -648,10 +654,7 @@ class _LoginPageState extends State<LoginPage> {
       _showPasswordResetSuccessMessage();
     } on Exception catch (e) {
       log("Set new password failed.", error: e);
-      showErrorDialog(
-          context,
-          "Das hat nicht geklappt.\n\nStimmt die Email-Adresse?\nIst der Wiederherstellungs-Code richtig?"
-          "\nHast du ein vernünftiges Passwort gewählt?\nDenk auch daran, dass der Wiederherstellungs-Code nur eine Stunde gültig ist.");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionResetPassword);
     } finally {
       setState(() => _loading = false);
     }
@@ -659,7 +662,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void _showPasswordResetSuccessMessage() {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("Du hast dein Kennwort erfolgreich geändert."),
+      content: Text(AppLocalizations.of(context).passwordChangeSuccess),
       duration: Duration(seconds: 5),
     ));
   }
@@ -673,15 +676,16 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   List<Widget> _buildBottomInfos(BuildContext context) {
-    final zwoHanselLink = Link('https://zwohansel.de', text: "zwohansel.de");
+    final zwoHanselLink =
+        Link(AppLocalizations.of(context).zwoHanselPageLink, text: AppLocalizations.of(context).zwoHanselPageLinkText);
     if (_frontendVersion == null) {
       return [zwoHanselLink];
     }
     if (_backendVersion != null && _backendVersion.isMoreRecentIgnoringPatchLevelThan(_frontendVersion)) {
       return [
         Text(_frontendVersion.toString()),
-        Link(_downloadLink,
-            text: "Version ${_backendVersion.toString()} ist verfügbar.",
+        Link(AppLocalizations.of(context).downloadLink,
+            text: AppLocalizations.of(context).newerVersionAvailable(_backendVersion.toString()),
             style: TextStyle(fontWeight: FontWeight.bold)),
         zwoHanselLink
       ];
@@ -701,22 +705,18 @@ class _LoginPageState extends State<LoginPage> {
       if (userInfo != null) {
         widget._loggedIn(userInfo);
       } else {
-        showErrorDialog(context, "Haben wir Deinen Account gelöscht oder hast Du Deine Zugangsdaten vergessen?");
+        showErrorDialog(context, AppLocalizations.of(context).exceptionWrongCredentials);
       }
     } on SocketException catch (e) {
       if (e.osError.errorCode == 111 && Platform.isLinux || Platform.isAndroid) {
-        showErrorDialog(
-            context, "Haben wir den Server heruntergefahren oder bist du nicht mit dem Internet verbunden?");
+        showErrorDialog(context, AppLocalizations.of(context).exceptionNoInternet);
       } else {
-        showErrorDialog(context,
-            "Haben wir einen Fehler eingebaut oder hast du etwas falsch gemacht?\nComputer sagt: " + e.osError.message);
+        showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralComputerSays + e.osError.message);
       }
     } on TimeoutException {
-      showErrorDialog(context,
-          "Schläft der Server oder ist das Internet zu langsam?\nJedenfalls hat das alles viel zu lange gedauert.");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionConnectionTimeout);
     } catch (e) {
-      showErrorDialog(context,
-          "Haben wir einen Fehler eingebaut oder hast du etwas falsch gemacht?\nComputer sagt: " + e.toString());
+      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralComputerSays + e.toString());
     } finally {
       setState(() => _loading = false);
     }
@@ -735,8 +735,8 @@ class _LoginPageState extends State<LoginPage> {
         showConfirmDialog(
           context,
           backendInfo.message.message,
-          title: "Wichtige Durchsage",
-          confirmBtnLabel: backendInfo.message.dismissLabel ?? "Ok",
+          title: AppLocalizations.of(context).importantMessage,
+          confirmBtnLabel: backendInfo.message.dismissLabel ?? AppLocalizations.of(context).ok,
           hideCancelBtn: true,
           confirmBtnColor: Theme.of(context).primaryColor,
         );
@@ -749,8 +749,7 @@ class _LoginPageState extends State<LoginPage> {
       setState(() => _loading = false);
     } on Exception catch (e) {
       log("Failed to fetch backend info.", error: e);
-      await showErrorDialog(context,
-          "Hast du kein Internet oder ist der Server nicht erreichbar?\nWir können es ja nochmal versuchen...");
+      await showErrorDialog(context, AppLocalizations.of(context).exceptionNoInternetRetry);
       await Future.delayed(Duration(seconds: 5)); // Don't let the user DDOS the server
       _fetchBackendInfo();
     }
@@ -778,21 +777,20 @@ class _LoginPageState extends State<LoginPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                "Du verwendest vom Kaufhansel immer noch die Version ${frontendVersion.toString()} ???\n\nDie ist doch schon viel zu alt."
-                " Hol dir die neue und viel bessere Version ${backendVersion.toString()} von",
+                AppLocalizations.of(context)
+                    .exceptionIncompatibleVersion(frontendVersion.toString(), backendVersion.toString()),
                 textAlign: TextAlign.center,
               ),
               Padding(
                   padding: EdgeInsets.only(top: 10),
                   child: Link(
-                    _downloadLink,
-                    text: "zwohansel.de",
+                    AppLocalizations.of(context).downloadLink,
                     style: Theme.of(context).textTheme.headline6,
                     textAlign: TextAlign.center,
                   ))
             ],
           ),
-          closeLabel: "Mache ich sofort!");
+          AppLocalizations.of(context).okImmediately);
     }
   }
 
@@ -827,12 +825,11 @@ class _LoginPageState extends State<LoginPage> {
         setState(() => _passwordInvalid = true);
         _registerFullFormKey.currentState.validate();
       } else {
-        showErrorDialog(context,
-            "Wollen wir nicht, dass du dich registrierst oder hast du etwas falsch gemacht?\nProbiere es einfach später nochmal.");
+        showErrorDialog(context, AppLocalizations.of(context).exceptionRegistrationFailedTryAgainLater);
       }
     } on Exception catch (e) {
       log("Registration failed.", error: e);
-      showErrorDialog(context, "Irgendetwas stimmt nicht. Probiere es einfach später nochmal.");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralTryAgainLater);
     } finally {
       setState(() => _loading = false);
     }
@@ -840,11 +837,10 @@ class _LoginPageState extends State<LoginPage> {
 
   void _showFullRegistrationSuccessMessage(String emailAddress) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(
-          "Wir haben dir eine E-Mail an $emailAddress geschickt... folge dem Aktivierungs-Link, dann kannst du dich anmelden."),
+      content: Text(AppLocalizations.of(context).activationLinkSent(emailAddress)),
       duration: Duration(seconds: 15),
       action: SnackBarAction(
-        label: "Mach ich",
+        label: AppLocalizations.of(context).ok,
         onPressed: () => ScaffoldMessenger.of(context).removeCurrentSnackBar(),
       ),
     ));
@@ -876,12 +872,11 @@ class _LoginPageState extends State<LoginPage> {
         setState(() => _passwordInvalid = true);
         _registerWithoutEmailFormKey.currentState.validate();
       } else {
-        showErrorDialog(context,
-            "Wollen wir nicht, dass du dich registrierst oder hast du etwas falsch gemacht?\nProbiere es einfach später nochmal.");
+        showErrorDialog(context, AppLocalizations.of(context).exceptionRegistrationFailedTryAgainLater);
       }
     } on Exception catch (e) {
       log("Registration failed.", error: e);
-      showErrorDialog(context, "Irgendetwas stimmt nicht. Probiere es einfach später nochmal.");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralTryAgainLater);
     } finally {
       setState(() => _loading = false);
     }
@@ -889,8 +884,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void showRegistrationWithoutEmailSuccessMessage() {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(
-          "Deine Registrierung ist abgeschlossen. Du kannst dich nun mit deiner Email-Adresse und deinem Passwort anmelden."),
+      content: Text(AppLocalizations.of(context).registrationSuccessful),
     ));
   }
 }

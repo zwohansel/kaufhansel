@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_item_input.dart';
@@ -151,7 +152,9 @@ class _ShoppingListViewState extends State<ShoppingListView> {
       // restore the old position on error
       list.moveItem(item, oldIndex);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("${item.name} konnte nicht verschoben werden..."), duration: Duration(seconds: 2)),
+        SnackBar(
+            content: Text(AppLocalizations.of(context).exceptionMoveItemFailed(item.name)),
+            duration: Duration(seconds: 2)),
       );
     } finally {
       setState(() => _loading = false);

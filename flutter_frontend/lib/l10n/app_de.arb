@@ -1,0 +1,278 @@
+{
+  "appTitle": "Kaufhansel",
+  "downloadLink": "https://zwohansel.de/kaufhansel/download",
+  "downloadLinkPromotion": "Die Downloads gibts hier: ",
+  "zwoHanselPageLink": "https://zwohansel.de",
+  "zwoHanselPageLinkText": "zwohansel.de",
+  "zwoHanselPageLinkInfo": "Mehr über die Entwickler auf zwohansel.de",
+  "zwoHanselGithubLink": "https://github.com/zwohansel",
+  "zwoHanselGithubLinkInfo": "ZwoHansel auf GitHub",
+  "zwoHanselKaufhanselGithubLink": "https://github.com/zwohansel/kaufhansel",
+  "zwoHanselKaufhanselGithubLinkInfo": "Der Kaufhansel auf GitHub",
+
+  "manShrugging": "🤷‍♂️",
+  "thatsJustHowItIs": "Ist dann halt schon so...",
+  "important": "Achtung!",
+  "ok": "Ok",
+  "cancel": "Abbrechen",
+  "close": "Schließen",
+  "okImmediately": "Mach ich sofort",
+  "tryAgain": "Nochmal versuchen",
+  "importantMessage": "Wichtige Durchsage",
+  "refresh": "Aktualisieren",
+  "settings": "Einstellungen",
+
+  "roleAdminName": "Chefhansel",
+  "roleAdminDescription": "Darf alles: Dinge hinzufügen und entfernen, Haken setzen und entfernen. Darf neue Hansel zur Liste hinzufügen.\nEinmal Chefhansel, immer Chefhansel: diese Rolle kannst du nicht mehr ändern",
+  "roleReadWriteName": "Schreibhansel",
+  "roleReadWriteDescription": "Darf Dinge hinzufügen und entfernen, darf Haken setzen und entfernen",
+  "roleCheckOnlyName": "Kaufhansel",
+  "roleCheckOnlyDescription": "Darf Haken setzen und entfernen",
+  "roleReadOnlyName": "Guckhansel",
+  "roleReadOnlyDescription": "Darf die Liste anschauen, aber nix ändern",
+
+  "emailHint": "Email-Adresse",
+  "emailInvalid": "Gib eine gültige Email-Adresse ein",
+  "emailAlreadyInUse": "Nimm eine andere",
+  "passwordHint": "Kennwort",
+  "passwordEmpty": "Gib dein Kennwort richtig ein",
+  "passwordToShort": "Mindestens 8 Zeichen",
+  "passwordInvalid": "Denk dir was besseres aus",
+  "passwordConfirmationHint": "Kennwort bestätigen",
+  "passwordConfirmationInvalid": "Gib dein Kennwort nochmal ein",
+  "passwordResetInfo": "Falls du beim Kaufhansel registriert bist, haben wir dir eine Email mit einem Wiederherstellungs-Code geschickt. Gib den Code hier ein, um dein Kennwort zurückzusetzen.",
+  "passwordResetCodeHint": "Wiederherstellungs-Code",
+  "passwordResetCodeInvalid": "Gib den Wiederherstellungs-Code ein",
+  "passwordNewHint": "Neues Kennwort",
+  "passwordNewConfirmationHint": "Neues Kennwort bestätigen",
+  "passwordNewConfirmationInvalid": "Gib dein neues Kennwort nochmal ein",
+  "passwordChangeSuccess": "Du hast dein Kennwort erfolgreich geändert.",
+  "invitationCodeHint": "Einladungs-Code",
+  "invitationCodeEmpty": "Gib deinen Einladungs-Code ein",
+  "invitationCodeInvalid": "Der Code stimmt nicht",
+  "invitationCodeGenerate": "Einladungs-Code generieren",
+  "invitationCodeGenerating": "Code wird generiert",
+  "invitationCodeShareMessage": "Werde mit diesem Code zum Kaufhansel! Lade dir den Kaufhansel von https://zwohansel.de/kaufhansel/download runter.",
+  "invitationCodeRequestDistributionMessage": "Schicke anderen Hanseln diesen Code, damit sie sich beim Kaufhansel registrieren können.",
+  "activationLinkSent": "Wir haben dir eine E-Mail an {emailAddress} geschickt... folge dem Aktivierungs-Link, dann kannst du dich anmelden.",
+  "@activationLinkSent": {
+    "type": "text",
+    "placeholders": {
+      "emailAddress": {}
+    }
+  },
+  "registrationSuccessful": "Deine Registrierung ist abgeschlossen. Du kannst dich nun mit deiner Email-Adresse und deinem Passwort anmelden.",
+  "userNameHint": "Nutzername",
+  "userNameInvalid": "Gib einen Nutzernamen ein",
+  "buttonLogin": "Anmelden",
+  "buttonRegister": "Registrieren",
+  "buttonPasswordForgotten": "Kennwort vergessen",
+  "buttonPasswordReset": "Kennwort zurücksetzen",
+  "buttonPasswordChange": "Kenwort ändern",
+  "buttonForward": "Weiter",
+  "buttonBackToLogin": "Zurück zur Anmeldung",
+  "buttonPasswordResetCode": "Wiederherstellungs-Code eingeben",
+
+  "newerVersionAvailable": "Version {version} ist verfügbar",
+  "@newerVersionAvailable": {
+    "type": "text",
+    "placeholders": {
+      "version": {}
+    }
+  },
+
+  "shoppingListEmpty": "\uD83C\uDF3D\uD83E\uDD66\uD83E\uDDC0",
+  "shoppingListEmptyText": "Du hast noch keine Einkaufsliste.\nIm Menü oben rechts kannst du neue Listen anlegen.",
+  "shoppingListError": "Oh nein! Haben wir Deine Einkaufslisten etwa verlegt?",
+  "shoppingListCreateNew": "Neue Liste",
+  "shoppingListNeededHint": "Das brauche ich noch...",
+  "shoppingListFilterNeeded":"Was muss ich noch kaufen",
+  "shoppingListFilterAlreadyInCart": "Was ist schon im Einkaufswagen",
+  "shoppingListModeShopping": "Einkaufsmodus",
+  "shoppingListModeEditing": "Editiermodus",
+
+  "categoryChooseOne": "Wähle eine Kategorie",
+  "categoryNone": "Keine",
+  "categoryCreateNew": "Neue Kategorie",
+
+  "roleYoursRoleName": "Hier bist du {roleName}:",
+  "@roleYoursRoleName": {
+    "type": "text",
+    "placeholders": {
+      "roleName": {}
+    }
+  },
+
+  "appSettingsTitle": "{username}, was willst du ändern?",
+  "@appSettingsTitle": {
+    "type": "text",
+    "placeholders": {
+      "username": {}
+    }
+  },
+  "appSettingsYourEmail": "Deine Email-Adresse: {email}",
+  "@appSettingsYourEmail": {
+    "type": "text",
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "appSettingsLogOut": "Ich will mich mal kurz abmelden",
+  "appSettingsDeleteAccount": "Ich will mein Benutzerkonto löschen...",
+  "appSettingsAboutTitle": "Über die App",
+
+  "listSettingsUncheckAllItems": "Alle Häckchen entfernen",
+  "listSettingsAllItemsUnchecked": "Alle Häckchen in {shoppingListName} wurden entfernt.",
+  "@listSettingsAllItemsUnchecked": {
+    "type": "text",
+    "placeholders": {
+      "shoppingListName": {}
+    }
+  },
+  "listSettingsClearAllCategories": "Alle Kategorien entfernen",
+  "listSettingsAllCategoriesCleared": "Alle Kategorien in {shoppingListName} wurden entfernt.",
+  "@listSettingsAllCategoriesCleared": {
+    "type": "text",
+    "placeholders": {
+      "shoppingListName": {}
+    }
+  },
+  "listSettingsClearList": "Liste leeren...",
+  "listSettingsClearListConfirmationText": "Möchtest du wirklich alle Elemente aus {shoppingListName} unwiederbringlich entfernen?",
+  "@listSettingsClearListConfirmationText": {
+    "type": "text",
+    "placeholders": {
+      "shoppingListName": {}
+    }
+  },
+  "listSettingsListCleared": "Alle Elemente in {shoppingListName} wurden entfernt.",
+  "@listSettingsListCleared": {
+    "type": "text",
+    "placeholders": {
+      "shoppingListName": {}
+    }
+  },
+
+  "listSettingsSharingWithSelf": "Dir",
+  "listSettingsSharingWith": "Du teilst die Liste mit",
+  "listSettingsShareWithOther": "Mit einem weiteren Hansel teilen",
+  "listSettingsShareWithOtherInfo": "Wenn du nichts änderst, kann der neue Hansel Dinge hinzufügen und entfernen, er darf Haken setzen und entfernen. Er ist ein Schreibhansel.",
+  "listSettingsAddUserToListEmailAddressHint": "Email-Adresse vom Hansel",
+  "listSettingsChangeUserRole": "Was ist {userName} für ein Hansel?",
+  "@listSettingsChangeUserRole": {
+    "type": "text",
+    "placeholders": {
+      "userName": {}
+    }
+  },
+  "listSettingsSendListInvitationTitle": "Wer ist {email} ???",
+  "@listSettingsSendListInvitationTitle": {
+    "type": "text",
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "listSettingsSendListInvitationText": "Hast du dich vertippt? Diese Emailadresse kennen wir noch nicht.\n\nOder möchtest du, dass wir an {email} eine Einladung schicken?\nWenn sich der Hansel registriert, hat er Zugriff auf diese Liste.",
+  "@listSettingsSendListInvitationText": {
+    "type": "text",
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "listSettingsSendListInvitationYes": "Ja, gerne!",
+  "listSettingsSendListInvitationNo": "Jetzt nicht",
+  "listSettingsListInvitationSent": "Wir haben eine Einladung an {email} geschickt.",
+  "@listSettingsListInvitationSent": {
+    "type": "text",
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "listSettingsRemoveUserFromList": "Möchtest du {userName} wirklich von {shoppingListName} entfernen?",
+  "@listSettingsRemoveUserFromList": {
+    "type": "text",
+    "placeholders": {
+      "userName": {},
+      "shoppingListName": {}
+    }
+  },
+
+  "listSettingsDangerZoneTitle": "Gefahrenzone",
+  "listSettingsLeaveList": "Liste verlassen...",
+  "listSettingsLeaveExplanationOnlyAdmin": "Du bist der einzige {roleName} der Liste. Wenn du die Liste löschst, können auch die anderen Hansel mit denen du die Liste teilst nicht mehr darauf zugreifen.",
+  "@listSettingsLeaveExplanationOnlyAdmin": {
+    "type": "text",
+    "placeholders": {
+      "roleName": {}
+    }
+  },
+  "listSettingsLeaveExplanationOtherAdminsPresent": "Es gibt noch andere {roleName} in der Liste, daher kannst du sie nicht löschen. Wenn du die Liste verlässt, können die anderen Hansel weiterhin darauf zugreifen.",
+  "@listSettingsLeaveExplanationOtherAdminsPresent": {
+    "type": "text",
+    "placeholders": {
+      "roleName": {}
+    }
+  },
+  "listSettingsDeleteList": "Liste löschen...",
+  "listSettingsDeleteListConfirmationText": "Möchtest du {shoppingListName} wirklich für immer und unwiederbringlich löschen?",
+  "@listSettingsDeleteListConfirmationText": {
+    "type": "text",
+    "placeholders": {
+      "shoppingListName": {}
+    }
+  },
+
+  "exceptionFatal": "Jetzt ist der Kaufhansel abgestürzt.",
+  "exceptionGeneralTryAgainLater": "Das hat nicht geklappt. Probier es später noch einmal.",
+  "exceptionGeneralServerSleeping": "Schläft der Server noch oder hast du kein Internet?",
+  "exceptionGeneralServerTooLazy": "Ist der Server zu faul oder hast du kein Internet?",
+  "exceptionGeneralComputerSays": "Haben wir einen Fehler eingebaut oder hast du etwas falsch gemacht?\nComputer sagt: ",
+  "exceptionGeneralFeatureNotAvailable": "Das funktioniert im Moment noch nicht.",
+  "exceptionRegistrationFailedTryAgainLater": "Wollen wir nicht, dass du dich registrierst oder hast du etwas falsch gemacht?\nProbiere es einfach später nochmal.",
+  "exceptionResetPassword": "Das hat nicht geklappt.\n\nStimmt die Email-Adresse?\nIst der Wiederherstellungs-Code richtig? \nHast du ein vernünftiges Passwort gewählt?\nDenk auch daran, dass der Wiederherstellungs-Code nur eine Stunde gültig ist.",
+  "exceptionWrongCredentials": "Haben wir Deinen Account gelöscht oder hast Du Deine Zugangsdaten vergessen?",
+  "exceptionNoInternet": "Haben wir den Server heruntergefahren oder bist du nicht mit dem Internet verbunden?",
+  "exceptionNoInternetDidNotWork": "Das hat nicht funktioniert. Hast du kein Internet?",
+  "exceptionNoInternetRetry": "Hast du kein Internet oder ist der Server nicht erreichbar?\nWir können es ja nochmal versuchen...",
+  "exceptionConnectionTimeout": "Schläft der Server oder ist das Internet zu langsam?\nJedenfalls hat das alles viel zu lange gedauert.",
+  "exceptionIncompatibleVersion": "Du verwendest vom Kaufhansel immer noch die Version {frontendVersion} ???\n\nDie ist doch schon viel zu alt. Hol dir die neue und viel bessere Version ${backendVersion} von",
+  "@exceptionIncompatibleVersion": {
+    "type": "text",
+    "placeholders": {
+      "frontendVersion": {},
+      "backendVersion": {}
+    }
+  },
+  "exceptionRenameItemFailed": "Findet der Server {itemName} doof oder hast du kein Internet?",
+  "@exceptionRenameItemFailed": {
+    "type": "text",
+    "placeholders": {
+      "itemName": {}
+    }
+  },
+  "exceptionAddItemFailed": "{itemName} konnte nicht hinzugefügt werden... ist das schon Zensur?",
+  "@exceptionAddItemFailed": {
+    "type": "text",
+    "placeholders": {
+      "itemName": {}
+    }
+  },
+  "exceptionDeleteItemFailed": "{itemName} konnte nicht gelöscht werden...",
+  "@exceptionDeleteItemFailed": {
+    "type": "text",
+    "placeholders": {
+      "itemName": {}
+    }
+  },
+  "exceptionMoveItemFailed": "{itemName} konnte nicht verschoben werden...",
+  "@exceptionMoveItemFailed": {
+    "type": "text",
+    "placeholders": {
+      "itemName": {}
+    }
+  },
+  "exceptionCantChangeAdminRole": "Einmal Chefhansel, immer Chefhansel. Daran kannst du nichts mehr ändern.",
+  "exceptionCantFindOtherUser": "Hast du dich vertippt oder können wir den Hansel nicht finden?",
+  "exceptionSendListInvitationFailed": "Das Verschicken der Einladungs-Email hat leider nicht geklappt. Ruf den Hansel doch einfach mal an.",
+  "exceptionDeleteListFailed": "Kann die Liste nicht gelöscht werden oder hast du kein Internet?"
+}

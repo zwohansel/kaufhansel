@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kaufhansel_client/model.dart';
 
 import '../widgets/confirm_dialog.dart';
@@ -26,10 +27,12 @@ class DangerCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text("Gefahrenzone", style: getCardHeadlineStyle(context)),
+              Text(AppLocalizations.of(context).listSettingsDangerZoneTitle, style: getCardHeadlineStyle(context)),
               SizedBox(height: 12),
               OutlinedButton(
-                child: Text(_canDeleteList() ? "Liste löschen..." : "Liste verlassen..."),
+                child: Text(_canDeleteList()
+                    ? AppLocalizations.of(context).listSettingsDeleteList
+                    : AppLocalizations.of(context).listSettingsLeaveList),
                 style: OutlinedButton.styleFrom(primary: Colors.red),
                 onPressed: () => _loading ? null : _onDeleteShoppingList(context),
               ),
@@ -48,11 +51,11 @@ class DangerCard extends StatelessWidget {
   Widget _buildDeleteLeaveBtnExplanation(BuildContext context) {
     String explanation;
     if (_canDeleteList() && _shoppingListInfo.users.length > 0) {
-      explanation =
-          "Du bist der einzige ${ShoppingListRole.ADMIN.toDisplayString()} der Liste. Wenn du die Liste löschst, können auch die anderen Hansel mit denen du die Liste teilst nicht mehr darauf zugreifen.";
+      explanation = AppLocalizations.of(context)
+          .listSettingsLeaveExplanationOnlyAdmin(ShoppingListRole.ADMIN.toDisplayString(context));
     } else if (_shoppingListInfo.permissions.role == ShoppingListRole.ADMIN && !_canDeleteList()) {
-      explanation =
-          "Es gibt noch andere ${ShoppingListRole.ADMIN.toDisplayString()} in der Liste, daher kannst du sie nicht löschen. Wenn du die Liste verlässt, können die anderen Hansel weiterhin darauf zugreifen.";
+      explanation = AppLocalizations.of(context)
+          .listSettingsLeaveExplanationOtherAdminsPresent(ShoppingListRole.ADMIN.toDisplayString(context));
     }
 
     if (explanation != null) {
@@ -65,13 +68,13 @@ class DangerCard extends StatelessWidget {
     _setLoading(true);
     try {
       final deleteList = await showConfirmDialog(
-          context, "Möchtest du ${_shoppingListInfo.name} wirklich für immer und unwiederbringlich löschen?");
+          context, AppLocalizations.of(context).listSettingsDeleteListConfirmationText(_shoppingListInfo.name));
       if (deleteList) {
         await _deleteShoppingList();
         Navigator.pop(context);
       }
     } catch (e) {
-      showErrorDialog(context, "Kann die Liste nicht gelöscht werden oder hast du kein Internet?");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionDeleteListFailed);
     } finally {
       _setLoading(false);
     }

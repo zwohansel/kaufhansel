@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 Future<bool> showConfirmDialog(BuildContext context, String text,
-    {String title = "Achtung!",
-    String confirmBtnLabel = "Ok",
+    {String title,
+    String confirmBtnLabel,
+    String cancelBtnLabel,
     Color confirmBtnColor = Colors.red,
-    String cancelBtnLabel = "Abbrechen",
     bool hideCancelBtn = false}) {
+  final displayTitle = title == null ? AppLocalizations.of(context).important : title;
+  final displayConfirmBtnLabel = confirmBtnLabel == null ? AppLocalizations.of(context).ok : confirmBtnLabel;
+  final displayCancelBtnLabel = cancelBtnLabel == null ? AppLocalizations.of(context).cancel : cancelBtnLabel;
+
   return showDialog<bool>(
     barrierDismissible: false,
     context: context,
-    builder: (context) =>
-        _ConfirmationDialog(title, text, confirmBtnLabel, confirmBtnColor, cancelBtnLabel, hideCancelBtn),
+    builder: (context) => _ConfirmationDialog(
+        displayTitle, text, displayConfirmBtnLabel, confirmBtnColor, displayCancelBtnLabel, hideCancelBtn),
   );
 }
 

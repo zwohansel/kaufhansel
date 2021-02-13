@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 
 const CATEGORY_ALL = "Alle";
@@ -217,34 +218,33 @@ extension ShoppingListRoles on ShoppingListRole {
     return roleStr;
   }
 
-  String toDisplayString() {
+  String toDisplayString(BuildContext context) {
     switch (this) {
       case ShoppingListRole.ADMIN:
-        return "Chefhansel";
+        return AppLocalizations.of(context).roleAdminName;
       case ShoppingListRole.READ_WRITE:
-        return "Schreibhansel";
+        return AppLocalizations.of(context).roleReadWriteName;
       case ShoppingListRole.CHECK_ONLY:
-        return "Kaufhansel";
+        return AppLocalizations.of(context).roleCheckOnlyName;
       case ShoppingListRole.READ_ONLY:
-        return "Guckhansel";
+        return AppLocalizations.of(context).roleReadOnlyName;
       default:
-        return "Unbekannt";
+        return AppLocalizations.of(context).exceptionFatal;
     }
   }
 
-  String toDescription() {
+  String toDescription(BuildContext context) {
     switch (this) {
       case ShoppingListRole.ADMIN:
-        return "Darf alles: Dinge hinzufügen und entfernen, Haken setzen und entfernen. Darf neue Hansel zur Liste " +
-            "hinzufügen.\nEinmal Chefhansel, immer Chefhansel: diese Rolle kannst du nicht mehr ändern";
+        return AppLocalizations.of(context).roleAdminDescription;
       case ShoppingListRole.READ_WRITE:
-        return "Darf Dinge hinzufügen und entfernen, darf Haken setzen und entfernen";
+        return AppLocalizations.of(context).roleReadWriteDescription;
       case ShoppingListRole.CHECK_ONLY:
-        return "Darf Haken setzen und entfernen";
+        return AppLocalizations.of(context).roleCheckOnlyDescription;
       case ShoppingListRole.READ_ONLY:
-        return "Darf die Liste anschauen, aber nix ändern";
+        return AppLocalizations.of(context).roleReadOnlyDescription;
       default:
-        return "Diese Rolle kennen wir nicht";
+        return AppLocalizations.of(context).exceptionFatal;
     }
   }
 

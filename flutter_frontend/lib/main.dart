@@ -5,6 +5,8 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kaufhansel_client/login_page.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/shopping_list_drawer.dart';
@@ -247,8 +249,12 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+        // locale can be set here:
+        // locale: Locale("de"),
+        localizationsDelegates: [AppLocalizations.delegate, GlobalMaterialLocalizations.delegate],
+        supportedLocales: [const Locale('de', '')],
         debugShowCheckedModeBanner: false,
-        title: 'Kaufhansel',
+        onGenerateTitle: (BuildContext context) => AppLocalizations.of(context).appTitle,
         theme: ThemeData(primarySwatch: Colors.green, fontFamily: 'Roboto'),
         home: RestClientWidget(client: _client, child: _buildContent(context)));
   }
@@ -316,14 +322,14 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               Padding(
                 padding: EdgeInsets.all(24),
                 child: Text(
-                  "🌽🥦🧀",
+                  AppLocalizations.of(context).shoppingListEmpty,
                   style: TextStyle(
                       fontFamilyFallback: ["NotoColorEmoji"], fontSize: Theme.of(context).textTheme.headline2.fontSize),
                   textAlign: TextAlign.center,
                 ),
               ),
               Text(
-                "Du hast noch keine Einkaufsliste.\nIm Menü oben rechts kannst du neue Listen anlegen.",
+                AppLocalizations.of(context).shoppingListEmptyText,
                 style: Theme.of(context).textTheme.headline6,
                 textAlign: TextAlign.center,
               ),
@@ -346,21 +352,23 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   Widget _buildErrorView() {
     return Center(
-        child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Padding(
-          child: Text("🤷‍♂️", style: TextStyle(fontFamilyFallback: ["NotoColorEmoji"], fontSize: 100)),
-          padding: EdgeInsets.all(20),
-        ),
-        Text(
-          "Oh nein! Haben wir Deine Einkaufslisten etwa verlegt?",
-          style: Theme.of(context).textTheme.headline6,
-        ),
-        Padding(
-            child: ElevatedButton(child: Text("Nochmal versuchen"), onPressed: _handleRetry),
-            padding: EdgeInsets.all(20))
-      ],
-    ));
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            child: Text(AppLocalizations.of(context).manShrugging,
+                style: TextStyle(fontFamilyFallback: ["NotoColorEmoji"], fontSize: 100)),
+            padding: EdgeInsets.all(20),
+          ),
+          Text(
+            AppLocalizations.of(context).shoppingListError,
+            style: Theme.of(context).textTheme.headline6,
+          ),
+          Padding(
+              child: ElevatedButton(child: Text(AppLocalizations.of(context).tryAgain), onPressed: _handleRetry),
+              padding: EdgeInsets.all(20))
+        ],
+      ),
+    );
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
 import 'package:kaufhansel_client/widgets/link.dart';
@@ -51,7 +52,7 @@ class _AppSettingsState extends State<AppSettings> {
         onWillPop: () async => !_loading,
         child: Scaffold(
             appBar: AppBar(
-              title: TitleWidget(),
+              title: TitleWidget(AppLocalizations.of(context).appTitle),
             ),
             body: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -73,25 +74,26 @@ class _AppSettingsState extends State<AppSettings> {
                                         crossAxisAlignment: CrossAxisAlignment.stretch,
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Text("${widget._userInfo.username}, was willst du ändern?",
+                                          Text(AppLocalizations.of(context).appSettingsTitle(widget._userInfo.username),
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .headline5
                                                   .apply(fontFamilyFallback: ['NotoColorEmoji'])),
                                           SizedBox(height: 12),
-                                          Text("Deine Email-Adresse: ${widget._userInfo.emailAddress}"),
+                                          Text(AppLocalizations.of(context)
+                                              .appSettingsYourEmail(widget._userInfo.emailAddress)),
                                           SizedBox(height: 24),
                                           OutlinedButton(
-                                            child: Text("Ich will mich mal kurz abmelden"),
+                                            child: Text(AppLocalizations.of(context).appSettingsLogOut),
                                             style: OutlinedButton.styleFrom(primary: Colors.red),
                                             onPressed: _onLogOut,
                                           ),
                                           SizedBox(height: 12),
                                           OutlinedButton(
-                                            child: Text("Ich will mein Benutzerkonto löschen..."),
+                                            child: Text(AppLocalizations.of(context).appSettingsDeleteAccount),
                                             style: OutlinedButton.styleFrom(primary: Colors.red),
-                                            onPressed: () =>
-                                                showErrorDialog(context, "Schade, aber das geht hier noch nicht."),
+                                            onPressed: () => showErrorDialog(context,
+                                                AppLocalizations.of(context).exceptionGeneralFeatureNotAvailable),
                                           )
                                         ],
                                       )),
@@ -104,7 +106,7 @@ class _AppSettingsState extends State<AppSettings> {
                                         crossAxisAlignment: CrossAxisAlignment.stretch,
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Text("Über den Kaufhansel",
+                                          Text(AppLocalizations.of(context).appSettingsAboutTitle,
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .headline5
@@ -114,13 +116,14 @@ class _AppSettingsState extends State<AppSettings> {
                                             builder: (context) => _buildVersion(context),
                                           ),
                                           SizedBox(height: 12),
-                                          Link('https://zwohansel.de',
-                                              text: "Mehr über die Entwickler auf zwohansel.de"),
+                                          Link(AppLocalizations.of(context).zwoHanselPageLink,
+                                              text: AppLocalizations.of(context).zwoHanselPageLinkInfo),
                                           SizedBox(height: 12),
-                                          Link('https://github.com/zwohansel', text: "ZwoHansel auf GitHub"),
+                                          Link(AppLocalizations.of(context).zwoHanselGithubLink,
+                                              text: AppLocalizations.of(context).zwoHanselGithubLinkInfo),
                                           SizedBox(height: 12),
-                                          Link('https://github.com/zwohansel/kaufhansel',
-                                              text: "Der Kaufhansel auf GitHub"),
+                                          Link(AppLocalizations.of(context).zwoHanselKaufhanselGithubLink,
+                                              text: AppLocalizations.of(context).zwoHanselKaufhanselGithubLinkInfo),
                                         ],
                                       )),
                                 ),
@@ -149,7 +152,7 @@ class _AppSettingsState extends State<AppSettings> {
 
   Widget _buildVersion(BuildContext context) {
     if (_version != null) {
-      return Text("$_version (Beta)");
+      return Text(_version);
     }
 
     final textStyle = DefaultTextStyle.of(context);

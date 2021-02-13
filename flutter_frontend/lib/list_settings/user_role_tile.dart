@@ -32,7 +32,7 @@ class UserRoleTile extends StatelessWidget {
         ),
       );
     }
-    subTitleChildren.add(Text(_userRole.toDisplayString()));
+    subTitleChildren.add(Text(_userRole.toDisplayString(context)));
 
     return ListTile(
         enabled: _enabled,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 
 class ShoppingListFilterSelection extends StatelessWidget {
@@ -45,8 +46,12 @@ class ShoppingListFilterSelection extends StatelessWidget {
         hoverColor: Theme.of(context).secondaryHeaderColor,
         constraints: BoxConstraints.tightFor(height: 40, width: 40),
         children: [
-          Tooltip(message: "Was muss ich noch kaufen", child: Icon(Icons.check_box_outline_blank)),
-          Tooltip(message: "Was ist schon im Einkaufswagen", child: Icon(Icons.check_box_outlined)),
+          Tooltip(
+              message: AppLocalizations.of(context).shoppingListFilterNeeded,
+              child: Icon(Icons.check_box_outline_blank)),
+          Tooltip(
+              message: AppLocalizations.of(context).shoppingListFilterAlreadyInCart,
+              child: Icon(Icons.check_box_outlined)),
         ],
         onPressed: _setSelection,
         isSelected: _calculateSelection());

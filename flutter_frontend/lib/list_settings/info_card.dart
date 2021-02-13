@@ -1,6 +1,7 @@
 import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kaufhansel_client/widgets/editable_text_label.dart';
 
 import '../model.dart';
@@ -51,21 +52,21 @@ class _InfoCardState extends State<InfoCard> {
                 onPressed: widget._loading || !widget._shoppingListInfo.permissions.canCheckItems
                     ? null
                     : _onUncheckAllItemsPressed,
-                child: Text("Alle Häckchen entfernen"),
+                child: Text(AppLocalizations.of(context).listSettingsUncheckAllItems),
               ),
               SizedBox(height: 6),
               OutlinedButton(
                 onPressed: widget._loading || !widget._shoppingListInfo.permissions.canEditItems
                     ? null
                     : _onRemoveAllCategoriesPressed,
-                child: Text("Alle Kategorien entfernen"),
+                child: Text(AppLocalizations.of(context).listSettingsClearAllCategories),
               ),
               SizedBox(height: 6),
               OutlinedButton(
                 onPressed: widget._loading || !widget._shoppingListInfo.permissions.canEditItems
                     ? null
                     : _onRemoveAllItemsPressed,
-                child: Text("Liste leeren"),
+                child: Text(AppLocalizations.of(context).listSettingsClearList),
               ),
             ],
           )),
@@ -77,10 +78,10 @@ class _InfoCardState extends State<InfoCard> {
     try {
       await widget._onUncheckAllItems();
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Alle Häckchen in ${widget._shoppingListInfo.name} wurden entfernt."),
+          content: Text(AppLocalizations.of(context).listSettingsAllItemsUnchecked(widget._shoppingListInfo.name)),
           duration: Duration(seconds: 1)));
     } catch (e) {
-      showErrorDialog(context, "Ist der Server zu faul oder hast du kein Internet?");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralServerTooLazy);
     } finally {
       widget._setLoading(false);
     }
@@ -91,10 +92,10 @@ class _InfoCardState extends State<InfoCard> {
     try {
       await widget._onRemoveAllCategories();
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Alle Kategorien in ${widget._shoppingListInfo.name} wurden entfernt."),
+          content: Text(AppLocalizations.of(context).listSettingsAllCategoriesCleared(widget._shoppingListInfo.name)),
           duration: Duration(seconds: 1)));
     } catch (e) {
-      showErrorDialog(context, "Hat der Server keine Lust oder hast du kein Internet?");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralServerTooLazy);
     } finally {
       widget._setLoading(false);
     }
@@ -104,16 +105,16 @@ class _InfoCardState extends State<InfoCard> {
   void _onRemoveAllItemsPressed() async {
     widget._setLoading(true);
     try {
-      final removeItems = await showConfirmDialog(context,
-          "Möchtest du wirklich alle Elemente aus ${widget._shoppingListInfo.name} unwiederbringlich entfernen?");
+      final removeItems = await showConfirmDialog(
+          context, AppLocalizations.of(context).listSettingsClearListConfirmationText(widget._shoppingListInfo.name));
       if (removeItems) {
         await widget._onRemoveAllItems();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text("Alle Elemente in ${widget._shoppingListInfo.name} wurden entfernt."),
+            content: Text(AppLocalizations.of(context).listSettingsListCleared(widget._shoppingListInfo.name)),
             duration: Duration(seconds: 1)));
       }
     } catch (e) {
-      showErrorDialog(context, "Schläft der Server noch oder hast du kein Internet?");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralServerSleeping);
     } finally {
       widget._setLoading(false);
     }
@@ -125,7 +126,7 @@ class _InfoCardState extends State<InfoCard> {
       return true;
     } on Exception catch (e) {
       developer.log("Could not change shopping list name to $newName", error: e);
-      showErrorDialog(context, "Möchte die Liste lieber ihren alten Namen behalten oder ist etwas schief gegangen?");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralTryAgainLater);
       return false;
     }
   }

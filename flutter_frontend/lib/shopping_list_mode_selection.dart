@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kaufhansel_client/shopping_list_mode.dart';
 
 class ShoppingListModeSelection extends StatelessWidget {
@@ -45,8 +46,10 @@ class ShoppingListModeSelection extends StatelessWidget {
         hoverColor: Theme.of(context).secondaryHeaderColor,
         constraints: BoxConstraints.tightFor(height: 40, width: 40),
         children: [
-          Tooltip(message: "Einkaufsmodus", child: Icon(Icons.shopping_cart_outlined)),
-          Tooltip(message: "Editiermodus", child: Icon(Icons.edit_outlined)),
+          Tooltip(
+              message: AppLocalizations.of(context).shoppingListModeShopping,
+              child: Icon(Icons.shopping_cart_outlined)),
+          Tooltip(message: AppLocalizations.of(context).shoppingListModeEditing, child: Icon(Icons.edit_outlined)),
         ],
         onPressed: _setSelection,
         isSelected: _calculateSelection());

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 Future<void> showErrorDialog(BuildContext context, String text) {
-  return showCustomErrorDialog(context, Text(text, textAlign: TextAlign.center));
+  final closeLabel = AppLocalizations.of(context).thatsJustHowItIs;
+  return showCustomErrorDialog(context, Text(text, textAlign: TextAlign.center), closeLabel);
 }
 
-Future<void> showCustomErrorDialog(BuildContext context, Widget child,
-    {String closeLabel = "Ist dann halt schon so..."}) {
+Future<void> showCustomErrorDialog(BuildContext context, Widget child, String closeLabel) {
   return showDialog(
       context: context,
       builder: (context) => AlertDialog(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kaufhansel_client/list_settings/shopping_list_settings.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/settings/app_settings.dart';
@@ -83,7 +84,7 @@ class ShoppingListDrawer extends StatelessWidget {
             title: Consumer<ShoppingListInfo>(builder: (context, info, child) => Text(info.name)),
             tileColor: _getTileColor(context, info),
             leading: Tooltip(
-                message: info.permissions.role.toDisplayString(),
+                message: info.permissions.role.toDisplayString(context),
                 child: Icon(info.permissions.role.toIcon(), size: 18)),
             trailing: IconButton(
                 icon: Icon(Icons.settings),
@@ -139,7 +140,7 @@ class ShoppingListDrawer extends StatelessWidget {
                         _onRefreshPressed();
                         Navigator.pop(context);
                       },
-                      tooltip: "Aktualisieren",
+                      tooltip: AppLocalizations.of(context).refresh,
                     ),
                   ],
                 ),
@@ -156,7 +157,7 @@ class ShoppingListDrawer extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 OutlinedButton(
-                  child: Text("Neue Liste"),
+                  child: Text(AppLocalizations.of(context).shoppingListCreateNew),
                   style: OutlinedButton.styleFrom(
                       primary: Theme.of(context).primaryIconTheme.color,
                       side: BorderSide(color: Theme.of(context).primaryIconTheme.color)),
@@ -172,7 +173,7 @@ class ShoppingListDrawer extends StatelessWidget {
                 ),
                 SizedBox(height: 10),
                 OutlinedButton(
-                  child: Text("Einladungs-Code generieren"),
+                  child: Text(AppLocalizations.of(context).invitationCodeGenerate),
                   style: OutlinedButton.styleFrom(
                       primary: Theme.of(context).primaryIconTheme.color,
                       side: BorderSide(color: Theme.of(context).primaryIconTheme.color)),
@@ -187,7 +188,7 @@ class ShoppingListDrawer extends StatelessWidget {
                 ),
                 SizedBox(height: 10),
                 OutlinedButton(
-                  child: Text("Einstellungen"),
+                  child: Text(AppLocalizations.of(context).settings),
                   style: OutlinedButton.styleFrom(
                       primary: Theme.of(context).primaryIconTheme.color,
                       side: BorderSide(color: Theme.of(context).primaryIconTheme.color)),
@@ -219,8 +220,8 @@ class ShoppingListDrawer extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Hier bist du ${info.permissions.role.toDisplayString()}:"),
-            Text(info.permissions.role.toDescription()),
+            Text(AppLocalizations.of(context).roleYoursRoleName(info.permissions.role.toDisplayString(context))),
+            Text(info.permissions.role.toDescription(context)),
           ],
         ),
       ));

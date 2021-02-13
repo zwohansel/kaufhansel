@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
 import 'package:kaufhansel_client/widgets/link.dart';
@@ -36,14 +37,13 @@ class _InviteDialogState extends State<InviteDialog> {
   }
 
   Widget _buildTitle() {
-    List<Widget> children = [Text("Einladungs-Code")];
+    List<Widget> children = [Text(AppLocalizations.of(context).invitationCodeHint)];
 
     if (!_loading && (Platform.isAndroid || Platform.isIOS || Platform.isFuchsia)) {
       children.add(IconButton(
           icon: Icon(Icons.share),
           onPressed: () => Share.share(_code,
-              subject: "Werde mit diesem Code zum Kaufhansel! "
-                  "Lade dir den Kaufhansel von https://zwohansel.de/kaufhansel/download runter.")));
+              subject: AppLocalizations.of(context).invitationCodeShareMessage))); //TODO: do not embed link in message
     }
 
     return Wrap(
@@ -59,11 +59,12 @@ class _InviteDialogState extends State<InviteDialog> {
         children: [
           CircularProgressIndicator(),
           SizedBox(height: 20),
-          Text("Code wird generiert..."),
+          Text(AppLocalizations.of(context).invitationCodeGenerating),
           SizedBox(height: 20),
           Align(
               alignment: Alignment.bottomRight,
-              child: OutlinedButton(child: Text("Schließen"), onPressed: () => Navigator.pop(context, false))),
+              child: OutlinedButton(
+                  child: Text(AppLocalizations.of(context).close), onPressed: () => Navigator.pop(context, false))),
         ],
       ),
     );
@@ -78,15 +79,15 @@ class _InviteDialogState extends State<InviteDialog> {
           child: SelectableText(_code, style: Theme.of(context).textTheme.headline3),
         ),
         SizedBox(height: 20),
-        Flexible(
-            child: Text("Schicke anderen Hanseln diesen Code, damit sie sich beim Kaufhansel registrieren können.")),
+        Flexible(child: Text(AppLocalizations.of(context).invitationCodeRequestDistributionMessage)),
         SizedBox(height: 20),
-        Flexible(child: Text("Die Downloads gibts hier: ")),
-        Flexible(child: Link("https://zwohansel.de/kaufhansel/download", selectable: true)),
+        Flexible(child: Text(AppLocalizations.of(context).downloadLinkPromotion)),
+        Flexible(child: Link(AppLocalizations.of(context).downloadLink, selectable: true)),
         SizedBox(height: 20),
         Align(
             alignment: Alignment.bottomRight,
-            child: OutlinedButton(child: Text("Schließen"), onPressed: () => Navigator.pop(context, false)))
+            child: OutlinedButton(
+                child: Text(AppLocalizations.of(context).close), onPressed: () => Navigator.pop(context, false)))
       ],
     );
   }
@@ -101,7 +102,7 @@ class _InviteDialogState extends State<InviteDialog> {
     } on Exception catch (e) {
       log("Failed to generate invite code", error: e);
       Navigator.pop(context);
-      showErrorDialog(context, "Das hat nicht funtioniert. Probier es nochmal.");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralTryAgainLater);
     }
   }
 }

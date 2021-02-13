@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 class TitleWidget extends StatelessWidget {
+  final String _title;
   final String _subTitle;
 
-  TitleWidget({String subTitle}) : _subTitle = subTitle;
+  TitleWidget(this._title, {String subTitle}) : _subTitle = subTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,7 @@ class TitleWidget extends StatelessWidget {
             Icons.shopping_cart_outlined,
             size: Theme.of(context).primaryTextTheme.headline6.fontSize,
           ),
-          Flexible(child: Text('Kaufhansel')),
+          Flexible(child: Text(_title)),
         ]),
         ...children
       ],

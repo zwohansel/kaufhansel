@@ -2,6 +2,7 @@ import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/widgets/editable_text_label.dart';
@@ -65,10 +66,7 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
       enabled: !_loading,
     );
 
-    final subTitle = Text(
-      "Wähle eine Kategorie",
-      style: theme.textTheme.subtitle2,
-    );
+    final subTitle = Text(AppLocalizations.of(context).categoryChooseOne, style: theme.textTheme.subtitle2);
 
     final categoryButtons = widget._categories.map((category) {
       final currentItemCategory = widget._item.category == category;
@@ -108,7 +106,7 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
           padding: EdgeInsets.only(left: 10, right: 10, bottom: bottomMargin),
           child: OutlinedButton(
             onPressed: !_loading ? () => setItemCategory(null) : null,
-            child: Text("Keine"),
+            child: Text(AppLocalizations.of(context).categoryNone),
             style: OutlinedButton.styleFrom(primary: Colors.orange, side: BorderSide(color: Colors.orange)),
           ),
         ),
@@ -121,7 +119,7 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
             onSubmitted: (_) => submitNewCategory(),
             enabled: !_loading,
             decoration: InputDecoration(
-                labelText: "Neue Kategorie",
+                labelText: AppLocalizations.of(context).categoryCreateNew,
                 isDense: true,
                 border: OutlineInputBorder(),
                 suffixIcon: IconButton(
@@ -145,7 +143,7 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
       return true;
     } on Exception catch (e) {
       developer.log("Could not set item name.", error: e);
-      showErrorDialog(context, "Findet der Server \"$newItemName\" doof oder hast du kein Internet?");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionRenameItemFailed(newItemName));
       return false;
     }
   }
@@ -176,7 +174,7 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
       Navigator.pop(context);
     } on Exception catch (e) {
       developer.log("Could not set item category.", error: e);
-      showErrorDialog(context, "Das hat nicht funktioniert. Hast du vllt. kein Internet?");
+      showErrorDialog(context, AppLocalizations.of(context).exceptionNoInternetDidNotWork);
     } finally {
       setState(() => _loading = false);
     }

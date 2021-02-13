@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/shopping_list_item_edit_dialog.dart';
@@ -125,8 +126,9 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
       await RestClientWidget.of(context).deleteShoppingListItem(shoppingList.id, item);
       shoppingList.removeItem(item);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("${item.name} konnte nicht gelöscht werden..."), duration: Duration(seconds: 2)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(AppLocalizations.of(context).exceptionDeleteItemFailed(item.name)),
+          duration: Duration(seconds: 2)));
     } finally {
       setState(() {
         _loading = false;
