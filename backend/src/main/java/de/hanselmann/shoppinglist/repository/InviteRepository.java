@@ -1,5 +1,6 @@
 package de.hanselmann.shoppinglist.repository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.bson.types.ObjectId;
@@ -13,4 +14,10 @@ public interface InviteRepository extends MongoRepository<Invite, ObjectId> {
     boolean existsByCode(String code);
 
     boolean existsByInviteeEmailAddress(String emailAddress);
+
+    int deleteByGeneratedAtLessThan(LocalDateTime date);
+
+    default int deleteInvitesOlderThanDays(long olderThanDays) {
+        return deleteByGeneratedAtLessThan(LocalDateTime.now().minusDays(olderThanDays));
+    }
 }

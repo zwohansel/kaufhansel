@@ -1,5 +1,6 @@
 package de.hanselmann.shoppinglist.repository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.bson.types.ObjectId;
@@ -13,4 +14,10 @@ public interface PendingRegistrationRepository extends MongoRepository<PendingRe
     boolean existsByEmailAddress(String emailAddress);
 
     boolean existsByActivationCode(String activationCode);
+
+    int deleteByCreationDateLessThan(LocalDateTime date);
+
+    default int deletePendingRegistrationsOlderThanDays(long olderThanDays) {
+        return deleteByCreationDateLessThan(LocalDateTime.now().minusDays(olderThanDays));
+    }
 }

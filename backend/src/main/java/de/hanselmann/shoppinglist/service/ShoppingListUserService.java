@@ -154,4 +154,12 @@ public class ShoppingListUserService {
         return password != null && password.strip().length() >= 8;
     }
 
+    public long resetPendingPasswordResetRequestsOlderThanMinutes(long olderThanMinutes) {
+        return userRepository.findExpiredPasswordResetRequests(olderThanMinutes).map(user -> {
+            user.clearPasswordResetCode();
+            userRepository.save(user);
+            return user;
+        }).count();
+    }
+
 }
