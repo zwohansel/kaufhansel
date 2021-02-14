@@ -3,7 +3,15 @@
 name: Build Backend and Web FrontEnd
 
 # Controls when the action will run. 
-on: [push]
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -35,7 +43,7 @@ jobs:
 
       # Runs a set of commands using the runners shell
       - name: Build
-        run: ./gradlew build
+        run: ./gradlew -PbackendVersion=${{env.kaufhansel_version}} bundle
         
       - uses: actions/upload-artifact@v2
         with:

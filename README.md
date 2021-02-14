@@ -27,13 +27,13 @@ Lets start with the backend first:
 
 1. Load the gradle project in `backend/` in the IDE of your choice and make sure it compiles.
 2. Download and install the comunity version of [MongoDB](https://docs.mongodb.com/manual/administration/install-community/).
-3. Open a bash and `cd` into the backend folder.
+3. Open a bash and `cd` into the `backend/` folder.
 4. Execute `init_dev_database.sh` to create and initialize the local development database with a test user.
-5. Execute `run_dev_database.sh` to start the database (do this everytime before you start the backend server for local development).
+5. Execute `run_dev_database.sh` to start the database.
 6. Download and start [Inbucket](https://www.inbucket.org/) and open `http://localhost:9000/monitor` to receive mails sent from the backend.
 7. Start the backend with the `localhost` profile.
 
-Always start the mongo database and the mail server before starting the backend application.
+> Always start the mongo database and the mail server before starting the backend application.
 
 #### Build and the frontend application
 
@@ -56,3 +56,11 @@ Always start the mongo database and the mail server before starting the backend 
 [Aria Roles](https://github.com/A11yance/aria-query#elements-to-roles)
 
 [Testing Library](https://github.com/testing-library/jest-dom)
+
+### Deployment
+
+We use GitHub actions for deployment. 
+The workflow files in `.github/workflows` document the deployment process.
+
+To test the backend deployment locally execute `./gradlew -PbackendVersion=<version> bundle` in the root directory (e.g. with `<version>=1.0.0`).
+Find the assembled jar file in `backend/build/libs` and run it locally with `java -Dspring.profiles.active=localhost -jar backend-<version>.jar`.

@@ -6,8 +6,13 @@ plugins {
 }
 
 group = 'de.hanselmann'
-version = '1.1.0'
 sourceCompatibility = '11'
+
+if (project.hasProperty('backendVersion')) {
+  version = project.backendVersion
+} else {
+  version = '1.1.0'
+}
 
 repositories {
     mavenCentral()
