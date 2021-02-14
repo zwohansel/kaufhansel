@@ -162,4 +162,9 @@ public class ShoppingListUserService {
         }).count();
     }
 
+    public boolean deleteUser(ObjectId userId) {
+        userRepository.deleteById(userId);
+        return true;
+    }
+
 }

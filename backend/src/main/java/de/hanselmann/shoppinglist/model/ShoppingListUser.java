@@ -13,6 +13,7 @@ import org.springframework.data.annotation.Id;
 public class ShoppingListUser {
     @Id
     private ObjectId id;
+    private boolean superUser = false;
     private String username;
     private String password;
     private String emailAddress;
@@ -97,6 +98,10 @@ public class ShoppingListUser {
     public void clearPasswordResetCode() {
         passwordResetCode = null;
         passwordResetRequestedAt = null;
+    }
+
+    public boolean isSuperUser() {
+        return superUser;
     }
 
 }

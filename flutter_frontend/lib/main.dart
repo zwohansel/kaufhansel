@@ -57,6 +57,15 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     _client = RestClient(Uri.parse(_serverUrl));
   }
 
+  Future<void> _deleteUserAccount() async {
+    try {
+      await _client.deleteAccount(_userInfo.id);
+      _logOut();
+    } on Exception catch (e) {
+      setState(() => _error = e.toString());
+    }
+  }
+
   void _setFilter(ShoppingListFilterOption nextFilter) {
     setState(() {
       _filter = nextFilter;
@@ -270,26 +279,26 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               shadowColor: Colors.transparent,
             ),
             endDrawer: ShoppingListDrawer(
-              onRefreshPressed: _fetchShoppingListInfos,
-              filter: _filter,
-              onFilterChanged: _setFilter,
-              mode: _mode,
-              onModeChanged: _setMode,
-              shoppingLists: _shoppingListInfos,
-              selectedShoppingListId: _currentShoppingList?.id,
-              onShoppingListSelected: _selectShoppingList,
-              onCreateShoppingList: _createShoppingList,
-              onDeleteShoppingList: _deleteShoppingList,
-              onUncheckAllItems: _uncheckAllItems,
-              onRemoveAllCategories: _removeAllCategories,
-              onRemoveAllItems: _removeAllItems,
-              onAddUserToShoppingListIfPresent: _addUserToShoppingList,
-              onRemoveUserFromShoppingList: _removeUserFromShoppingList,
-              onChangeShoppingListPermissions: _changeShoppingListPermissions,
-              onChangeShoppingListName: _changeShoppingListName,
-              userInfo: _userInfo,
-              onLogOut: _logOut,
-            ),
+                onRefreshPressed: _fetchShoppingListInfos,
+                filter: _filter,
+                onFilterChanged: _setFilter,
+                mode: _mode,
+                onModeChanged: _setMode,
+                shoppingLists: _shoppingListInfos,
+                selectedShoppingListId: _currentShoppingList?.id,
+                onShoppingListSelected: _selectShoppingList,
+                onCreateShoppingList: _createShoppingList,
+                onDeleteShoppingList: _deleteShoppingList,
+                onUncheckAllItems: _uncheckAllItems,
+                onRemoveAllCategories: _removeAllCategories,
+                onRemoveAllItems: _removeAllItems,
+                onAddUserToShoppingListIfPresent: _addUserToShoppingList,
+                onRemoveUserFromShoppingList: _removeUserFromShoppingList,
+                onChangeShoppingListPermissions: _changeShoppingListPermissions,
+                onChangeShoppingListName: _changeShoppingListName,
+                userInfo: _userInfo,
+                onLogOut: _logOut,
+                onDeleteUserAccount: _deleteUserAccount),
             body: _buildShoppingList(context),
           );
         },
@@ -309,7 +318,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   Widget _buildShoppingList(BuildContext context) {
     if (_error != null) {
-      return _buildErrorView();
+      return _buildErrorView(context);
     } else if (_shoppingListInfos == null) {
       return Center(child: CircularProgressIndicator());
     } else if (_currentShoppingList == null) {
@@ -350,7 +359,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     }
   }
 
-  Widget _buildErrorView() {
+  Widget _buildErrorView(BuildContext context) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,

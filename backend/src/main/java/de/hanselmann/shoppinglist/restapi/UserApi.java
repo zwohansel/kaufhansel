@@ -1,6 +1,7 @@
 package de.hanselmann.shoppinglist.restapi;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,4 +43,8 @@ public interface UserApi {
     @PostMapping("/user/passwordreset")
     ResponseEntity<Void> resetUserPassword(
             @RequestBody UserPasswordResetDto userPasswordReset);
+
+    @DeleteMapping("/user/{userToBeDeletedId}")
+    ResponseEntity<Void> deleteUser(
+            @PathVariable String userToBeDeletedId);
 }

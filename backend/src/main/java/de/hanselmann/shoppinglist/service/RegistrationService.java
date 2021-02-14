@@ -198,4 +198,9 @@ public class RegistrationService {
         return true;
     }
 
+    public boolean deleteInvitesOfUser(ObjectId userId) {
+        inviteRepository.deleteByGeneratedByUser(userId);
+        return true;
+    }
+
 }

@@ -33,6 +33,7 @@ class ShoppingListDrawer extends StatelessWidget {
       @required Future<void> Function(ShoppingListInfo, ShoppingListUserReference) onRemoveUserFromShoppingList,
       @required Future<void> Function(ShoppingListInfo, String) onChangeShoppingListName,
       @required void Function() onLogOut,
+      @required Future<void> Function() onDeleteUserAccount,
       @required ShoppingListUserInfo userInfo})
       : _onRefreshPressed = onRefreshPressed,
         _filter = filter,
@@ -52,6 +53,7 @@ class ShoppingListDrawer extends StatelessWidget {
         _onChangeShoppingListPermissions = onChangeShoppingListPermissions,
         _onChangeShoppingListName = onChangeShoppingListName,
         _onLogOut = onLogOut,
+        _onDeleteUserAccount = onDeleteUserAccount,
         _userInfo = userInfo;
 
   final ShoppingListFilterOption _filter;
@@ -73,6 +75,7 @@ class ShoppingListDrawer extends StatelessWidget {
       _onChangeShoppingListPermissions;
   final Future<void> Function(ShoppingListInfo, String) _onChangeShoppingListName;
   final void Function() _onLogOut;
+  final Future<void> Function() _onDeleteUserAccount;
   final ShoppingListUserInfo _userInfo;
 
   @override
@@ -196,7 +199,11 @@ class ShoppingListDrawer extends StatelessWidget {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => new AppSettings(userInfo: _userInfo, onLogOut: _onLogOut),
+                          builder: (context) => new AppSettings(
+                            userInfo: _userInfo,
+                            onLogOut: _onLogOut,
+                            onDeleteAccount: _onDeleteUserAccount,
+                          ),
                         ));
                   },
                 )

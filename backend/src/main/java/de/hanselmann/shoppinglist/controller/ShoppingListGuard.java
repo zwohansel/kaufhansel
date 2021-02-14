@@ -70,4 +70,15 @@ public class ShoppingListGuard {
                 .anyMatch(ref -> ref.getRole().canEditList());
     }
 
+    public boolean canDeleteUser(String userToBeDeletedId) {
+        if (!ObjectId.isValid(userToBeDeletedId)) {
+            return false;
+        }
+        boolean userCanBeDeleted = userService.findUser(new ObjectId(userToBeDeletedId))
+                .map(user -> !user.isSuperUser()).orElse(false);
+        boolean currentUserCanDeleteUser = userService.getCurrentUser().getId().equals(new ObjectId(userToBeDeletedId))
+                || userService.getCurrentUser().isSuperUser();
+        return userCanBeDeleted && currentUserCanDeleteUser;
+    }
+
 }

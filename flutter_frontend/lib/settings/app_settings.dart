@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kaufhansel_client/model.dart';
+import 'package:kaufhansel_client/widgets/confirm_dialog.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
 import 'package:kaufhansel_client/widgets/link.dart';
 import 'package:package_info/package_info.dart';
@@ -12,10 +13,15 @@ import '../widgets/title_widget.dart';
 class AppSettings extends StatefulWidget {
   final ShoppingListUserInfo _userInfo;
   final void Function() _onLogOut;
+  final Future<void> Function() _onDeleteAccount;
 
-  AppSettings({@required ShoppingListUserInfo userInfo, @required void Function() onLogOut})
+  AppSettings(
+      {@required ShoppingListUserInfo userInfo,
+      @required void Function() onLogOut,
+      @required Future<void> Function() onDeleteAccount})
       : _userInfo = userInfo,
-        _onLogOut = onLogOut;
+        _onLogOut = onLogOut,
+        _onDeleteAccount = onDeleteAccount;
 
   @override
   _AppSettingsState createState() => _AppSettingsState();
@@ -86,15 +92,13 @@ class _AppSettingsState extends State<AppSettings> {
                                           OutlinedButton(
                                             child: Text(AppLocalizations.of(context).appSettingsLogOut),
                                             style: OutlinedButton.styleFrom(primary: Colors.red),
-                                            onPressed: _onLogOut,
+                                            onPressed: _loading ? null : _onLogOut,
                                           ),
                                           SizedBox(height: 12),
                                           OutlinedButton(
-                                            child: Text(AppLocalizations.of(context).appSettingsDeleteAccount),
-                                            style: OutlinedButton.styleFrom(primary: Colors.red),
-                                            onPressed: () => showErrorDialog(context,
-                                                AppLocalizations.of(context).exceptionGeneralFeatureNotAvailable),
-                                          )
+                                              child: Text(AppLocalizations.of(context).appSettingsDeleteAccount),
+                                              style: OutlinedButton.styleFrom(primary: Colors.red),
+                                              onPressed: _loading ? null : () => _onDeleteAccount()),
                                         ],
                                       )),
                                 ),
@@ -140,11 +144,33 @@ class _AppSettingsState extends State<AppSettings> {
     widget._onLogOut();
   }
 
+  _onDeleteAccount() async {
+    setState(() => _loading = true);
+    try {
+      final deleteAccount = await showConfirmDialog(
+          context, AppLocalizations.of(context).appSettingsDeleteAccountConfirmationText,
+          title: AppLocalizations.of(context).appSettingsDeleteAccountConfirmationTextTitle(widget._userInfo.username),
+          confirmBtnLabel: AppLocalizations.of(context).appSettingsDeleteAccountYes,
+          cancelBtnLabel: AppLocalizations.of(context).appSettingsDeleteAccountNo);
+      if (deleteAccount) {
+        await widget._onDeleteAccount();
+        await showCustomErrorDialog(
+            context,
+            Text(AppLocalizations.of(context).appSettingsAccountDeletedText, textAlign: TextAlign.center),
+            AppLocalizations.of(context).ok,
+            emoji: AppLocalizations.of(context).appSettingsAccountDeletedEmoji);
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      showErrorDialog(context, AppLocalizations.of(context).exceptionDeleteListFailed);
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
   Widget _buildProgressBar() {
     if (_loading) {
-      return LinearProgressIndicator(
-        minHeight: 5,
-      );
+      return LinearProgressIndicator(minHeight: 5);
     } else {
       return Container();
     }

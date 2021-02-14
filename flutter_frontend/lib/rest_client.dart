@@ -394,4 +394,16 @@ class RestClient {
       );
     }
   }
+
+  Future<void> deleteAccount(String userId) async {
+    var request = await _httpClient.deleteUrl(_serverUrl.resolve("user/$userId")).timeout(timeout);
+    var response = await request.close().timeout(timeout);
+
+    if (response.statusCode != 204) {
+      throw HttpResponseException(
+        response.statusCode,
+        message: "Failed attempt to delete account of user $userId.",
+      );
+    }
+  }
 }

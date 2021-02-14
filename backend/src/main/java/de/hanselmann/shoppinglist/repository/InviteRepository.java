@@ -20,4 +20,6 @@ public interface InviteRepository extends MongoRepository<Invite, ObjectId> {
     default int deleteInvitesOlderThanDays(long olderThanDays) {
         return deleteByGeneratedAtLessThan(LocalDateTime.now().minusDays(olderThanDays));
     }
+
+    int deleteByGeneratedByUser(ObjectId userId);
 }

@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
@@ -12,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.restapi.UserApi;
 import de.hanselmann.shoppinglist.restapi.dto.InviteCodeDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationDataDto;
@@ -22,12 +25,16 @@ import de.hanselmann.shoppinglist.restapi.dto.SendInviteDto;
 import de.hanselmann.shoppinglist.restapi.dto.UserPasswordResetDto;
 import de.hanselmann.shoppinglist.restapi.dto.transformer.DtoTransformer;
 import de.hanselmann.shoppinglist.service.RegistrationService;
+import de.hanselmann.shoppinglist.service.ShoppingListService;
 import de.hanselmann.shoppinglist.service.ShoppingListUserService;
 
 @RestController
 public class UserController implements UserApi {
+    private final static Logger LOGGER = LoggerFactory.getLogger(UserController.class);
+
     private final RegistrationService registrationService;
     private final ShoppingListUserService userService;
+    private final ShoppingListService shoppingListService;
     private final ShoppingListGuard guard;
     private final DtoTransformer dtoTransformer;
     private final String activationSuccessPage;
@@ -36,12 +43,14 @@ public class UserController implements UserApi {
     @Autowired
     public UserController(RegistrationService registrationService,
             ShoppingListUserService userService,
+            ShoppingListService shoppingListService,
             ShoppingListGuard guard,
             DtoTransformer dtoTransformer,
             ResourceLoader resourceLoader)
             throws IOException {
         this.registrationService = registrationService;
         this.userService = userService;
+        this.shoppingListService = shoppingListService;
         this.guard = guard;
         this.dtoTransformer = dtoTransformer;
         try (InputStream in = resourceLoader.getResource("classpath:static/activation_success.html").getInputStream()) {
@@ -154,6 +163,25 @@ public class UserController implements UserApi {
                 return ResponseEntity.badRequest().build();
             }
         } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PreAuthorize("hasRole('SHOPPER') "
+            + "&& @shoppingListGuard.canDeleteUser(#userToBeDeletedId)")
+    @Override
+    public ResponseEntity<Void> deleteUser(String userToBeDeletedId) {
+        String currentUser = userService.getCurrentUser().getId().toString();
+        try {
+            ShoppingListUser userToBeDeleted = userService.getUser(new ObjectId(userToBeDeletedId));
+            registrationService.deleteInvitesOfUser(userToBeDeleted.getId());
+            shoppingListService.deleteOrLeaveShoppingListsOfUser(userToBeDeleted);
+            userService.deleteUser(userToBeDeleted.getId());
+            LOGGER.info("User {} was succesfully deleted by {}", userToBeDeletedId, currentUser);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            LOGGER.info(
+                    "User " + userToBeDeletedId + " could not be deleted by " + currentUser, e);
             return ResponseEntity.badRequest().build();
         }
     }

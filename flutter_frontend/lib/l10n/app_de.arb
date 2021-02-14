@@ -119,6 +119,18 @@
   },
   "appSettingsLogOut": "Ich will mich mal kurz abmelden",
   "appSettingsDeleteAccount": "Ich will mein Benutzerkonto löschen...",
+  "appSettingsDeleteAccountConfirmationTextTitle": "Schade {userName}, dass du dein Benutzerkonto löschen willst",
+  "@appSettingsDeleteAccountConfirmationTextTitle": {
+    "type": "text",
+    "placeholders": {
+      "userName": {}
+    }
+  },
+  "appSettingsDeleteAccountConfirmationText": "Dein Benutzerkonto wird endgültig und unwiederbringlich gelöscht.\n\nAlle Einkaufslisten, die du nicht geteilt hast, werden gelöscht. Alle Einkaufslisten, bei denen du der einzige Chefhansel bist, werden gelöscht und andere Hansel daraus entfernt. Du wirst aus allen Einkaufslisten entfernt, bei denen du nicht der einzige Chefhansel bist.\n\nWillst du das wirklich?",
+  "appSettingsDeleteAccountYes": "Ja, lösch mich!",
+  "appSettingsDeleteAccountNo": "Nein, doch nicht",
+  "appSettingsAccountDeletedEmoji": "👋",
+  "appSettingsAccountDeletedText": "Wir haben alle deine Daten gelöscht. Tschüss!",
   "appSettingsAboutTitle": "Über die App",
 
   "listSettingsUncheckAllItems": "Alle Häckchen entfernen",

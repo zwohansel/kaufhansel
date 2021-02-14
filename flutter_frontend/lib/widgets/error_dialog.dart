@@ -6,21 +6,24 @@ Future<void> showErrorDialog(BuildContext context, String text) {
   return showCustomErrorDialog(context, Text(text, textAlign: TextAlign.center), closeLabel);
 }
 
-Future<void> showCustomErrorDialog(BuildContext context, Widget child, String closeLabel) {
+Future<void> showCustomErrorDialog(BuildContext context, Widget message, String closeLabel, {String emoji}) {
+  String displayEmoji;
+  if (emoji == null || emoji.isEmpty) {
+    displayEmoji = "🤷‍♂️";
+  } else {
+    displayEmoji = emoji;
+  }
   return showDialog(
       context: context,
       builder: (context) => AlertDialog(
           title: Center(
-              child: Text(
-            "🤷‍♂️",
-            style: TextStyle(fontFamilyFallback: ["NotoColorEmoji"], fontSize: 100),
-          )),
+              child: Text(displayEmoji, style: TextStyle(fontFamilyFallback: ["NotoColorEmoji"], fontSize: 100))),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              child,
+              message,
               SizedBox(height: 24, width: 24),
-              Center(child: TextButton(onPressed: () => Navigator.pop(context), child: Text(closeLabel)))
+              Center(child: OutlinedButton(onPressed: () => Navigator.pop(context), child: Text(closeLabel)))
             ],
           )));
 }

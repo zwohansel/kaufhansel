@@ -207,4 +207,9 @@ public class ShoppingListService {
         list.setName(name);
         shoppingListRepository.save(list);
     }
+
+    public boolean deleteOrLeaveShoppingListsOfUser(ShoppingListUser user) {
+        return user.getShoppingLists().stream().map(ref -> deleteShoppingList(ref.getShoppingListId()))
+                .allMatch(success -> success);
+    }
 }
