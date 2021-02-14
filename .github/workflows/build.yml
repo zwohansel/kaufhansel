@@ -146,8 +146,9 @@ jobs:
           scp app-release.apk deploy:/opt/kaufhansel/downloads/kaufhansel.apk
           ssh deploy 'chown kaufhansel_deploybot:kaufhansel_admin /opt/kaufhansel/downloads/kaufhansel.apk'
 
-          zip -r frontend-linux.zip frontend-linux/
-          scp frontend-linux.zip deploy:/opt/kaufhansel/downloads/kaufhansel-linux.zip
+          mv frontend-linux kaufhansel-linux
+          zip -r kaufhansel-linux.zip kaufhansel-linux/
+          scp kaufhansel-linux.zip deploy:/opt/kaufhansel/downloads/kaufhansel-linux.zip
           ssh deploy 'chown kaufhansel_deploybot:kaufhansel_admin /opt/kaufhansel/downloads/kaufhansel-linux.zip'
 
           ssh deploy 'sudo systemctl restart kaufhansel'
