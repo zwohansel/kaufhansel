@@ -22,6 +22,11 @@ springBoot {
     buildInfo() 
 }
 
+bootJar {
+	classpath 'public'
+	archiveFileName = "kaufhansel_backend.jar"
+}
+
 // bootBuildInfo generates the META-INF/build-info.properties from which the BuildInfo bean
 // is created. However; bootBuildInfo generates it in build/resources/main/ which is not on
 // the classpath when the application is executed in eclipse.
@@ -64,6 +69,4 @@ dependencies {
 test {
     useJUnitPlatform()
 }
-
-bootJar.classpath('public')
 

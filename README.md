@@ -63,4 +63,26 @@ We use GitHub actions for deployment.
 The workflow files in `.github/workflows` document the deployment process.
 
 To test the backend deployment locally execute `./gradlew -PbackendVersion=<version> bundle` in the root directory (e.g. with `<version>=1.0.0`).
-Find the assembled jar file in `backend/build/libs` and run it locally with `java -Dspring.profiles.active=localhost -jar backend-<version>.jar`.
+Find the assembled jar file in `backend/build/libs` and run it locally with `java -Dspring.profiles.active=localhost -jar kaufhansel_backend.jar`.
+
+#### Prepare your server
+
+1. Create a new group `kaufhansel_admin`
+2. Create the install folder `sudo mkdir /opt/kaufhansel/ && sudo chown root:kaufhansel_admin /opt/kaufhansel`
+3. Put the backend jar into the install folder
+4. Write your mongodb connection string (which contains the password), your email server connection info and the
+   path, password and key alias of your keystore which contains the SSL certificate for your domain into the `kaufhansel_service_config`
+5. Put the `kaufhansel_service_config` into the install directory
+6. Install the `kaufhansel.service` into `/etc/systemd/system`
+7. Reload the service configurations `sudo systemctl daemon-reload`
+8. Create user `kaufhansel_deploybot` and add him to the `kaufhansel_admin` group
+9. Create a public and a private ssh key. 
+10. Add the private key as a GitHub secret named `DEPLOY_SSH_KEY`.
+11. Add the public key into `/home/kaufhansel_deploybot/.ssh/authorized_keys`
+12. Add the IP or host name of your service as a GitHub secret named `DEPLOY_SSH_HOST`
+13. Open `visudo` and add
+```
+# Allow members of group kaufhansel_admin to restart the kaufhansel service
+Cmnd_Alias KAUFHANSEL_CMNDS = /bin/systemctl restart kaufhansel
+%kaufhansel_admin ALL=(ALL) NOPASSWD: KAUFHANSEL_CMNDS
+```

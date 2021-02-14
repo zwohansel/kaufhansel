@@ -104,19 +104,40 @@ jobs:
     #if: github.event_name == 'push' && contains(github.ref, 'refs/tags/v')
 
     steps:
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_KEY" > ~/.ssh/deploy.key
+          chmod 600 ~/.ssh/deploy.key
+          cat >>~/.ssh/config <<END
+          Host deploy
+            HostName $SSH_HOST
+            User kaufhansel_deploybot
+            IdentityFile ~/.ssh/deploy.key
+            StrictHostKeyChecking no
+          END
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+
       - name: Download backend
         uses: actions/download-artifact@v2
         with:
           name: backend
-      - shell: bash
-        run: |
-          ls -R
 
       - name: Download android frontend
         uses: actions/download-artifact@v2
         with:
           name: frontend-android
-      - shell: bash
+
+      - name: Deploy
         run: |
-          ls -R
+          ssh deploy 'cp /opt/kaufhansel/kaufhansel_backend.jar /opt/kaufhansel/kaufhansel_backend.jar.bak'
+          ssh deploy 'cp /opt/kaufhansel/download/kaufhansel.apk /opt/kaufhansel/download/kaufhansel.apk.bak'
+          scp build/libs/kaufhansel_backend.jar deploy:/opt/kaufhansel/kaufhansel_backend.jar
+          ssh deploy 'chown kaufhansel_deploybot:kaufhansel_admin /opt/kaufhansel/kaufhansel_backend.jar'
+          scp app-release.apk deploy:/opt/kaufhansel/download/kaufhansel.apk
+          ssh deploy 'chown kaufhansel_deploybot:/opt/kaufhansel/download/kaufhansel.apk'
+          ssh deploy 'sudo systemctl restart kaufhansel'
+        
 

@@ -5,6 +5,6 @@ Description=Kaufhansel Backend
 Type=simple
 User=kaufhansel
 EnvironmentFile=/opt/kaufhansel/kaufhansel_service_config
-ExecStart=/usr/bin/java -jar /opt/kaufhansel/backend.jar
+ExecStart=/usr/bin/java -jar /opt/kaufhansel/kaufhansel_backend.jar
 Restart=on-failure
 RestartSec=5
