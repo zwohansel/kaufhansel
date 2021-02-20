@@ -286,5 +286,6 @@
   "exceptionCantChangeAdminRole": "Einmal Chefhansel, immer Chefhansel. Daran kannst du nichts mehr ändern.",
   "exceptionCantFindOtherUser": "Hast du dich vertippt oder können wir den Hansel nicht finden?",
   "exceptionSendListInvitationFailed": "Das Verschicken der Einladungs-Email hat leider nicht geklappt. Ruf den Hansel doch einfach mal an.",
-  "exceptionDeleteListFailed": "Kann die Liste nicht gelöscht werden oder hast du kein Internet?"
+  "exceptionDeleteListFailed": "Kann die Liste nicht gelöscht werden oder hast du kein Internet?",
+  "exceptionLogOutFailed" : "Die Abmeldung hat nicht funktioniert..."
 }

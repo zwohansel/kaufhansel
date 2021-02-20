@@ -32,7 +32,7 @@ class ShoppingListDrawer extends StatelessWidget {
       @required Future<void> Function(ShoppingListInfo, String, ShoppingListRole) onChangeShoppingListPermissions,
       @required Future<void> Function(ShoppingListInfo, ShoppingListUserReference) onRemoveUserFromShoppingList,
       @required Future<void> Function(ShoppingListInfo, String) onChangeShoppingListName,
-      @required void Function() onLogOut,
+      @required Future<void> Function() onLogOut,
       @required Future<void> Function() onDeleteUserAccount,
       @required ShoppingListUserInfo userInfo})
       : _onRefreshPressed = onRefreshPressed,
@@ -74,7 +74,7 @@ class ShoppingListDrawer extends StatelessWidget {
   final Future<void> Function(ShoppingListInfo info, String affectedUserId, ShoppingListRole newRole)
       _onChangeShoppingListPermissions;
   final Future<void> Function(ShoppingListInfo, String) _onChangeShoppingListName;
-  final void Function() _onLogOut;
+  final Future<void> Function() _onLogOut;
   final Future<void> Function() _onDeleteUserAccount;
   final ShoppingListUserInfo _userInfo;
 
@@ -98,8 +98,7 @@ class ShoppingListDrawer extends StatelessWidget {
                       // Providers are scoped and not shared between routes. We need to pass it explicitly to the new route
                       return ChangeNotifierProvider.value(
                           value: info,
-                          child: RestClientWidget(
-                              client: client,
+                          child: RestClientWidget(client,
                               child: ShoppingListSettings(
                                   onDeleteShoppingList: () => _onDeleteShoppingList(info),
                                   onUncheckAllItems: () => _onUncheckAllItems(info),

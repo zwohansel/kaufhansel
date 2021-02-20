@@ -9,6 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
+import 'package:kaufhansel_client/settings/settings_store_widget.dart';
 import 'package:kaufhansel_client/utils/input_validation.dart';
 import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 import 'package:kaufhansel_client/widgets/confirm_dialog.dart';
@@ -54,6 +55,7 @@ class _LoginPageState extends State<LoginPage> {
   _PageMode _pageMode = _PageMode.LOGIN;
 
   bool _loading = true;
+  bool _loadingUserInfo = true;
   bool _inviteCodeInvalid = false;
   bool _emailAddressInvalid = false;
   bool _passwordInvalid = false;
@@ -65,8 +67,8 @@ class _LoginPageState extends State<LoginPage> {
   String _infoMessageDismissLabel;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _userEmailAddressController.addListener(() {
       if (_emailAddressInvalid) {
         setState(() => _emailAddressInvalid = false);
@@ -88,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
         _registerWithoutEmailFormKey.currentState?.validate();
       }
     });
-    _fetchBackendInfo();
+    _asyncInit();
   }
 
   @override
@@ -213,7 +215,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   bool _isLoading() {
-    return _loading;
+    return _loading || _loadingUserInfo;
   }
 
   Form _buildLoginForm() {
@@ -707,6 +709,7 @@ class _LoginPageState extends State<LoginPage> {
       ShoppingListUserInfo userInfo =
           await RestClientWidget.of(context).login(_userEmailAddressController.text, _passwordController.text);
       if (userInfo != null) {
+        await SettingsStoreWidget.of(context).saveUserInfo(userInfo);
         widget._loggedIn(userInfo);
       } else {
         showErrorDialog(context, AppLocalizations.of(context).exceptionWrongCredentials);
@@ -726,7 +729,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void _fetchBackendInfo() async {
+  Future<void> _fetchBackendInfo() async {
     try {
       final frontendVersion = await _getVersion();
       setState(() => _frontendVersion = frontendVersion);
@@ -890,5 +893,28 @@ class _LoginPageState extends State<LoginPage> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(AppLocalizations.of(context).registrationSuccessful),
     ));
+  }
+
+  void _asyncInit() async {
+    if (await _loadUserInfo()) {
+      return;
+    }
+
+    await _fetchBackendInfo();
+  }
+
+  Future<bool> _loadUserInfo() async {
+    try {
+      final userInfo = await SettingsStoreWidget.of(context).getUserInfo();
+      if (userInfo.isPresent()) {
+        widget._loggedIn(userInfo.get);
+        return true;
+      }
+    } on Exception catch (e) {
+      log("Could not read user info from store.", error: e);
+    } finally {
+      setState(() => _loadingUserInfo = false);
+    }
+    return false;
   }
 }

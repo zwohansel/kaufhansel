@@ -9,6 +9,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kaufhansel_client/login_page.dart';
 import 'package:kaufhansel_client/rest_client.dart';
+import 'package:kaufhansel_client/settings/settings_store.dart';
+import 'package:kaufhansel_client/settings/settings_store_widget.dart';
 import 'package:kaufhansel_client/shopping_list_drawer.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_mode.dart';
@@ -29,6 +31,7 @@ class ShoppingListApp extends StatefulWidget {
 
 class _ShoppingListAppState extends State<ShoppingListApp> {
   static const _serverUrl = kDebugMode ? "https://localhost:8080/api/" : "https://zwohansel.de/kaufhansel/api/";
+  final SettingsStore _settingsStore = SettingsStore();
   RestClient _client = RestClient(Uri.parse(_serverUrl));
   ShoppingListFilterOption _filter = ShoppingListFilterOption.ALL;
   ShoppingListMode _mode = ShoppingListMode.DEFAULT;
@@ -52,19 +55,16 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     _fetchShoppingListInfos();
   }
 
-  void _logOut() {
+  Future<void> _logOut() async {
     _client.close();
-    setState(() => _userInfo = null);
     _client = RestClient(Uri.parse(_serverUrl));
+    await _settingsStore.removeUserInfo();
+    setState(() => _userInfo = null);
   }
 
   Future<void> _deleteUserAccount() async {
-    try {
-      await _client.deleteAccount(_userInfo.id);
-      _logOut();
-    } on Exception catch (e) {
-      setState(() => _error = e.toString());
-    }
+    await _client.deleteAccount(_userInfo.id);
+    await _logOut();
   }
 
   void _setFilter(ShoppingListFilterOption nextFilter) {
@@ -266,7 +266,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
         debugShowCheckedModeBanner: false,
         onGenerateTitle: (BuildContext context) => AppLocalizations.of(context).appTitle,
         theme: ThemeData(primarySwatch: Colors.green, fontFamily: 'Roboto'),
-        home: RestClientWidget(client: _client, child: _buildContent(context)));
+        home: SettingsStoreWidget(_settingsStore, child: RestClientWidget(_client, child: _buildContent(context))));
   }
 
   Widget _buildContent(BuildContext context) {

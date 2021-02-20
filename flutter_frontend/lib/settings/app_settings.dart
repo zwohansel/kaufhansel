@@ -12,12 +12,12 @@ import '../widgets/title_widget.dart';
 
 class AppSettings extends StatefulWidget {
   final ShoppingListUserInfo _userInfo;
-  final void Function() _onLogOut;
+  final Future<void> Function() _onLogOut;
   final Future<void> Function() _onDeleteAccount;
 
   AppSettings(
       {@required ShoppingListUserInfo userInfo,
-      @required void Function() onLogOut,
+      @required Future<void> Function() onLogOut,
       @required Future<void> Function() onDeleteAccount})
       : _userInfo = userInfo,
         _onLogOut = onLogOut,
@@ -140,8 +140,15 @@ class _AppSettingsState extends State<AppSettings> {
   }
 
   _onLogOut() {
-    Navigator.pop(context);
-    widget._onLogOut();
+    setState(() => _loading = true);
+    try {
+      widget._onLogOut();
+      Navigator.pop(context);
+    } catch (e) {
+      showErrorDialog(context, AppLocalizations.of(context).exceptionLogOutFailed);
+    } finally {
+      setState(() => _loading = false);
+    }
   }
 
   _onDeleteAccount() async {

@@ -43,6 +43,8 @@ dependencies:
 
   share: ^0.6.5+4
 
+  localstorage: ^3.0.6
+
 dependency_overrides:
   # https://github.com/flutter/flutter/issues/70433:
   # "Instead of forcing intl 0.16.0, I force the new null safety version 0.17.0-nullsafety.2,

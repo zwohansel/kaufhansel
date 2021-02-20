@@ -19,12 +19,12 @@ class HttpResponseException implements Exception {
 }
 
 class RestClientWidget extends InheritedWidget {
-  final RestClient client;
+  final RestClient _client;
 
-  RestClientWidget({@required this.client, @required Widget child}) : super(child: child);
+  RestClientWidget(this._client, {@required Widget child}) : super(child: child);
 
   static RestClient of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<RestClientWidget>().client;
+    return context.dependOnInheritedWidgetOfExactType<RestClientWidget>()._client;
   }
 
   @override

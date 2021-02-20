@@ -377,6 +377,10 @@ class ShoppingListUserInfo {
     return new ShoppingListUserInfo(json.get('id'), json.get('username'), json.get('emailAddress'), json.get('token'));
   }
 
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'username': username, 'emailAddress': emailAddress, 'token': token};
+  }
+
   String get id => _id;
   String get username => _username;
   String get emailAddress => _emailAddress;
