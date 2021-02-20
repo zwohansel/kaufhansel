@@ -28,7 +28,7 @@ class ShoppingListApp extends StatefulWidget {
 }
 
 class _ShoppingListAppState extends State<ShoppingListApp> {
-  static const _serverUrl = kDebugMode ? "https://localhost:8080" : "https://zwohansel.de/kaufhansel/";
+  static const _serverUrl = kDebugMode ? "https://localhost:8080/api/" : "https://zwohansel.de/kaufhansel/api/";
   RestClient _client = RestClient(Uri.parse(_serverUrl));
   ShoppingListFilterOption _filter = ShoppingListFilterOption.ALL;
   ShoppingListMode _mode = ShoppingListMode.DEFAULT;
@@ -46,8 +46,9 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     return _userInfo != null;
   }
 
-  void _logIn(ShoppingListUserInfo fetchedUserInfo) {
-    setState(() => _userInfo = fetchedUserInfo);
+  void _logIn(ShoppingListUserInfo userInfo) {
+    _client.setAuthenticationToken(userInfo.token);
+    setState(() => _userInfo = userInfo);
     _fetchShoppingListInfos();
   }
 

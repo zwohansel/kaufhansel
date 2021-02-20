@@ -369,16 +369,18 @@ class ShoppingListUserInfo {
   final String _id;
   final String _username;
   final String _emailAddress;
+  final String _token;
 
-  ShoppingListUserInfo(this._id, this._username, this._emailAddress);
+  ShoppingListUserInfo(this._id, this._username, this._emailAddress, this._token);
 
   factory ShoppingListUserInfo.fromJson(Map<String, dynamic> json) {
-    return new ShoppingListUserInfo(json.get('id'), json.get('username'), json.get('emailAddress'));
+    return new ShoppingListUserInfo(json.get('id'), json.get('username'), json.get('emailAddress'), json.get('token'));
   }
 
-  String get emailAddress => _emailAddress;
-  String get username => _username;
   String get id => _id;
+  String get username => _username;
+  String get emailAddress => _emailAddress;
+  String get token => _token;
 }
 
 enum RegistrationProcessType { INVALID, FULL_REGISTRATION, WITHOUT_EMAIL }

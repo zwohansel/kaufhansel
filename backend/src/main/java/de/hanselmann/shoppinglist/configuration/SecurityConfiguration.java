@@ -35,7 +35,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                         "/api/user/login",
                         "/api/user/register/**",
                         "/api/user/activate/**",
-                        "/api/user/password/**")
+                        "/api/user/password/**",
+                        "/api/info")
                 .permitAll()
                 .and()
                 .authorizeRequests()

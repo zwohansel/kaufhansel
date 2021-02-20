@@ -30,7 +30,7 @@ public class EMailService {
         message.setText(MessageFormat.format(
                 "Hi {0},"
                         + "\n\nfolge dem Link um deine Registrierung beim Kaufhansel abzuschließen:"
-                        + "\nhttps://zwohansel.de/kaufhansel/activate/{1}"
+                        + "\nhttps://zwohansel.de/kaufhansel/api/user/activate/{1}"
                         + "\n\nViel Spaß mit dem Kaufhansel."
                         + EMAIL_FOOTER,
                 pendingRegistration.getUserName(),
