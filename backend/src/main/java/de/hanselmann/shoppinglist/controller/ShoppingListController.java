@@ -28,7 +28,6 @@ import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemUpdateDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListNameUpdateDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListPermissionsDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListPermissionsUpdateDto;
-import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserReferenceDto;
 import de.hanselmann.shoppinglist.restapi.dto.transformer.DtoTransformer;
 import de.hanselmann.shoppinglist.service.ShoppingListService;
@@ -56,11 +55,6 @@ public class ShoppingListController implements ShoppingListApi {
         this.guard = guard;
         this.dtoTransformer = dtoTransformer;
         this.shoppingListSubscribers = shoppingListSubscribers;
-    }
-
-    @Override
-    public ResponseEntity<ShoppingListUserInfoDto> getUserInfo() {
-        return ResponseEntity.ok(dtoTransformer.map(userService.getCurrentUser()));
     }
 
     @Override

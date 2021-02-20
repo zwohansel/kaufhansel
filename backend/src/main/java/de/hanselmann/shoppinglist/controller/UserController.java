@@ -12,18 +12,22 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.restapi.UserApi;
 import de.hanselmann.shoppinglist.restapi.dto.InviteCodeDto;
+import de.hanselmann.shoppinglist.restapi.dto.LoginDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationDataDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationProcessTypeDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationResultDto;
 import de.hanselmann.shoppinglist.restapi.dto.RequestUserPasswordResetDto;
 import de.hanselmann.shoppinglist.restapi.dto.SendInviteDto;
+import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.UserPasswordResetDto;
 import de.hanselmann.shoppinglist.restapi.dto.transformer.DtoTransformer;
+import de.hanselmann.shoppinglist.security.TokenService;
 import de.hanselmann.shoppinglist.service.RegistrationService;
 import de.hanselmann.shoppinglist.service.ShoppingListService;
 import de.hanselmann.shoppinglist.service.ShoppingListUserService;
@@ -35,7 +39,9 @@ public class UserController implements UserApi {
     private final RegistrationService registrationService;
     private final ShoppingListUserService userService;
     private final ShoppingListService shoppingListService;
+    private final TokenService tokenService;
     private final ShoppingListGuard guard;
+    private final PasswordEncoder passwordEncoder;
     private final DtoTransformer dtoTransformer;
     private final String activationSuccessPage;
     private final String activationFailurePage;
@@ -44,13 +50,17 @@ public class UserController implements UserApi {
     public UserController(RegistrationService registrationService,
             ShoppingListUserService userService,
             ShoppingListService shoppingListService,
+            TokenService tokenService,
             ShoppingListGuard guard,
+            PasswordEncoder passwordEncoder,
             DtoTransformer dtoTransformer,
             ResourceLoader resourceLoader)
             throws IOException {
         this.registrationService = registrationService;
         this.userService = userService;
         this.shoppingListService = shoppingListService;
+        this.tokenService = tokenService;
+        this.passwordEncoder = passwordEncoder;
         this.guard = guard;
         this.dtoTransformer = dtoTransformer;
         try (InputStream in = resourceLoader.getResource("classpath:static/activation_success.html").getInputStream()) {
@@ -59,6 +69,16 @@ public class UserController implements UserApi {
         try (InputStream in = resourceLoader.getResource("classpath:static/activation_failure.html").getInputStream()) {
             this.activationFailurePage = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }
+    }
+
+    @Override
+    public ResponseEntity<ShoppingListUserInfoDto> login(LoginDto loginDto) {
+        return userService.findByEmailAddress(loginDto.getEmailAddress())
+                .filter(user -> passwordEncoder.matches(loginDto.getPassword(), user.getPassword()))
+                .map(user -> {
+                    String token = tokenService.generateToken(user);
+                    return ResponseEntity.ok(dtoTransformer.map(user, token));
+                }).orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
 
     @Override

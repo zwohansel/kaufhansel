@@ -48,8 +48,8 @@ public class DtoTransformer {
                 role);
     }
 
-    public ShoppingListUserInfoDto map(ShoppingListUser user) {
-        return new ShoppingListUserInfoDto(user.getId().toString(), user.getUsername(), user.getEmailAddress());
+    public ShoppingListUserInfoDto map(ShoppingListUser user, String token) {
+        return new ShoppingListUserInfoDto(user.getId().toString(), token, user.getUsername(), user.getEmailAddress());
     }
 
     public ShoppingListPermissionsDto map(ShoppingListRole userRole) {

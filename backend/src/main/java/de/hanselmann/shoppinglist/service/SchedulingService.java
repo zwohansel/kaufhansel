@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import de.hanselmann.shoppinglist.repository.InviteRepository;
 import de.hanselmann.shoppinglist.repository.PendingRegistrationRepository;
+import de.hanselmann.shoppinglist.security.TokenService;
 
 @Component
 public class SchedulingService {
@@ -15,13 +16,16 @@ public class SchedulingService {
     private final InviteRepository inviteRepository;
     private final PendingRegistrationRepository pendingRegistrationRepository;
     private final ShoppingListUserService userService;
+    private final TokenService tokenService;
 
     @Autowired
     public SchedulingService(InviteRepository inviteRepository,
-            PendingRegistrationRepository pendingRegistrationRepository, ShoppingListUserService userService) {
+            PendingRegistrationRepository pendingRegistrationRepository, ShoppingListUserService userService,
+            TokenService tokenService) {
         this.inviteRepository = inviteRepository;
         this.pendingRegistrationRepository = pendingRegistrationRepository;
         this.userService = userService;
+        this.tokenService = tokenService;
     }
 
     @Scheduled(cron = "0 0 2 * * *") // every night at 2:00:00am
@@ -36,10 +40,18 @@ public class SchedulingService {
         LOGGER.info("Deleted {} expired pending registrations", numberDeleted);
     }
 
+    @Scheduled(cron = "0 0 4 * * *") // every night at 4:00:00am
+    public void cleanupInvalidTokens() {
+        int numberDeleted = tokenService.deleteInvalidTokens();
+        LOGGER.info("Deleted {} invalid tokens", numberDeleted);
+    }
+
     @Scheduled(fixedDelay = 1000 * 60 * 15, initialDelay = 1000 * 15)
     public void cleanupPendingPasswordResetRequests() {
-        long numberReset = userService.resetPendingPasswordResetRequestsOlderThanMinutes(60);
-        LOGGER.info("Reset {} expired pending password reset requests", numberReset);
+        long numberOfResets = userService.resetPendingPasswordResetRequestsOlderThanMinutes(60);
+        if (numberOfResets > 0) {
+            LOGGER.info("Reset {} expired pending password reset requests", numberOfResets);
+        }
     }
 
 }

@@ -1,20 +1,24 @@
 package de.hanselmann.shoppinglist.configuration;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import de.hanselmann.shoppinglist.service.ShoppingListAuthenticationService;
+import de.hanselmann.shoppinglist.security.AuthenticationService;
+import de.hanselmann.shoppinglist.security.AuthenticationTokenFilter;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    private ShoppingListAuthenticationService authenticationService;
+    private final AuthenticationService authenticationService;
 
-    public SecurityConfiguration(ShoppingListAuthenticationService authenticationService) {
+    @Autowired
+    public SecurityConfiguration(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }
 
@@ -25,16 +29,19 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http
-                .csrf().disable()
+        http.csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/graphql")
+                .antMatchers(
+                        "/api/user/login",
+                        "/api/user/register/**",
+                        "/api/user/activate/**",
+                        "/api/user/password/**")
                 .permitAll()
                 .and()
                 .authorizeRequests()
-                .antMatchers("/status")
-                .authenticated()
-                .and()
-                .httpBasic();
+                .anyRequest()
+                .authenticated();
+
+        http.addFilterBefore(new AuthenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 }

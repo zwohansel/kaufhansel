@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import de.hanselmann.shoppinglist.restapi.dto.AddUserToShoppingListDto;
 import de.hanselmann.shoppinglist.restapi.dto.MoveShoppingListItemDto;
@@ -19,14 +20,10 @@ import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemUpdateDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListNameUpdateDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListPermissionsUpdateDto;
-import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserReferenceDto;
 
+@RequestMapping("/api")
 public interface ShoppingListApi {
-
-    // TODO: move to some kind of UserApi
-    @GetMapping("/user")
-    ResponseEntity<ShoppingListUserInfoDto> getUserInfo();
 
     @GetMapping("/shoppinglists")
     ResponseEntity<List<ShoppingListInfoDto>> getShoppingLists();

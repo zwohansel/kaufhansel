@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import de.hanselmann.shoppinglist.configuration.ShoppingListProperties;
 import de.hanselmann.shoppinglist.model.GraphQlResponse;
+import de.hanselmann.shoppinglist.security.AuthenticationService;
 import io.leangen.graphql.annotations.GraphQLArgument;
 import io.leangen.graphql.annotations.GraphQLMutation;
 import io.leangen.graphql.annotations.GraphQLNonNull;
@@ -32,11 +33,11 @@ public class LoginService {
     private final HttpServletRequest request;
     private final HttpServletResponse response;
     private final ShoppingListProperties properties;
-    private final ShoppingListAuthenticationService authenticationService;
+    private final AuthenticationService authenticationService;
 
     @Autowired
     public LoginService(HttpServletRequest request, HttpServletResponse response,
-            ShoppingListProperties properties, ShoppingListAuthenticationService authenticationService) {
+            ShoppingListProperties properties, AuthenticationService authenticationService) {
         this.request = request;
         this.response = response;
         this.properties = properties;
