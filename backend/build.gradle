@@ -54,13 +54,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
-    implementation 'io.leangen.graphql:graphql-spqr-spring-boot-starter:0.0.4'
-    implementation 'io.leangen.graphql:spqr:0.10.1'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'io.projectreactor:reactor-core:3.3.5.RELEASE'
-    implementation 'org.springframework.boot:spring-boot-starter-websocket:2.3.0.RELEASE'
     implementation 'com.aventrix.jnanoid:jnanoid:2.0.0'
-    implementation 'io.jsonwebtoken:jjwt:0.9.1'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2','io.jsonwebtoken:jjwt-jackson:0.11.2'
 
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
