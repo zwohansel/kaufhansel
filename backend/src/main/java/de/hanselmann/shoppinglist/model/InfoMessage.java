@@ -8,7 +8,6 @@ import org.springframework.data.annotation.Id;
 public class InfoMessage {
     public enum Severity {
         CRITICAL,
-        WARNING,
         INFO
     }
 

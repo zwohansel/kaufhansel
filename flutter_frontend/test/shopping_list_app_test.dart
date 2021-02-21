@@ -9,12 +9,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kaufhansel_client/main.dart';
 
 void main() {
-  testWidgets('Test title', (WidgetTester tester) async {
+  testWidgets('Smoke Test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(ShoppingListApp());
-
-    // Verify that our counter starts at 0.
-    expect(find.text('Kaufhansel'), findsOneWidget);
+    await tester.pumpWidget(App());
 
     await tester.binding.idle();
   });

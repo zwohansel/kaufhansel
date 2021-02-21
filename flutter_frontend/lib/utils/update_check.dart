@@ -48,6 +48,10 @@ class Update {
     return _message != null;
   }
 
+  bool isCritical() {
+    return hasInfoMessage() && _message.severity == InfoMessageSeverity.CRITICAL || isBreakingChange();
+  }
+
   InfoMessage get infoMessage => _message;
 }
 

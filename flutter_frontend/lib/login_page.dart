@@ -62,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _emailAddressInvalid = false;
   bool _passwordInvalid = false;
   bool _obscurePassword = true;
-  bool _showInfoMessage = true;
+  bool _showInfo = true;
 
   @override
   void didChangeDependencies() {
@@ -155,24 +155,55 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildContent() {
     List<Widget> infoMessages = [];
-    if (widget._update.hasInfoMessage() && _showInfoMessage) {
+    if ((widget._update.hasInfoMessage() || widget._update.isCritical()) && _showInfo) {
+      final List<Widget> messages = [];
+
+      if (widget._update.isBreakingChange()) {
+        messages.add(Text(
+          "Zwingendes Update is verfügbar.",
+          style: _getInfoMessageTextStyle(),
+        ));
+      }
+
+      if (widget._update.hasInfoMessage()) {
+        if (messages.length > 0) {
+          messages.add(SizedBox(height: 10));
+        }
+        messages.add(Text(
+          widget._update.infoMessage.message,
+          style: _getInfoMessageTextStyle(),
+        ));
+      }
+
       infoMessages.add(
         Container(
-          color: Theme.of(context).secondaryHeaderColor,
+          color: _getInfoMessageBoxColor(),
           child: Padding(
             padding: EdgeInsets.only(left: 10, top: 5, right: 10, bottom: 2),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(widget._update.infoMessage.message),
+                ...messages,
                 Align(
                   alignment: Alignment.center,
-                  child: TextButton(
-                    style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-                    onPressed: () => setState(() => _showInfoMessage = false),
-                    child: Text(widget._update.infoMessage.dismissLabel ?? AppLocalizations.of(context).ok),
-                  ),
+                  child: widget._update.isCritical()
+                      ? Padding(
+                          padding: EdgeInsets.only(top: 10, bottom: 10),
+                          child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                  primary: _getInfoMessageBtnColor(),
+                                  side: BorderSide(color: _getInfoMessageBtnColor())),
+                              onPressed: () => setState(() => _showInfo = false),
+                              child: Text(widget._update.infoMessage.dismissLabel ?? AppLocalizations.of(context).ok)))
+                      : TextButton(
+                          style: TextButton.styleFrom(
+                            primary: _getInfoMessageBtnColor(),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          onPressed: () => setState(() => _showInfo = false),
+                          child: Text(widget._update.infoMessage.dismissLabel ?? AppLocalizations.of(context).ok),
+                        ),
                 )
               ],
             ),
@@ -188,6 +219,27 @@ class _LoginPageState extends State<LoginPage> {
         _buildForm(),
       ],
     );
+  }
+
+  Color _getInfoMessageBoxColor() {
+    if (widget._update.isCritical()) {
+      return Colors.redAccent.shade400;
+    }
+    return Theme.of(context).secondaryHeaderColor;
+  }
+
+  TextStyle _getInfoMessageTextStyle() {
+    if (widget._update.isCritical()) {
+      return Theme.of(context).textTheme.bodyText1.apply(color: Colors.white);
+    }
+    return Theme.of(context).textTheme.bodyText1;
+  }
+
+  Color _getInfoMessageBtnColor() {
+    if (widget._update.isCritical()) {
+      return Colors.white;
+    }
+    return Theme.of(context).primaryColor;
   }
 
   Widget _buildForm() {
