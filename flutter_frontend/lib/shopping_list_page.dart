@@ -117,7 +117,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
     }
 
     return Container(
-      color: Theme.of(context).primaryColorDark,
+      color: widget._update.isCritical() ? Colors.redAccent.shade400 : Theme.of(context).primaryColorDark,
       child: Padding(
         padding: EdgeInsets.only(left: 10, top: 5, right: 10, bottom: 5),
         child: Column(
@@ -166,14 +166,17 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
       return null;
     }
 
-    final obligatoryUpdateInfo = widget._update.isBreakingChange()
-        ? Flexible(
-            child: Text(
-              AppLocalizations.of(context).newerVersionAvailableObligatoryUpdate,
-              style: TextStyle(color: Colors.white),
-            ),
-          )
-        : Container();
+    List<Widget> obligatoryUpdateInfo = widget._update.isBreakingChange()
+        ? [
+            SizedBox(height: 10),
+            Flexible(
+              child: Text(
+                AppLocalizations.of(context).newerVersionAvailableObligatoryUpdate,
+                style: TextStyle(color: Colors.white),
+              ),
+            )
+          ]
+        : [];
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,7 +195,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
                   style: TextStyle(color: Colors.white, decoration: TextDecoration.underline),
                 ),
               ),
-              obligatoryUpdateInfo,
+              ...obligatoryUpdateInfo,
             ],
           ),
         )
@@ -207,7 +210,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
       alignment: Alignment.bottomRight,
       child: OutlinedButton(
         style: TextButton.styleFrom(
-            visualDensity: VisualDensity.compact, primary: Colors.white, side: BorderSide(color: Colors.white24)),
+            visualDensity: VisualDensity.compact, primary: Colors.white, side: BorderSide(color: Colors.white30)),
         onPressed: () => setState(() => _showInfoBox = false),
         child: Text(dismissLabelText),
       ),
