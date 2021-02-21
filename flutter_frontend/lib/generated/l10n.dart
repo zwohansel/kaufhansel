@@ -685,10 +685,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Es hat sich viel getan. Damit dein Kaufhansel weiterhin funktioniert, musst du diese Aktualisierung installieren. Mehr Infos findest du, wenn du oben auf den Link zum Herunterladen klickst, oder im Play Store.`
+  /// `Es hat sich viel getan. Damit dein Kaufhansel weiterhin funktioniert, musst du diese Aktualisierung installieren. Mehr Infos findest du, wenn du auf den Link zum Herunterladen klickst, oder im Play Store.`
   String get newerVersionAvailableObligatoryUpdate {
     return Intl.message(
-      'Es hat sich viel getan. Damit dein Kaufhansel weiterhin funktioniert, musst du diese Aktualisierung installieren. Mehr Infos findest du, wenn du oben auf den Link zum Herunterladen klickst, oder im Play Store.',
+      'Es hat sich viel getan. Damit dein Kaufhansel weiterhin funktioniert, musst du diese Aktualisierung installieren. Mehr Infos findest du, wenn du auf den Link zum Herunterladen klickst, oder im Play Store.',
       name: 'newerVersionAvailableObligatoryUpdate',
       desc: '',
       args: [],
