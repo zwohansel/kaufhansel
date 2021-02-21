@@ -16,12 +16,28 @@ import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_mode.dart';
 import 'package:kaufhansel_client/shopping_list_page.dart';
 import 'package:kaufhansel_client/shopping_list_title.dart';
+import 'package:kaufhansel_client/utils/update_check.dart';
 import 'package:provider/provider.dart';
 
 import 'model.dart';
 
 void main() {
-  runApp(ShoppingListApp());
+  runApp(App());
+}
+
+class App extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+        // locale can be set here:
+        // locale: Locale("de"),
+        localizationsDelegates: [AppLocalizations.delegate, GlobalMaterialLocalizations.delegate],
+        supportedLocales: [const Locale('de', '')],
+        debugShowCheckedModeBanner: false,
+        onGenerateTitle: (BuildContext context) => AppLocalizations.of(context).appTitle,
+        theme: ThemeData(primarySwatch: Colors.green, fontFamily: 'Roboto'),
+        home: ShoppingListApp());
+  }
 }
 
 class ShoppingListApp extends StatefulWidget {
@@ -43,6 +59,35 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   List<String> _currentShoppingListCategories;
   String _currentShoppingListCategory;
   ShoppingListUserInfo _userInfo;
+  bool _initializing;
+  Update _update = Update.none();
+
+  void initState() {
+    super.initState();
+    _initializing = true;
+    asyncInit();
+  }
+
+  void asyncInit() async {
+    try {
+      final updateOpt = await checkForUpdate(_client, context);
+      updateOpt.ifPresent((update) => setState(() => _update = update));
+      if (!updateOpt.isPresent() || !updateOpt.get.isBreakingChange()) {
+        await _loadUserInfo();
+      }
+    } finally {
+      setState(() => _initializing = false);
+    }
+  }
+
+  Future<void> _loadUserInfo() async {
+    try {
+      final userInfoOpt = await _settingsStore.getUserInfo();
+      userInfoOpt.ifPresent(_logIn);
+    } on Exception catch (e) {
+      developer.log("Could not read user info from store.", error: e);
+    }
+  }
 
   bool _isLoggedIn() {
     // if userInfo == null, no user is logged in
@@ -258,15 +303,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        // locale can be set here:
-        // locale: Locale("de"),
-        localizationsDelegates: [AppLocalizations.delegate, GlobalMaterialLocalizations.delegate],
-        supportedLocales: [const Locale('de', '')],
-        debugShowCheckedModeBanner: false,
-        onGenerateTitle: (BuildContext context) => AppLocalizations.of(context).appTitle,
-        theme: ThemeData(primarySwatch: Colors.green, fontFamily: 'Roboto'),
-        home: SettingsStoreWidget(_settingsStore, child: RestClientWidget(_client, child: _buildContent(context))));
+    return SettingsStoreWidget(_settingsStore, child: RestClientWidget(_client, child: _buildContent(context)));
   }
 
   Widget _buildContent(BuildContext context) {
@@ -306,7 +343,11 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       );
     }
 
-    return LoginPage(loggedIn: _logIn);
+    return LoginPage(
+      loggedIn: _logIn,
+      enabled: !_initializing,
+      update: _update,
+    );
   }
 
   void _handleRetry() {

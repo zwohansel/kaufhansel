@@ -16,9 +16,9 @@
   "ok": "Ok",
   "cancel": "Abbrechen",
   "close": "Schließen",
+  "dontCare": "Egal",
   "okImmediately": "Mach ich sofort",
   "tryAgain": "Nochmal versuchen",
-  "importantMessage": "Wichtige Durchsage",
   "refresh": "Aktualisieren",
   "settings": "Einstellungen",
 
@@ -245,7 +245,7 @@
   "exceptionWrongCredentials": "Haben wir Deinen Account gelöscht oder hast Du Deine Zugangsdaten vergessen?",
   "exceptionNoInternet": "Haben wir den Server heruntergefahren oder bist du nicht mit dem Internet verbunden?",
   "exceptionNoInternetDidNotWork": "Das hat nicht funktioniert. Hast du kein Internet?",
-  "exceptionNoInternetRetry": "Hast du kein Internet oder ist der Server nicht erreichbar?\nWir können es ja nochmal versuchen...",
+  "exceptionUpdateCheckFailed": "Hast du kein Internet oder ist der Server nicht erreichbar?\nSo können wir jedenfalls nicht prüfen, ob dein Kaufhansel noch aktuell ist!",
   "exceptionConnectionTimeout": "Schläft der Server oder ist das Internet zu langsam?\nJedenfalls hat das alles viel zu lange gedauert.",
   "exceptionIncompatibleVersion": "Du verwendest vom Kaufhansel immer noch die Version {frontendVersion} ???\n\nDie ist doch schon viel zu alt. Hol dir die neue und viel bessere Version ${backendVersion} von",
   "@exceptionIncompatibleVersion": {

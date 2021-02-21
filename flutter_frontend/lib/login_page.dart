@@ -11,17 +11,20 @@ import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/settings/settings_store_widget.dart';
 import 'package:kaufhansel_client/utils/input_validation.dart';
-import 'package:kaufhansel_client/utils/semantic_versioning.dart';
-import 'package:kaufhansel_client/widgets/confirm_dialog.dart';
+import 'package:kaufhansel_client/utils/update_check.dart';
 import 'package:kaufhansel_client/widgets/link.dart';
-import 'package:package_info/package_info.dart';
 
 import 'widgets/error_dialog.dart';
 
 class LoginPage extends StatefulWidget {
+  final bool _enabled;
+  final Update _update;
   final void Function(ShoppingListUserInfo) _loggedIn;
 
-  const LoginPage({@required void Function(ShoppingListUserInfo) loggedIn}) : _loggedIn = loggedIn;
+  const LoginPage({@required void Function(ShoppingListUserInfo) loggedIn, enabled = true, Update update})
+      : _loggedIn = loggedIn,
+        _update = update,
+        _enabled = enabled;
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -54,17 +57,12 @@ class _LoginPageState extends State<LoginPage> {
 
   _PageMode _pageMode = _PageMode.LOGIN;
 
-  bool _loading = true;
-  bool _loadingUserInfo = true;
+  bool _loading = false;
   bool _inviteCodeInvalid = false;
   bool _emailAddressInvalid = false;
   bool _passwordInvalid = false;
   bool _obscurePassword = true;
-
-  Version _frontendVersion;
-  Version _backendVersion;
-  String _infoMessage;
-  String _infoMessageDismissLabel;
+  bool _showInfoMessage = true;
 
   @override
   void didChangeDependencies() {
@@ -90,7 +88,6 @@ class _LoginPageState extends State<LoginPage> {
         _registerWithoutEmailFormKey.currentState?.validate();
       }
     });
-    _asyncInit();
   }
 
   @override
@@ -158,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildContent() {
     List<Widget> infoMessages = [];
-    if (_infoMessage != null) {
+    if (widget._update.hasInfoMessage() && _showInfoMessage) {
       infoMessages.add(
         Container(
           color: Theme.of(context).secondaryHeaderColor,
@@ -168,13 +165,13 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(_infoMessage),
+                Text(widget._update.infoMessage.message),
                 Align(
                   alignment: Alignment.center,
                   child: TextButton(
                     style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-                    onPressed: () => setState(() => _infoMessage = null),
-                    child: Text(_infoMessageDismissLabel ?? AppLocalizations.of(context).ok),
+                    onPressed: () => setState(() => _showInfoMessage = false),
+                    child: Text(widget._update.infoMessage.dismissLabel ?? AppLocalizations.of(context).ok),
                   ),
                 )
               ],
@@ -215,7 +212,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   bool _isLoading() {
-    return _loading || _loadingUserInfo;
+    return _loading || !widget._enabled;
   }
 
   Form _buildLoginForm() {
@@ -681,22 +678,22 @@ class _LoginPageState extends State<LoginPage> {
   List<Widget> _buildBottomInfos(BuildContext context) {
     final zwoHanselLink =
         Link(AppLocalizations.of(context).zwoHanselPageLink, text: AppLocalizations.of(context).zwoHanselPageLinkText);
-    if (_frontendVersion == null) {
+    if (!widget._update.hasCurrentVersion()) {
       return [zwoHanselLink];
     }
-    if (_backendVersion != null && _backendVersion.isMoreRecentIgnoringPatchLevelThan(_frontendVersion)) {
+    if (widget._update.isNewVersionAvailable()) {
       return [
-        Text(_frontendVersion.toString()),
+        Text(widget._update.currentVersion.toString()),
         SizedBox(height: 10),
         Link(AppLocalizations.of(context).downloadLink,
-            text: AppLocalizations.of(context).newerVersionAvailable(_backendVersion.toString()),
+            text: AppLocalizations.of(context).newerVersionAvailable(widget._update.latestVersion.toString()),
             style: TextStyle(fontWeight: FontWeight.bold),
             trailingIcon: Icons.get_app),
         SizedBox(height: 10),
         zwoHanselLink
       ];
     }
-    return [Text(_frontendVersion.toString()), zwoHanselLink];
+    return [Text(widget._update.hasCurrentVersion().toString()), zwoHanselLink];
   }
 
   void _login() async {
@@ -726,78 +723,6 @@ class _LoginPageState extends State<LoginPage> {
       showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralComputerSays + e.toString());
     } finally {
       setState(() => _loading = false);
-    }
-  }
-
-  Future<void> _fetchBackendInfo() async {
-    try {
-      final frontendVersion = await _getVersion();
-      setState(() => _frontendVersion = frontendVersion);
-      final backendInfo = await RestClientWidget.of(context).getBackendInfo();
-      setState(() => _backendVersion = backendInfo.version);
-      if (frontendVersion != null) {
-        await checkCompatibility(frontendVersion, backendInfo.version);
-      }
-      if (backendInfo.message?.severity == InfoMessageSeverity.CRITICAL) {
-        showConfirmDialog(
-          context,
-          backendInfo.message.message,
-          title: AppLocalizations.of(context).importantMessage,
-          confirmBtnLabel: backendInfo.message.dismissLabel ?? AppLocalizations.of(context).ok,
-          hideCancelBtn: true,
-          confirmBtnColor: Theme.of(context).primaryColor,
-        );
-      } else if (backendInfo.message?.severity == InfoMessageSeverity.INFO) {
-        setState(() {
-          _infoMessage = backendInfo.message?.message;
-          _infoMessageDismissLabel = backendInfo.message.dismissLabel;
-        });
-      }
-      setState(() => _loading = false);
-    } on Exception catch (e) {
-      log("Failed to fetch backend info.", error: e);
-      await showErrorDialog(context, AppLocalizations.of(context).exceptionNoInternetRetry);
-      await Future.delayed(Duration(seconds: 5)); // Don't let the user DDOS the server
-      _fetchBackendInfo();
-    }
-  }
-
-  Future<Version> _getVersion() async {
-    try {
-      final info = await PackageInfo.fromPlatform();
-      return Version.fromString(info.version);
-    } on Exception catch (e) {
-      log("Could not get app version.", error: e);
-      return null;
-    }
-  }
-
-  Future<void> checkCompatibility(Version frontendVersion, Version backendVersion) async {
-    if (frontendVersion == null) {
-      return;
-    }
-    if (!backendVersion.isCompatibleTo(frontendVersion)) {
-      showCustomErrorDialog(
-          context,
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                AppLocalizations.of(context)
-                    .exceptionIncompatibleVersion(frontendVersion.toString(), backendVersion.toString()),
-                textAlign: TextAlign.center,
-              ),
-              Padding(
-                  padding: EdgeInsets.only(top: 10),
-                  child: Link(
-                    AppLocalizations.of(context).downloadLink,
-                    style: Theme.of(context).textTheme.headline6,
-                    textAlign: TextAlign.center,
-                  ))
-            ],
-          ),
-          AppLocalizations.of(context).okImmediately);
     }
   }
 
@@ -893,28 +818,5 @@ class _LoginPageState extends State<LoginPage> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(AppLocalizations.of(context).registrationSuccessful),
     ));
-  }
-
-  void _asyncInit() async {
-    if (await _loadUserInfo()) {
-      return;
-    }
-
-    await _fetchBackendInfo();
-  }
-
-  Future<bool> _loadUserInfo() async {
-    try {
-      final userInfo = await SettingsStoreWidget.of(context).getUserInfo();
-      if (userInfo.isPresent()) {
-        widget._loggedIn(userInfo.get);
-        return true;
-      }
-    } on Exception catch (e) {
-      log("Could not read user info from store.", error: e);
-    } finally {
-      setState(() => _loadingUserInfo = false);
-    }
-    return false;
   }
 }

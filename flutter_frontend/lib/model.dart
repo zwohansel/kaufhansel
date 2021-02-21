@@ -16,6 +16,11 @@ class Optional<T> {
 
   T get get => _t;
   bool isPresent() => _t != null;
+  void ifPresent(void Function(T) then) {
+    if (isPresent()) {
+      then(_t);
+    }
+  }
 }
 
 extension JsonParseExtension<K, V> on Map<K, V> {
