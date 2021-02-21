@@ -397,6 +397,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
         mode: _mode,
         initialCategory: _currentShoppingListCategory,
         onCategoryChanged: _setCurrentShoppingListCategory,
+        update: _update,
       );
     }
   }

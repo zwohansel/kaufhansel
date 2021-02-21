@@ -31,7 +31,7 @@ class Link extends StatelessWidget {
     }
 
     return InkWell(
-        mouseCursor: SystemMouseCursors.text,
+        mouseCursor: _selectable ? SystemMouseCursors.text : SystemMouseCursors.click,
         child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: children),
         onTap: () => _selectable ? null : launch(_url));
   }
