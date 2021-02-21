@@ -157,6 +157,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "listSettingsUncheckAllItems" : MessageLookupByLibrary.simpleMessage("Alle Häckchen entfernen"),
     "manShrugging" : MessageLookupByLibrary.simpleMessage("🤷‍♂️"),
     "newerVersionAvailable" : m21,
+    "newerVersionAvailableObligatoryUpdate" : MessageLookupByLibrary.simpleMessage("Es hat sich viel getan. Damit dein Kaufhansel weiterhin funktioniert, musst du diese Aktualisierung installieren. Mehr Infos findest du, wenn du oben auf den Link zum Herunterladen klickst, oder im Play Store."),
     "ok" : MessageLookupByLibrary.simpleMessage("Ok"),
     "okImmediately" : MessageLookupByLibrary.simpleMessage("Mach ich sofort"),
     "passwordChangeSuccess" : MessageLookupByLibrary.simpleMessage("Du hast dein Kennwort erfolgreich geändert."),

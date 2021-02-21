@@ -160,7 +160,7 @@ class _LoginPageState extends State<LoginPage> {
 
       if (widget._update.isBreakingChange()) {
         messages.add(Text(
-          "Zwingendes Update is verfügbar.",
+          AppLocalizations.of(context).newerVersionAvailableObligatoryUpdate,
           style: _getInfoMessageTextStyle(),
         ));
       }

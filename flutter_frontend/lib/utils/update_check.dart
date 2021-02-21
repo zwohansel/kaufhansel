@@ -64,7 +64,6 @@ Future<Optional<Update>> checkForUpdate(RestClient client, BuildContext context)
       return Optional(Update(frontendVersion, backendInfo.version, backendInfo.message));
     } on Exception catch (e) {
       log("Failed to fetch backend info.", error: e);
-      final locale = AppLocalizations.of(context);
       if (await _askUserIfWeShouldTryAgain(context)) {
         await Future.delayed(Duration(seconds: 5)); // Don't let the user DDOS the server
       } else {
