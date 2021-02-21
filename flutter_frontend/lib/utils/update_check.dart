@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 import 'package:kaufhansel_client/widgets/confirm_dialog.dart';

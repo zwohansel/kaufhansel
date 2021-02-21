@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/list_settings/card_style.dart';
 import 'package:kaufhansel_client/list_settings/user_role_tile.dart';
 import 'package:kaufhansel_client/rest_client.dart';

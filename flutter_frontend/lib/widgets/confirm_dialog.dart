@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import 'package:kaufhansel_client/generated/l10n.dart';
 
 Future<bool> showConfirmDialog(BuildContext context, String text,
     {String title,

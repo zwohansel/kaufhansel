@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/shopping_list_mode.dart';
 
 class ShoppingListModeSelection extends StatelessWidget {

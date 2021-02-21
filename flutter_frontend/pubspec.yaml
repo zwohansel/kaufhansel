@@ -102,3 +102,8 @@ flutter:
     - family: Roboto
       fonts:
         - asset: fonts/Roboto-Regular.ttf
+
+flutter_intl:
+  enabled: true
+  main_locale: de
+  class_name: AppLocalizations
