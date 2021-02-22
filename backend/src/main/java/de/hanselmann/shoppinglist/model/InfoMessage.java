@@ -14,6 +14,7 @@ public class InfoMessage {
     @Id
     private ObjectId id;
     private boolean enabled;
+    private int messageNumber;
     private Severity severity;
     private String message;
     private String dismissLabel;
@@ -26,6 +27,10 @@ public class InfoMessage {
 
     public boolean isEnabled() {
         return enabled;
+    }
+
+    public int getMessageNumber() {
+        return messageNumber;
     }
 
     public Severity getSeverity() {

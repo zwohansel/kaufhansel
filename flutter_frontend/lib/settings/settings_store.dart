@@ -4,6 +4,7 @@ import 'package:kaufhansel_client/model.dart';
 import 'package:localstorage/localstorage.dart';
 
 const _userInfoStorageKey = "userInfo";
+const _infoMessageConfirmedStorageKey = "infoMessageConfirmed";
 
 class SettingsStore {
   final LocalStorage _storage = new LocalStorage('kaufhansel_settings');
@@ -32,5 +33,24 @@ class SettingsStore {
       throw Exception("Failed to remove user info: Storage not writeable");
     }
     await _storage.deleteItem(_userInfoStorageKey);
+  }
+
+  Future<void> confirmInfoMessage(int messageNumber) async {
+    if (await _storage.ready) {
+      await _storage.setItem(_infoMessageConfirmedStorageKey, messageNumber);
+    } else {
+      log("Could not confirm info message: Storage not writeable.");
+    }
+  }
+
+  Future<bool> isInfoMessageConfirmed(int messageNumber) async {
+    if (!await _storage.ready) {
+      return false;
+    }
+    final int confirmedMessageNumber = _storage.getItem(_infoMessageConfirmedStorageKey);
+    if (confirmedMessageNumber == null) {
+      return false;
+    }
+    return confirmedMessageNumber >= messageNumber;
   }
 }

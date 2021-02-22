@@ -135,7 +135,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
   }
 
   Widget _buildInfoMessage() {
-    if (widget._update.infoMessage == null) {
+    if (!widget._update.hasInfoMessage()) {
       return null;
     }
 
@@ -211,7 +211,10 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
       child: OutlinedButton(
         style: TextButton.styleFrom(
             visualDensity: VisualDensity.compact, primary: Colors.white, side: BorderSide(color: Colors.white30)),
-        onPressed: () => setState(() => _showInfoBox = false),
+        onPressed: () => setState(() {
+          widget._update.confirmMessage();
+          _showInfoBox = false;
+        }),
         child: Text(dismissLabelText),
       ),
     );

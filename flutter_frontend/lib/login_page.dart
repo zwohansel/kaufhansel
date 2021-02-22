@@ -194,14 +194,14 @@ class _LoginPageState extends State<LoginPage> {
                               style: OutlinedButton.styleFrom(
                                   primary: _getInfoMessageBtnColor(),
                                   side: BorderSide(color: _getInfoMessageBtnColor())),
-                              onPressed: () => setState(() => _showInfo = false),
+                              onPressed: () => setState(() => _confirmMessage()),
                               child: Text(widget._update.infoMessage.dismissLabel ?? AppLocalizations.of(context).ok)))
                       : TextButton(
                           style: TextButton.styleFrom(
                             primary: _getInfoMessageBtnColor(),
                             visualDensity: VisualDensity.compact,
                           ),
-                          onPressed: () => setState(() => _showInfo = false),
+                          onPressed: () => setState(() => _confirmMessage()),
                           child: Text(widget._update.infoMessage.dismissLabel ?? AppLocalizations.of(context).ok),
                         ),
                 )
@@ -219,6 +219,11 @@ class _LoginPageState extends State<LoginPage> {
         _buildForm(),
       ],
     );
+  }
+
+  void _confirmMessage() {
+    widget._update.confirmMessage();
+    _showInfo = false;
   }
 
   Color _getInfoMessageBoxColor() {
@@ -745,7 +750,7 @@ class _LoginPageState extends State<LoginPage> {
         zwoHanselLink
       ];
     }
-    return [Text(widget._update.hasCurrentVersion().toString()), zwoHanselLink];
+    return [Text(widget._update.currentVersion.toString()), zwoHanselLink];
   }
 
   void _login() async {

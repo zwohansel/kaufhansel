@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/rest_client.dart';
+import 'package:kaufhansel_client/settings/settings_store.dart';
 import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 import 'package:kaufhansel_client/widgets/confirm_dialog.dart';
 import 'package:package_info/package_info.dart';
@@ -10,14 +11,16 @@ import 'package:package_info/package_info.dart';
 import '../model.dart';
 
 class Update {
+  final SettingsStore _settingsStore;
   final Version _currentVersion;
   final Version _latestVersion;
   final InfoMessage _message;
+  bool _messageConfirmed;
 
-  Update(this._currentVersion, this._latestVersion, this._message);
+  Update(this._settingsStore, this._currentVersion, this._latestVersion, this._message, this._messageConfirmed);
 
   factory Update.none() {
-    return Update(null, null, null);
+    return Update(null, null, null, null, false);
   }
 
   bool hasCurrentVersion() {
@@ -45,23 +48,31 @@ class Update {
   Version get latestVersion => _latestVersion;
 
   bool hasInfoMessage() {
-    return _message != null;
+    return _message != null && !_messageConfirmed;
   }
 
   bool isCritical() {
-    return hasInfoMessage() && _message.severity == InfoMessageSeverity.CRITICAL || isBreakingChange();
+    return (hasInfoMessage() && _message.severity == InfoMessageSeverity.CRITICAL) || isBreakingChange();
   }
 
   InfoMessage get infoMessage => _message;
+
+  void confirmMessage() {
+    assert(_message != null);
+    _messageConfirmed = true;
+    _settingsStore.confirmInfoMessage(_message.messageNumber);
+  }
 }
 
-Future<Optional<Update>> checkForUpdate(RestClient client, BuildContext context) async {
+Future<Optional<Update>> checkForUpdate(BuildContext context, RestClient client, SettingsStore store) async {
   while (true) {
     try {
       final frontendVersion = await _getVersion();
       final backendInfo = await client.getBackendInfo();
+      final messageConfirmed =
+          backendInfo.message != null ? await store.isInfoMessageConfirmed(backendInfo.message.messageNumber) : false;
 
-      return Optional(Update(frontendVersion, backendInfo.version, backendInfo.message));
+      return Optional(Update(store, frontendVersion, backendInfo.version, backendInfo.message, messageConfirmed));
     } on Exception catch (e) {
       log("Failed to fetch backend info.", error: e);
       if (await _askUserIfWeShouldTryAgain(context)) {

@@ -70,7 +70,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   void asyncInit() async {
     try {
-      final updateOpt = await checkForUpdate(_client, context);
+      final updateOpt = await checkForUpdate(context, _client, _settingsStore);
       updateOpt.ifPresent((update) => setState(() => _update = update));
       if (!updateOpt.isPresent() || !updateOpt.get.isBreakingChange()) {
         await _loadUserInfo();

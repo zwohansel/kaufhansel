@@ -75,7 +75,8 @@ public class DtoTransformer {
     }
 
     public InfoMessageDto map(InfoMessage message) {
-        return new InfoMessageDto(map(message.getSeverity()), message.getMessage(), message.getDismissLabel());
+        return new InfoMessageDto(message.getMessageNumber(), map(message.getSeverity()), message.getMessage(),
+                message.getDismissLabel());
     }
 
     private SeverityDto map(Severity severity) {

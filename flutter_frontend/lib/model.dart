@@ -465,20 +465,22 @@ extension _InfoMessageSeverities on _RegistrationResultStatus {
 }
 
 class InfoMessage {
+  final int _messageNumber;
   final InfoMessageSeverity _severity;
   final String _message;
   final String _dismissLabel;
 
-  InfoMessage(this._severity, this._message, this._dismissLabel);
+  InfoMessage(this._messageNumber, this._severity, this._message, this._dismissLabel);
 
   factory InfoMessage.fromJson(Map<String, dynamic> json) {
     if (json == null) {
       return null;
     }
-    return new InfoMessage(
-        _InfoMessageSeverities.fromString(json.get("severity")), json.get("message"), json.getOpt("dismissLabel"));
+    return new InfoMessage(json.get("messageNumber"), _InfoMessageSeverities.fromString(json.get("severity")),
+        json.get("message"), json.getOpt("dismissLabel"));
   }
 
+  int get messageNumber => _messageNumber;
   InfoMessageSeverity get severity => _severity;
   String get message => _message;
   String get dismissLabel => _dismissLabel;

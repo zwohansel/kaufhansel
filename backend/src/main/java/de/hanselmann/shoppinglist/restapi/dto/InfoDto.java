@@ -10,14 +10,20 @@ public class InfoDto {
     }
 
     public static class InfoMessageDto {
+        private final int messageNumber;
         private final SeverityDto severity;
         private final String message;
         private final String dismissLabel;
 
-        public InfoMessageDto(SeverityDto severity, String message, String dismissLabel) {
+        public InfoMessageDto(int messageNumber, SeverityDto severity, String message, String dismissLabel) {
+            this.messageNumber = messageNumber;
             this.severity = severity;
             this.message = message;
             this.dismissLabel = dismissLabel;
+        }
+
+        public int getMessageNumber() {
+            return messageNumber;
         }
 
         public SeverityDto getSeverity() {
