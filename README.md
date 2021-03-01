@@ -1,8 +1,6 @@
 # Kaufhansel
 
-![Build Flutter FrontEnd](https://github.com/zwohansel/kaufhansel/workflows/Build%20Flutter%20FrontEnd/badge.svg)
-
-![Build Backend and Web FrontEnd](https://github.com/zwohansel/kaufhansel/workflows/Build%20Backend%20and%20Web%20FrontEnd/badge.svg)
+[![Build & Deploy](https://github.com/zwohansel/kaufhansel/actions/workflows/build.yml/badge.svg)](https://github.com/zwohansel/kaufhansel/actions/workflows/build.yml)
 
 Create shopping lists and share them with your friends.
 
