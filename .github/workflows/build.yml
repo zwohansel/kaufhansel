@@ -38,6 +38,12 @@ jobs:
       - name: Install Build Tools
         run: sudo apt-get update && sudo apt-get install ninja-build pkg-config libgtk-3-dev libblkid-dev liblzma-dev
 
+      - name: Prepare Android Upload Key
+        run: |
+          echo "${{ secrets.ANDROID_UPLOAD_KEY_PROPERTIES }}" > ${{runner.workspace}}/kaufhansel/flutter_frontend/android/key.properties
+          echo "${{ secrets.ANDROID_UPLOAD_KEY }}" > ${{runner.workspace}}/upload_key_base64
+          base64 -d ${{runner.workspace}}/upload_key_base64 > ${{runner.workspace}}/kaufhansel/flutter_frontend/android/upload_key.jks
+
       - name: Build Flutter Frontend
         uses: subosito/flutter-action@v1.4.0
         with:
@@ -47,12 +53,12 @@ jobs:
       - run: flutter pub get
       - run: flutter test
       - run: flutter build linux --release --split-debug-info=build/debuginfo/linux/
-      - run: flutter build apk --release --split-debug-info=build/debuginfo/android/ --build-name ${{env.kaufhansel_version}} --build-number $GITHUB_RUN_NUMBER
+      - run: flutter build appbundle --release --split-debug-info=build/debuginfo/android/ --build-name ${{env.kaufhansel_version}} --build-number $GITHUB_RUN_NUMBER
         
       - uses: actions/upload-artifact@v2
         with:
           name: frontend-android
-          path: ${{runner.workspace}}/kaufhansel/flutter_frontend/build/app/outputs/flutter-apk/app-release.apk
+          path: ${{runner.workspace}}/kaufhansel/flutter_frontend/build/app/outputs/bundle/app-release.aab
           if-no-files-found: error
           
       - uses: actions/upload-artifact@v2
@@ -60,6 +66,17 @@ jobs:
           name: frontend-linux
           path: ${{runner.workspace}}/kaufhansel/flutter_frontend/build/linux/x64/release/bundle/
           if-no-files-found: error
+
+      uses: r0adkll/upload-google-play@v1
+      with:
+        serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_KEY_JSON }}
+        packageName: de.zwohansel.kaufhansel.kaufhansel_client
+        releaseFile: ${{runner.workspace}}/kaufhansel/flutter_frontend/build/app/outputs/bundle/app-release.aab
+        track: internal
+        inAppUpdatePriority: 2
+        #userFraction: 0.33
+        #whatsNewDirectory: distribution/whatsnew
+        mappingFile: ${{runner.workspace}}/kaufhansel/flutter_frontend/build/app/outputs/mapping/release/mapping.txt
 
 
   build_backend:
