@@ -146,12 +146,11 @@ jobs:
 
       - name: Deploy
         run: |
-          tree .
           ssh deploy 'cp /opt/kaufhansel/kaufhansel_backend.jar /opt/kaufhansel/kaufhansel_backend.jar.bak'
           scp build/libs/kaufhansel_backend.jar deploy:/opt/kaufhansel/kaufhansel_backend.jar
           ssh deploy 'chown kaufhansel_deploybot:kaufhansel_admin /opt/kaufhansel/kaufhansel_backend.jar'
 
-          scp app-release.aab deploy:/opt/kaufhansel/downloads/kaufhansel.aab
+          scp bundle/release/app-release.aab deploy:/opt/kaufhansel/downloads/kaufhansel.aab
           ssh deploy 'chown kaufhansel_deploybot:kaufhansel_admin /opt/kaufhansel/downloads/kaufhansel.aab'
 
           mv frontend-linux kaufhansel-linux
@@ -165,10 +164,10 @@ jobs:
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_KEY_JSON }}
           packageName: de.zwohansel.kaufhansel.kaufhansel_client
-          releaseFiles: app-release.aab
+          releaseFiles: bundle/release/app-release.aab
           track: internal
           inAppUpdatePriority: 2
           #userFraction: 0.33
           #whatsNewDirectory: distribution/whatsnew
-          mappingFile: mapping.txt
+          mappingFile: mapping/release/mapping.txt
 
