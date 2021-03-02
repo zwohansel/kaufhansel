@@ -58,7 +58,9 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: frontend-android
-          path: ${{runner.workspace}}/kaufhansel/flutter_frontend/build/app/outputs/bundle/release/app-release.aab
+          path: |
+            ${{runner.workspace}}/kaufhansel/flutter_frontend/build/app/outputs/bundle/release/app-release.aab
+            ${{runner.workspace}}/kaufhansel/flutter_frontend/build/app/outputs/mapping/release/mapping.txt
           if-no-files-found: error
           
       - uses: actions/upload-artifact@v2
@@ -66,17 +68,6 @@ jobs:
           name: frontend-linux
           path: ${{runner.workspace}}/kaufhansel/flutter_frontend/build/linux/x64/release/bundle/
           if-no-files-found: error
-
-      - uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_KEY_JSON }}
-          packageName: de.zwohansel.kaufhansel.kaufhansel_client
-          releaseFiles: ${{runner.workspace}}/kaufhansel/flutter_frontend/build/app/outputs/bundle/release/app-release.aab
-          track: internal
-          inAppUpdatePriority: 2
-          #userFraction: 0.33
-          #whatsNewDirectory: distribution/whatsnew
-          mappingFile: ${{runner.workspace}}/kaufhansel/flutter_frontend/build/app/outputs/mapping/release/mapping.txt
 
 
   build_backend:
@@ -155,13 +146,13 @@ jobs:
 
       - name: Deploy
         run: |
+          tree .
           ssh deploy 'cp /opt/kaufhansel/kaufhansel_backend.jar /opt/kaufhansel/kaufhansel_backend.jar.bak'
           scp build/libs/kaufhansel_backend.jar deploy:/opt/kaufhansel/kaufhansel_backend.jar
           ssh deploy 'chown kaufhansel_deploybot:kaufhansel_admin /opt/kaufhansel/kaufhansel_backend.jar'
 
-          ssh deploy 'cp /opt/kaufhansel/downloads/kaufhansel.apk /opt/kaufhansel/downloads/kaufhansel.apk.bak'
-          scp app-release.apk deploy:/opt/kaufhansel/downloads/kaufhansel.apk
-          ssh deploy 'chown kaufhansel_deploybot:kaufhansel_admin /opt/kaufhansel/downloads/kaufhansel.apk'
+          scp app-release.aab deploy:/opt/kaufhansel/downloads/kaufhansel.aab
+          ssh deploy 'chown kaufhansel_deploybot:kaufhansel_admin /opt/kaufhansel/downloads/kaufhansel.aab'
 
           mv frontend-linux kaufhansel-linux
           zip -r kaufhansel-linux.zip kaufhansel-linux/
@@ -169,4 +160,15 @@ jobs:
           ssh deploy 'chown kaufhansel_deploybot:kaufhansel_admin /opt/kaufhansel/downloads/kaufhansel-linux.zip'
 
           ssh deploy 'sudo systemctl restart kaufhansel'
+
+      - uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_KEY_JSON }}
+          packageName: de.zwohansel.kaufhansel.kaufhansel_client
+          releaseFiles: app-release.aab
+          track: internal
+          inAppUpdatePriority: 2
+          #userFraction: 0.33
+          #whatsNewDirectory: distribution/whatsnew
+          mappingFile: mapping.txt
 
