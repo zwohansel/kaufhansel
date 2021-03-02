@@ -22,6 +22,14 @@
   "refresh": "Aktualisieren",
   "settings": "Einstellungen",
 
+  "registrationConsentFirstPart": "Ich habe die ",
+  "registrationConsentPrivacy": "Datenschutzerklärung",
+  "registrationConsentPrivacyLink": "https://zwohansel.de/kaufhansel/privacy_de.html",
+  "registrationConsentMiddlePart": " zur Kenntnis genommen und stimme dem ",
+  "registrationConsentDisclaimer": "Haftungsausschluss",
+  "registrationConsentDisclaimerLink": "https://zwohansel.de/kaufhansel/disclaimer.html",
+  "registrationConsentLastPart": " zu.",
+
   "roleAdminName": "Chefhansel",
   "roleAdminDescription": "Darf alles: Dinge hinzufügen und entfernen, Haken setzen und entfernen. Darf neue Hansel zur Liste hinzufügen.\nEinmal Chefhansel, immer Chefhansel: diese Rolle kannst du nicht mehr ändern",
   "roleReadWriteName": "Schreibhansel",

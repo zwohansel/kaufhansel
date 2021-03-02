@@ -3,7 +3,9 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
@@ -13,6 +15,7 @@ import 'package:kaufhansel_client/settings/settings_store_widget.dart';
 import 'package:kaufhansel_client/utils/input_validation.dart';
 import 'package:kaufhansel_client/utils/update_check.dart';
 import 'package:kaufhansel_client/widgets/link.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'widgets/error_dialog.dart';
 
@@ -54,6 +57,8 @@ class _LoginPageState extends State<LoginPage> {
   final _setPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _resetPasswordCodeController = TextEditingController();
+
+  final _tapRecognizer = TapGestureRecognizer();
 
   _PageMode _pageMode = _PageMode.LOGIN;
 
@@ -99,6 +104,7 @@ class _LoginPageState extends State<LoginPage> {
     _setPasswordController.dispose();
     _confirmPasswordController.dispose();
     _resetPasswordCodeController.dispose();
+    _tapRecognizer.dispose();
     super.dispose();
   }
 
@@ -475,6 +481,56 @@ class _LoginPageState extends State<LoginPage> {
               return null;
             },
             onFieldSubmitted: (_) => _registerFull(),
+          ),
+          SizedBox(
+            height: 10,
+          ),
+          FormField<bool>(
+            validator: (checked) {
+              if (!checked) {
+                return "";
+              }
+              return null;
+            },
+            initialValue: false,
+            builder: (FormFieldState<bool> state) {
+              final textStyle = state.hasError
+                  ? TextStyle(color: Theme.of(context).errorColor)
+                  : Theme.of(context).textTheme.bodyText1;
+
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Checkbox(
+                    value: state.value,
+                    onChanged: state.didChange,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  SizedBox(width: 10),
+                  Flexible(
+                    child: RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(text: AppLocalizations.of(context).registrationConsentFirstPart, style: textStyle),
+                          TextSpan(
+                              text: AppLocalizations.of(context).registrationConsentPrivacy,
+                              style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+                              recognizer: _tapRecognizer
+                                ..onTap = () => launch(AppLocalizations.of(context).registrationConsentPrivacyLink)),
+                          TextSpan(text: AppLocalizations.of(context).registrationConsentMiddlePart, style: textStyle),
+                          TextSpan(
+                              text: AppLocalizations.of(context).registrationConsentDisclaimer,
+                              style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+                              recognizer: _tapRecognizer
+                                ..onTap = () => launch(AppLocalizations.of(context).registrationConsentDisclaimerLink)),
+                          TextSpan(text: AppLocalizations.of(context).registrationConsentLastPart, style: textStyle),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
           Padding(
               padding: EdgeInsets.only(top: 15),

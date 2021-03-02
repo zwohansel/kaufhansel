@@ -245,6 +245,76 @@ class AppLocalizations {
     );
   }
 
+  /// `Ich habe die `
+  String get registrationConsentFirstPart {
+    return Intl.message(
+      'Ich habe die ',
+      name: 'registrationConsentFirstPart',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Datenschutzerklärung`
+  String get registrationConsentPrivacy {
+    return Intl.message(
+      'Datenschutzerklärung',
+      name: 'registrationConsentPrivacy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `https://zwohansel.de/kaufhansel/privacy_de.html`
+  String get registrationConsentPrivacyLink {
+    return Intl.message(
+      'https://zwohansel.de/kaufhansel/privacy_de.html',
+      name: 'registrationConsentPrivacyLink',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// ` zur Kenntnis genommen und stimme dem `
+  String get registrationConsentMiddlePart {
+    return Intl.message(
+      ' zur Kenntnis genommen und stimme dem ',
+      name: 'registrationConsentMiddlePart',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Haftungsausschluss`
+  String get registrationConsentDisclaimer {
+    return Intl.message(
+      'Haftungsausschluss',
+      name: 'registrationConsentDisclaimer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `https://zwohansel.de/kaufhansel/disclaimer.html`
+  String get registrationConsentDisclaimerLink {
+    return Intl.message(
+      'https://zwohansel.de/kaufhansel/disclaimer.html',
+      name: 'registrationConsentDisclaimerLink',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// ` zu.`
+  String get registrationConsentLastPart {
+    return Intl.message(
+      ' zu.',
+      name: 'registrationConsentLastPart',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Chefhansel`
   String get roleAdminName {
     return Intl.message(
