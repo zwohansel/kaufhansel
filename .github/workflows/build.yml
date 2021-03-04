@@ -53,12 +53,14 @@ jobs:
       - run: flutter pub get
       - run: flutter test
       - run: flutter build linux --release --split-debug-info=build/debuginfo/linux/
+      - run: flutter build apk --release --split-debug-info=build/debuginfo/android/ --build-name ${{env.kaufhansel_version}} --build-number $GITHUB_RUN_NUMBER
       - run: flutter build appbundle --release --split-debug-info=build/debuginfo/android/ --build-name ${{env.kaufhansel_version}} --build-number $GITHUB_RUN_NUMBER
         
       - uses: actions/upload-artifact@v2
         with:
           name: frontend-android
           path: |
+            ${{runner.workspace}}/kaufhansel/flutter_frontend/build/app/outputs/flutter-apk/app-release.apk
             ${{runner.workspace}}/kaufhansel/flutter_frontend/build/app/outputs/bundle/release/app-release.aab
             ${{runner.workspace}}/kaufhansel/flutter_frontend/build/app/outputs/mapping/release/mapping.txt
           if-no-files-found: error
@@ -150,8 +152,9 @@ jobs:
           scp build/libs/kaufhansel_backend.jar deploy:/opt/kaufhansel/kaufhansel_backend.jar
           ssh deploy 'chown kaufhansel_deploybot:kaufhansel_admin /opt/kaufhansel/kaufhansel_backend.jar'
 
-          scp bundle/release/app-release.aab deploy:/opt/kaufhansel/downloads/kaufhansel.aab
-          ssh deploy 'chown kaufhansel_deploybot:kaufhansel_admin /opt/kaufhansel/downloads/kaufhansel.aab'
+          ssh deploy 'cp /opt/kaufhansel/downloads/kaufhansel.apk /opt/kaufhansel/downloads/kaufhansel.apk.bak'
+          scp flutter-apk/app-release.apk deploy:/opt/kaufhansel/downloads/kaufhansel.apk
+          ssh deploy 'chown kaufhansel_deploybot:kaufhansel_admin /opt/kaufhansel/downloads/kaufhansel.apk'
 
           mv frontend-linux kaufhansel-linux
           zip -r kaufhansel-linux.zip kaufhansel-linux/
