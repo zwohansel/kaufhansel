@@ -51,11 +51,17 @@ jobs:
   
       - run: flutter config --enable-linux-desktop
       - run: flutter pub get
-      - run: flutter test
+      - run: flutter test --coverage
       - run: flutter build linux --release --split-debug-info=build/debuginfo/linux/
       - run: flutter build apk --release --split-debug-info=build/debuginfo/android/ --build-name ${{env.kaufhansel_version}} --build-number $GITHUB_RUN_NUMBER
       - run: flutter build appbundle --release --split-debug-info=build/debuginfo/android/ --build-name ${{env.kaufhansel_version}} --build-number $GITHUB_RUN_NUMBER
         
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.COVERALLS_GITHUB_TOKEN }}
+          path-to-lcov: coverage/lcov.info
+
       - uses: actions/upload-artifact@v2
         with:
           name: frontend-android
