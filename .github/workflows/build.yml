@@ -61,6 +61,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: ${{runner.workspace}}/kaufhansel/flutter_frontend/coverage/lcov.info
+          base-path: ${{runner.workspace}}/kaufhansel/flutter_frontend/
 
       - uses: actions/upload-artifact@v2
         with:
