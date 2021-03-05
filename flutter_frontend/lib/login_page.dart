@@ -24,7 +24,7 @@ class LoginPage extends StatefulWidget {
   final Update _update;
   final void Function(ShoppingListUserInfo) _loggedIn;
 
-  const LoginPage({@required void Function(ShoppingListUserInfo) loggedIn, enabled = true, Update update})
+  const LoginPage({@required void Function(ShoppingListUserInfo) loggedIn, @required Update update, enabled = true})
       : _loggedIn = loggedIn,
         _update = update,
         _enabled = enabled;

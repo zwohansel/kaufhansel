@@ -35,7 +35,7 @@ class RestClient {
   HttpClient _httpClient;
   String _token;
   final Uri _serverUrl;
-  final Duration timeout = Duration(seconds: 10);
+  final Duration _timeout = Duration(seconds: 10);
 
   RestClient(this._serverUrl) : _httpClient = HttpClient() {
     //accept self signed certificates in debug mode
@@ -57,7 +57,7 @@ class RestClient {
     final request = await _httpClient.postUrl(_serverUrl.resolve("user/login"));
     request.headers.contentType = ContentType.json;
     request.write(body);
-    final response = await request.close().timeout(timeout);
+    final response = await request.close().timeout(_timeout);
 
     if (response.statusCode == 200) {
       final String decoded = await response.transform(utf8.decoder).join();
@@ -70,9 +70,9 @@ class RestClient {
   }
 
   Future<List<ShoppingListInfo>> getShoppingLists() async {
-    var request = await _httpClient.getUrl(_serverUrl.resolve("shoppinglists")).timeout(timeout);
+    var request = await _httpClient.getUrl(_serverUrl.resolve("shoppinglists")).timeout(_timeout);
     _addAuthHeader(request);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode == 200) {
       final String decoded = await response.transform(utf8.decoder).join();
@@ -88,10 +88,10 @@ class RestClient {
   }
 
   Future<List<ShoppingListItem>> fetchShoppingList(String shoppingListId) async {
-    var request = await _httpClient.getUrl(_serverUrl.resolve("shoppinglist/$shoppingListId")).timeout(timeout);
+    var request = await _httpClient.getUrl(_serverUrl.resolve("shoppinglist/$shoppingListId")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
     _addAuthHeader(request);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode == 200) {
       final String decoded = await response.transform(utf8.decoder).join();
@@ -110,11 +110,11 @@ class RestClient {
   Future<ShoppingListItem> createShoppingListItem(String shoppingListId, String name, String category) async {
     final body = jsonEncode({'name': name, 'category': category});
 
-    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId")).timeout(timeout);
+    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
     _addAuthHeader(request);
     request.write(body);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode == 200) {
       final decoded = await response.transform(utf8.decoder).join();
@@ -130,9 +130,9 @@ class RestClient {
   Future<void> deleteShoppingListItem(String shoppingListId, ShoppingListItem item) async {
     var request = await _httpClient
         .deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/item/${item.id}"))
-        .timeout(timeout);
+        .timeout(_timeout);
     _addAuthHeader(request);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
       throw HttpResponseException(
@@ -146,11 +146,11 @@ class RestClient {
     final body = jsonEncode({'name': item.name, 'checked': item.checked, 'category': item.category});
 
     var request =
-        await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/item/${item.id}")).timeout(timeout);
+        await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/item/${item.id}")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
     _addAuthHeader(request);
     request.write(body);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
       throw HttpResponseException(
@@ -164,11 +164,11 @@ class RestClient {
     final body = jsonEncode({'itemId': item.id, 'targetIndex': targetIndex});
 
     var request =
-        await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/moveitem")).timeout(timeout);
+        await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/moveitem")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
     _addAuthHeader(request);
     request.write(body);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
       throw HttpResponseException(
@@ -181,11 +181,11 @@ class RestClient {
   Future<ShoppingListInfo> createShoppingList(String shoppingListName) async {
     final body = jsonEncode({'name': shoppingListName});
 
-    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist")).timeout(timeout);
+    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
     _addAuthHeader(request);
     request.write(body);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode == 200) {
       final String decoded = await response.transform(utf8.decoder).join();
@@ -197,9 +197,9 @@ class RestClient {
   }
 
   Future<void> deleteShoppingList(String shoppingListId) async {
-    var request = await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId")).timeout(timeout);
+    var request = await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId")).timeout(_timeout);
     _addAuthHeader(request);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
       throw HttpResponseException(response.statusCode, message: "Failed to delete list $shoppingListId");
@@ -209,11 +209,11 @@ class RestClient {
   Future<Optional<ShoppingListUserReference>> addUserToShoppingList(
       String shoppingListId, String userEmailAddress) async {
     final body = jsonEncode({'emailAddress': userEmailAddress});
-    var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/user")).timeout(timeout);
+    var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/user")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
     _addAuthHeader(request);
     request.write(body);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode == 200) {
       final String decoded = await response.transform(utf8.decoder).join();
@@ -230,9 +230,9 @@ class RestClient {
 
   Future<void> removeUserFromShoppingList(String shoppingListId, String userId) async {
     var request =
-        await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/user/$userId")).timeout(timeout);
+        await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/user/$userId")).timeout(_timeout);
     _addAuthHeader(request);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
       throw HttpResponseException(
@@ -244,9 +244,9 @@ class RestClient {
 
   Future<void> uncheckAllItems(String shoppingListId) async {
     var request =
-        await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/uncheckallitems")).timeout(timeout);
+        await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/uncheckallitems")).timeout(_timeout);
     _addAuthHeader(request);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
       throw HttpResponseException(
@@ -259,9 +259,9 @@ class RestClient {
   Future<void> removeAllCategories(String shoppingListId) async {
     var request = await _httpClient
         .postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/removeallcategories"))
-        .timeout(timeout);
+        .timeout(_timeout);
     _addAuthHeader(request);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
       throw HttpResponseException(
@@ -272,9 +272,9 @@ class RestClient {
   }
 
   Future<void> removeAllItems(String shoppingListId) async {
-    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/clear")).timeout(timeout);
+    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/clear")).timeout(_timeout);
     _addAuthHeader(request);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
       throw HttpResponseException(
@@ -288,11 +288,11 @@ class RestClient {
       String shoppingListId, String affectedUserId, ShoppingListRole newRole) async {
     final body = jsonEncode({'userId': affectedUserId, 'role': newRole.toRoleString()});
     var request =
-        await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/permissions")).timeout(timeout);
+        await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/permissions")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
     _addAuthHeader(request);
     request.write(body);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode == 200) {
       final String decoded = await response.transform(utf8.decoder).join();
@@ -307,11 +307,11 @@ class RestClient {
 
   Future<void> changeShoppingListName(String shoppingListId, String newName) async {
     final body = jsonEncode({'name': newName});
-    var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/name")).timeout(timeout);
+    var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/name")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
     _addAuthHeader(request);
     request.write(body);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
       throw HttpResponseException(response.statusCode, message: 'Failed to rename list $shoppingListId to $newName');
@@ -319,8 +319,8 @@ class RestClient {
   }
 
   Future<RegistrationProcessType> checkInviteCode(String inviteCode) async {
-    var request = await _httpClient.getUrl(_serverUrl.resolve("user/register/type/$inviteCode")).timeout(timeout);
-    var response = await request.close().timeout(timeout);
+    var request = await _httpClient.getUrl(_serverUrl.resolve("user/register/type/$inviteCode")).timeout(_timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode == 200) {
       final String decoded = await response.transform(utf8.decoder).join();
@@ -336,10 +336,10 @@ class RestClient {
     final body = jsonEncode(
         {'userName': userName, 'emailAddress': emailAddress, 'password': password, 'inviteCode': inviteCode});
 
-    var request = await _httpClient.postUrl(_serverUrl.resolve("user/register")).timeout(timeout);
+    var request = await _httpClient.postUrl(_serverUrl.resolve("user/register")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
     request.write(body);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode == 200) {
       final String decoded = await response.transform(utf8.decoder).join();
@@ -351,9 +351,9 @@ class RestClient {
   }
 
   Future<String> generateInviteCode() async {
-    var request = await _httpClient.getUrl(_serverUrl.resolve("user/invite")).timeout(timeout);
+    var request = await _httpClient.getUrl(_serverUrl.resolve("user/invite")).timeout(_timeout);
     _addAuthHeader(request);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode == 200) {
       final String decoded = await response.transform(utf8.decoder).join();
@@ -367,11 +367,11 @@ class RestClient {
   Future<void> sendInvite(String emailAddress, {String shoppingListId}) async {
     final body = jsonEncode({'emailAddress': emailAddress, 'shoppingListId': shoppingListId});
 
-    var request = await _httpClient.postUrl(_serverUrl.resolve("user/invite")).timeout(timeout);
+    var request = await _httpClient.postUrl(_serverUrl.resolve("user/invite")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
     _addAuthHeader(request);
     request.write(body);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
       throw HttpResponseException(response.statusCode,
@@ -380,8 +380,8 @@ class RestClient {
   }
 
   Future<BackendInfo> getBackendInfo() async {
-    var request = await _httpClient.getUrl(_serverUrl.resolve("info")).timeout(timeout);
-    var response = await request.close().timeout(timeout);
+    var request = await _httpClient.getUrl(_serverUrl.resolve("info")).timeout(_timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode == 200) {
       final String decoded = await response.transform(utf8.decoder).join();
@@ -394,10 +394,10 @@ class RestClient {
   Future<void> requestPasswordReset(String emailAddress) async {
     final body = jsonEncode({'emailAddress': emailAddress});
 
-    var request = await _httpClient.postUrl(_serverUrl.resolve("user/password/requestreset")).timeout(timeout);
+    var request = await _httpClient.postUrl(_serverUrl.resolve("user/password/requestreset")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
     request.write(body);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 200) {
       throw HttpResponseException(
@@ -410,10 +410,10 @@ class RestClient {
   Future<void> resetPassword(String emailAddress, String resetCode, String password) async {
     final body = jsonEncode({'emailAddress': emailAddress, 'resetCode': resetCode, 'password': password});
 
-    var request = await _httpClient.postUrl(_serverUrl.resolve("user/password/reset")).timeout(timeout);
+    var request = await _httpClient.postUrl(_serverUrl.resolve("user/password/reset")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
     request.write(body);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 200) {
       throw HttpResponseException(
@@ -424,9 +424,9 @@ class RestClient {
   }
 
   Future<void> deleteAccount(String userId) async {
-    var request = await _httpClient.deleteUrl(_serverUrl.resolve("user/$userId")).timeout(timeout);
+    var request = await _httpClient.deleteUrl(_serverUrl.resolve("user/$userId")).timeout(_timeout);
     _addAuthHeader(request);
-    var response = await request.close().timeout(timeout);
+    var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
       throw HttpResponseException(
