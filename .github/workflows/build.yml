@@ -60,7 +60,7 @@ jobs:
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.COVERALLS_GITHUB_TOKEN }}
-          path-to-lcov: coverage/lcov.info
+          path-to-lcov: ${{runner.workspace}}/kaufhansel/flutter_frontend/coverage/lcov.info
 
       - uses: actions/upload-artifact@v2
         with:
