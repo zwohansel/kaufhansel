@@ -49,8 +49,8 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   static const _serverUrl = kDebugMode ? "https://localhost:8080/api/" : "https://zwohansel.de/kaufhansel/api/";
   final SettingsStore _settingsStore = SettingsStore();
   RestClient _client = RestClient(Uri.parse(_serverUrl));
-  ShoppingListFilterOption _filter = ShoppingListFilterOption.ALL;
-  ShoppingListMode _mode = ShoppingListMode.DEFAULT;
+  ShoppingListFilterOption _filter = ShoppingListFilterOption.ALL; // TODO: use
+  ShoppingListMode _mode = ShoppingListMode.DEFAULT; // TODO: use
 
   String _error;
   List<ShoppingListInfo> _shoppingListInfos;
@@ -318,12 +318,8 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
             ),
             endDrawer: ShoppingListDrawer(
                 onRefreshPressed: _fetchShoppingListInfos,
-                filter: _filter,
-                onFilterChanged: _setFilter,
-                mode: _mode,
-                onModeChanged: _setMode,
                 shoppingLists: _shoppingListInfos,
-                selectedShoppingListId: _currentShoppingList?.id,
+                selectedShoppingListId: _currentShoppingListInfo?.id,
                 onShoppingListSelected: _selectShoppingList,
                 onCreateShoppingList: _createShoppingList,
                 onDeleteShoppingList: _deleteShoppingList,

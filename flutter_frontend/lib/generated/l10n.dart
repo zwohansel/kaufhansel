@@ -175,6 +175,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Ja`
+  String get yes {
+    return Intl.message(
+      'Ja',
+      name: 'yes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nein`
+  String get no {
+    return Intl.message(
+      'Nein',
+      name: 'no',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Abbrechen`
   String get cancel {
     return Intl.message(
@@ -225,21 +245,31 @@ class AppLocalizations {
     );
   }
 
-  /// `Aktualisieren`
+  /// `Auffrischen`
   String get refresh {
     return Intl.message(
-      'Aktualisieren',
+      'Auffrischen',
       name: 'refresh',
       desc: '',
       args: [],
     );
   }
 
-  /// `Einstellungen`
-  String get settings {
+  /// `App-Einstellungen`
+  String get appSettings {
     return Intl.message(
-      'Einstellungen',
-      name: 'settings',
+      'App-Einstellungen',
+      name: 'appSettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mehr Listeneinstellungen...`
+  String get listSettings {
+    return Intl.message(
+      'Mehr Listeneinstellungen...',
+      name: 'listSettings',
       desc: '',
       args: [],
     );
@@ -765,6 +795,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Meine Listen`
+  String get shoppingListMyLists {
+    return Intl.message(
+      'Meine Listen',
+      name: 'shoppingListMyLists',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `🌽🥦🧀`
   String get shoppingListEmpty {
     return Intl.message(
@@ -795,11 +835,41 @@ class AppLocalizations {
     );
   }
 
-  /// `Neue Liste`
+  /// `Neue Liste...`
   String get shoppingListCreateNew {
     return Intl.message(
-      'Neue Liste',
+      'Neue Liste...',
       name: 'shoppingListCreateNew',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Neue Liste anlegen`
+  String get shoppingListCreateNewTitle {
+    return Intl.message(
+      'Neue Liste anlegen',
+      name: 'shoppingListCreateNewTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Anlegen`
+  String get shoppingListCreateNewConfirm {
+    return Intl.message(
+      'Anlegen',
+      name: 'shoppingListCreateNewConfirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Gib einen Namen ein`
+  String get shoppingListCreateNewEnterNameHint {
+    return Intl.message(
+      'Gib einen Namen ein',
+      name: 'shoppingListCreateNewEnterNameHint',
       desc: '',
       args: [],
     );
@@ -1005,43 +1075,43 @@ class AppLocalizations {
     );
   }
 
-  /// `Alle Häckchen entfernen`
+  /// `Alle Häkchen entfernen...`
   String get listSettingsUncheckAllItems {
     return Intl.message(
-      'Alle Häckchen entfernen',
+      'Alle Häkchen entfernen...',
       name: 'listSettingsUncheckAllItems',
       desc: '',
       args: [],
     );
   }
 
-  /// `Alle Häckchen in {shoppingListName} wurden entfernt.`
-  String listSettingsAllItemsUnchecked(Object shoppingListName) {
+  /// `Möchtest du wirklich alle Häkchen entfernen?`
+  String get listSettingsUncheckAllItemsConfirmationText {
     return Intl.message(
-      'Alle Häckchen in $shoppingListName wurden entfernt.',
-      name: 'listSettingsAllItemsUnchecked',
+      'Möchtest du wirklich alle Häkchen entfernen?',
+      name: 'listSettingsUncheckAllItemsConfirmationText',
       desc: '',
-      args: [shoppingListName],
+      args: [],
     );
   }
 
-  /// `Alle Kategorien entfernen`
+  /// `Alle Kategorien entfernen...`
   String get listSettingsClearAllCategories {
     return Intl.message(
-      'Alle Kategorien entfernen',
+      'Alle Kategorien entfernen...',
       name: 'listSettingsClearAllCategories',
       desc: '',
       args: [],
     );
   }
 
-  /// `Alle Kategorien in {shoppingListName} wurden entfernt.`
-  String listSettingsAllCategoriesCleared(Object shoppingListName) {
+  /// `Möchtest du wirklich alle Kategorien entfernen?`
+  String get listSettingsClearAllCategoriesConfirmationText {
     return Intl.message(
-      'Alle Kategorien in $shoppingListName wurden entfernt.',
-      name: 'listSettingsAllCategoriesCleared',
+      'Möchtest du wirklich alle Kategorien entfernen?',
+      name: 'listSettingsClearAllCategoriesConfirmationText',
       desc: '',
-      args: [shoppingListName],
+      args: [],
     );
   }
 
@@ -1480,6 +1550,16 @@ class AppLocalizations {
     return Intl.message(
       'Die Abmeldung hat nicht funktioniert...',
       name: 'exceptionLogOutFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ist der Speicher voll oder hast du einen Fehler beim Anlegen der Liste gemacht?`
+  String get exceptionListCreationFailed {
+    return Intl.message(
+      'Ist der Speicher voll oder hast du einen Fehler beim Anlegen der Liste gemacht?',
+      name: 'exceptionListCreationFailed',
       desc: '',
       args: [],
     );

@@ -13,19 +13,13 @@ class InfoCard extends StatefulWidget {
   final void Function(bool) _setLoading;
   final bool _loading;
 
-  final Future<void> Function() _onUncheckAllItems;
-  final Future<void> Function() _onRemoveAllCategories;
   final Future<void> Function() _onRemoveAllItems;
   final Future<void> Function(String) _onChangeShoppingListName;
 
   const InfoCard(this._shoppingListInfo, this._loading, this._setLoading,
-      {@required Future<void> Function() onUncheckAllItems,
-      @required Future<void> Function() onRemoveAllCategories,
-      @required Future<void> Function() onRemoveAllItems,
+      {@required Future<void> Function() onRemoveAllItems,
       @required Future<void> Function(String) onChangeShoppingListName})
-      : _onUncheckAllItems = onUncheckAllItems,
-        _onRemoveAllCategories = onRemoveAllCategories,
-        _onRemoveAllItems = onRemoveAllItems,
+      : _onRemoveAllItems = onRemoveAllItems,
         _onChangeShoppingListName = onChangeShoppingListName;
 
   @override
@@ -49,20 +43,6 @@ class _InfoCardState extends State<InfoCard> {
                   onSubmit: (text) => _submitNewShoppingListName(text)),
               SizedBox(height: 12),
               OutlinedButton(
-                onPressed: widget._loading || !widget._shoppingListInfo.permissions.canCheckItems
-                    ? null
-                    : _onUncheckAllItemsPressed,
-                child: Text(AppLocalizations.of(context).listSettingsUncheckAllItems),
-              ),
-              SizedBox(height: 6),
-              OutlinedButton(
-                onPressed: widget._loading || !widget._shoppingListInfo.permissions.canEditItems
-                    ? null
-                    : _onRemoveAllCategoriesPressed,
-                child: Text(AppLocalizations.of(context).listSettingsClearAllCategories),
-              ),
-              SizedBox(height: 6),
-              OutlinedButton(
                 onPressed: widget._loading || !widget._shoppingListInfo.permissions.canEditItems
                     ? null
                     : _onRemoveAllItemsPressed,
@@ -71,35 +51,6 @@ class _InfoCardState extends State<InfoCard> {
             ],
           )),
     );
-  }
-
-  void _onUncheckAllItemsPressed() async {
-    widget._setLoading(true);
-    try {
-      await widget._onUncheckAllItems();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(AppLocalizations.of(context).listSettingsAllItemsUnchecked(widget._shoppingListInfo.name)),
-          duration: Duration(seconds: 1)));
-    } catch (e) {
-      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralServerTooLazy);
-    } finally {
-      widget._setLoading(false);
-    }
-  }
-
-  void _onRemoveAllCategoriesPressed() async {
-    widget._setLoading(true);
-    try {
-      await widget._onRemoveAllCategories();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(AppLocalizations.of(context).listSettingsAllCategoriesCleared(widget._shoppingListInfo.name)),
-          duration: Duration(seconds: 1)));
-    } catch (e) {
-      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralServerTooLazy);
-    } finally {
-      widget._setLoading(false);
-    }
-    widget._setLoading(false);
   }
 
   void _onRemoveAllItemsPressed() async {

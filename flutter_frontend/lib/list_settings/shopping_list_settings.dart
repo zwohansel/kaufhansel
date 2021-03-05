@@ -10,16 +10,12 @@ import 'package:provider/provider.dart';
 class ShoppingListSettings extends StatefulWidget {
   const ShoppingListSettings(
       {@required Future<void> Function() onDeleteShoppingList,
-      @required Future<void> Function() onUncheckAllItems,
-      @required Future<void> Function() onRemoveAllCategories,
       @required Future<void> Function() onRemoveAllItems,
       @required Future<bool> Function(String) onAddUserToShoppingListIfPresent,
       @required Future<void> Function(String, ShoppingListRole) onChangeShoppingListPermissions,
       @required Future<void> Function(ShoppingListUserReference) onRemoveUserFromShoppingList,
       @required Future<void> Function(String) onChangeShoppingListName})
       : _onDeleteShoppingList = onDeleteShoppingList,
-        _onUncheckAllItems = onUncheckAllItems,
-        _onRemoveAllCategories = onRemoveAllCategories,
         _onRemoveAllItems = onRemoveAllItems,
         _onAddUserToShoppingListIfPresent = onAddUserToShoppingListIfPresent,
         _onRemoveUserFromShoppingList = onRemoveUserFromShoppingList,
@@ -27,8 +23,6 @@ class ShoppingListSettings extends StatefulWidget {
         _onChangeShoppingListName = onChangeShoppingListName;
 
   final Future<void> Function() _onDeleteShoppingList;
-  final Future<void> Function() _onUncheckAllItems;
-  final Future<void> Function() _onRemoveAllCategories;
   final Future<void> Function() _onRemoveAllItems;
   final Future<bool> Function(String) _onAddUserToShoppingListIfPresent;
   final Future<void> Function(ShoppingListUserReference) _onRemoveUserFromShoppingList;
@@ -76,9 +70,7 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                                       _loading,
                                       _setLoading,
                                       onChangeShoppingListName: widget._onChangeShoppingListName,
-                                      onRemoveAllCategories: widget._onRemoveAllCategories,
                                       onRemoveAllItems: widget._onRemoveAllItems,
-                                      onUncheckAllItems: widget._onUncheckAllItems,
                                     ),
                                     SizedBox(height: 12),
                                     ShareListCard(

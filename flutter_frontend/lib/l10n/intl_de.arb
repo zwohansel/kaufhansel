@@ -14,13 +14,16 @@
   "thatsJustHowItIs": "Ist dann halt schon so...",
   "important": "Achtung!",
   "ok": "Ok",
+  "yes": "Ja",
+  "no": "Nein",
   "cancel": "Abbrechen",
   "close": "Schließen",
   "dontCare": "Egal",
   "okImmediately": "Mach ich sofort",
   "tryAgain": "Nochmal versuchen",
-  "refresh": "Aktualisieren",
-  "settings": "Einstellungen",
+  "refresh": "Auffrischen",
+  "appSettings": "App-Einstellungen",
+  "listSettings": "Mehr Listeneinstellungen...",
 
   "registrationConsentFirstPart": "Ich habe die ",
   "registrationConsentPrivacy": "Datenschutzerklärung",
@@ -89,11 +92,14 @@
     }
   },
   "newerVersionAvailableObligatoryUpdate": "Es hat sich viel getan. Damit dein Kaufhansel weiterhin funktioniert, musst du diese Aktualisierung installieren. Mehr Infos findest du, wenn du auf den Link zum Herunterladen klickst, oder im Play Store.",
-
+  "shoppingListMyLists": "Meine Listen",
   "shoppingListEmpty": "\uD83C\uDF3D\uD83E\uDD66\uD83E\uDDC0",
   "shoppingListEmptyText": "Du hast noch keine Einkaufsliste.\nIm Menü oben rechts kannst du neue Listen anlegen.",
   "shoppingListError": "Oh nein! Haben wir Deine Einkaufslisten etwa verlegt?",
-  "shoppingListCreateNew": "Neue Liste",
+  "shoppingListCreateNew": "Neue Liste...",
+  "shoppingListCreateNewTitle": "Neue Liste anlegen",
+  "shoppingListCreateNewConfirm": "Anlegen",
+  "shoppingListCreateNewEnterNameHint": "Gib einen Namen ein",
   "shoppingListNeededHint": "Suchen oder hinzufügen",
   "shoppingListFilterNeeded":"Was muss ich noch kaufen",
   "shoppingListFilterAlreadyInCart": "Was ist schon im Einkaufswagen",
@@ -142,22 +148,12 @@
   "appSettingsAccountDeletedText": "Wir haben alle deine Daten gelöscht. Tschüss!",
   "appSettingsAboutTitle": "Über die App",
 
-  "listSettingsUncheckAllItems": "Alle Häckchen entfernen",
-  "listSettingsAllItemsUnchecked": "Alle Häckchen in {shoppingListName} wurden entfernt.",
-  "@listSettingsAllItemsUnchecked": {
-    "type": "text",
-    "placeholders": {
-      "shoppingListName": {}
-    }
-  },
-  "listSettingsClearAllCategories": "Alle Kategorien entfernen",
-  "listSettingsAllCategoriesCleared": "Alle Kategorien in {shoppingListName} wurden entfernt.",
-  "@listSettingsAllCategoriesCleared": {
-    "type": "text",
-    "placeholders": {
-      "shoppingListName": {}
-    }
-  },
+  "listSettingsUncheckAllItems": "Alle Häkchen entfernen...",
+  "listSettingsUncheckAllItemsConfirmationText": "Möchtest du wirklich alle Häkchen entfernen?",
+
+  "listSettingsClearAllCategories": "Alle Kategorien entfernen...",
+  "listSettingsClearAllCategoriesConfirmationText": "Möchtest du wirklich alle Kategorien entfernen?",
+
   "listSettingsClearList": "Liste leeren...",
   "listSettingsClearListConfirmationText": "Möchtest du wirklich alle Elemente aus {shoppingListName} unwiederbringlich entfernen?",
   "@listSettingsClearListConfirmationText": {
@@ -296,5 +292,6 @@
   "exceptionCantFindOtherUser": "Hast du dich vertippt oder können wir den Hansel nicht finden?",
   "exceptionSendListInvitationFailed": "Das Verschicken der Einladungs-Email hat leider nicht geklappt. Ruf den Hansel doch einfach mal an.",
   "exceptionDeleteListFailed": "Kann die Liste nicht gelöscht werden oder hast du kein Internet?",
-  "exceptionLogOutFailed" : "Die Abmeldung hat nicht funktioniert..."
+  "exceptionLogOutFailed" : "Die Abmeldung hat nicht funktioniert...",
+  "exceptionListCreationFailed": "Ist der Speicher voll oder hast du einen Fehler beim Anlegen der Liste gemacht?"
 }
