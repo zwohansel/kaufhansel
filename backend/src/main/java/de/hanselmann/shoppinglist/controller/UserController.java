@@ -1,14 +1,14 @@
 package de.hanselmann.shoppinglist.controller;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.net.URI;
+import java.util.Optional;
 
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,7 +34,7 @@ import de.hanselmann.shoppinglist.service.ShoppingListUserService;
 
 @RestController
 public class UserController implements UserApi {
-    private final static Logger LOGGER = LoggerFactory.getLogger(UserController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
 
     private final RegistrationService registrationService;
     private final ShoppingListUserService userService;
@@ -43,8 +43,6 @@ public class UserController implements UserApi {
     private final ShoppingListGuard guard;
     private final PasswordEncoder passwordEncoder;
     private final DtoTransformer dtoTransformer;
-    private final String activationSuccessPage;
-    private final String activationFailurePage;
 
     @Autowired
     public UserController(RegistrationService registrationService,
@@ -54,8 +52,7 @@ public class UserController implements UserApi {
             ShoppingListGuard guard,
             PasswordEncoder passwordEncoder,
             DtoTransformer dtoTransformer,
-            ResourceLoader resourceLoader)
-            throws IOException {
+            ResourceLoader resourceLoader) {
         this.registrationService = registrationService;
         this.userService = userService;
         this.shoppingListService = shoppingListService;
@@ -63,12 +60,6 @@ public class UserController implements UserApi {
         this.passwordEncoder = passwordEncoder;
         this.guard = guard;
         this.dtoTransformer = dtoTransformer;
-        try (InputStream in = resourceLoader.getResource("classpath:static/activation_success.html").getInputStream()) {
-            this.activationSuccessPage = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-        }
-        try (InputStream in = resourceLoader.getResource("classpath:static/activation_failure.html").getInputStream()) {
-            this.activationFailurePage = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-        }
     }
 
     @Override
@@ -119,11 +110,14 @@ public class UserController implements UserApi {
     }
 
     @Override
-    public ResponseEntity<String> activate(String activationCode) {
+    public ResponseEntity<Void> activate(String activationCode) {
+        HttpHeaders headers = new HttpHeaders();
         if (registrationService.activate(activationCode)) {
-            return ResponseEntity.ok(activationSuccessPage);
+            headers.setLocation(URI.create("/kaufhansel/registration_success.html"));
+        } else {
+            headers.setLocation(URI.create("/kaufhansel/registration_failure.html"));
         }
-        return ResponseEntity.ok(activationFailurePage);
+        return new ResponseEntity<>(headers, HttpStatus.TEMPORARY_REDIRECT);
     }
 
     @PreAuthorize("hasRole('SHOPPER')")
@@ -138,13 +132,13 @@ public class UserController implements UserApi {
     public ResponseEntity<Void> sendInvite(SendInviteDto sendInvite) {
         try {
             boolean success = false;
-            if (sendInvite.getShoppingListId().isPresent()) {
-                String shoppingListId = sendInvite.getShoppingListId().get();
-                if (!guard.canEditShoppingList(shoppingListId)) {
+            final Optional<String> shoppingListId = sendInvite.getShoppingListId();
+            if (shoppingListId.isPresent()) {
+                if (!guard.canEditShoppingList(shoppingListId.get())) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
                 }
                 success = registrationService.sendInviteForShoppingList(sendInvite.getEmailAddress(),
-                        new ObjectId(shoppingListId));
+                        new ObjectId(shoppingListId.get()));
             } else {
                 success = registrationService.sendInvite(sendInvite.getEmailAddress());
             }

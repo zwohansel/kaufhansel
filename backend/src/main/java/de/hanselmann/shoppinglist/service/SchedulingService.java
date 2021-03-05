@@ -12,7 +12,7 @@ import de.hanselmann.shoppinglist.security.TokenService;
 
 @Component
 public class SchedulingService {
-    private final static Logger LOGGER = LoggerFactory.getLogger(SchedulingService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SchedulingService.class);
     private final InviteRepository inviteRepository;
     private final PendingRegistrationRepository pendingRegistrationRepository;
     private final ShoppingListUserService userService;

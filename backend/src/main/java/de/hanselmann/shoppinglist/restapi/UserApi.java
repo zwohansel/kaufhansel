@@ -34,7 +34,7 @@ public interface UserApi {
             @PathVariable String inviteCode);
 
     @GetMapping("/activate/{activationCode}")
-    ResponseEntity<String> activate(
+    ResponseEntity<Void> activate(
             @PathVariable String activationCode);
 
     @GetMapping("/invite")

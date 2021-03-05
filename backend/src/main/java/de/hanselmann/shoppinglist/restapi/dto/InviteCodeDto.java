@@ -9,6 +9,6 @@ public class InviteCodeDto {
 
     public String getCode() {
         return code;
-    };
+    }
 
 }

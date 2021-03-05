@@ -39,7 +39,7 @@ public class AuthenticatedToken implements Authentication {
 
     @Override
     public Object getPrincipal() {
-        return userId;
+        return getName();
     }
 
     @Override

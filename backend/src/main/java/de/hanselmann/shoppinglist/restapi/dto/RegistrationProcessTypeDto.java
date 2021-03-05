@@ -1,7 +1,7 @@
 package de.hanselmann.shoppinglist.restapi.dto;
 
 public class RegistrationProcessTypeDto {
-    static private enum Type {
+    private enum Type {
         INVALID,
         FULL_REGISTRATION,
         WITHOUT_EMAIL

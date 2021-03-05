@@ -1,7 +1,7 @@
 package de.hanselmann.shoppinglist.restapi.dto;
 
 public class RegistrationResultDto {
-    static private enum Status {
+    private enum Status {
         SUCCESS,
         EMAIL_INVALID,
         INVITE_CODE_INVALID,

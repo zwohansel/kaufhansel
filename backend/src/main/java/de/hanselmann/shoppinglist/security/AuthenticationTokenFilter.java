@@ -11,8 +11,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 public class AuthenticationTokenFilter extends OncePerRequestFilter {
-    private final static String AUTHORIZATION_HEADER_NAME = "AUTHORIZATION";
-    private final static String AUTHORIZATION_HEADER_VALUE_PREFIX = "Bearer ";
+    private static final String AUTHORIZATION_HEADER_NAME = "AUTHORIZATION";
+    private static final String AUTHORIZATION_HEADER_VALUE_PREFIX = "Bearer ";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
