@@ -22,23 +22,24 @@ class DangerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-          padding: EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(AppLocalizations.of(context).listSettingsDangerZoneTitle, style: getCardHeadlineStyle(context)),
-              SizedBox(height: 12),
-              OutlinedButton(
-                child: Text(_canDeleteList()
-                    ? AppLocalizations.of(context).listSettingsDeleteList
-                    : AppLocalizations.of(context).listSettingsLeaveList),
-                style: OutlinedButton.styleFrom(primary: Colors.red),
-                onPressed: () => _loading ? null : _onDeleteShoppingList(context),
-              ),
-              _buildDeleteLeaveBtnExplanation(context),
-            ],
-          )),
+        padding: EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(AppLocalizations.of(context).listSettingsDangerZoneTitle, style: getCardHeadlineStyle(context)),
+            SizedBox(height: 12),
+            OutlinedButton(
+              child: Text(_canDeleteList()
+                  ? AppLocalizations.of(context).listSettingsDeleteList
+                  : AppLocalizations.of(context).listSettingsLeaveList),
+              style: OutlinedButton.styleFrom(primary: Colors.red),
+              onPressed: () => _loading ? null : _onDeleteShoppingList(context),
+            ),
+            _buildDeleteLeaveBtnExplanation(context),
+          ],
+        ),
+      ),
     );
   }
 

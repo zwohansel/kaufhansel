@@ -31,7 +31,7 @@ class _InfoCardState extends State<InfoCard> {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-          padding: EdgeInsets.all(18),
+          padding: EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,

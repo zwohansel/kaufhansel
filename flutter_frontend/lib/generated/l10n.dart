@@ -95,26 +95,6 @@ class AppLocalizations {
     );
   }
 
-  /// `https://github.com/zwohansel`
-  String get zwoHanselGithubLink {
-    return Intl.message(
-      'https://github.com/zwohansel',
-      name: 'zwoHanselGithubLink',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `ZwoHansel auf GitHub`
-  String get zwoHanselGithubLinkInfo {
-    return Intl.message(
-      'ZwoHansel auf GitHub',
-      name: 'zwoHanselGithubLinkInfo',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `https://github.com/zwohansel/kaufhansel`
   String get zwoHanselKaufhanselGithubLink {
     return Intl.message(
@@ -125,11 +105,31 @@ class AppLocalizations {
     );
   }
 
-  /// `Der Kaufhansel auf GitHub`
+  /// `Der Kaufhansel-Quellcode auf GitHub`
   String get zwoHanselKaufhanselGithubLinkInfo {
     return Intl.message(
-      'Der Kaufhansel auf GitHub',
+      'Der Kaufhansel-Quellcode auf GitHub',
       name: 'zwoHanselKaufhanselGithubLinkInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `https://zwohansel.de/kaufhansel`
+  String get zwoHanselKaufhanselLandingPageLink {
+    return Intl.message(
+      'https://zwohansel.de/kaufhansel',
+      name: 'zwoHanselKaufhanselLandingPageLink',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Der Kaufhansel im Internet`
+  String get zwoHanselKaufhanselLandingPageLinkInfo {
+    return Intl.message(
+      'Der Kaufhansel im Internet',
+      name: 'zwoHanselKaufhanselLandingPageLinkInfo',
       desc: '',
       args: [],
     );
@@ -275,6 +275,46 @@ class AppLocalizations {
     );
   }
 
+  /// `Datenschutzerklärung`
+  String get privacyPolicy {
+    return Intl.message(
+      'Datenschutzerklärung',
+      name: 'privacyPolicy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `https://zwohansel.de/kaufhansel/privacy_de.html`
+  String get privacyPolicyLink {
+    return Intl.message(
+      'https://zwohansel.de/kaufhansel/privacy_de.html',
+      name: 'privacyPolicyLink',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Haftungsausschluss`
+  String get disclaimer {
+    return Intl.message(
+      'Haftungsausschluss',
+      name: 'disclaimer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `https://zwohansel.de/kaufhansel/disclaimer.html`
+  String get disclaimerLink {
+    return Intl.message(
+      'https://zwohansel.de/kaufhansel/disclaimer.html',
+      name: 'disclaimerLink',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Ich habe die `
   String get registrationConsentFirstPart {
     return Intl.message(
@@ -285,51 +325,11 @@ class AppLocalizations {
     );
   }
 
-  /// `Datenschutzerklärung`
-  String get registrationConsentPrivacy {
-    return Intl.message(
-      'Datenschutzerklärung',
-      name: 'registrationConsentPrivacy',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `https://zwohansel.de/kaufhansel/privacy_de.html`
-  String get registrationConsentPrivacyLink {
-    return Intl.message(
-      'https://zwohansel.de/kaufhansel/privacy_de.html',
-      name: 'registrationConsentPrivacyLink',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// ` zur Kenntnis genommen und stimme dem `
   String get registrationConsentMiddlePart {
     return Intl.message(
       ' zur Kenntnis genommen und stimme dem ',
       name: 'registrationConsentMiddlePart',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Haftungsausschluss`
-  String get registrationConsentDisclaimer {
-    return Intl.message(
-      'Haftungsausschluss',
-      name: 'registrationConsentDisclaimer',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `https://zwohansel.de/kaufhansel/disclaimer.html`
-  String get registrationConsentDisclaimerLink {
-    return Intl.message(
-      'https://zwohansel.de/kaufhansel/disclaimer.html',
-      name: 'registrationConsentDisclaimerLink',
       desc: '',
       args: [],
     );

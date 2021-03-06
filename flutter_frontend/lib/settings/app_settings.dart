@@ -55,88 +55,103 @@ class _AppSettingsState extends State<AppSettings> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-        onWillPop: () async => !_loading,
-        child: Scaffold(
-            appBar: AppBar(
-              title: TitleWidget(AppLocalizations.of(context).appTitle),
-            ),
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildProgressBar(),
-                Expanded(
+      onWillPop: () async => !_loading,
+      child: Scaffold(
+        appBar: AppBar(
+          title: TitleWidget(AppLocalizations.of(context).appTitle),
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildProgressBar(),
+            Expanded(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minWidth: 0, maxWidth: 600),
                   child: Scrollbar(
-                      controller: _scrollController,
-                      child: ListView(children: [
+                    controller: _scrollController,
+                    child: ListView(
+                      children: [
                         Padding(
-                            padding: EdgeInsets.all(24),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Card(
-                                  child: Padding(
-                                      padding: EdgeInsets.all(18),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(AppLocalizations.of(context).appSettingsTitle(widget._userInfo.username),
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .headline5
-                                                  .apply(fontFamilyFallback: ['NotoColorEmoji'])),
-                                          SizedBox(height: 12),
-                                          Text(AppLocalizations.of(context)
-                                              .appSettingsYourEmail(widget._userInfo.emailAddress)),
-                                          SizedBox(height: 24),
-                                          OutlinedButton(
-                                            child: Text(AppLocalizations.of(context).appSettingsLogOut),
-                                            style: OutlinedButton.styleFrom(primary: Colors.red),
-                                            onPressed: _loading ? null : _onLogOut,
-                                          ),
-                                          SizedBox(height: 12),
-                                          OutlinedButton(
-                                              child: Text(AppLocalizations.of(context).appSettingsDeleteAccount),
-                                              style: OutlinedButton.styleFrom(primary: Colors.red),
-                                              onPressed: _loading ? null : () => _onDeleteAccount()),
-                                        ],
-                                      )),
-                                ),
-                                SizedBox(height: 12),
-                                Card(
-                                  child: Padding(
-                                      padding: EdgeInsets.all(18),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(AppLocalizations.of(context).appSettingsAboutTitle,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .headline5
-                                                  .apply(fontFamilyFallback: ['NotoColorEmoji'])),
-                                          SizedBox(height: 12),
-                                          Builder(
-                                            builder: (context) => _buildVersion(context),
-                                          ),
-                                          SizedBox(height: 12),
-                                          Link(AppLocalizations.of(context).zwoHanselPageLink,
-                                              text: AppLocalizations.of(context).zwoHanselPageLinkInfo),
-                                          SizedBox(height: 12),
-                                          Link(AppLocalizations.of(context).zwoHanselGithubLink,
-                                              text: AppLocalizations.of(context).zwoHanselGithubLinkInfo),
-                                          SizedBox(height: 12),
-                                          Link(AppLocalizations.of(context).zwoHanselKaufhanselGithubLink,
-                                              text: AppLocalizations.of(context).zwoHanselKaufhanselGithubLinkInfo),
-                                        ],
-                                      )),
-                                ),
-                              ],
-                            ))
-                      ])),
+                          padding: EdgeInsets.all(5),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              _buildAppSettingsCard(context),
+                              _buildAppInfoCard(context),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ],
-            )));
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Card _buildAppSettingsCard(BuildContext context) {
+    return Card(
+      child: Padding(
+          padding: EdgeInsets.all(10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(AppLocalizations.of(context).appSettingsTitle(widget._userInfo.username),
+                  style: Theme.of(context).textTheme.headline5.apply(fontFamilyFallback: ['NotoColorEmoji'])),
+              SizedBox(height: 12),
+              Text(AppLocalizations.of(context).appSettingsYourEmail(widget._userInfo.emailAddress)),
+              SizedBox(height: 24),
+              OutlinedButton(
+                child: Text(AppLocalizations.of(context).appSettingsLogOut),
+                style: OutlinedButton.styleFrom(primary: Colors.red),
+                onPressed: _loading ? null : _onLogOut,
+              ),
+              SizedBox(height: 12),
+              OutlinedButton(
+                  child: Text(AppLocalizations.of(context).appSettingsDeleteAccount),
+                  style: OutlinedButton.styleFrom(primary: Colors.red),
+                  onPressed: _loading ? null : () => _onDeleteAccount()),
+            ],
+          )),
+    );
+  }
+
+  Card _buildAppInfoCard(BuildContext context) {
+    return Card(
+      child: Padding(
+          padding: EdgeInsets.all(10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(AppLocalizations.of(context).appSettingsAboutTitle,
+                  style: Theme.of(context).textTheme.headline5.apply(fontFamilyFallback: ['NotoColorEmoji'])),
+              SizedBox(height: 12),
+              Builder(
+                builder: (context) => _buildVersion(context),
+              ),
+              SizedBox(height: 12),
+              Link(AppLocalizations.of(context).privacyPolicyLink, text: AppLocalizations.of(context).privacyPolicy),
+              SizedBox(height: 12),
+              Link(AppLocalizations.of(context).disclaimerLink, text: AppLocalizations.of(context).disclaimer),
+              SizedBox(height: 12),
+              Link(AppLocalizations.of(context).zwoHanselKaufhanselLandingPageLink,
+                  text: AppLocalizations.of(context).zwoHanselKaufhanselLandingPageLinkInfo),
+              SizedBox(height: 12),
+              Link(AppLocalizations.of(context).zwoHanselKaufhanselGithubLink,
+                  text: AppLocalizations.of(context).zwoHanselKaufhanselGithubLinkInfo),
+              SizedBox(height: 12),
+              Link(AppLocalizations.of(context).zwoHanselPageLink,
+                  text: AppLocalizations.of(context).zwoHanselPageLinkInfo),
+            ],
+          )),
+    );
   }
 
   _onLogOut() {

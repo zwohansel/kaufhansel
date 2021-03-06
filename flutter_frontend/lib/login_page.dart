@@ -513,16 +513,16 @@ class _LoginPageState extends State<LoginPage> {
                         children: [
                           TextSpan(text: AppLocalizations.of(context).registrationConsentFirstPart, style: textStyle),
                           TextSpan(
-                              text: AppLocalizations.of(context).registrationConsentPrivacy,
+                              text: AppLocalizations.of(context).privacyPolicy,
                               style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
                               recognizer: _tapRecognizer
-                                ..onTap = () => launch(AppLocalizations.of(context).registrationConsentPrivacyLink)),
+                                ..onTap = () => launch(AppLocalizations.of(context).privacyPolicyLink)),
                           TextSpan(text: AppLocalizations.of(context).registrationConsentMiddlePart, style: textStyle),
                           TextSpan(
-                              text: AppLocalizations.of(context).registrationConsentDisclaimer,
+                              text: AppLocalizations.of(context).disclaimer,
                               style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
                               recognizer: _tapRecognizer
-                                ..onTap = () => launch(AppLocalizations.of(context).registrationConsentDisclaimerLink)),
+                                ..onTap = () => launch(AppLocalizations.of(context).disclaimerLink)),
                           TextSpan(text: AppLocalizations.of(context).registrationConsentLastPart, style: textStyle),
                         ],
                       ),

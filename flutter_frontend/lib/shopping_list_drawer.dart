@@ -66,6 +66,10 @@ class ShoppingListDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (_shoppingListInfos == null) {
+      return Container();
+    }
+
     final _currentList = _shoppingListInfos.firstWhere((info) => info.id == _selectedShoppingListId);
 
     final infoTiles = _shoppingListInfos.where((info) => info.id != _selectedShoppingListId)?.map(

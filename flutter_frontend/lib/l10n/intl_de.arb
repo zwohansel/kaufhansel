@@ -5,10 +5,10 @@
   "zwoHanselPageLink": "https://zwohansel.de",
   "zwoHanselPageLinkText": "zwohansel.de",
   "zwoHanselPageLinkInfo": "Mehr über die Entwickler auf zwohansel.de",
-  "zwoHanselGithubLink": "https://github.com/zwohansel",
-  "zwoHanselGithubLinkInfo": "ZwoHansel auf GitHub",
   "zwoHanselKaufhanselGithubLink": "https://github.com/zwohansel/kaufhansel",
-  "zwoHanselKaufhanselGithubLinkInfo": "Der Kaufhansel auf GitHub",
+  "zwoHanselKaufhanselGithubLinkInfo": "Der Kaufhansel-Quellcode auf GitHub",
+  "zwoHanselKaufhanselLandingPageLink": "https://zwohansel.de/kaufhansel",
+  "zwoHanselKaufhanselLandingPageLinkInfo": "Der Kaufhansel im Internet",
 
   "manShrugging": "🤷‍♂️",
   "thatsJustHowItIs": "Ist dann halt schon so...",
@@ -25,12 +25,13 @@
   "appSettings": "App-Einstellungen",
   "listSettings": "Mehr Listeneinstellungen...",
 
+  "privacyPolicy": "Datenschutzerklärung",
+  "privacyPolicyLink": "https://zwohansel.de/kaufhansel/privacy_de.html",
+  "disclaimer": "Haftungsausschluss",
+  "disclaimerLink": "https://zwohansel.de/kaufhansel/disclaimer.html",
+
   "registrationConsentFirstPart": "Ich habe die ",
-  "registrationConsentPrivacy": "Datenschutzerklärung",
-  "registrationConsentPrivacyLink": "https://zwohansel.de/kaufhansel/privacy_de.html",
   "registrationConsentMiddlePart": " zur Kenntnis genommen und stimme dem ",
-  "registrationConsentDisclaimer": "Haftungsausschluss",
-  "registrationConsentDisclaimerLink": "https://zwohansel.de/kaufhansel/disclaimer.html",
   "registrationConsentLastPart": " zu.",
 
   "roleAdminName": "Chefhansel",

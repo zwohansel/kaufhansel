@@ -44,58 +44,66 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-        onWillPop: () async => !_loading,
-        child: Scaffold(
-            appBar: AppBar(
-              title: TitleWidget(AppLocalizations.of(context).appTitle),
-            ),
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildProgressBar(),
-                Expanded(
+      onWillPop: () async => !_loading,
+      child: Scaffold(
+        appBar: AppBar(
+          title: TitleWidget(AppLocalizations.of(context).appTitle),
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildProgressBar(),
+            Expanded(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minWidth: 0, maxWidth: 600),
                   child: Scrollbar(
-                      controller: _scrollController,
-                      child: ListView(children: [
+                    controller: _scrollController,
+                    child: ListView(
+                      children: [
                         Padding(
-                            padding: EdgeInsets.all(24),
-                            child: Consumer<ShoppingListInfo>(
-                              builder: (context, info, child) {
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    SizedBox(height: 12),
-                                    InfoCard(
-                                      info,
-                                      _loading,
-                                      _setLoading,
-                                      onChangeShoppingListName: widget._onChangeShoppingListName,
-                                      onRemoveAllItems: widget._onRemoveAllItems,
-                                    ),
-                                    SizedBox(height: 12),
-                                    ShareListCard(
-                                      info,
-                                      _loading,
-                                      _setLoading,
-                                      onAddUserToShoppingListIfPresent: widget._onAddUserToShoppingListIfPresent,
-                                      onChangeShoppingListPermissions: widget._onChangeShoppingListPermissions,
-                                      onRemoveUserFromShoppingList: widget._onRemoveUserFromShoppingList,
-                                    ),
-                                    SizedBox(height: 12),
-                                    DangerCard(
-                                      _loading,
-                                      _setLoading,
-                                      deleteShoppingList: widget._onDeleteShoppingList,
-                                      shoppingListInfo: info,
-                                    )
-                                  ],
-                                );
-                              },
-                            ))
-                      ])),
-                )
-              ],
-            )));
+                          padding: EdgeInsets.all(5),
+                          child: Consumer<ShoppingListInfo>(
+                            builder: (context, info, child) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  InfoCard(
+                                    info,
+                                    _loading,
+                                    _setLoading,
+                                    onChangeShoppingListName: widget._onChangeShoppingListName,
+                                    onRemoveAllItems: widget._onRemoveAllItems,
+                                  ),
+                                  ShareListCard(
+                                    info,
+                                    _loading,
+                                    _setLoading,
+                                    onAddUserToShoppingListIfPresent: widget._onAddUserToShoppingListIfPresent,
+                                    onChangeShoppingListPermissions: widget._onChangeShoppingListPermissions,
+                                    onRemoveUserFromShoppingList: widget._onRemoveUserFromShoppingList,
+                                  ),
+                                  DangerCard(
+                                    _loading,
+                                    _setLoading,
+                                    deleteShoppingList: widget._onDeleteShoppingList,
+                                    shoppingListInfo: info,
+                                  )
+                                ],
+                              );
+                            },
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildProgressBar() {

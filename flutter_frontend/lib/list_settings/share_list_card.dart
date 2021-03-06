@@ -58,20 +58,21 @@ class _ShareListCardState extends State<ShareListCard> {
 
     return Card(
       child: Padding(
-          padding: EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(AppLocalizations.of(context).listSettingsSharingWith, style: Theme.of(context).textTheme.headline6),
-              SizedBox(height: 12),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: ListTile.divideTiles(context: context, tiles: [currentUser, ...otherUsers]).toList(),
-              ),
-              _buildAddUserWidget(context)
-            ],
-          )),
+        padding: EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(AppLocalizations.of(context).listSettingsSharingWith, style: Theme.of(context).textTheme.headline6),
+            SizedBox(height: 12),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: ListTile.divideTiles(context: context, tiles: [currentUser, ...otherUsers]).toList(),
+            ),
+            _buildAddUserWidget(context)
+          ],
+        ),
+      ),
     );
   }
 
