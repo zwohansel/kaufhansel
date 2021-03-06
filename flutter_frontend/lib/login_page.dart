@@ -816,8 +816,8 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _loading = true);
 
     try {
-      ShoppingListUserInfo userInfo =
-          await RestClientWidget.of(context).login(_userEmailAddressController.text, _passwordController.text);
+      final client = RestClientWidget.of(context);
+      ShoppingListUserInfo userInfo = await client.login(_userEmailAddressController.text, _passwordController.text);
       if (userInfo != null) {
         await SettingsStoreWidget.of(context).saveUserInfo(userInfo);
         widget._loggedIn(userInfo);

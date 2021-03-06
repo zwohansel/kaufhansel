@@ -23,9 +23,12 @@ class RestClientStub implements RestClient {
 
   @override
   Future<ShoppingListUserInfo> login(String userEmail, String password) async {
-    return _users
-        .firstWhere((element) => element.info.emailAddress == userEmail && element.password == password, orElse: null)
-        ?.info;
+    for (final user in _users) {
+      if (user.info.emailAddress == userEmail && user.password == password) {
+        return user.info;
+      }
+    }
+    return null;
   }
 
   @override
