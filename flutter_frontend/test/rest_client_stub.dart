@@ -13,8 +13,16 @@ class User {
 
 class RestClientStub implements RestClient {
   final List<User> _users = [];
+  final Map<String, RegistrationProcessType> _inviteCodes = {};
+  final RegistrationResult Function(String userName, String password, {String emailAddress}) onRegister;
+
+  RestClientStub({this.onRegister});
 
   void addUser(User user) => _users.add(user);
+
+  void addInviteCode(String code, RegistrationProcessType type) {
+    _inviteCodes[code] = type;
+  }
 
   @override
   Future<BackendInfo> getBackendInfo() {
@@ -32,6 +40,23 @@ class RestClientStub implements RestClient {
   }
 
   @override
+  Future<RegistrationProcessType> checkInviteCode(String inviteCode) async {
+    return _inviteCodes[inviteCode] ?? RegistrationProcessType.INVALID;
+  }
+
+  @override
+  Future<RegistrationResult> register(String userName, String password, String inviteCode,
+      {String emailAddress}) async {
+    final type = await checkInviteCode(inviteCode);
+    if (type == RegistrationProcessType.FULL_REGISTRATION && emailAddress != null && emailAddress.isNotEmpty) {
+      return onRegister(userName, password, emailAddress: emailAddress);
+    } else if (type == RegistrationProcessType.WITHOUT_EMAIL) {
+      return onRegister(userName, password);
+    }
+    return RegistrationResult(RegistrationResultStatus.FAILURE);
+  }
+
+  @override
   Future<Optional<ShoppingListUserReference>> addUserToShoppingList(String shoppingListId, String userEmailAddress) {
     throw UnimplementedError();
   }
@@ -44,11 +69,6 @@ class RestClientStub implements RestClient {
   @override
   Future<ShoppingListUserReference> changeShoppingListPermissions(
       String shoppingListId, String affectedUserId, ShoppingListRole newRole) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<RegistrationProcessType> checkInviteCode(String inviteCode) {
     throw UnimplementedError();
   }
 
@@ -97,11 +117,6 @@ class RestClientStub implements RestClient {
 
   @override
   Future<void> moveShoppingListItem(String shoppingListId, ShoppingListItem item, int targetIndex) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<RegistrationResult> register(String userName, String password, String inviteCode, {String emailAddress}) {
     throw UnimplementedError();
   }
 

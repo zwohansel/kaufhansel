@@ -74,4 +74,64 @@ void main() {
 
     expect(find.text(localizations.exceptionWrongCredentials), findsOneWidget);
   });
+
+  testWidgets('fullRegistration', (WidgetTester tester) async {
+    final inviteCode = "INV1T3";
+    final expectedEmail = "new@user.de";
+    final expectedUser = "NewUser";
+    final expectedPassword = "12345678";
+
+    String actualUserName;
+    String actualPassword;
+    String actualEmail;
+    final RestClientStub client = new RestClientStub(onRegister: (userName, password, {emailAddress}) {
+      actualUserName = userName;
+      actualPassword = password;
+      actualEmail = emailAddress;
+      return RegistrationResult(RegistrationResultStatus.SUCCESS);
+    });
+
+    // Add invite code for full registration
+    client.addInviteCode(inviteCode, RegistrationProcessType.FULL_REGISTRATION);
+
+    final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: Update.none());
+
+    await tester.pumpWidget(await makeTestableWidget(loginPage, restClient: client, locale: testLocale));
+    await tester.pumpAndSettle();
+
+    // Press register button
+    await tester.tap(find.widgetWithText(OutlinedButton, localizations.buttonRegister));
+    await tester.pumpAndSettle();
+
+    // Enter invite code
+    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.invitationCodeHint, text: inviteCode);
+
+    // Press next button
+    await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonNext));
+    await tester.pumpAndSettle();
+
+    // Enter email, user name, password and password confirmation
+    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.emailHint, text: expectedEmail);
+    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.userNameHint, text: expectedUser);
+    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.passwordHint, text: expectedPassword);
+    await enterTextIntoFormField(tester,
+        fieldLabelOrHint: localizations.passwordConfirmationHint, text: expectedPassword);
+
+    // Check consent checkbox
+    await tester.tap(find.byType(Checkbox));
+
+    // Press register button
+    final registerBtn = find.widgetWithText(ElevatedButton, localizations.buttonRegister);
+    await tester.ensureVisible(registerBtn);
+    await tester.tap(registerBtn);
+    await tester.pumpAndSettle();
+
+    // Check that onRegister was called with the expected information
+    expect(actualEmail, equals(expectedEmail));
+    expect(actualUserName, equals(expectedUser));
+    expect(actualPassword, equals(expectedPassword));
+
+    // Check that the activation email notice is shown for the expected email
+    expect(find.text(localizations.activationLinkSent(expectedEmail)), findsOneWidget);
+  });
 }

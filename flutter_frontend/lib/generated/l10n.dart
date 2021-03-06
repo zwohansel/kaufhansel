@@ -746,10 +746,10 @@ class AppLocalizations {
   }
 
   /// `Weiter`
-  String get buttonForward {
+  String get buttonNext {
     return Intl.message(
       'Weiter',
-      name: 'buttonForward',
+      name: 'buttonNext',
       desc: '',
       args: [],
     );

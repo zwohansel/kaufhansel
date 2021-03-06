@@ -3,7 +3,9 @@ import 'package:kaufhansel_client/settings/settings_store.dart';
 
 class SettingsStoreStub implements SettingsStore {
   @override
-  Future<void> confirmInfoMessage(int messageNumber) {}
+  Future<void> confirmInfoMessage(int messageNumber) async {
+    return;
+  }
 
   @override
   Future<Optional<ShoppingListUserInfo>> getUserInfo() async {

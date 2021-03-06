@@ -372,7 +372,7 @@ class _LoginPageState extends State<LoginPage> {
           Padding(
               padding: EdgeInsets.only(top: 15),
               child: ElevatedButton(
-                  child: Text(AppLocalizations.of(context).buttonForward),
+                  child: Text(AppLocalizations.of(context).buttonNext),
                   onPressed: _isLoading() ? null : _checkInviteCode)),
           Padding(
             padding: EdgeInsets.only(top: 10),

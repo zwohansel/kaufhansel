@@ -410,27 +410,27 @@ extension RegistrationProcessTypes on RegistrationProcessType {
   }
 }
 
-enum _RegistrationResultStatus { SUCCESS, EMAIL_INVALID, INVITE_CODE_INVALID, PASSWORD_INVALID, FAILURE }
+enum RegistrationResultStatus { SUCCESS, EMAIL_INVALID, INVITE_CODE_INVALID, PASSWORD_INVALID, FAILURE }
 
-const Map<String, _RegistrationResultStatus> _strToStatus = {
-  'SUCCESS': _RegistrationResultStatus.SUCCESS,
-  'EMAIL_INVALID': _RegistrationResultStatus.EMAIL_INVALID,
-  'INVITE_CODE_INVALID': _RegistrationResultStatus.INVITE_CODE_INVALID,
-  'PASSWORD_INVALID': _RegistrationResultStatus.PASSWORD_INVALID,
+const Map<String, RegistrationResultStatus> _strToStatus = {
+  'SUCCESS': RegistrationResultStatus.SUCCESS,
+  'EMAIL_INVALID': RegistrationResultStatus.EMAIL_INVALID,
+  'INVITE_CODE_INVALID': RegistrationResultStatus.INVITE_CODE_INVALID,
+  'PASSWORD_INVALID': RegistrationResultStatus.PASSWORD_INVALID,
 };
 
-extension _RegistrationResultStates on _RegistrationResultStatus {
-  static _RegistrationResultStatus fromString(String statusStr) {
+extension _RegistrationResultStates on RegistrationResultStatus {
+  static RegistrationResultStatus fromString(String statusStr) {
     final status = _strToStatus[statusStr];
     if (status == null) {
-      return _RegistrationResultStatus.FAILURE;
+      return RegistrationResultStatus.FAILURE;
     }
     return status;
   }
 }
 
 class RegistrationResult {
-  final _RegistrationResultStatus _status;
+  final RegistrationResultStatus _status;
 
   RegistrationResult(this._status);
 
@@ -438,13 +438,13 @@ class RegistrationResult {
     return new RegistrationResult(_RegistrationResultStates.fromString(json.get("status")));
   }
 
-  bool isSuccess() => _status == _RegistrationResultStatus.SUCCESS;
+  bool isSuccess() => _status == RegistrationResultStatus.SUCCESS;
 
-  bool isInviteCodeInvalid() => _status == _RegistrationResultStatus.INVITE_CODE_INVALID;
+  bool isInviteCodeInvalid() => _status == RegistrationResultStatus.INVITE_CODE_INVALID;
 
-  bool isEMailAddressInvalid() => _status == _RegistrationResultStatus.EMAIL_INVALID;
+  bool isEMailAddressInvalid() => _status == RegistrationResultStatus.EMAIL_INVALID;
 
-  bool isPasswordInvalid() => _status == _RegistrationResultStatus.PASSWORD_INVALID;
+  bool isPasswordInvalid() => _status == RegistrationResultStatus.PASSWORD_INVALID;
 }
 
 enum InfoMessageSeverity { CRITICAL, INFO }
@@ -454,7 +454,7 @@ const Map<String, InfoMessageSeverity> _strToSeverity = {
   'INFO': InfoMessageSeverity.INFO,
 };
 
-extension _InfoMessageSeverities on _RegistrationResultStatus {
+extension _InfoMessageSeverities on RegistrationResultStatus {
   static InfoMessageSeverity fromString(String severityStr) {
     final severity = _strToSeverity[severityStr];
     if (severity == null) {

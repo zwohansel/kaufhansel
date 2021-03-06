@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/settings/settings_store.dart';

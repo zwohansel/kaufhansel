@@ -81,7 +81,7 @@
   "buttonPasswordForgotten": "Kennwort vergessen",
   "buttonPasswordReset": "Kennwort zurücksetzen",
   "buttonPasswordChange": "Kenwort ändern",
-  "buttonForward": "Weiter",
+  "buttonNext": "Weiter",
   "buttonBackToLogin": "Zurück zur Anmeldung",
   "buttonPasswordResetCode": "Wiederherstellungs-Code eingeben",
 
