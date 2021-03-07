@@ -31,3 +31,10 @@ Future<Widget> makeTestableWidget(Widget child, {SettingsStore store, RestClient
     ),
   );
 }
+
+Future<void> enterText(WidgetTester tester,
+    {@required Type widgetType, @required String fieldLabelOrHint, @required String text}) async {
+  final field = find.widgetWithText(widgetType, fieldLabelOrHint);
+  expect(field, findsOneWidget);
+  await tester.enterText(field, text);
+}

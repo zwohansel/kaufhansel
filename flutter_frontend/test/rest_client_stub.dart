@@ -12,11 +12,13 @@ class User {
 }
 
 class RestClientStub implements RestClient {
-  final List<User> _users = [];
-  final Map<String, RegistrationProcessType> _inviteCodes = {};
   final RegistrationResult Function(String userName, String password, {String emailAddress}) onRegister;
   final void Function(String emailAddress) onPasswordResetRequest;
   final void Function(String emailAddress, String resetCode, String password) onPasswordReset;
+
+  final List<User> _users = [];
+  final Map<String, RegistrationProcessType> _inviteCodes = {};
+  ShoppingListItem _createdShoppingListItem;
 
   RestClientStub({this.onRegister, this.onPasswordResetRequest, this.onPasswordReset});
 
@@ -24,6 +26,10 @@ class RestClientStub implements RestClient {
 
   void addInviteCode(String code, RegistrationProcessType type) {
     _inviteCodes[code] = type;
+  }
+
+  void mockCreateShoppingListItem(ShoppingListItem item) {
+    _createdShoppingListItem = item;
   }
 
   @override
@@ -87,8 +93,8 @@ class RestClientStub implements RestClient {
   }
 
   @override
-  Future<ShoppingListItem> createShoppingListItem(String shoppingListId, String name, String category) {
-    throw UnimplementedError();
+  Future<ShoppingListItem> createShoppingListItem(String shoppingListId, String name, String category) async {
+    return _createdShoppingListItem;
   }
 
   @override

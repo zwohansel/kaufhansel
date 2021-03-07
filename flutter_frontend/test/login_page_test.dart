@@ -10,13 +10,6 @@ import 'rest_client_stub.dart';
 import 'settings_store_stub.dart';
 import 'utils.dart';
 
-Future<void> enterTextIntoFormField(WidgetTester tester,
-    {@required String fieldLabelOrHint, @required String text}) async {
-  final field = find.widgetWithText(TextFormField, fieldLabelOrHint);
-  expect(field, findsOneWidget);
-  await tester.enterText(field, text);
-}
-
 void main() {
   const testLocale = Locale("de");
   AppLocalizations localizations;
@@ -39,8 +32,10 @@ void main() {
     await tester.pumpAndSettle();
 
     // Enter email and password
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.emailHint, text: user.info.emailAddress);
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.passwordHint, text: user.password);
+    await enterText(tester,
+        widgetType: TextFormField, fieldLabelOrHint: localizations.emailHint, text: user.info.emailAddress);
+    await enterText(tester,
+        widgetType: TextFormField, fieldLabelOrHint: localizations.passwordHint, text: user.password);
 
     // Press login button
     await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonLogin));
@@ -62,8 +57,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // Enter email and password
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.emailHint, text: "test@test.de");
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.passwordHint, text: "12345678");
+    await enterText(tester, widgetType: TextFormField, fieldLabelOrHint: localizations.emailHint, text: "test@test.de");
+    await enterText(tester, widgetType: TextFormField, fieldLabelOrHint: localizations.passwordHint, text: "12345678");
 
     // Press login button
     await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonLogin));
@@ -104,18 +99,21 @@ void main() {
     await tester.pumpAndSettle();
 
     // Enter invite code
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.invitationCodeHint, text: inviteCode);
+    await enterText(tester,
+        widgetType: TextFormField, fieldLabelOrHint: localizations.invitationCodeHint, text: inviteCode);
 
     // Press next button
     await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonNext));
     await tester.pumpAndSettle();
 
     // Enter email, user name, password and password confirmation
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.emailHint, text: expectedEmail);
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.userNameHint, text: expectedUser);
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.passwordHint, text: expectedPassword);
-    await enterTextIntoFormField(tester,
-        fieldLabelOrHint: localizations.passwordConfirmationHint, text: expectedPassword);
+    await enterText(tester, widgetType: TextFormField, fieldLabelOrHint: localizations.emailHint, text: expectedEmail);
+    await enterText(tester,
+        widgetType: TextFormField, fieldLabelOrHint: localizations.userNameHint, text: expectedUser);
+    await enterText(tester,
+        widgetType: TextFormField, fieldLabelOrHint: localizations.passwordHint, text: expectedPassword);
+    await enterText(tester,
+        widgetType: TextFormField, fieldLabelOrHint: localizations.passwordConfirmationHint, text: expectedPassword);
 
     // Check consent checkbox
     await tester.tap(find.byType(Checkbox));
@@ -161,7 +159,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // Enter invite code
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.invitationCodeHint, text: inviteCode);
+    await enterText(tester,
+        widgetType: TextFormField, fieldLabelOrHint: localizations.invitationCodeHint, text: inviteCode);
 
     // Press next button
     await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonNext));
@@ -171,10 +170,12 @@ void main() {
     expect(find.widgetWithText(TextFormField, localizations.emailHint), findsNothing);
 
     // Enter user name, password and password confirmation
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.userNameHint, text: expectedUser);
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.passwordHint, text: expectedPassword);
-    await enterTextIntoFormField(tester,
-        fieldLabelOrHint: localizations.passwordConfirmationHint, text: expectedPassword);
+    await enterText(tester,
+        widgetType: TextFormField, fieldLabelOrHint: localizations.userNameHint, text: expectedUser);
+    await enterText(tester,
+        widgetType: TextFormField, fieldLabelOrHint: localizations.passwordHint, text: expectedPassword);
+    await enterText(tester,
+        widgetType: TextFormField, fieldLabelOrHint: localizations.passwordConfirmationHint, text: expectedPassword);
 
     // Check consent checkbox
     await tester.tap(find.byType(Checkbox));
@@ -223,7 +224,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Enter email address
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.emailHint, text: expectedEmail);
+    await enterText(tester, widgetType: TextFormField, fieldLabelOrHint: localizations.emailHint, text: expectedEmail);
 
     // Press "reset password" button
     await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonPasswordReset));
@@ -235,12 +236,13 @@ void main() {
 
     // Tapping the reset button should automatically open the password reset page
     // -> enter email address, reset code, and the new password + password confirmation
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.emailHint, text: expectedEmail);
-    await enterTextIntoFormField(tester,
-        fieldLabelOrHint: localizations.passwordResetCodeHint, text: expectedResetCode);
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.passwordNewHint, text: expectedPassword);
-    await enterTextIntoFormField(tester,
-        fieldLabelOrHint: localizations.passwordNewConfirmationHint, text: expectedPassword);
+    await enterText(tester, widgetType: TextFormField, fieldLabelOrHint: localizations.emailHint, text: expectedEmail);
+    await enterText(tester,
+        widgetType: TextFormField, fieldLabelOrHint: localizations.passwordResetCodeHint, text: expectedResetCode);
+    await enterText(tester,
+        widgetType: TextFormField, fieldLabelOrHint: localizations.passwordNewHint, text: expectedPassword);
+    await enterText(tester,
+        widgetType: TextFormField, fieldLabelOrHint: localizations.passwordNewConfirmationHint, text: expectedPassword);
 
     // Press "change password" button
     final changePasswordBtn = find.widgetWithText(ElevatedButton, localizations.buttonPasswordChange);
@@ -289,12 +291,13 @@ void main() {
     expect(resetCodeRequested, isFalse);
 
     // Enter email address, reset code, and the new password + password confirmation
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.emailHint, text: expectedEmail);
-    await enterTextIntoFormField(tester,
-        fieldLabelOrHint: localizations.passwordResetCodeHint, text: expectedResetCode);
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.passwordNewHint, text: expectedPassword);
-    await enterTextIntoFormField(tester,
-        fieldLabelOrHint: localizations.passwordNewConfirmationHint, text: expectedPassword);
+    await enterText(tester, widgetType: TextFormField, fieldLabelOrHint: localizations.emailHint, text: expectedEmail);
+    await enterText(tester,
+        widgetType: TextFormField, fieldLabelOrHint: localizations.passwordResetCodeHint, text: expectedResetCode);
+    await enterText(tester,
+        widgetType: TextFormField, fieldLabelOrHint: localizations.passwordNewHint, text: expectedPassword);
+    await enterText(tester,
+        widgetType: TextFormField, fieldLabelOrHint: localizations.passwordNewConfirmationHint, text: expectedPassword);
 
     // Press "change password" button
     final changePasswordBtn = find.widgetWithText(ElevatedButton, localizations.buttonPasswordChange);
