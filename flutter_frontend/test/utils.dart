@@ -38,3 +38,8 @@ Future<void> enterText(WidgetTester tester,
   expect(field, findsOneWidget);
   await tester.enterText(field, text);
 }
+
+Future<void> enterTextIntoFormField(WidgetTester tester,
+    {@required String fieldLabelOrHint, @required String text}) async {
+  return enterText(tester, widgetType: TextFormField, fieldLabelOrHint: fieldLabelOrHint, text: text);
+}
