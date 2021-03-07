@@ -33,7 +33,7 @@ Lets start with the backend first:
 
 > Always start the mongo database and the mail server before starting the backend application.
 
-#### Build and the frontend application
+#### Build the flutter frontend application
 
 1. Install [Flutter](https://flutter.dev/).
 2. Open the flutter project in `flutter_frontend`.
@@ -47,6 +47,8 @@ Lets start with the backend first:
 > In debug mode the application will run against `localhost` where your dev-backend should be running.
 
 ##### Code coverage
+
+[![Coverage Status](https://coveralls.io/repos/github/zwohansel/kaufhansel/badge.svg?branch=master)](https://coveralls.io/github/zwohansel/kaufhansel?branch=master)
 
 1. Install lcov
 2. In ``flutter_frontend`` run:

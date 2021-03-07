@@ -36,7 +36,7 @@ jobs:
           java-version: '12.x'
 
       - name: Install Build Tools
-        run: sudo apt-get update && sudo apt-get install ninja-build pkg-config libgtk-3-dev libblkid-dev liblzma-dev
+        run: sudo apt-get update && sudo apt-get install ninja-build pkg-config libgtk-3-dev libblkid-dev liblzma-dev lcov
 
       - name: Prepare Android Upload Key
         run: |
@@ -56,11 +56,14 @@ jobs:
       - run: flutter build apk --release --split-debug-info=build/debuginfo/android/ --build-name ${{env.kaufhansel_version}} --build-number $GITHUB_RUN_NUMBER
       - run: flutter build appbundle --release --split-debug-info=build/debuginfo/android/ --build-name ${{env.kaufhansel_version}} --build-number $GITHUB_RUN_NUMBER
         
+      - name: Remove generated code from coverage
+        run: lcov --remove ${{runner.workspace}}/kaufhansel/flutter_frontend/coverage/lcov.info '*/generated/*' -o ${{runner.workspace}}/kaufhansel/flutter_frontend/coverage/lcov_filtered.info
+
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: ${{runner.workspace}}/kaufhansel/flutter_frontend/coverage/lcov.info
+          path-to-lcov: ${{runner.workspace}}/kaufhansel/flutter_frontend/coverage/lcov_filtered.info
           base-path: ${{runner.workspace}}/kaufhansel/flutter_frontend/
 
       - uses: actions/upload-artifact@v2
