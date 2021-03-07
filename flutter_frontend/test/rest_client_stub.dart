@@ -15,8 +15,10 @@ class RestClientStub implements RestClient {
   final List<User> _users = [];
   final Map<String, RegistrationProcessType> _inviteCodes = {};
   final RegistrationResult Function(String userName, String password, {String emailAddress}) onRegister;
+  final void Function(String emailAddress) onPasswordResetRequest;
+  final void Function(String emailAddress, String resetCode, String password) onPasswordReset;
 
-  RestClientStub({this.onRegister});
+  RestClientStub({this.onRegister, this.onPasswordResetRequest, this.onPasswordReset});
 
   void addUser(User user) => _users.add(user);
 
@@ -47,6 +49,10 @@ class RestClientStub implements RestClient {
   @override
   Future<RegistrationResult> register(String userName, String password, String inviteCode,
       {String emailAddress}) async {
+    if (onRegister == null) {
+      return RegistrationResult(RegistrationResultStatus.FAILURE);
+    }
+
     final type = await checkInviteCode(inviteCode);
     if (type == RegistrationProcessType.FULL_REGISTRATION && emailAddress != null && emailAddress.isNotEmpty) {
       return onRegister(userName, password, emailAddress: emailAddress);
@@ -136,13 +142,13 @@ class RestClientStub implements RestClient {
   }
 
   @override
-  Future<void> requestPasswordReset(String emailAddress) {
-    throw UnimplementedError();
+  Future<void> requestPasswordReset(String emailAddress) async {
+    this?.onPasswordResetRequest(emailAddress);
   }
 
   @override
-  Future<void> resetPassword(String emailAddress, String resetCode, String password) {
-    throw UnimplementedError();
+  Future<void> resetPassword(String emailAddress, String resetCode, String password) async {
+    this?.onPasswordReset(emailAddress, resetCode, password);
   }
 
   @override

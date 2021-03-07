@@ -42,7 +42,6 @@ void main() {
 
     // Press login button
     await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonLogin));
-
     await tester.pumpAndSettle();
 
     // Login callback should have been called with the expected user info
@@ -66,7 +65,6 @@ void main() {
 
     // Press login button
     await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonLogin));
-
     await tester.pumpAndSettle();
 
     // Login callback should not have been called
@@ -191,5 +189,118 @@ void main() {
 
     // Check that the registration success message is shown
     expect(find.text(localizations.registrationSuccessful), findsOneWidget);
+  });
+
+  testWidgets('resetPassword', (WidgetTester tester) async {
+    final expectedEmail = "forgetfull@user.de";
+    final expectedResetCode = "R3S3T";
+    final expectedPassword = "newpassword";
+
+    bool resetCodeRequested = false;
+    String newPassword;
+    final RestClientStub client = new RestClientStub(
+      onPasswordResetRequest: (emailAddress) {
+        resetCodeRequested = expectedEmail == emailAddress;
+      },
+      onPasswordReset: (emailAddress, resetCode, password) {
+        if (emailAddress == expectedEmail && resetCode == expectedResetCode) {
+          newPassword = password;
+        }
+      },
+    );
+
+    final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: Update.none());
+
+    await tester.pumpWidget(await makeTestableWidget(loginPage, restClient: client, locale: testLocale));
+    await tester.pumpAndSettle();
+
+    // Press "password forgotten" button
+    var passwordForgottenBtn = find.widgetWithText(OutlinedButton, localizations.buttonPasswordForgotten);
+    await tester.ensureVisible(passwordForgottenBtn);
+    await tester.tap(passwordForgottenBtn);
+    await tester.pumpAndSettle();
+
+    // Enter email address
+    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.emailHint, text: expectedEmail);
+
+    // Press "reset password" button
+    await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonPasswordReset));
+    await tester.pumpAndSettle();
+
+    // Check that onPasswordResetRequest was called and the reset info text is shown
+    expect(resetCodeRequested, isTrue);
+    expect(find.text(localizations.passwordResetInfo), findsOneWidget);
+
+    // Tapping the reset button should automatically open the password reset page
+    // -> enter email address, reset code, and the new password + password confirmation
+    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.emailHint, text: expectedEmail);
+    await enterTextIntoFormField(tester,
+        fieldLabelOrHint: localizations.passwordResetCodeHint, text: expectedResetCode);
+    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.passwordNewHint, text: expectedPassword);
+    await enterTextIntoFormField(tester,
+        fieldLabelOrHint: localizations.passwordNewConfirmationHint, text: expectedPassword);
+
+    // Press "change password" button
+    final changePasswordBtn = find.widgetWithText(ElevatedButton, localizations.buttonPasswordChange);
+    await tester.ensureVisible(changePasswordBtn);
+    await tester.tap(changePasswordBtn);
+    await tester.pumpAndSettle();
+
+    // Check that onPasswordReset was called with the expected information
+    expect(newPassword, equals(expectedPassword));
+  });
+
+  testWidgets('resetPasswordWhenResetCodeAlreadyKnown', (WidgetTester tester) async {
+    final expectedEmail = "forgetfull@user.de";
+    final expectedResetCode = "R3S3T";
+    final expectedPassword = "newpassword";
+
+    bool resetCodeRequested = false;
+    String newPassword;
+    final RestClientStub client = new RestClientStub(
+      onPasswordResetRequest: (emailAddress) {
+        resetCodeRequested = expectedEmail == emailAddress;
+      },
+      onPasswordReset: (emailAddress, resetCode, password) {
+        if (emailAddress == expectedEmail && resetCode == expectedResetCode) {
+          newPassword = password;
+        }
+      },
+    );
+
+    final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: Update.none());
+
+    await tester.pumpWidget(await makeTestableWidget(loginPage, restClient: client, locale: testLocale));
+    await tester.pumpAndSettle();
+
+    // Press "password forgotten" button
+    var passwordForgottenBtn = find.widgetWithText(OutlinedButton, localizations.buttonPasswordForgotten);
+    await tester.ensureVisible(passwordForgottenBtn);
+    await tester.tap(passwordForgottenBtn);
+    await tester.pumpAndSettle();
+
+    // Press "enter reset code" button instead of entering an email address
+    await tester.tap(find.widgetWithText(OutlinedButton, localizations.buttonPasswordResetCode));
+    await tester.pumpAndSettle();
+
+    // We have not requested a code...
+    expect(resetCodeRequested, isFalse);
+
+    // Enter email address, reset code, and the new password + password confirmation
+    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.emailHint, text: expectedEmail);
+    await enterTextIntoFormField(tester,
+        fieldLabelOrHint: localizations.passwordResetCodeHint, text: expectedResetCode);
+    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.passwordNewHint, text: expectedPassword);
+    await enterTextIntoFormField(tester,
+        fieldLabelOrHint: localizations.passwordNewConfirmationHint, text: expectedPassword);
+
+    // Press "change password" button
+    final changePasswordBtn = find.widgetWithText(ElevatedButton, localizations.buttonPasswordChange);
+    await tester.ensureVisible(changePasswordBtn);
+    await tester.tap(changePasswordBtn);
+    await tester.pumpAndSettle();
+
+    // Check that onPasswordReset was called with the expected information
+    expect(newPassword, equals(expectedPassword));
   });
 }
