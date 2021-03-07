@@ -201,14 +201,15 @@ class _LoginPageState extends State<LoginPage> {
                                   primary: _getInfoMessageBtnColor(),
                                   side: BorderSide(color: _getInfoMessageBtnColor())),
                               onPressed: () => setState(() => _confirmMessage()),
-                              child: Text(widget._update.infoMessage.dismissLabel ?? AppLocalizations.of(context).ok)))
+                              child:
+                                  Text(widget._update?.infoMessage?.dismissLabel ?? AppLocalizations.of(context).ok)))
                       : TextButton(
                           style: TextButton.styleFrom(
                             primary: _getInfoMessageBtnColor(),
                             visualDensity: VisualDensity.compact,
                           ),
                           onPressed: () => setState(() => _confirmMessage()),
-                          child: Text(widget._update.infoMessage.dismissLabel ?? AppLocalizations.of(context).ok),
+                          child: Text(widget._update?.infoMessage?.dismissLabel ?? AppLocalizations.of(context).ok),
                         ),
                 )
               ],

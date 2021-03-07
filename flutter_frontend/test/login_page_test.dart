@@ -3,9 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/login_page.dart';
 import 'package:kaufhansel_client/model.dart';
+import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 import 'package:kaufhansel_client/utils/update_check.dart';
 
 import 'rest_client_stub.dart';
+import 'settings_store_stub.dart';
 import 'utils.dart';
 
 Future<void> enterTextIntoFormField(WidgetTester tester,
@@ -302,5 +304,143 @@ void main() {
 
     // Check that onPasswordReset was called with the expected information
     expect(newPassword, equals(expectedPassword));
+  });
+
+  testWidgets('showCurrentVersion', (WidgetTester tester) async {
+    final store = SettingsStoreStub();
+    final version = Version(1, 2, 3);
+    final update = Update(store, version, version, null, false);
+
+    final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: update);
+
+    await tester.pumpWidget(await makeTestableWidget(loginPage, store: store, locale: testLocale));
+    await tester.pumpAndSettle();
+
+    expect(find.text("1.2.3"), findsOneWidget);
+  });
+
+  testWidgets('showNewMinorVersionAvailable', (WidgetTester tester) async {
+    final store = SettingsStoreStub();
+    final version = Version(1, 2, 3);
+    final latestVersion = Version(1, 3, 4);
+    final update = Update(store, version, latestVersion, null, false);
+
+    final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: update);
+
+    await tester.pumpWidget(await makeTestableWidget(loginPage, store: store, locale: testLocale));
+    await tester.pumpAndSettle();
+
+    expect(find.text("1.2.3"), findsOneWidget);
+    expect(find.text(localizations.newerVersionAvailable("1.3.4")), findsOneWidget);
+  });
+
+  testWidgets('doNotShowNewPatchVersionAvailable', (WidgetTester tester) async {
+    final store = SettingsStoreStub();
+    final version = Version(1, 2, 3);
+    final latestVersion = Version(1, 2, 4);
+    final update = Update(store, version, latestVersion, null, false);
+
+    final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: update);
+
+    await tester.pumpWidget(await makeTestableWidget(loginPage, store: store, locale: testLocale));
+    await tester.pumpAndSettle();
+
+    expect(find.text("1.2.3"), findsOneWidget);
+    expect(find.text(localizations.newerVersionAvailable("1.2.4")), findsNothing);
+  });
+
+  testWidgets('showObligatoryUpdateAvailableIfMajorVersionChanged', (WidgetTester tester) async {
+    final store = SettingsStoreStub();
+    final version = Version(1, 2, 3);
+    final latestVersion = Version(2, 0, 0);
+    final update = Update(store, version, latestVersion, null, false);
+
+    final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: update);
+
+    await tester.pumpWidget(await makeTestableWidget(loginPage, store: store, locale: testLocale));
+    await tester.pumpAndSettle();
+
+    expect(find.text("1.2.3"), findsOneWidget);
+    expect(find.text(localizations.newerVersionAvailable("2.0.0")), findsOneWidget);
+    expect(find.text(localizations.newerVersionAvailableObligatoryUpdate), findsOneWidget);
+  });
+
+  testWidgets('showInfoMessageAndDismiss', (WidgetTester tester) async {
+    final store = SettingsStoreStub();
+    final version = Version(1, 2, 3);
+    final messageStr = "Not so important message.";
+    final messageNum = 1234;
+    final message = InfoMessage(messageNum, InfoMessageSeverity.INFO, messageStr, null);
+    final update = Update(store, version, version, message, false);
+
+    final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: update);
+
+    await tester.pumpWidget(await makeTestableWidget(loginPage, store: store, locale: testLocale));
+    await tester.pumpAndSettle();
+
+    expect(find.text(messageStr), findsOneWidget);
+
+    final dismissBtn = find.widgetWithText(TextButton, localizations.ok);
+    await tester.tap(dismissBtn);
+    await tester.pumpAndSettle();
+
+    expect(store.confirmedMessageNumber, equals(messageNum));
+    expect(find.text(messageStr), findsNothing);
+  });
+
+  testWidgets('showCriticalMessageWithCustomDismissBtnLabelAndDismiss', (WidgetTester tester) async {
+    final store = SettingsStoreStub();
+    final version = Version(1, 2, 3);
+    final messageStr = "Important message.";
+    final dismissLabel = "Go away pls";
+    final messageNum = 1234;
+    final message = InfoMessage(messageNum, InfoMessageSeverity.CRITICAL, messageStr, dismissLabel);
+    final update = Update(store, version, version, message, false);
+
+    final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: update);
+
+    await tester.pumpWidget(await makeTestableWidget(loginPage, store: store, locale: testLocale));
+    await tester.pumpAndSettle();
+
+    expect(find.text(messageStr), findsOneWidget);
+
+    final dismissBtn = find.widgetWithText(OutlinedButton, dismissLabel);
+    await tester.tap(dismissBtn);
+    await tester.pumpAndSettle();
+
+    expect(store.confirmedMessageNumber, equals(messageNum));
+    expect(find.text(messageStr), findsNothing);
+  });
+
+  testWidgets('doNotShowDismissedInfoMessage', (WidgetTester tester) async {
+    final store = SettingsStoreStub();
+    final version = Version(1, 2, 3);
+    final messageStr = "Not so important message.";
+    final messageNum = 1234;
+    final message = InfoMessage(messageNum, InfoMessageSeverity.INFO, messageStr, null);
+    final update = Update(store, version, version, message, true);
+
+    final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: update);
+
+    await tester.pumpWidget(await makeTestableWidget(loginPage, store: store, locale: testLocale));
+    await tester.pumpAndSettle();
+
+    expect(find.text(messageStr), findsNothing);
+  });
+
+  testWidgets('doNotShowDismissedCriticalMessage', (WidgetTester tester) async {
+    final store = SettingsStoreStub();
+    final version = Version(1, 2, 3);
+    final messageStr = "Important message.";
+    final messageNum = 1234;
+    final message = InfoMessage(messageNum, InfoMessageSeverity.CRITICAL, messageStr, null);
+    final update = Update(store, version, version, message, true);
+
+    final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: update);
+
+    await tester.pumpWidget(await makeTestableWidget(loginPage, store: store, locale: testLocale));
+    await tester.pumpAndSettle();
+
+    expect(find.text(messageStr), findsNothing);
   });
 }
