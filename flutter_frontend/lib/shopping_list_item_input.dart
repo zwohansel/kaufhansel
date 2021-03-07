@@ -18,9 +18,9 @@ class ShoppingListItemInput extends StatefulWidget {
 
   ShoppingListItemInput(
       {@required ScrollController shoppingListScrollController,
+      @required void Function(String) onChange,
       String category,
-      bool enabled = true,
-      void Function(String) onChange})
+      bool enabled = true})
       : _shoppingListScrollController = shoppingListScrollController,
         _category = category,
         _enabled = enabled,
@@ -58,6 +58,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
     final name = _newItemNameController.value.text.trim();
     if (name.isNotEmpty) {
       addNewItem(name);
+      _focus.unfocus();
     } else {
       _focus.requestFocus();
     }
@@ -96,24 +97,41 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
     );
 
     return Container(
-        padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-        child: Row(
-          children: [
-            Expanded(
-                child: TextField(
-                    focusNode: _focus,
-                    textCapitalization: TextCapitalization.sentences,
-                    style: TextStyle(fontFamilyFallback: ['NotoColorEmoji']),
-                    decoration: InputDecoration(
-                        isDense: true,
-                        contentPadding: EdgeInsets.fromLTRB(12, 8, 12, 8),
-                        border: OutlineInputBorder(),
-                        hintText: AppLocalizations.of(context).shoppingListNeededHint),
-                    controller: _newItemNameController,
-                    enabled: !_submitting && widget._enabled,
-                    onSubmitted: (_) => addNewItemIfValid())),
-            Container(child: addButton, margin: EdgeInsets.only(left: 6.0)),
-          ],
-        ));
+      padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 5, bottom: 5),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+                focusNode: _focus,
+                autofocus: false,
+                textCapitalization: TextCapitalization.sentences,
+                style: TextStyle(fontFamilyFallback: ['NotoColorEmoji']),
+                decoration: InputDecoration(
+                    contentPadding: EdgeInsets.fromLTRB(12, 8, 12, 8),
+                    border: OutlineInputBorder(),
+                    hintText: AppLocalizations.of(context).shoppingListNeededHint,
+                    suffixIcon: _buildClearButton()),
+                controller: _newItemNameController,
+                enabled: !_submitting && widget._enabled,
+                onSubmitted: (_) => addNewItemIfValid()),
+          ),
+          Container(child: addButton, margin: EdgeInsets.only(left: 6.0)),
+        ],
+      ),
+    );
+  }
+
+  IconButton _buildClearButton() {
+    if (_newItemNameController.text.isEmpty) {
+      return null;
+    }
+    return IconButton(
+      icon: Icon(Icons.clear, color: Colors.black, size: 20),
+      splashRadius: 23,
+      onPressed: () {
+        _newItemNameController.clear();
+        _focus.unfocus();
+      },
+    );
   }
 }
