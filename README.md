@@ -46,6 +46,15 @@ Lets start with the backend first:
 
 > In debug mode the application will run against `localhost` where your dev-backend should be running.
 
+##### Code coverage
+
+1. Install lcov
+2. In ``flutter_frontend`` run:
+   ```
+   flutter test --coverage && lcov --remove coverage/lcov.info '*/generated/*' -o coverage/lcov_filter.info && genhtml coverage/lcov_filter.info --output-directory=./coverage/lcov_report
+   ```
+3. Open ``flutter_frontend/coverage/lcov_report/index.html``
+
 #### Web-Frontend
 
 > Work in progress

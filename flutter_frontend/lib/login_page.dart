@@ -485,53 +485,7 @@ class _LoginPageState extends State<LoginPage> {
           SizedBox(
             height: 10,
           ),
-          FormField<bool>(
-            validator: (checked) {
-              if (!checked) {
-                return "";
-              }
-              return null;
-            },
-            initialValue: false,
-            builder: (FormFieldState<bool> state) {
-              final textStyle = state.hasError
-                  ? TextStyle(color: Theme.of(context).errorColor)
-                  : Theme.of(context).textTheme.bodyText1;
-
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Checkbox(
-                    value: state.value,
-                    onChanged: state.didChange,
-                    visualDensity: VisualDensity.compact,
-                  ),
-                  SizedBox(width: 10),
-                  Flexible(
-                    child: RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(text: AppLocalizations.of(context).registrationConsentFirstPart, style: textStyle),
-                          TextSpan(
-                              text: AppLocalizations.of(context).privacyPolicy,
-                              style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
-                              recognizer: _tapRecognizer
-                                ..onTap = () => launch(AppLocalizations.of(context).privacyPolicyLink)),
-                          TextSpan(text: AppLocalizations.of(context).registrationConsentMiddlePart, style: textStyle),
-                          TextSpan(
-                              text: AppLocalizations.of(context).disclaimer,
-                              style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
-                              recognizer: _tapRecognizer
-                                ..onTap = () => launch(AppLocalizations.of(context).disclaimerLink)),
-                          TextSpan(text: AppLocalizations.of(context).registrationConsentLastPart, style: textStyle),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
+          _buildConsentCheckBox(),
           Padding(
               padding: EdgeInsets.only(top: 15),
               child: ElevatedButton(
@@ -545,6 +499,54 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ],
       ),
+    );
+  }
+
+  FormField<bool> _buildConsentCheckBox() {
+    return FormField<bool>(
+      validator: (checked) {
+        if (!checked) {
+          return "";
+        }
+        return null;
+      },
+      initialValue: false,
+      builder: (FormFieldState<bool> state) {
+        final textStyle =
+            state.hasError ? TextStyle(color: Theme.of(context).errorColor) : Theme.of(context).textTheme.bodyText1;
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Checkbox(
+              value: state.value,
+              onChanged: state.didChange,
+              visualDensity: VisualDensity.compact,
+            ),
+            SizedBox(width: 10),
+            Flexible(
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(text: AppLocalizations.of(context).registrationConsentFirstPart, style: textStyle),
+                    TextSpan(
+                        text: AppLocalizations.of(context).privacyPolicy,
+                        style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+                        recognizer: _tapRecognizer
+                          ..onTap = () => launch(AppLocalizations.of(context).privacyPolicyLink)),
+                    TextSpan(text: AppLocalizations.of(context).registrationConsentMiddlePart, style: textStyle),
+                    TextSpan(
+                        text: AppLocalizations.of(context).disclaimer,
+                        style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+                        recognizer: _tapRecognizer..onTap = () => launch(AppLocalizations.of(context).disclaimerLink)),
+                    TextSpan(text: AppLocalizations.of(context).registrationConsentLastPart, style: textStyle),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -588,7 +590,7 @@ class _LoginPageState extends State<LoginPage> {
             controller: _confirmPasswordController,
             enabled: !_isLoading(),
             decoration: InputDecoration(
-              hintText: AppLocalizations.of(context).passwordHint,
+              hintText: AppLocalizations.of(context).passwordConfirmationHint,
             ),
             obscureText: true,
             validator: (password) {
@@ -599,6 +601,10 @@ class _LoginPageState extends State<LoginPage> {
             },
             onFieldSubmitted: (_) => _registerWithoutEmail(),
           ),
+          SizedBox(
+            height: 10,
+          ),
+          _buildConsentCheckBox(),
           Padding(
               padding: EdgeInsets.only(top: 15),
               child: ElevatedButton(
