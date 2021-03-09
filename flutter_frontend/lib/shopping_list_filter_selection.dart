@@ -1,57 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 
-import 'package:kaufhansel_client/generated/l10n.dart';
-
 class ShoppingListFilterSelection extends StatelessWidget {
+  final BuildContext _context;
   final void Function(ShoppingListFilterOption nextFilter) _onFilterChanged;
   final ShoppingListFilterOption _filter;
 
-  const ShoppingListFilterSelection(this._onFilterChanged, this._filter);
+  const ShoppingListFilterSelection(this._context, this._onFilterChanged, this._filter);
 
   List<bool> _calculateSelection() {
     switch (_filter) {
       case ShoppingListFilterOption.UNCHECKED:
-        return [true, false];
+        return [false, true, false];
       case ShoppingListFilterOption.CHECKED:
-        return [false, true];
+        return [false, false, true];
       case ShoppingListFilterOption.ALL:
       default:
-        return [false, false];
+        return [true, false, false];
     }
   }
 
   void _setSelection(int index) {
-    if (index == 0) {
-      if (_filter == ShoppingListFilterOption.UNCHECKED) {
-        _onFilterChanged(ShoppingListFilterOption.ALL);
-      } else {
+    switch (index) {
+      case 1:
         _onFilterChanged(ShoppingListFilterOption.UNCHECKED);
-      }
-    } else if (index == 1) {
-      if (_filter == ShoppingListFilterOption.CHECKED) {
-        _onFilterChanged(ShoppingListFilterOption.ALL);
-      } else {
+        break;
+      case 2:
         _onFilterChanged(ShoppingListFilterOption.CHECKED);
-      }
+        break;
+      case 0:
+      default:
+        _onFilterChanged(ShoppingListFilterOption.ALL);
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(_) {
     return ToggleButtons(
         borderWidth: 2,
-        fillColor: Colors.white,
-        color: Colors.white,
-        selectedColor: Colors.black,
-        hoverColor: Theme.of(context).secondaryHeaderColor,
+        fillColor: Theme.of(_context).primaryColor,
+        color: Theme.of(_context).primaryColorDark,
+        selectedColor: Colors.white,
+        hoverColor: Theme.of(_context).secondaryHeaderColor,
         constraints: BoxConstraints.tightFor(height: 40, width: 40),
         children: [
           Tooltip(
-              message: AppLocalizations.of(context).shoppingListFilterNeeded,
+              message: AppLocalizations.of(_context).shoppingListFilterNone,
+              child: Icon(Icons.browser_not_supported_outlined)),
+          Tooltip(
+              message: AppLocalizations.of(_context).shoppingListFilterNeeded,
               child: Icon(Icons.check_box_outline_blank)),
           Tooltip(
-              message: AppLocalizations.of(context).shoppingListFilterAlreadyInCart,
+              message: AppLocalizations.of(_context).shoppingListFilterAlreadyInCart,
               child: Icon(Icons.check_box_outlined)),
         ],
         onPressed: _setSelection,

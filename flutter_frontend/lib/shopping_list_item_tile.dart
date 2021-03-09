@@ -12,14 +12,14 @@ import 'package:provider/provider.dart';
 
 class ShoppingListItemTile extends StatefulWidget {
   final bool _showUserCategory;
-  final ShoppingListMode _mode;
+  final ShoppingListModeOption _mode;
   final bool _enabled;
   final bool _canEditItems;
   final bool _canCheckItems;
 
   const ShoppingListItemTile(
       {bool showUserCategory = false,
-      ShoppingListMode mode = ShoppingListMode.DEFAULT,
+      ShoppingListModeOption mode = ShoppingListModeOption.DEFAULT,
       bool enabled = true,
       @required bool canEditItems,
       @required bool canCheckItems})
@@ -60,7 +60,7 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
         ));
       }
 
-      if (widget._mode == ShoppingListMode.EDITING && widget._canEditItems) {
+      if (widget._mode == ShoppingListModeOption.EDITING && widget._canEditItems) {
         return ListTile(
           title: Wrap(children: titleElements),
           trailing: _buildActionButton(item),
@@ -104,12 +104,12 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
     }
 
     switch (widget._mode) {
-      case ShoppingListMode.EDITING:
+      case ShoppingListModeOption.EDITING:
         return AsyncOperationIconButton(
             icon: Icon(Icons.delete), loading: _deleting, onPressed: _allowInput() ? () => _deleteItem(item) : null);
-      case ShoppingListMode.SHOPPING:
+      case ShoppingListModeOption.SHOPPING:
         return null;
-      case ShoppingListMode.DEFAULT:
+      case ShoppingListModeOption.DEFAULT:
       default:
         return AsyncOperationIconButton(
             icon: Icon(Icons.edit), loading: false, onPressed: _allowInput() ? () => _editItem(item) : null);

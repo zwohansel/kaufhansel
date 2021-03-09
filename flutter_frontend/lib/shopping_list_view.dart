@@ -12,13 +12,15 @@ import 'model.dart';
 
 class ShoppingListView extends StatefulWidget {
   ShoppingListView(
-      {String category, @required ShoppingListFilterOption filter, ShoppingListMode mode = ShoppingListMode.DEFAULT})
+      {String category,
+      @required ShoppingListFilterOption filter,
+      ShoppingListModeOption mode = ShoppingListModeOption.DEFAULT})
       : _category = category,
         _filter = filter,
         _mode = mode;
 
   final String _category;
-  final ShoppingListMode _mode;
+  final ShoppingListModeOption _mode;
   final ShoppingListFilterOption _filter;
 
   @override
@@ -90,7 +92,7 @@ class _ShoppingListViewState extends State<ShoppingListView> {
 
     final dividedTiles = _divideTilesWithKey(visibleItems.map(_createListTileForItem), context).toList();
 
-    if (widget._mode == ShoppingListMode.EDITING && canEditItems) {
+    if (widget._mode == ShoppingListModeOption.EDITING && canEditItems) {
       return Expanded(
           child: ReorderableListView(
         children: dividedTiles,

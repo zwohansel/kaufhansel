@@ -11,14 +11,14 @@ import 'model.dart';
 
 class ShoppingListPage extends StatefulWidget {
   final ShoppingListFilterOption _filter;
-  final ShoppingListMode _mode;
+  final ShoppingListModeOption _mode;
   final String _initialCategory;
   final List<String> _categories;
   final void Function(String) _onCategoryChanged;
   final Update _update;
 
   ShoppingListPage(this._categories, this._filter,
-      {ShoppingListMode mode = ShoppingListMode.DEFAULT,
+      {ShoppingListModeOption mode = ShoppingListModeOption.DEFAULT,
       String initialCategory,
       void Function(String) onCategoryChanged,
       Update update})

@@ -885,6 +885,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Filter`
+  String get shoppingListFilterTitle {
+    return Intl.message(
+      'Filter',
+      name: 'shoppingListFilterTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Kein Filter`
+  String get shoppingListFilterNone {
+    return Intl.message(
+      'Kein Filter',
+      name: 'shoppingListFilterNone',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Was muss ich noch kaufen`
   String get shoppingListFilterNeeded {
     return Intl.message(
@@ -905,20 +925,40 @@ class AppLocalizations {
     );
   }
 
-  /// `Einkaufsmodus`
+  /// `Modus`
+  String get shoppingListModeTitle {
+    return Intl.message(
+      'Modus',
+      name: 'shoppingListModeTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Guck-Modus`
+  String get shoppingListModeDefault {
+    return Intl.message(
+      'Guck-Modus',
+      name: 'shoppingListModeDefault',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Einkaufs-Modus`
   String get shoppingListModeShopping {
     return Intl.message(
-      'Einkaufsmodus',
+      'Einkaufs-Modus',
       name: 'shoppingListModeShopping',
       desc: '',
       args: [],
     );
   }
 
-  /// `Editiermodus`
+  /// `Editier-Modus`
   String get shoppingListModeEditing {
     return Intl.message(
-      'Editiermodus',
+      'Editier-Modus',
       name: 'shoppingListModeEditing',
       desc: '',
       args: [],
