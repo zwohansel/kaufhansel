@@ -385,6 +385,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Was ist ein Schreibhansel?`
+  String get roleReadWriteWhatIsIt {
+    return Intl.message(
+      'Was ist ein Schreibhansel?',
+      name: 'roleReadWriteWhatIsIt',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Kaufhansel`
   String get roleCheckOnlyName {
     return Intl.message(
@@ -420,6 +430,16 @@ class AppLocalizations {
     return Intl.message(
       'Darf die Liste anschauen, aber nix ändern',
       name: 'roleReadOnlyDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Welche Rollen gibt es?`
+  String get rolesWhich {
+    return Intl.message(
+      'Welche Rollen gibt es?',
+      name: 'rolesWhich',
       desc: '',
       args: [],
     );

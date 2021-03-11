@@ -38,10 +38,12 @@
   "roleAdminDescription": "Darf alles: Dinge hinzufügen und entfernen, Haken setzen und entfernen. Darf neue Hansel zur Liste hinzufügen.\nEinmal Chefhansel, immer Chefhansel: diese Rolle kannst du nicht mehr ändern",
   "roleReadWriteName": "Schreibhansel",
   "roleReadWriteDescription": "Darf Dinge hinzufügen und entfernen, darf Haken setzen und entfernen",
+  "roleReadWriteWhatIsIt": "Was ist ein Schreibhansel?",
   "roleCheckOnlyName": "Kaufhansel",
   "roleCheckOnlyDescription": "Darf Haken setzen und entfernen",
   "roleReadOnlyName": "Guckhansel",
   "roleReadOnlyDescription": "Darf die Liste anschauen, aber nix ändern",
+  "rolesWhich": "Welche Rollen gibt es?",
 
   "emailHint": "Email-Adresse",
   "emailInvalid": "Gib eine gültige Email-Adresse ein",

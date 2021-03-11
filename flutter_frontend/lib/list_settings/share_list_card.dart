@@ -91,51 +91,66 @@ class _ShareListCardState extends State<ShareListCard> {
           SizedBox(height: 12),
           Text(AppLocalizations.of(context).listSettingsShareWithOtherInfo, style: getCardSubtitleStyle(context)),
           SizedBox(height: 12),
-          Row(children: [
-            Expanded(
+          TextButton(
+            onPressed: () => _buildPermissionsDialog(context),
+            child: Text(
+                AppLocalizations.of(context).roleReadWriteWhatIsIt + " " + AppLocalizations.of(context).rolesWhich),
+            style: ButtonStyle(alignment: Alignment.centerLeft),
+          ),
+          SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
                 child: Form(
-                    key: _addUserToShoppingListFormKey,
-                    child: TextFormField(
-                      focusNode: _addUserToShoppingListFocusNode,
-                      controller: _addUserTextEditingController,
-                      enabled: !widget._loading,
-                      onFieldSubmitted: (_) => _onAddUserToShoppingList(),
-                      decoration: InputDecoration(
-                        hintText: AppLocalizations.of(context).listSettingsAddUserToListEmailAddressHint,
-                      ),
-                      validator: (emailAddress) {
-                        if (!isValidEMailAddress(emailAddress)) {
-                          return AppLocalizations.of(context).emailInvalid;
-                        }
-                        return null;
-                      },
-                    ))),
-            IconButton(
-              icon: Icon(Icons.add),
-              onPressed: widget._loading ? null : _onAddUserToShoppingList,
-            )
-          ])
+                  key: _addUserToShoppingListFormKey,
+                  child: TextFormField(
+                    focusNode: _addUserToShoppingListFocusNode,
+                    controller: _addUserTextEditingController,
+                    enabled: !widget._loading,
+                    onFieldSubmitted: (_) => _onAddUserToShoppingList(),
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context).listSettingsAddUserToListEmailAddressHint,
+                    ),
+                    validator: (emailAddress) {
+                      if (!isValidEMailAddress(emailAddress)) {
+                        return AppLocalizations.of(context).emailInvalid;
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.add),
+                onPressed: widget._loading ? null : _onAddUserToShoppingList,
+              )
+            ],
+          )
         ],
       ),
     );
   }
 
-  Future<ShoppingListRole> _buildChangePermissionsDialog(BuildContext context, ShoppingListUserReference user) {
-    if (user.userRole == ShoppingListRole.ADMIN) {
-      showErrorDialog(context, AppLocalizations.of(context).exceptionCantChangeAdminRole);
-      return null;
-    }
-
+  Future<ShoppingListRole> _buildPermissionsDialog(BuildContext context, {ShoppingListUserReference user}) {
+    final title = user == null
+        ? AppLocalizations.of(context).rolesWhich
+        : AppLocalizations.of(context).listSettingsChangeUserRole(user?.userName);
     return showDialog<ShoppingListRole>(
         context: context,
         builder: (context) => SimpleDialog(
-            title: Text(AppLocalizations.of(context).listSettingsChangeUserRole(user.userName)),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(child: Text(title)),
+                IconButton(icon: Icon(Icons.close), splashRadius: 24, onPressed: () => Navigator.pop(context, null))
+              ],
+            ),
             children: ShoppingListRole.values
-                .map((role) => _buildRoleOption(context, role, user.userRole == role))
+                .map((role) => _buildRoleOption(context, role, user?.userRole == role, preview: user == null))
                 .toList()));
   }
 
-  Widget _buildRoleOption(BuildContext context, ShoppingListRole role, bool selected) {
+  Widget _buildRoleOption(BuildContext context, ShoppingListRole role, bool selected, {bool preview}) {
     return Container(
         color: selected ? Theme.of(context).highlightColor : null,
         child: SimpleDialogOption(
@@ -156,7 +171,7 @@ class _ShareListCardState extends State<ShareListCard> {
               ),
             ),
           ]),
-          onPressed: () => Navigator.pop(context, role),
+          onPressed: preview ? null : () => Navigator.pop(context, role),
         ));
   }
 
@@ -203,9 +218,14 @@ class _ShareListCardState extends State<ShareListCard> {
   }
 
   void _onChangePermissions(ShoppingListUserReference user) async {
+    if (user.userRole == ShoppingListRole.ADMIN) {
+      showErrorDialog(context, AppLocalizations.of(context).exceptionCantChangeAdminRole);
+      return null;
+    }
+
     widget._setLoading(true);
     try {
-      final nextRole = await _buildChangePermissionsDialog(context, user);
+      final nextRole = await _buildPermissionsDialog(context, user: user);
       if (nextRole != null && nextRole != user.userRole) {
         await widget._onChangeShoppingListPermissions(user.userId, nextRole);
       }
