@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
-import 'package:kaufhansel_client/login_page.dart';
+import 'package:kaufhansel_client/login/login_page.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/settings/settings_store.dart';
 import 'package:kaufhansel_client/settings/settings_store_widget.dart';

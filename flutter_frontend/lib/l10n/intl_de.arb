@@ -52,7 +52,7 @@
   "passwordInvalid": "Denk dir was besseres aus",
   "passwordConfirmationHint": "Kennwort bestätigen",
   "passwordConfirmationInvalid": "Gib dein Kennwort nochmal ein",
-  "passwordResetInfo": "Falls du beim Kaufhansel registriert bist, haben wir dir eine Email mit einem Wiederherstellungs-Code geschickt. Gib den Code hier ein, um dein Kennwort zurückzusetzen.",
+  "passwordResetInfo": "Gib hier den Wiederherstellungs-Code ein den wir an deine Email Adresse geschickt haben, um dein Kennwort zurückzusetzen.",
   "passwordResetCodeHint": "Wiederherstellungs-Code",
   "passwordResetCodeInvalid": "Gib den Wiederherstellungs-Code ein",
   "passwordNewHint": "Neues Kennwort",

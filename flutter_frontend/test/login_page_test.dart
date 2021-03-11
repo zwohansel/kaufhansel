@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
-import 'package:kaufhansel_client/login_page.dart';
+import 'package:kaufhansel_client/login/login_page.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 import 'package:kaufhansel_client/utils/update_check.dart';

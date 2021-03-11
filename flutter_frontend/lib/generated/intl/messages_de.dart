@@ -173,7 +173,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "passwordNewHint" : MessageLookupByLibrary.simpleMessage("Neues Kennwort"),
     "passwordResetCodeHint" : MessageLookupByLibrary.simpleMessage("Wiederherstellungs-Code"),
     "passwordResetCodeInvalid" : MessageLookupByLibrary.simpleMessage("Gib den Wiederherstellungs-Code ein"),
-    "passwordResetInfo" : MessageLookupByLibrary.simpleMessage("Falls du beim Kaufhansel registriert bist, haben wir dir eine Email mit einem Wiederherstellungs-Code geschickt. Gib den Code hier ein, um dein Kennwort zurückzusetzen."),
+    "passwordResetInfo" : MessageLookupByLibrary.simpleMessage("Gib hier den Wiederherstellungs-Code ein den wir an deine Email Adresse geschickt haben, um dein Kennwort zurückzusetzen."),
     "passwordToShort" : MessageLookupByLibrary.simpleMessage("Mindestens 8 Zeichen"),
     "privacyPolicy" : MessageLookupByLibrary.simpleMessage("Datenschutzerklärung"),
     "privacyPolicyLink" : MessageLookupByLibrary.simpleMessage("https://zwohansel.de/kaufhansel/privacy_de.html"),

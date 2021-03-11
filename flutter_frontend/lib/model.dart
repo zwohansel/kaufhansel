@@ -438,6 +438,10 @@ class RegistrationResult {
     return new RegistrationResult(_RegistrationResultStates.fromString(json.get("status")));
   }
 
+  factory RegistrationResult.failure() {
+    return RegistrationResult(RegistrationResultStatus.FAILURE);
+  }
+
   bool isSuccess() => _status == RegistrationResultStatus.SUCCESS;
 
   bool isInviteCodeInvalid() => _status == RegistrationResultStatus.INVITE_CODE_INVALID;
@@ -445,6 +449,8 @@ class RegistrationResult {
   bool isEMailAddressInvalid() => _status == RegistrationResultStatus.EMAIL_INVALID;
 
   bool isPasswordInvalid() => _status == RegistrationResultStatus.PASSWORD_INVALID;
+
+  bool isUnknownFailure() => _status == RegistrationResultStatus.FAILURE;
 }
 
 enum InfoMessageSeverity { CRITICAL, INFO }
