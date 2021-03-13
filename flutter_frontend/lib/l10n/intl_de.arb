@@ -245,6 +245,13 @@
       "shoppingListName": {}
     }
   },
+  "listSettingsLeaveListConfirmationText": "Möchtest du {shoppingListName} wirklich verlassen?",
+  "@listSettingsLeaveListConfirmationText": {
+    "type": "text",
+    "placeholders": {
+      "shoppingListName": {}
+    }
+  },
 
   "exceptionFatal": "Jetzt ist der Kaufhansel abgestürzt.",
   "exceptionGeneralTryAgainLater": "Das hat nicht geklappt. Probier es später noch einmal.",

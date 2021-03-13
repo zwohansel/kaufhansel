@@ -30,7 +30,7 @@ class DangerCard extends StatelessWidget {
             Text(AppLocalizations.of(context).listSettingsDangerZoneTitle, style: getCardHeadlineStyle(context)),
             SizedBox(height: 12),
             OutlinedButton(
-              child: Text(_canDeleteList()
+              child: Text(_willDeleteList()
                   ? AppLocalizations.of(context).listSettingsDeleteList
                   : AppLocalizations.of(context).listSettingsLeaveList),
               style: OutlinedButton.styleFrom(primary: Colors.red),
@@ -43,18 +43,18 @@ class DangerCard extends StatelessWidget {
     );
   }
 
-  bool _canDeleteList() {
-    // The user can delete the list if he is the only ADMIN
+  bool _willDeleteList() {
+    // The user will delete the list if he is the only ADMIN
     return _shoppingListInfo.permissions.role == ShoppingListRole.ADMIN &&
         !_shoppingListInfo.users.any((element) => element.userRole == ShoppingListRole.ADMIN);
   }
 
   Widget _buildDeleteLeaveBtnExplanation(BuildContext context) {
     String explanation;
-    if (_canDeleteList() && _shoppingListInfo.users.length > 0) {
+    if (_willDeleteList() && _shoppingListInfo.users.length > 0) {
       explanation = AppLocalizations.of(context)
           .listSettingsLeaveExplanationOnlyAdmin(ShoppingListRole.ADMIN.toDisplayString(context));
-    } else if (_shoppingListInfo.permissions.role == ShoppingListRole.ADMIN && !_canDeleteList()) {
+    } else if (_shoppingListInfo.permissions.role == ShoppingListRole.ADMIN && !_willDeleteList()) {
       explanation = AppLocalizations.of(context)
           .listSettingsLeaveExplanationOtherAdminsPresent(ShoppingListRole.ADMIN.toDisplayString(context));
     }
@@ -66,16 +66,21 @@ class DangerCard extends StatelessWidget {
   }
 
   void _onDeleteShoppingList(BuildContext context) async {
+    final localization = AppLocalizations.of(context);
     _setLoading(true);
     try {
       final deleteList = await showConfirmDialog(
-          context, AppLocalizations.of(context).listSettingsDeleteListConfirmationText(_shoppingListInfo.name));
+        context,
+        _willDeleteList()
+            ? localization.listSettingsDeleteListConfirmationText(_shoppingListInfo.name)
+            : localization.listSettingsLeaveListConfirmationText(_shoppingListInfo.name),
+      );
       if (deleteList) {
         await _deleteShoppingList();
         Navigator.pop(context);
       }
     } catch (e) {
-      showErrorDialog(context, AppLocalizations.of(context).exceptionDeleteListFailed);
+      showErrorDialog(context, localization.exceptionDeleteListFailed);
     } finally {
       _setLoading(false);
     }

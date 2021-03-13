@@ -1385,6 +1385,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Möchtest du {shoppingListName} wirklich verlassen?`
+  String listSettingsLeaveListConfirmationText(Object shoppingListName) {
+    return Intl.message(
+      'Möchtest du $shoppingListName wirklich verlassen?',
+      name: 'listSettingsLeaveListConfirmationText',
+      desc: '',
+      args: [shoppingListName],
+    );
+  }
+
   /// `Jetzt ist der Kaufhansel abgestürzt.`
   String get exceptionFatal {
     return Intl.message(
