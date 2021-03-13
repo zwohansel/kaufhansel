@@ -69,7 +69,14 @@ class _ShareListCardState extends State<ShareListCard> {
               mainAxisSize: MainAxisSize.min,
               children: ListTile.divideTiles(context: context, tiles: [currentUser, ...otherUsers]).toList(),
             ),
-            _buildAddUserWidget(context)
+            _buildAddUserWidget(context),
+            SizedBox(height: 24),
+            TextButton(
+              onPressed: () => _buildPermissionsDialog(context),
+              child: Text(
+                  AppLocalizations.of(context).roleReadWriteWhatIsIt + " " + AppLocalizations.of(context).rolesWhich),
+              style: ButtonStyle(alignment: Alignment.centerLeft),
+            ),
           ],
         ),
       ),
@@ -90,13 +97,6 @@ class _ShareListCardState extends State<ShareListCard> {
           Text(AppLocalizations.of(context).listSettingsShareWithOther, style: getCardHeadlineStyle(context)),
           SizedBox(height: 12),
           Text(AppLocalizations.of(context).listSettingsShareWithOtherInfo, style: getCardSubtitleStyle(context)),
-          SizedBox(height: 12),
-          TextButton(
-            onPressed: () => _buildPermissionsDialog(context),
-            child: Text(
-                AppLocalizations.of(context).roleReadWriteWhatIsIt + " " + AppLocalizations.of(context).rolesWhich),
-            style: ButtonStyle(alignment: Alignment.centerLeft),
-          ),
           SizedBox(height: 12),
           Row(
             children: [

@@ -1235,10 +1235,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Wenn du nichts änderst, kann der neue Hansel Dinge hinzufügen und entfernen, er darf Haken setzen und entfernen. Er ist ein Schreibhansel.`
+  /// `Neue Hansel werden als Schreibhansel hinzugefügt: sie können Dinge hinzufügen und entfernen; Dinge abhaken und Haken entfernen. Das kannst ändern, nachdem der neue Hansel in der Liste ist.`
   String get listSettingsShareWithOtherInfo {
     return Intl.message(
-      'Wenn du nichts änderst, kann der neue Hansel Dinge hinzufügen und entfernen, er darf Haken setzen und entfernen. Er ist ein Schreibhansel.',
+      'Neue Hansel werden als Schreibhansel hinzugefügt: sie können Dinge hinzufügen und entfernen; Dinge abhaken und Haken entfernen. Das kannst ändern, nachdem der neue Hansel in der Liste ist.',
       name: 'listSettingsShareWithOtherInfo',
       desc: '',
       args: [],

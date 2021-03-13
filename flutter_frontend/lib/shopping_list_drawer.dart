@@ -195,7 +195,7 @@ class ShoppingListDrawer extends StatelessWidget {
   }
 
   StatelessWidget _buildListSettingsMenuItem(BuildContext context, ShoppingListInfo currentList) {
-    if (currentList == null || !currentList.permissions.canEditList) {
+    if (currentList == null) {
       return Container();
     }
     return ListTile(
