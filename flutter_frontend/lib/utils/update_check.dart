@@ -58,9 +58,10 @@ class Update {
   InfoMessage get infoMessage => _message;
 
   void confirmMessage() {
-    assert(_message != null);
     _messageConfirmed = true;
-    _settingsStore.confirmInfoMessage(_message.messageNumber);
+    if (_message != null) {
+      _settingsStore.confirmInfoMessage(_message.messageNumber);
+    }
   }
 }
 

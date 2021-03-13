@@ -57,7 +57,8 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
     }
 
     assert(widget._categories.isNotEmpty, "There must be at least one category.");
-    assert(widget._categories.contains(widget._initialCategory), "Invalid initial category.");
+    assert(widget._initialCategory == null || widget._categories.contains(widget._initialCategory),
+        "Invalid initial category.");
     final initialIndex = widget._initialCategory != null ? widget._categories.indexOf(widget._initialCategory) : 0;
     _tabController = TabController(length: widget._categories.length, initialIndex: initialIndex, vsync: this);
     _tabController.addListener(this._tabControllerChanged);
