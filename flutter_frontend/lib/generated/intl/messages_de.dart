@@ -124,6 +124,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "exceptionSendListInvitationFailed" : MessageLookupByLibrary.simpleMessage("Das Verschicken der Einladungs-Email hat leider nicht geklappt. Ruf den Hansel doch einfach mal an."),
     "exceptionUpdateCheckFailed" : MessageLookupByLibrary.simpleMessage("Hast du kein Internet oder ist der Server nicht erreichbar?\nSo können wir jedenfalls nicht prüfen, ob dein Kaufhansel noch aktuell ist!"),
     "exceptionWrongCredentials" : MessageLookupByLibrary.simpleMessage("Haben wir Deinen Account gelöscht oder hast Du Deine Zugangsdaten vergessen?"),
+    "general" : MessageLookupByLibrary.simpleMessage("Allgemein"),
     "important" : MessageLookupByLibrary.simpleMessage("Achtung!"),
     "invitationCodeEmpty" : MessageLookupByLibrary.simpleMessage("Gib deinen Einladungs-Code ein"),
     "invitationCodeGenerate" : MessageLookupByLibrary.simpleMessage("Einladungs-Code generieren"),

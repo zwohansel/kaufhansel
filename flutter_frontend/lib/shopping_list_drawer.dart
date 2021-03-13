@@ -67,6 +67,7 @@ class ShoppingListDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (_shoppingListInfos == null) {
+      //TODO: should not be null here
       return Container();
     }
 
@@ -167,7 +168,7 @@ class ShoppingListDrawer extends StatelessWidget {
         children: [
           Flexible(
             child: currentList == null
-                ? Text(AppLocalizations.of(context).appTitle, style: Theme.of(context).primaryTextTheme.headline6)
+                ? Text(AppLocalizations.of(context).general, style: Theme.of(context).primaryTextTheme.bodyText1)
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

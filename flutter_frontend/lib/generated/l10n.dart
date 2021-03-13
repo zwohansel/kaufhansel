@@ -255,6 +255,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Allgemein`
+  String get general {
+    return Intl.message(
+      'Allgemein',
+      name: 'general',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `App-Einstellungen`
   String get appSettings {
     return Intl.message(
