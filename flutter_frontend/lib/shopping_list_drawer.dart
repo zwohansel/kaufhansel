@@ -255,7 +255,6 @@ class ShoppingListDrawer extends StatelessWidget {
   Future<void> _onUncheckAllItemsPressed(BuildContext context, ShoppingListInfo shoppingListInfo) async {
     if (await showConfirmDialog(context, AppLocalizations.of(context).listSettingsUncheckAllItemsConfirmationText,
         confirmBtnLabel: AppLocalizations.of(context).yes, cancelBtnLabel: AppLocalizations.of(context).no)) {
-      await _onUncheckAllItemsPressed(context, shoppingListInfo);
       try {
         await _onUncheckAllItems(shoppingListInfo);
       } catch (e) {

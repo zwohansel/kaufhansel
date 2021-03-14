@@ -85,6 +85,42 @@ void main() {
     checkAlwaysPresentOptions(localizations);
     expect(find.widgetWithText(Container, localizations.general), findsOneWidget);
   });
+
+  testWidgets('uncheckAllItems', (WidgetTester tester) async {
+    final RestClientStub client = RestClientStub();
+
+    final info = ShoppingListInfo("0", "List", ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true), []);
+
+    ShoppingListInfo uncheckAllCallbackValue;
+    ShoppingListDrawer drawer = _buildDrawer(
+      [info],
+      info.id,
+      null,
+      onUncheckAllItems: (info) {
+        uncheckAllCallbackValue = info;
+        return null;
+      },
+    );
+
+    await tester.pumpWidget(await makeTestableWidget(drawer, restClient: client, locale: testLocale));
+    await tester.pumpAndSettle();
+
+    final uncheckAllMenuItem = find.widgetWithText(ListTile, localizations.listSettingsUncheckAllItems);
+    expect(uncheckAllMenuItem, findsOneWidget);
+    await tester.tap(uncheckAllMenuItem);
+    await tester.pumpAndSettle();
+
+    // Callback should not have been invoked yet... user has to confirm first
+    expect(uncheckAllCallbackValue, isNull);
+
+    expect(find.text(localizations.listSettingsUncheckAllItemsConfirmationText), findsOneWidget);
+    final confirmBtn = find.widgetWithText(ElevatedButton, localizations.yes);
+    expect(confirmBtn, findsOneWidget);
+    await tester.tap(confirmBtn);
+    await tester.pumpAndSettle();
+
+    expect(uncheckAllCallbackValue, equals(info));
+  });
 }
 
 void checkAlwaysPresentOptions(AppLocalizations localizations) {
@@ -129,44 +165,24 @@ ShoppingListInfo buildShoppingListInfo(ShoppingListPermissions permissions) =>
     ShoppingListInfo("id0", "List0", permissions, []);
 
 ShoppingListDrawer _buildDrawer(
-    List<ShoppingListInfo> shoppingLists, String selectedShoppingListId, ShoppingListUserInfo userInfo) {
+    List<ShoppingListInfo> shoppingLists, String selectedShoppingListId, ShoppingListUserInfo userInfo,
+    {Future<void> onUncheckAllItems(ShoppingListInfo info)}) {
   return ShoppingListDrawer(
-      shoppingLists: shoppingLists,
-      selectedShoppingListId: selectedShoppingListId,
-      userInfo: userInfo,
-      onRefreshPressed: () {},
-      onShoppingListSelected: (info) {},
-      onCreateShoppingList: (name) {
-        return null;
-      },
-      onDeleteShoppingList: (info) {
-        return null;
-      },
-      onAddUserToShoppingListIfPresent: (info, user) {
-        return null;
-      },
-      onUncheckAllItems: (info) {
-        return null;
-      },
-      onRemoveAllCategories: (info) {
-        return null;
-      },
-      onRemoveAllItems: (info) {
-        return null;
-      },
-      onChangeShoppingListPermissions: (info, string, role) {
-        return null;
-      },
-      onRemoveUserFromShoppingList: (info, userRef) {
-        return null;
-      },
-      onChangeShoppingListName: (info, name) {
-        return null;
-      },
-      onLogOut: () {
-        return null;
-      },
-      onDeleteUserAccount: () {
-        return null;
-      });
+    shoppingLists: shoppingLists,
+    selectedShoppingListId: selectedShoppingListId,
+    userInfo: userInfo,
+    onRefreshPressed: () {},
+    onShoppingListSelected: (info) {},
+    onCreateShoppingList: (name) => null,
+    onDeleteShoppingList: (info) => null,
+    onAddUserToShoppingListIfPresent: (info, user) => null,
+    onUncheckAllItems: onUncheckAllItems ?? (info) => null,
+    onRemoveAllCategories: (info) => null,
+    onRemoveAllItems: (info) => null,
+    onChangeShoppingListPermissions: (info, string, role) => null,
+    onRemoveUserFromShoppingList: (info, userRef) => null,
+    onChangeShoppingListName: (info, name) => null,
+    onLogOut: () => null,
+    onDeleteUserAccount: () => null,
+  );
 }
