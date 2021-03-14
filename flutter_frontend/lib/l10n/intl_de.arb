@@ -159,8 +159,8 @@
   "listSettingsUncheckAllItems": "Alle Häkchen entfernen...",
   "listSettingsUncheckAllItemsConfirmationText": "Möchtest du wirklich alle Häkchen entfernen?",
 
-  "listSettingsClearAllCategories": "Alle Kategorien entfernen...",
-  "listSettingsClearAllCategoriesConfirmationText": "Möchtest du wirklich alle Kategorien entfernen?",
+  "listSettingsRemoveAllCategories": "Alle Kategorien entfernen...",
+  "listSettingsRemoveAllCategoriesConfirmationText": "Möchtest du wirklich alle Kategorien entfernen?",
 
   "listSettingsClearList": "Liste leeren...",
   "listSettingsClearListConfirmationText": "Möchtest du wirklich alle Elemente aus {shoppingListName} unwiederbringlich entfernen?",

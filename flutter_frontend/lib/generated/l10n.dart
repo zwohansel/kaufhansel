@@ -1166,20 +1166,20 @@ class AppLocalizations {
   }
 
   /// `Alle Kategorien entfernen...`
-  String get listSettingsClearAllCategories {
+  String get listSettingsRemoveAllCategories {
     return Intl.message(
       'Alle Kategorien entfernen...',
-      name: 'listSettingsClearAllCategories',
+      name: 'listSettingsRemoveAllCategories',
       desc: '',
       args: [],
     );
   }
 
   /// `Möchtest du wirklich alle Kategorien entfernen?`
-  String get listSettingsClearAllCategoriesConfirmationText {
+  String get listSettingsRemoveAllCategoriesConfirmationText {
     return Intl.message(
       'Möchtest du wirklich alle Kategorien entfernen?',
-      name: 'listSettingsClearAllCategoriesConfirmationText',
+      name: 'listSettingsRemoveAllCategoriesConfirmationText',
       desc: '',
       args: [],
     );

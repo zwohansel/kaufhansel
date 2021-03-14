@@ -365,7 +365,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
             ),
             endDrawer: ShoppingListDrawer(
                 onRefreshPressed: _fetchShoppingListInfos,
-                shoppingLists: _shoppingListInfos,
+                shoppingListInfos: _shoppingListInfos ?? [],
                 selectedShoppingListId: _currentShoppingListInfo?.id,
                 onShoppingListSelected: _selectShoppingList,
                 onCreateShoppingList: _createShoppingList,

@@ -19,7 +19,7 @@ void main() {
 
   testWidgets('drawerWithAdminListSelected', (WidgetTester tester) async {
     final RestClientStub client = new RestClientStub();
-    ShoppingListDrawer drawer = createDrawer(createAdminList());
+    final drawer = createDrawer(createAdminList());
 
     await tester.pumpWidget(await makeTestableWidget(drawer, restClient: client, locale: testLocale));
     await tester.pumpAndSettle();
@@ -29,12 +29,12 @@ void main() {
     expect(find.widgetWithText(Container, "List0"), findsOneWidget);
     expect(find.widgetWithText(ListTile, localizations.listSettings), findsOneWidget);
     expect(find.widgetWithText(ListTile, localizations.listSettingsUncheckAllItems), findsOneWidget);
-    expect(find.widgetWithText(ListTile, localizations.listSettingsClearAllCategories), findsOneWidget);
+    expect(find.widgetWithText(ListTile, localizations.listSettingsRemoveAllCategories), findsOneWidget);
   });
 
   testWidgets('drawerWithReadWriteListSelected', (WidgetTester tester) async {
     final RestClientStub client = new RestClientStub();
-    ShoppingListDrawer drawer = createDrawer(createReadWriteList());
+    final drawer = createDrawer(createReadWriteList());
 
     await tester.pumpWidget(await makeTestableWidget(drawer, restClient: client, locale: testLocale));
     await tester.pumpAndSettle();
@@ -44,12 +44,12 @@ void main() {
     expect(find.widgetWithText(Container, "List0"), findsOneWidget);
     expect(find.widgetWithText(ListTile, localizations.listSettings), findsOneWidget);
     expect(find.widgetWithText(ListTile, localizations.listSettingsUncheckAllItems), findsOneWidget);
-    expect(find.widgetWithText(ListTile, localizations.listSettingsClearAllCategories), findsOneWidget);
+    expect(find.widgetWithText(ListTile, localizations.listSettingsRemoveAllCategories), findsOneWidget);
   });
 
   testWidgets('drawerWithCheckOnlyListSelected', (WidgetTester tester) async {
     final RestClientStub client = new RestClientStub();
-    ShoppingListDrawer drawer = createDrawer(createCheckOnlyList());
+    final drawer = createDrawer(createCheckOnlyList());
 
     await tester.pumpWidget(await makeTestableWidget(drawer, restClient: client, locale: testLocale));
     await tester.pumpAndSettle();
@@ -64,7 +64,7 @@ void main() {
 
   testWidgets('drawerWithReadOnlyListSelected', (WidgetTester tester) async {
     final RestClientStub client = new RestClientStub();
-    ShoppingListDrawer drawer = createDrawer(createReadOnlyList());
+    final drawer = createDrawer(createReadOnlyList());
 
     await tester.pumpWidget(await makeTestableWidget(drawer, restClient: client, locale: testLocale));
     await tester.pumpAndSettle();
@@ -77,7 +77,7 @@ void main() {
 
   testWidgets('drawerWithNoList', (WidgetTester tester) async {
     final RestClientStub client = new RestClientStub();
-    ShoppingListDrawer drawer = _buildDrawer([], null, null);
+    final drawer = _buildDrawer();
 
     await tester.pumpWidget(await makeTestableWidget(drawer, restClient: client, locale: testLocale));
     await tester.pumpAndSettle();
@@ -92,10 +92,9 @@ void main() {
     final info = ShoppingListInfo("0", "List", ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true), []);
 
     ShoppingListInfo uncheckAllCallbackValue;
-    ShoppingListDrawer drawer = _buildDrawer(
-      [info],
-      info.id,
-      null,
+    final drawer = _buildDrawer(
+      shoppingLists: [info],
+      selectedShoppingListId: info.id,
       onUncheckAllItems: (info) {
         uncheckAllCallbackValue = info;
         return null;
@@ -120,6 +119,137 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(uncheckAllCallbackValue, equals(info));
+  });
+
+  testWidgets('removeAllCategories', (WidgetTester tester) async {
+    final RestClientStub client = RestClientStub();
+
+    final info = ShoppingListInfo("0", "List", ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true), []);
+
+    ShoppingListInfo removeAllCategoriesCallbackValue;
+    final drawer = _buildDrawer(
+      shoppingLists: [info],
+      selectedShoppingListId: info.id,
+      onRemoveAllCategories: (info) {
+        removeAllCategoriesCallbackValue = info;
+        return null;
+      },
+    );
+
+    await tester.pumpWidget(await makeTestableWidget(drawer, restClient: client, locale: testLocale));
+    await tester.pumpAndSettle();
+
+    final removeAllCategoriesMenuItem = find.widgetWithText(ListTile, localizations.listSettingsRemoveAllCategories);
+    expect(removeAllCategoriesMenuItem, findsOneWidget);
+    await tester.tap(removeAllCategoriesMenuItem);
+    await tester.pumpAndSettle();
+
+    // Callback should not have been invoked yet... user has to confirm first
+    expect(removeAllCategoriesCallbackValue, isNull);
+
+    expect(find.text(localizations.listSettingsRemoveAllCategoriesConfirmationText), findsOneWidget);
+    final confirmBtn = find.widgetWithText(ElevatedButton, localizations.yes);
+    expect(confirmBtn, findsOneWidget);
+    await tester.tap(confirmBtn);
+    await tester.pumpAndSettle();
+
+    expect(removeAllCategoriesCallbackValue, equals(info));
+  });
+
+  testWidgets('selectShoppingList', (WidgetTester tester) async {
+    final RestClientStub client = RestClientStub();
+
+    final info0 = ShoppingListInfo("0", "List0", ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true), []);
+    final info1 = ShoppingListInfo("1", "List1", ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true), []);
+
+    ShoppingListInfo selectedList;
+    final drawer = _buildDrawer(
+      shoppingLists: [info0, info1],
+      selectedShoppingListId: info0.id,
+      onShoppingListSelected: (info) => selectedList = info,
+    );
+
+    await tester.pumpWidget(await makeTestableWidget(drawer, restClient: client, locale: testLocale));
+    await tester.pumpAndSettle();
+
+    final listItem = find.widgetWithText(ListTile, info1.name);
+    expect(listItem, findsOneWidget);
+    await tester.tap(listItem);
+    await tester.pumpAndSettle();
+
+    expect(selectedList, equals(info1));
+  });
+
+  testWidgets('showInfoWhenSelectingReadOnlyList', (WidgetTester tester) async {
+    final RestClientStub client = RestClientStub();
+
+    final info0 = ShoppingListInfo(
+      "0",
+      "List0",
+      ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true),
+      [],
+    );
+    final info1 = ShoppingListInfo(
+      "1",
+      "List1",
+      ShoppingListPermissions(ShoppingListRole.READ_ONLY, false, false, false),
+      [],
+    );
+
+    final drawer = _buildDrawer(
+      shoppingLists: [info0, info1],
+      selectedShoppingListId: info0.id,
+    );
+
+    // We need a drawer for the snackbar that contains the info message
+    final Scaffold scaffold = Scaffold(body: drawer);
+
+    await tester.pumpWidget(await makeTestableWidget(scaffold, restClient: client, locale: testLocale));
+    await tester.pumpAndSettle();
+
+    final listItem = find.widgetWithText(ListTile, info1.name);
+    expect(listItem, findsOneWidget);
+    await tester.tap(listItem);
+    await tester.pump(); // Do not pump and settle... it will block until the snackbar is gone
+
+    expect(find.text(localizations.roleYoursRoleName(localizations.roleReadOnlyName)), findsOneWidget);
+    expect(find.text(localizations.roleReadOnlyDescription), findsOneWidget);
+  });
+
+  testWidgets('showInfoWhenSelectingCheckOnlyList', (WidgetTester tester) async {
+    final RestClientStub client = RestClientStub();
+
+    final info0 = ShoppingListInfo(
+      "0",
+      "List0",
+      ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true),
+      [],
+    );
+    final info1 = ShoppingListInfo(
+      "1",
+      "List1",
+      ShoppingListPermissions(ShoppingListRole.CHECK_ONLY, false, false, true),
+      [],
+    );
+
+    final drawer = _buildDrawer(
+      shoppingLists: [info0, info1],
+      selectedShoppingListId: info0.id,
+    );
+
+    // We need a drawer for the snackbar that contains the info message
+    final Scaffold scaffold = Scaffold(body: drawer);
+
+    await tester.pumpWidget(await makeTestableWidget(scaffold, restClient: client, locale: testLocale));
+    await tester.pumpAndSettle();
+
+    final listItem = find.widgetWithText(ListTile, info1.name);
+    expect(listItem, findsOneWidget);
+    await tester.tap(listItem);
+    await tester.pump(); // Do not pump and settle... it will block until the snackbar is gone
+
+    expect(find.text(localizations.roleYoursRoleName(localizations.roleCheckOnlyName)), findsOneWidget);
+    expect(find.text(localizations.roleCheckOnlyDescription), findsOneWidget);
   });
 }
 
@@ -156,28 +286,30 @@ ShoppingListInfo createReadOnlyList() {
 }
 
 ShoppingListDrawer createDrawer(ShoppingListInfo singleShoppingList) {
-  final shoppingLists = [singleShoppingList];
-  final selectedShoppingListId = "id0";
-  return _buildDrawer(shoppingLists, selectedShoppingListId, null);
+  return _buildDrawer(shoppingLists: [singleShoppingList], selectedShoppingListId: "id0");
 }
 
 ShoppingListInfo buildShoppingListInfo(ShoppingListPermissions permissions) =>
     ShoppingListInfo("id0", "List0", permissions, []);
 
-ShoppingListDrawer _buildDrawer(
-    List<ShoppingListInfo> shoppingLists, String selectedShoppingListId, ShoppingListUserInfo userInfo,
-    {Future<void> onUncheckAllItems(ShoppingListInfo info)}) {
+ShoppingListDrawer _buildDrawer({
+  List<ShoppingListInfo> shoppingLists,
+  String selectedShoppingListId,
+  Future<void> onUncheckAllItems(ShoppingListInfo info),
+  Future<void> onRemoveAllCategories(ShoppingListInfo info),
+  void onShoppingListSelected(ShoppingListInfo info),
+}) {
   return ShoppingListDrawer(
-    shoppingLists: shoppingLists,
+    shoppingListInfos: shoppingLists ?? [],
     selectedShoppingListId: selectedShoppingListId,
-    userInfo: userInfo,
+    userInfo: ShoppingListUserInfo("0", "Test", "test@test.de", "token"),
     onRefreshPressed: () {},
-    onShoppingListSelected: (info) {},
+    onShoppingListSelected: onShoppingListSelected ?? (info) {},
     onCreateShoppingList: (name) => null,
     onDeleteShoppingList: (info) => null,
     onAddUserToShoppingListIfPresent: (info, user) => null,
     onUncheckAllItems: onUncheckAllItems ?? (info) => null,
-    onRemoveAllCategories: (info) => null,
+    onRemoveAllCategories: onRemoveAllCategories ?? (info) => null,
     onRemoveAllItems: (info) => null,
     onChangeShoppingListPermissions: (info, string, role) => null,
     onRemoveUserFromShoppingList: (info, userRef) => null,

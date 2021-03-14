@@ -10,7 +10,6 @@ import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 import 'package:kaufhansel_client/utils/update_check.dart';
 import 'package:provider/provider.dart';
 
-import 'rest_client_stub.dart';
 import 'settings_store_stub.dart';
 import 'utils.dart';
 
@@ -23,7 +22,6 @@ void main() {
   });
 
   testWidgets('DismissUpdateMessage', (WidgetTester tester) async {
-    final RestClientStub client = new RestClientStub();
     final store = SettingsStoreStub();
     final latestVersion = Version(1, 3, 4);
     final update = Update(store, Version(1, 2, 3), latestVersion, null, false);

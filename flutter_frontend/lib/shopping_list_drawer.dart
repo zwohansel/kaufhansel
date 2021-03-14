@@ -12,72 +12,51 @@ import 'list_settings/shopping_list_settings.dart';
 import 'model.dart';
 
 class ShoppingListDrawer extends StatelessWidget {
-  const ShoppingListDrawer(
-      {@required List<ShoppingListInfo> shoppingLists,
-      @required VoidCallback onRefreshPressed,
-      @required String selectedShoppingListId,
-      @required void Function(ShoppingListInfo info) onShoppingListSelected,
-      @required Future<void> Function(String) onCreateShoppingList,
-      @required Future<void> Function(ShoppingListInfo) onDeleteShoppingList,
-      @required Future<bool> Function(ShoppingListInfo, String) onAddUserToShoppingListIfPresent,
-      @required Future<void> Function(ShoppingListInfo) onUncheckAllItems,
-      @required Future<void> Function(ShoppingListInfo) onRemoveAllCategories,
-      @required Future<void> Function(ShoppingListInfo) onRemoveAllItems,
-      @required Future<void> Function(ShoppingListInfo, String, ShoppingListRole) onChangeShoppingListPermissions,
-      @required Future<void> Function(ShoppingListInfo, ShoppingListUserReference) onRemoveUserFromShoppingList,
-      @required Future<void> Function(ShoppingListInfo, String) onChangeShoppingListName,
-      @required Future<void> Function() onLogOut,
-      @required Future<void> Function() onDeleteUserAccount,
-      @required ShoppingListUserInfo userInfo})
-      : _onRefreshPressed = onRefreshPressed,
-        _shoppingListInfos = shoppingLists,
-        _selectedShoppingListId = selectedShoppingListId,
-        _selectShoppingList = onShoppingListSelected,
-        _onCreateShoppingList = onCreateShoppingList,
-        _onDeleteShoppingList = onDeleteShoppingList,
-        _onAddUserToShoppingListIfPresent = onAddUserToShoppingListIfPresent,
-        _onRemoveUserFromShoppingList = onRemoveUserFromShoppingList,
-        _onUncheckAllItems = onUncheckAllItems,
-        _onRemoveAllCategories = onRemoveAllCategories,
-        _onRemoveAllItems = onRemoveAllItems,
-        _onChangeShoppingListPermissions = onChangeShoppingListPermissions,
-        _onChangeShoppingListName = onChangeShoppingListName,
-        _onLogOut = onLogOut,
-        _onDeleteUserAccount = onDeleteUserAccount,
-        _userInfo = userInfo;
+  const ShoppingListDrawer({
+    @required this.shoppingListInfos,
+    this.selectedShoppingListId,
+    @required this.userInfo,
+    @required this.onRefreshPressed,
+    @required this.onUncheckAllItems,
+    @required this.onRemoveAllCategories,
+    @required this.onRemoveAllItems,
+    @required this.onShoppingListSelected,
+    @required this.onCreateShoppingList,
+    @required this.onDeleteShoppingList,
+    @required this.onAddUserToShoppingListIfPresent,
+    @required this.onRemoveUserFromShoppingList,
+    @required this.onChangeShoppingListPermissions,
+    @required this.onChangeShoppingListName,
+    @required this.onLogOut,
+    @required this.onDeleteUserAccount,
+  }) : assert(shoppingListInfos != null);
 
-  final List<ShoppingListInfo> _shoppingListInfos;
-  final VoidCallback _onRefreshPressed;
-  final void Function(ShoppingListInfo info) _selectShoppingList;
-  final String _selectedShoppingListId;
-  final Future<void> Function(String) _onCreateShoppingList;
-  final Future<void> Function(ShoppingListInfo) _onDeleteShoppingList;
-  final Future<bool> Function(ShoppingListInfo, String) _onAddUserToShoppingListIfPresent;
-  final Future<void> Function(ShoppingListInfo, ShoppingListUserReference) _onRemoveUserFromShoppingList;
-  final Future<void> Function(ShoppingListInfo) _onUncheckAllItems;
-  final Future<void> Function(ShoppingListInfo) _onRemoveAllCategories;
-  final Future<void> Function(ShoppingListInfo) _onRemoveAllItems;
+  final List<ShoppingListInfo> shoppingListInfos;
+  final String selectedShoppingListId;
+  final ShoppingListUserInfo userInfo;
+  final VoidCallback onRefreshPressed;
+  final void Function(ShoppingListInfo info) onShoppingListSelected;
+  final Future<void> Function(String) onCreateShoppingList;
+  final Future<void> Function(ShoppingListInfo) onDeleteShoppingList;
+  final Future<bool> Function(ShoppingListInfo, String) onAddUserToShoppingListIfPresent;
+  final Future<void> Function(ShoppingListInfo, ShoppingListUserReference) onRemoveUserFromShoppingList;
+  final Future<void> Function(ShoppingListInfo) onUncheckAllItems;
+  final Future<void> Function(ShoppingListInfo) onRemoveAllCategories;
+  final Future<void> Function(ShoppingListInfo) onRemoveAllItems;
   final Future<void> Function(ShoppingListInfo info, String affectedUserId, ShoppingListRole newRole)
-      _onChangeShoppingListPermissions;
-  final Future<void> Function(ShoppingListInfo, String) _onChangeShoppingListName;
-  final Future<void> Function() _onLogOut;
-  final Future<void> Function() _onDeleteUserAccount;
-  final ShoppingListUserInfo _userInfo;
+      onChangeShoppingListPermissions;
+  final Future<void> Function(ShoppingListInfo, String) onChangeShoppingListName;
+  final Future<void> Function() onLogOut;
+  final Future<void> Function() onDeleteUserAccount;
 
   @override
   Widget build(BuildContext context) {
-    if (_shoppingListInfos == null) {
-      //TODO: should not be null here
-      return Container();
-    }
+    ShoppingListInfo currentList = shoppingListInfos.firstWhere(
+      (info) => info.id == selectedShoppingListId,
+      orElse: () => null,
+    );
 
-    ShoppingListInfo currentList;
-    final current = _shoppingListInfos.where((info) => info.id == _selectedShoppingListId);
-    if (current.isNotEmpty) {
-      currentList = current.first;
-    }
-
-    final infoTiles = _shoppingListInfos.where((info) => info.id != _selectedShoppingListId)?.map(
+    final infoTiles = shoppingListInfos.where((info) => info.id != selectedShoppingListId)?.map(
           (info) => ChangeNotifierProvider.value(
             value: info,
             builder: (context, child) => ListTile(
@@ -101,7 +80,7 @@ class ShoppingListDrawer extends StatelessWidget {
             leading: Icon(Icons.refresh_outlined),
             title: Text(AppLocalizations.of(context).refresh),
             onTap: () {
-              _onRefreshPressed();
+              onRefreshPressed();
               Navigator.pop(context);
             },
           ),
@@ -120,7 +99,7 @@ class ShoppingListDrawer extends StatelessWidget {
                 context: context,
                 barrierDismissible: false,
                 builder: (context) {
-                  return CreateShoppingListDialog(_onCreateShoppingList);
+                  return CreateShoppingListDialog(onCreateShoppingList);
                 },
               );
             },
@@ -147,9 +126,9 @@ class ShoppingListDrawer extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => new AppSettings(
-                    userInfo: _userInfo,
-                    onLogOut: _onLogOut,
-                    onDeleteAccount: _onDeleteUserAccount,
+                    userInfo: userInfo,
+                    onLogOut: onLogOut,
+                    onDeleteAccount: onDeleteUserAccount,
                   ),
                 ),
               );
@@ -213,14 +192,14 @@ class ShoppingListDrawer extends StatelessWidget {
               child: RestClientWidget(
                 client,
                 child: ShoppingListSettings(
-                  onDeleteShoppingList: () => _onDeleteShoppingList(currentList),
-                  onRemoveAllItems: () => _onRemoveAllItems(currentList),
+                  onDeleteShoppingList: () => onDeleteShoppingList(currentList),
+                  onRemoveAllItems: () => onRemoveAllItems(currentList),
                   onAddUserToShoppingListIfPresent: (userEmailAddress) =>
-                      _onAddUserToShoppingListIfPresent(currentList, userEmailAddress),
-                  onRemoveUserFromShoppingList: (user) => _onRemoveUserFromShoppingList(currentList, user),
+                      onAddUserToShoppingListIfPresent(currentList, userEmailAddress),
+                  onRemoveUserFromShoppingList: (user) => onRemoveUserFromShoppingList(currentList, user),
                   onChangeShoppingListPermissions: (affectedUserId, newRole) =>
-                      _onChangeShoppingListPermissions(currentList, affectedUserId, newRole),
-                  onChangeShoppingListName: (newName) => _onChangeShoppingListName(currentList, newName),
+                      onChangeShoppingListPermissions(currentList, affectedUserId, newRole),
+                  onChangeShoppingListName: (newName) => onChangeShoppingListName(currentList, newName),
                 ),
               ),
             );
@@ -236,7 +215,7 @@ class ShoppingListDrawer extends StatelessWidget {
     }
     return ListTile(
       leading: Icon(Icons.more_outlined),
-      title: Text(AppLocalizations.of(context).listSettingsClearAllCategories),
+      title: Text(AppLocalizations.of(context).listSettingsRemoveAllCategories),
       onTap: () => _onRemoveAllCategoriesPressed(context, currentList),
     );
   }
@@ -256,7 +235,7 @@ class ShoppingListDrawer extends StatelessWidget {
     if (await showConfirmDialog(context, AppLocalizations.of(context).listSettingsUncheckAllItemsConfirmationText,
         confirmBtnLabel: AppLocalizations.of(context).yes, cancelBtnLabel: AppLocalizations.of(context).no)) {
       try {
-        await _onUncheckAllItems(shoppingListInfo);
+        await onUncheckAllItems(shoppingListInfo);
       } catch (e) {
         showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralServerTooLazy);
       }
@@ -265,10 +244,10 @@ class ShoppingListDrawer extends StatelessWidget {
   }
 
   Future<void> _onRemoveAllCategoriesPressed(BuildContext context, ShoppingListInfo shoppingListInfo) async {
-    if (await showConfirmDialog(context, AppLocalizations.of(context).listSettingsClearAllCategoriesConfirmationText,
+    if (await showConfirmDialog(context, AppLocalizations.of(context).listSettingsRemoveAllCategoriesConfirmationText,
         confirmBtnLabel: AppLocalizations.of(context).yes, cancelBtnLabel: AppLocalizations.of(context).no)) {
       try {
-        await _onRemoveAllCategories(shoppingListInfo);
+        await onRemoveAllCategories(shoppingListInfo);
       } catch (e) {
         showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralServerTooLazy);
       }
@@ -278,7 +257,7 @@ class ShoppingListDrawer extends StatelessWidget {
 
   void _onShoppingListSelected(BuildContext context, ShoppingListInfo info) async {
     Navigator.pop(context);
-    _selectShoppingList(info);
+    onShoppingListSelected(info);
     if (info.permissions.role == ShoppingListRole.READ_ONLY || info.permissions.role == ShoppingListRole.CHECK_ONLY) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         duration: Duration(seconds: 3),
