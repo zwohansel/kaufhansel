@@ -18,6 +18,7 @@ import 'package:kaufhansel_client/shopping_list_mode.dart';
 import 'package:kaufhansel_client/shopping_list_mode_selection.dart';
 import 'package:kaufhansel_client/shopping_list_page.dart';
 import 'package:kaufhansel_client/shopping_list_title.dart';
+import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 import 'package:kaufhansel_client/utils/update_check.dart';
 import 'package:kaufhansel_client/widgets/overlay_menu.dart';
 import 'package:provider/provider.dart';
@@ -29,6 +30,8 @@ void main() {
 }
 
 class App extends StatelessWidget {
+  static const _serverUrl = kDebugMode ? "https://localhost:8080/api/" : "https://zwohansel.de/kaufhansel/api/";
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -39,19 +42,26 @@ class App extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         onGenerateTitle: (BuildContext context) => AppLocalizations.of(context).appTitle,
         theme: ThemeData(primarySwatch: Colors.green, fontFamily: 'Roboto'),
-        home: ShoppingListApp());
+        home: ShoppingListApp(
+          client: RestClient(Uri.parse(_serverUrl)),
+          settingsStore: SettingsStore(),
+          currentVersion: getCurrentVersion,
+        ));
   }
 }
 
 class ShoppingListApp extends StatefulWidget {
+  final RestClient client;
+  final SettingsStore settingsStore;
+  final Future<Version> Function() currentVersion;
+
+  const ShoppingListApp({@required this.client, @required this.settingsStore, @required this.currentVersion});
+
   @override
   _ShoppingListAppState createState() => _ShoppingListAppState();
 }
 
 class _ShoppingListAppState extends State<ShoppingListApp> {
-  static const _serverUrl = kDebugMode ? "https://localhost:8080/api/" : "https://zwohansel.de/kaufhansel/api/";
-  final SettingsStore _settingsStore = SettingsStore();
-  RestClient _client = RestClient(Uri.parse(_serverUrl));
   ShoppingListFilter _filter = ShoppingListFilter();
   ShoppingListMode _mode = ShoppingListMode();
 
@@ -75,7 +85,8 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   void asyncInit() async {
     try {
-      final updateOpt = await checkForUpdate(context, _client, _settingsStore);
+      Version currentVersion = await widget.currentVersion();
+      final updateOpt = await checkForUpdate(context, widget.client, widget.settingsStore, currentVersion);
       updateOpt.ifPresent((update) => setState(() => _update = update));
       if (!updateOpt.isPresent() || !updateOpt.get.isBreakingChange()) {
         await _loadUserInfo();
@@ -87,7 +98,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   Future<void> _loadUserInfo() async {
     try {
-      final userInfoOpt = await _settingsStore.getUserInfo();
+      final userInfoOpt = await widget.settingsStore.getUserInfo();
       userInfoOpt.ifPresent(_logIn);
     } on Exception catch (e) {
       developer.log("Could not read user info from store.", error: e);
@@ -100,20 +111,19 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   }
 
   void _logIn(ShoppingListUserInfo userInfo) {
-    _client.setAuthenticationToken(userInfo.token);
+    widget.client.setAuthenticationToken(userInfo.token);
     setState(() => _userInfo = userInfo);
     _fetchShoppingListInfos();
   }
 
   Future<void> _logOut() async {
-    _client.close();
-    _client = RestClient(Uri.parse(_serverUrl));
-    await _settingsStore.removeUserInfo();
+    widget.client.logOut();
+    await widget.settingsStore.removeUserInfo();
     setState(() => _userInfo = null);
   }
 
   Future<void> _deleteUserAccount() async {
-    await _client.deleteAccount(_userInfo.id);
+    await widget.client.deleteAccount(_userInfo.id);
     await _logOut();
   }
 
@@ -145,7 +155,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   }
 
   Future<void> _createShoppingList(String shoppingListName) async {
-    ShoppingListInfo info = await _client.createShoppingList(shoppingListName);
+    ShoppingListInfo info = await widget.client.createShoppingList(shoppingListName);
     setState(() {
       _shoppingListInfos.add(info);
     });
@@ -156,7 +166,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   }
 
   Future<void> _deleteShoppingList(ShoppingListInfo info) async {
-    await _client.deleteShoppingList(info.id);
+    await widget.client.deleteShoppingList(info.id);
     setState(() {
       _shoppingListInfos.remove(info);
     });
@@ -167,28 +177,28 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   }
 
   Future<void> _uncheckAllItems(ShoppingListInfo info) async {
-    await _client.uncheckAllItems(info.id);
+    await widget.client.uncheckAllItems(info.id);
     if (_currentShoppingListInfo == info) {
       _currentShoppingList?.items?.forEach((item) => item.checked = false);
     }
   }
 
   Future<void> _removeAllCategories(ShoppingListInfo info) async {
-    await _client.removeAllCategories(info.id);
+    await widget.client.removeAllCategories(info.id);
     if (_currentShoppingListInfo == info) {
       _currentShoppingList?.items?.forEach((item) => item.category = null);
     }
   }
 
   Future<void> _removeAllItems(ShoppingListInfo info) async {
-    await _client.removeAllItems(info.id);
+    await widget.client.removeAllItems(info.id);
     if (_currentShoppingListInfo == info) {
       _currentShoppingList?.removeAllItems();
     }
   }
 
   Future<bool> _addUserToShoppingList(ShoppingListInfo info, String userEmailAddress) async {
-    final userReference = await _client.addUserToShoppingList(info.id, userEmailAddress);
+    final userReference = await widget.client.addUserToShoppingList(info.id, userEmailAddress);
     if (userReference.isPresent()) {
       info.addUserToShoppingList(userReference.get);
       return true;
@@ -198,18 +208,18 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   }
 
   Future<void> _removeUserFromShoppingList(ShoppingListInfo info, ShoppingListUserReference user) async {
-    await _client.removeUserFromShoppingList(info.id, user.userId);
+    await widget.client.removeUserFromShoppingList(info.id, user.userId);
     info.removeUserFromShoppingList(user);
   }
 
   Future<void> _changeShoppingListPermissions(
       ShoppingListInfo info, String affectedUserId, ShoppingListRole newRole) async {
-    final userReference = await _client.changeShoppingListPermissions(info.id, affectedUserId, newRole);
+    final userReference = await widget.client.changeShoppingListPermissions(info.id, affectedUserId, newRole);
     info.updateShoppingListUser(userReference);
   }
 
   Future<void> _changeShoppingListName(ShoppingListInfo info, String newName) async {
-    await _client.changeShoppingListName(info.id, newName);
+    await widget.client.changeShoppingListName(info.id, newName);
     info.updateShoppingListName(newName);
   }
 
@@ -226,7 +236,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) => oldShoppingList?.dispose());
 
     try {
-      final lists = await _client.getShoppingLists();
+      final lists = await widget.client.getShoppingLists();
       setState(() {
         _shoppingListInfos = lists;
         _currentShoppingListInfo = lists.firstWhere(
@@ -251,15 +261,26 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       _currentShoppingListCategory = null;
       _error = null;
     });
-    SchedulerBinding.instance.addPostFrameCallback((timeStamp) => oldShoppingList?.dispose());
+    disposeShoppingListAfterNextFrame(oldShoppingList);
 
+    await _refreshCurrentShoppingList(initialCategory: initialCategory);
+  }
+
+  void disposeShoppingListAfterNextFrame(ShoppingList list) {
+    if (list != null) {
+      SchedulerBinding.instance.addPostFrameCallback((timeStamp) => list.dispose());
+    }
+  }
+
+  Future<void> _refreshCurrentShoppingList({String initialCategory}) async {
     if (_currentShoppingListInfo == null) {
       return;
     }
 
     try {
-      final items = await _client.fetchShoppingList(_currentShoppingListInfo.id);
+      final items = await widget.client.fetchShoppingList(_currentShoppingListInfo.id);
       final shoppingList = new ShoppingList(_currentShoppingListInfo, items);
+      final oldShoppingList = _currentShoppingList;
       setState(() {
         _currentShoppingList = shoppingList;
         _currentShoppingListCategories = shoppingList.getAllCategories();
@@ -270,6 +291,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
         }
         _currentShoppingList.addListener(setCurrentShoppingListCategories);
       });
+      disposeShoppingListAfterNextFrame(oldShoppingList);
     } on Exception catch (e) {
       developer.log("Failed to fetch shopping list.", error: e);
       setState(() {
@@ -308,7 +330,10 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   @override
   Widget build(BuildContext context) {
-    return SettingsStoreWidget(_settingsStore, child: RestClientWidget(_client, child: _buildContent(context)));
+    return SettingsStoreWidget(
+      widget.settingsStore,
+      child: RestClientWidget(widget.client, child: _buildContent(context)),
+    );
   }
 
   Widget _buildOverlayMenuButton() {
@@ -441,6 +466,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
         initialCategory: _currentShoppingListCategory,
         onCategoryChanged: _setCurrentShoppingListCategory,
         update: _update,
+        onRefresh: () async => _refreshCurrentShoppingList(initialCategory: _currentShoppingListCategory),
       );
     }
   }

@@ -65,15 +65,19 @@ class Update {
   }
 }
 
-Future<Optional<Update>> checkForUpdate(BuildContext context, RestClient client, SettingsStore store) async {
+Future<Optional<Update>> checkForUpdate(
+  BuildContext context,
+  RestClient client,
+  SettingsStore store,
+  Version currentVersion,
+) async {
   while (true) {
     try {
-      final frontendVersion = await _getVersion();
       final backendInfo = await client.getBackendInfo();
       final messageConfirmed =
           backendInfo.message != null ? await store.isInfoMessageConfirmed(backendInfo.message.messageNumber) : false;
 
-      return Optional(Update(store, frontendVersion, backendInfo.version, backendInfo.message, messageConfirmed));
+      return Optional(Update(store, currentVersion, backendInfo.version, backendInfo.message, messageConfirmed));
     } on Exception catch (e) {
       log("Failed to fetch backend info.", error: e);
       if (await _askUserIfWeShouldTryAgain(context)) {
@@ -91,7 +95,7 @@ Future<bool> _askUserIfWeShouldTryAgain(BuildContext context) {
       confirmBtnLabel: locale.tryAgain, cancelBtnLabel: locale.dontCare, confirmBtnColor: null);
 }
 
-Future<Version> _getVersion() async {
+Future<Version> getCurrentVersion() async {
   try {
     final info = await PackageInfo.fromPlatform();
     return Version.fromString(info.version);

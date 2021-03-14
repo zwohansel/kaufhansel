@@ -11,17 +11,17 @@ import 'package:tuple/tuple.dart';
 import 'model.dart';
 
 class ShoppingListView extends StatefulWidget {
-  ShoppingListView(
-      {String category,
-      @required ShoppingListFilterOption filter,
-      ShoppingListModeOption mode = ShoppingListModeOption.DEFAULT})
-      : _category = category,
-        _filter = filter,
-        _mode = mode;
+  ShoppingListView({
+    @required this.filter,
+    @required this.onRefresh,
+    this.category,
+    this.mode = ShoppingListModeOption.DEFAULT,
+  });
 
-  final String _category;
-  final ShoppingListModeOption _mode;
-  final ShoppingListFilterOption _filter;
+  final ShoppingListFilterOption filter;
+  final Future<void> Function() onRefresh;
+  final String category;
+  final ShoppingListModeOption mode;
 
   @override
   _ShoppingListViewState createState() => _ShoppingListViewState();
@@ -29,6 +29,7 @@ class ShoppingListView extends StatefulWidget {
 
 class _ShoppingListViewState extends State<ShoppingListView> {
   bool _loading = false;
+  bool _doNotShowProgressBarWhileLoading = false;
   ScrollController _scrollController;
   String _shoppingListItemInputText;
 
@@ -48,7 +49,7 @@ class _ShoppingListViewState extends State<ShoppingListView> {
   Widget build(BuildContext context) {
     return Selector<ShoppingList, Tuple2<Iterable<ShoppingListItem>, ShoppingListPermissions>>(
         selector: (_, shoppingList) => Tuple2(
-            shoppingList.items.where((item) => item.isInCategory(widget._category)).toList(growable: false),
+            shoppingList.items.where((item) => item.isInCategory(widget.category)).toList(growable: false),
             shoppingList.info.permissions),
         builder: (context, tuple, child) {
           return Column(children: [
@@ -59,25 +60,8 @@ class _ShoppingListViewState extends State<ShoppingListView> {
         });
   }
 
-  Widget _buildItemInput(bool canEditItems) {
-    return canEditItems
-        ? Container(
-            child: Material(
-                child: ShoppingListItemInput(
-                  shoppingListScrollController: _scrollController,
-                  category: widget._category,
-                  enabled: !_loading,
-                  onChange: (text) => setState(() => _shoppingListItemInputText = text),
-                ),
-                type: MaterialType.transparency),
-            decoration: BoxDecoration(color: Colors.white, boxShadow: [
-              BoxShadow(color: Colors.grey.withOpacity(0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
-            ]))
-        : Container();
-  }
-
   Widget _buildProgress() {
-    if (_loading) {
+    if (_loading && !_doNotShowProgressBarWhileLoading) {
       return LinearProgressIndicator(minHeight: 5);
     }
     return Container();
@@ -92,7 +76,7 @@ class _ShoppingListViewState extends State<ShoppingListView> {
 
     final dividedTiles = _divideTilesWithKey(visibleItems.map(_createListTileForItem), context).toList();
 
-    if (widget._mode == ShoppingListModeOption.EDITING && canEditItems) {
+    if (widget.mode == ShoppingListModeOption.EDITING && canEditItems) {
       return Expanded(
           child: ReorderableListView(
         children: dividedTiles,
@@ -101,19 +85,25 @@ class _ShoppingListViewState extends State<ShoppingListView> {
       ));
     } else {
       return Expanded(
-          child: Scrollbar(
-              isAlwaysShown: true,
+        child: Scrollbar(
+          isAlwaysShown: true,
+          controller: _scrollController,
+          child: RefreshIndicator(
+            onRefresh: _refreshList,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(), // allow overscroll to trigger refresh indicator
+              shrinkWrap: true,
+              children: dividedTiles,
               controller: _scrollController,
-              child: ListView(
-                shrinkWrap: true,
-                children: dividedTiles,
-                controller: _scrollController,
-              )));
+            ),
+          ),
+        ),
+      );
     }
   }
 
   bool _isItemVisible(ShoppingListItem item) {
-    switch (widget._filter) {
+    switch (widget.filter) {
       case ShoppingListFilterOption.CHECKED:
         return item.checked;
       case ShoppingListFilterOption.UNCHECKED:
@@ -131,9 +121,9 @@ class _ShoppingListViewState extends State<ShoppingListView> {
         child: Selector<ShoppingList, ShoppingListPermissions>(
             selector: (_, shoppingList) => shoppingList.info.permissions,
             builder: (context, permissions, child) => ShoppingListItemTile(
-                  mode: widget._mode,
+                  mode: widget.mode,
                   enabled: !_loading,
-                  showUserCategory: widget._category == CATEGORY_ALL,
+                  showUserCategory: widget.category == CATEGORY_ALL,
                   canCheckItems: permissions.canCheckItems,
                   canEditItems: permissions.canEditItems,
                 )));
@@ -168,6 +158,40 @@ class _ShoppingListViewState extends State<ShoppingListView> {
     } finally {
       setState(() => _loading = false);
     }
+  }
+
+  Future<void> _refreshList() async {
+    try {
+      setState(() {
+        _loading = true;
+        _doNotShowProgressBarWhileLoading = true;
+      });
+      await widget.onRefresh();
+    } finally {
+      setState(() {
+        _loading = false;
+        _doNotShowProgressBarWhileLoading = false;
+      });
+    }
+  }
+
+  Widget _buildItemInput(bool canEditItems) {
+    if (!canEditItems) {
+      return Container();
+    }
+
+    return Container(
+        child: Material(
+            child: ShoppingListItemInput(
+              shoppingListScrollController: _scrollController,
+              category: widget.category,
+              enabled: !_loading,
+              onChange: (text) => setState(() => _shoppingListItemInputText = text),
+            ),
+            type: MaterialType.transparency),
+        decoration: BoxDecoration(color: Colors.white, boxShadow: [
+          BoxShadow(color: Colors.grey.withOpacity(0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
+        ]));
   }
 }
 

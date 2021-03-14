@@ -31,7 +31,12 @@ void main() {
       [],
     );
 
-    final page = ShoppingListPage(list.getAllCategories(), ShoppingListFilterOption.ALL, update: update);
+    final page = ShoppingListPage(
+      list.getAllCategories(),
+      ShoppingListFilterOption.ALL,
+      update: update,
+      onRefresh: () => null,
+    );
     final provider = ChangeNotifierProvider.value(value: list, child: Material(child: page));
     await tester.pumpWidget(await makeTestableWidget(provider, store: store, locale: testLocale));
     await tester.pumpAndSettle();

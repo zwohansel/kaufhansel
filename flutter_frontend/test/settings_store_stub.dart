@@ -3,6 +3,7 @@ import 'package:kaufhansel_client/settings/settings_store.dart';
 
 class SettingsStoreStub implements SettingsStore {
   int _confirmedMessageNumber;
+  ShoppingListUserInfo _userInfo;
 
   int get confirmedMessageNumber => _confirmedMessageNumber;
 
@@ -14,7 +15,7 @@ class SettingsStoreStub implements SettingsStore {
 
   @override
   Future<Optional<ShoppingListUserInfo>> getUserInfo() async {
-    return Optional.empty();
+    return Optional(_userInfo);
   }
 
   @override
@@ -26,5 +27,7 @@ class SettingsStoreStub implements SettingsStore {
   Future<void> removeUserInfo() async {}
 
   @override
-  Future<void> saveUserInfo(ShoppingListUserInfo info) async {}
+  Future<void> saveUserInfo(ShoppingListUserInfo info) async {
+    _userInfo = info;
+  }
 }

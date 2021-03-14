@@ -15,12 +15,22 @@ class RestClientStub implements RestClient {
   final RegistrationResult Function(String userName, String password, {String emailAddress}) onRegister;
   final void Function(String emailAddress) onPasswordResetRequest;
   final void Function(String emailAddress, String resetCode, String password) onPasswordReset;
+  final BackendInfo Function() onGetBackendInfo;
+  final List<ShoppingListInfo> Function() onGetShoppingLists;
+  final List<ShoppingListItem> Function(String id) onFetchShoppingList;
 
   final List<User> _users = [];
   final Map<String, RegistrationProcessType> _inviteCodes = {};
   ShoppingListItem _createdShoppingListItem;
 
-  RestClientStub({this.onRegister, this.onPasswordResetRequest, this.onPasswordReset});
+  RestClientStub({
+    this.onRegister,
+    this.onPasswordResetRequest,
+    this.onPasswordReset,
+    this.onGetBackendInfo,
+    this.onGetShoppingLists,
+    this.onFetchShoppingList,
+  });
 
   void addUser(User user) => _users.add(user);
 
@@ -35,8 +45,8 @@ class RestClientStub implements RestClient {
   ShoppingListItem updatedShoppingListItem;
 
   @override
-  Future<BackendInfo> getBackendInfo() {
-    throw UnimplementedError();
+  Future<BackendInfo> getBackendInfo() async {
+    return onGetBackendInfo();
   }
 
   @override
@@ -87,7 +97,7 @@ class RestClientStub implements RestClient {
   }
 
   @override
-  void close() {}
+  void logOut() {}
 
   @override
   Future<ShoppingListInfo> createShoppingList(String shoppingListName) {
@@ -115,18 +125,18 @@ class RestClientStub implements RestClient {
   }
 
   @override
-  Future<List<ShoppingListItem>> fetchShoppingList(String shoppingListId) {
-    throw UnimplementedError();
-  }
-
-  @override
   Future<String> generateInviteCode() {
     throw UnimplementedError();
   }
 
   @override
-  Future<List<ShoppingListInfo>> getShoppingLists() {
-    throw UnimplementedError();
+  Future<List<ShoppingListInfo>> getShoppingLists() async {
+    return onGetShoppingLists();
+  }
+
+  @override
+  Future<List<ShoppingListItem>> fetchShoppingList(String shoppingListId) async {
+    return onFetchShoppingList(shoppingListId);
   }
 
   @override

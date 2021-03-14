@@ -37,7 +37,12 @@ class RestClient {
   final Uri _serverUrl;
   final Duration _timeout = Duration(seconds: 10);
 
-  RestClient(this._serverUrl) : _httpClient = HttpClient() {
+  RestClient(this._serverUrl) {
+    _init();
+  }
+
+  void _init() {
+    _httpClient = HttpClient();
     //accept self signed certificates in debug mode
     _httpClient.badCertificateCallback = (cert, host, port) => kDebugMode;
   }
@@ -46,9 +51,10 @@ class RestClient {
     _token = token;
   }
 
-  void close() {
+  void logOut() {
+    _token = null;
     _httpClient.close(force: true);
-    _httpClient = null;
+    _init();
   }
 
   Future<ShoppingListUserInfo> login(String userEmail, String password) async {
