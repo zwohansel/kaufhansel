@@ -152,7 +152,7 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
     }
   }
 
-  void submitNewCategory() async {
+  Future<void> submitNewCategory() async {
     if (_newCategoryIsValid) {
       final category = _newCategoryEditingController.text.trim();
       await setItemCategory(category);

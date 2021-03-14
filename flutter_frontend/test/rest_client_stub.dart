@@ -32,6 +32,8 @@ class RestClientStub implements RestClient {
     _createdShoppingListItem = item;
   }
 
+  ShoppingListItem updatedShoppingListItem;
+
   @override
   Future<BackendInfo> getBackendInfo() {
     throw UnimplementedError();
@@ -171,7 +173,7 @@ class RestClientStub implements RestClient {
   }
 
   @override
-  Future<void> updateShoppingListItem(String shoppingListId, ShoppingListItem item) {
-    throw UnimplementedError();
+  Future<void> updateShoppingListItem(String shoppingListId, ShoppingListItem item) async {
+    updatedShoppingListItem = item;
   }
 }
