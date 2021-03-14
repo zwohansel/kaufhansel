@@ -105,8 +105,11 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
 
     switch (widget._mode) {
       case ShoppingListModeOption.EDITING:
-        return AsyncOperationIconButton(
-            icon: Icon(Icons.delete), loading: _deleting, onPressed: _allowInput() ? () => _deleteItem(item) : null);
+        return Padding(
+          padding: const EdgeInsets.only(right: 20.0),
+          child: AsyncOperationIconButton(
+              icon: Icon(Icons.delete), loading: _deleting, onPressed: _allowInput() ? () => _deleteItem(item) : null),
+        );
       case ShoppingListModeOption.SHOPPING:
         return null;
       case ShoppingListModeOption.DEFAULT:
