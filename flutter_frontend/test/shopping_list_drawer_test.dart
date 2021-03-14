@@ -97,38 +97,36 @@ void checkAlwaysPresentOptions(AppLocalizations localizations) {
 
 ShoppingListInfo createAdminList() {
   final shoppingListRole = ShoppingListRole.ADMIN;
-  final users = [new ShoppingListUserReference("userId0", "Test User", "test@test.de", shoppingListRole)];
-  final permissions = new ShoppingListPermissions(shoppingListRole, true, true, true);
-  return new ShoppingListInfo("id0", "List0", permissions, users);
+  final permissions = ShoppingListPermissions(shoppingListRole, true, true, true);
+  return buildShoppingListInfo(permissions);
 }
 
 ShoppingListInfo createReadWriteList() {
   final shoppingListRole = ShoppingListRole.READ_WRITE;
-  final users = [new ShoppingListUserReference("userId0", "Test User", "test@test.de", shoppingListRole)];
-  final permissions = new ShoppingListPermissions(shoppingListRole, false, true, true);
-  return new ShoppingListInfo("id0", "List0", permissions, users);
+  final permissions = ShoppingListPermissions(shoppingListRole, false, true, true);
+  return buildShoppingListInfo(permissions);
 }
 
 ShoppingListInfo createCheckOnlyList() {
   final shoppingListRole = ShoppingListRole.CHECK_ONLY;
-  final users = [new ShoppingListUserReference("userId0", "Test User", "test@test.de", shoppingListRole)];
-  final permissions = new ShoppingListPermissions(shoppingListRole, false, false, true);
-  return new ShoppingListInfo("id0", "List0", permissions, users);
+  final permissions = ShoppingListPermissions(shoppingListRole, false, false, true);
+  return buildShoppingListInfo(permissions);
 }
 
 ShoppingListInfo createReadOnlyList() {
   final shoppingListRole = ShoppingListRole.READ_ONLY;
-  final users = [new ShoppingListUserReference("userId0", "Test User", "test@test.de", shoppingListRole)];
-  final permissions = new ShoppingListPermissions(shoppingListRole, false, false, false);
-  return new ShoppingListInfo("id0", "List0", permissions, users);
+  final permissions = ShoppingListPermissions(shoppingListRole, false, false, false);
+  return buildShoppingListInfo(permissions);
 }
 
 ShoppingListDrawer createDrawer(ShoppingListInfo singleShoppingList) {
   final shoppingLists = [singleShoppingList];
   final selectedShoppingListId = "id0";
-  final userInfo = new ShoppingListUserInfo("userId0", "Test User", "test@test.de", "VERY_SECRET_TOKEN");
-  return _buildDrawer(shoppingLists, selectedShoppingListId, userInfo);
+  return _buildDrawer(shoppingLists, selectedShoppingListId, null);
 }
+
+ShoppingListInfo buildShoppingListInfo(ShoppingListPermissions permissions) =>
+    ShoppingListInfo("id0", "List0", permissions, []);
 
 ShoppingListDrawer _buildDrawer(
     List<ShoppingListInfo> shoppingLists, String selectedShoppingListId, ShoppingListUserInfo userInfo) {
