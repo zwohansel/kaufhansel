@@ -5,7 +5,6 @@ import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
-import 'package:kaufhansel_client/widgets/editable_text_label.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
 
 class EditShoppingListItemDialog extends StatefulWidget {
@@ -13,16 +12,19 @@ class EditShoppingListItemDialog extends StatefulWidget {
   final ShoppingListItem _item;
   final List<String> _categories;
   final RestClient _client;
+  final Future<void> Function(ShoppingListItem) _onDeleteItem;
 
   const EditShoppingListItemDialog(
       {@required ShoppingListItem item,
       @required String shoppingListId,
       @required RestClient client,
-      @required List<String> categories})
+      @required List<String> categories,
+      @required Future<void> Function(ShoppingListItem) onDeleteItem})
       : _shoppingListId = shoppingListId,
         _item = item,
         _categories = categories,
-        _client = client;
+        _client = client,
+        _onDeleteItem = onDeleteItem;
 
   @override
   _EditShoppingListItemDialogState createState() => _EditShoppingListItemDialogState();
@@ -59,10 +61,11 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
     final ThemeData theme = Theme.of(context);
     const bottomMargin = 10.0;
 
-    final title = EditableTextLabel(
+    final title = MoreOptionsEditableTextLabel(
       text: widget._item.name,
       textStyle: theme.textTheme.headline6.apply(fontFamilyFallback: ['NotoColorEmoji']),
-      onSubmit: (text) => submitNewItemName(text),
+      onEditItemName: (text) => submitNewItemName(text),
+      onDelete: onDelete,
       enabled: !_loading,
     );
 
@@ -132,7 +135,8 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
     return Dialog(child: ConstrainedBox(constraints: BoxConstraints(maxWidth: 150), child: dialogContent));
   }
 
-  Future<bool> submitNewItemName(String newItemName) async {
+  Future<void> submitNewItemName(String newItemName) async {
+    setState(() => _loading = true);
     try {
       // apply the change to a copy of the actual item and send the copy to the server...
       final itemCopy = widget._item.copy();
@@ -140,11 +144,11 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
       await widget._client.updateShoppingListItem(widget._shoppingListId, itemCopy);
       // ...change the actual item once we know that the request was successful
       widget._item.name = newItemName;
-      return true;
     } on Exception catch (e) {
       developer.log("Could not set item name.", error: e);
       showErrorDialog(context, AppLocalizations.of(context).exceptionRenameItemFailed(newItemName));
-      return false;
+    } finally {
+      setState(() => _loading = false);
     }
   }
 
@@ -180,10 +184,144 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
     }
   }
 
+  Future<void> onDelete() async {
+    setState(() => _loading = true);
+    await widget._onDeleteItem(widget._item);
+    setState(() => _loading = false);
+    Navigator.pop(context);
+  }
+
   Widget _buildProgress() {
     if (_loading) {
       return LinearProgressIndicator(minHeight: 5);
     }
     return SizedBox(height: 5);
+  }
+}
+
+class MoreOptionsEditableTextLabel extends StatefulWidget {
+  final text;
+  final textStyle;
+  final enabled;
+  final Future<void> Function(String) onEditItemName;
+  final onDelete;
+
+  const MoreOptionsEditableTextLabel(
+      {@required this.text,
+      @required this.textStyle,
+      @required this.enabled,
+      @required this.onEditItemName,
+      @required this.onDelete});
+
+  @override
+  _MoreOptionsEditableTextLabelState createState() => _MoreOptionsEditableTextLabelState(text);
+}
+
+class _MoreOptionsEditableTextLabelState extends State<MoreOptionsEditableTextLabel> {
+  static const delete = "DELETE";
+  static const rename = "RENAME";
+
+  final TextEditingController _textEditingController;
+  final _focusNode = new FocusNode();
+  String currentText;
+  bool _editing = false;
+  bool _valid = false;
+  bool _enabled = true;
+
+  _MoreOptionsEditableTextLabelState(String text)
+      : _textEditingController = new TextEditingController(text: text),
+        currentText = text;
+
+  @override
+  void initState() {
+    super.initState();
+    _textEditingController.addListener(() {
+      setState(() => _valid = _textEditingController.text.trim().isNotEmpty);
+    });
+  }
+
+  void onEditItemName() async {
+    setState(() => _enabled = false);
+    final newText = _textEditingController.text;
+    if (currentText != newText) {
+      await widget.onEditItemName(_textEditingController.text);
+      currentText = newText;
+    }
+    setState(() {
+      _editing = false;
+      _enabled = true;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const _iconSize = 24.0;
+    const _iconPadding = EdgeInsets.all(8.0);
+
+    if (_editing) {
+      return TextField(
+        controller: _textEditingController,
+        enabled: _enabled && widget.enabled,
+        textCapitalization: TextCapitalization.sentences,
+        style: widget.textStyle,
+        focusNode: _focusNode,
+        onSubmitted: (_) => onEditItemName(),
+        decoration: InputDecoration(
+          suffixIcon: IconButton(
+            icon: Icon(Icons.check),
+            iconSize: _iconSize,
+            padding: _iconPadding,
+            splashRadius: _iconSize,
+            onPressed: _valid ? onEditItemName : null,
+          ),
+        ),
+      );
+    } else {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(child: Text(widget.text, style: widget.textStyle)),
+          PopupMenuButton(
+            enabled: _enabled && widget.enabled,
+            icon: Icon(Icons.more_vert),
+            onSelected: (value) {
+              switch (value) {
+                case rename:
+                  setState(() {
+                    _textEditingController.selection =
+                        TextSelection(baseOffset: 0, extentOffset: _textEditingController.text.length);
+                    _valid = true;
+                    _editing = true;
+                    _focusNode.requestFocus();
+                  });
+                  break;
+                case delete:
+                  widget.onDelete();
+                  break;
+                default:
+              }
+            },
+            itemBuilder: (context) {
+              return [
+                PopupMenuItem(
+                    child: Row(children: [
+                      Icon(Icons.drive_file_rename_outline),
+                      SizedBox(width: 10),
+                      Text(AppLocalizations.of(context).itemRename)
+                    ]),
+                    value: rename),
+                PopupMenuItem(
+                    child: Row(children: [
+                      Icon(Icons.delete),
+                      SizedBox(width: 10),
+                      Text(AppLocalizations.of(context).itemRemove)
+                    ]),
+                    value: delete)
+              ];
+            },
+          )
+        ],
+      );
+    }
   }
 }

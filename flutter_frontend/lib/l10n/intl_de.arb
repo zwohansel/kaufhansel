@@ -114,6 +114,9 @@
   "shoppingListModeShopping": "Einkaufs-Modus",
   "shoppingListModeEditing": "Editier-Modus",
 
+  "itemRename": "Umbenennen",
+  "itemRemove": "Löschen",
+
   "categoryChooseOne": "Wähle eine Kategorie",
   "categoryNone": "Keine",
   "categoryCreateNew": "Neue Kategorie",

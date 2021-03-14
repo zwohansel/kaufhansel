@@ -133,6 +133,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "invitationCodeInvalid" : MessageLookupByLibrary.simpleMessage("Der Code stimmt nicht"),
     "invitationCodeRequestDistributionMessage" : MessageLookupByLibrary.simpleMessage("Schicke anderen Hanseln diesen Code, damit sie sich beim Kaufhansel registrieren können."),
     "invitationCodeShareMessage" : MessageLookupByLibrary.simpleMessage("Werde mit diesem Code zum Kaufhansel! Lade dir den Kaufhansel von https://zwohansel.de/kaufhansel/download runter."),
+    "itemRemove" : MessageLookupByLibrary.simpleMessage("Löschen"),
+    "itemRename" : MessageLookupByLibrary.simpleMessage("Umbenennen"),
     "listSettings" : MessageLookupByLibrary.simpleMessage("Mehr Listeneinstellungen..."),
     "listSettingsAddUserToListEmailAddressHint" : MessageLookupByLibrary.simpleMessage("Email-Adresse vom Hansel"),
     "listSettingsChangeUserRole" : m9,

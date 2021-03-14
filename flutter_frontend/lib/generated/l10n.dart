@@ -995,6 +995,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Umbenennen`
+  String get itemRename {
+    return Intl.message(
+      'Umbenennen',
+      name: 'itemRename',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Löschen`
+  String get itemRemove {
+    return Intl.message(
+      'Löschen',
+      name: 'itemRemove',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Wähle eine Kategorie`
   String get categoryChooseOne {
     return Intl.message(

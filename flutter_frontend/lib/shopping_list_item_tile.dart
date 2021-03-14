@@ -116,7 +116,7 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
     }
   }
 
-  void _deleteItem(ShoppingListItem item) async {
+  Future<void> _deleteItem(ShoppingListItem item) async {
     setState(() {
       _loading = true;
       _deleting = true;
@@ -165,6 +165,7 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
             item: item,
             categories: shoppingList.getUserCategories(),
             client: client,
+            onDeleteItem: _deleteItem,
           );
         });
   }
