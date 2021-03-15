@@ -13,21 +13,19 @@ import 'utils.dart';
 void main() {
   const testLocale = Locale("de");
   AppLocalizations localizations;
-  RestClientStub client;
   ScrollController scrollController;
   ShoppingListItemInput itemInput;
 
   setUp(() async {
     localizations = await AppLocalizations.load(testLocale);
-    client = new RestClientStub();
     scrollController = new ScrollControllerStub();
 
     itemInput = new ShoppingListItemInput(shoppingListScrollController: scrollController, onChange: (_) {});
   });
 
   testWidgets("showClearButtonIfTextFieldIsNotEmpty", (WidgetTester tester) async {
-    await tester
-        .pumpWidget(await makeTestableWidget(Material(child: itemInput), restClient: client, locale: testLocale));
+    await tester.pumpWidget(
+        await makeTestableWidget(Material(child: itemInput), restClient: RestClientStub(), locale: testLocale));
     await tester.pumpAndSettle();
 
     await enterText(tester, widgetType: TextField, fieldLabelOrHint: localizations.shoppingListNeededHint, text: "foo");
@@ -42,7 +40,12 @@ void main() {
 
   testWidgets("addNewItemIfTextIsValid", (WidgetTester tester) async {
     final shoppingList = new ShoppingList(new ShoppingListInfo("_id", "_name", null, []), []);
-    client.mockCreateShoppingListItem(new ShoppingListItem("0", "New Item", false, ""));
+    final client = RestClientStub(onCreateShoppingListItem: (String shoppingListId, String name, String category) {
+      expect(shoppingListId, equals("_id"));
+      expect(name, equals("New Item"));
+      expect(category, isNull);
+      return ShoppingListItem("0", "New Item", false, "");
+    });
 
     await tester.pumpWidget(await makeTestableWidget(
         Material(

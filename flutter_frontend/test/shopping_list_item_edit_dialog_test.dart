@@ -13,14 +13,13 @@ import 'utils.dart';
 void main() {
   const testLocale = Locale("de");
   AppLocalizations localizations;
-  RestClientStub client;
 
   setUp(() async {
     localizations = await AppLocalizations.load(testLocale);
-    client = new RestClientStub();
   });
 
   testWidgets('showDialog', (WidgetTester tester) async {
+    final client = RestClientStub();
     final dialog = createDialog(client, item(), []);
 
     await tester.pumpWidget(await makeTestableWidget(dialog, restClient: client, locale: testLocale));
@@ -30,6 +29,9 @@ void main() {
   });
 
   testWidgets('showDialogWithCategoriesAndChooseCategory', (WidgetTester tester) async {
+    ShoppingListItem updatedShoppingListItem;
+    final client =
+        RestClientStub(onUpdateShoppingListItem: (String id, ShoppingListItem item) => updatedShoppingListItem = item);
     final dialog = createDialog(client, item(), ["Category1", "Category2"]);
 
     await tester.pumpWidget(await makeTestableWidget(dialog, restClient: client, locale: testLocale));
@@ -45,10 +47,13 @@ void main() {
     await tester.tap(categoryButton);
     await tester.pumpAndSettle();
 
-    expect(client.updatedShoppingListItem.category, "Category2");
+    expect(updatedShoppingListItem?.category, "Category2");
   });
 
   testWidgets('addNewCategory', (WidgetTester tester) async {
+    ShoppingListItem updatedShoppingListItem;
+    final client =
+        RestClientStub(onUpdateShoppingListItem: (String id, ShoppingListItem item) => updatedShoppingListItem = item);
     final dialog = createDialog(client, item(), []);
 
     await tester.pumpWidget(await makeTestableWidget(dialog, restClient: client, locale: testLocale));
@@ -62,10 +67,13 @@ void main() {
     await tester.tap(submitButton);
     await tester.pumpAndSettle();
 
-    expect(client.updatedShoppingListItem.category, "New category");
+    expect(updatedShoppingListItem?.category, "New category");
   });
 
   testWidgets('editItemName', (WidgetTester tester) async {
+    ShoppingListItem updatedShoppingListItem;
+    final client =
+        RestClientStub(onUpdateShoppingListItem: (String id, ShoppingListItem item) => updatedShoppingListItem = item);
     final dialog = createDialog(client, item(), []);
 
     await tester.pumpWidget(await makeTestableWidget(dialog, restClient: client, locale: testLocale));
@@ -84,10 +92,11 @@ void main() {
     await enterText(tester, widgetType: TextField, fieldLabelOrHint: "Item name", text: "New item name");
     await tester.testTextInput.receiveAction(TextInputAction.done);
 
-    expect(client.updatedShoppingListItem.name, "New item name");
+    expect(updatedShoppingListItem?.name, "New item name");
   });
 
   testWidgets('deleteItem', (WidgetTester tester) async {
+    final client = RestClientStub();
     ShoppingListItem deletedItem;
     final dialog = createDialog(client, item(), [], onDeleteItem: (item) async {
       deletedItem = item;

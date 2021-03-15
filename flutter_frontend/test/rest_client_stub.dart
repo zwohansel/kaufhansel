@@ -18,10 +18,11 @@ class RestClientStub implements RestClient {
   final BackendInfo Function() onGetBackendInfo;
   final List<ShoppingListInfo> Function() onGetShoppingLists;
   final List<ShoppingListItem> Function(String id) onFetchShoppingList;
+  final ShoppingListItem Function(String shoppingListId, String name, String category) onCreateShoppingListItem;
+  final void Function(String shoppingListId, ShoppingListItem item) onUpdateShoppingListItem;
 
   final List<User> _users = [];
   final Map<String, RegistrationProcessType> _inviteCodes = {};
-  ShoppingListItem _createdShoppingListItem;
 
   RestClientStub({
     this.onRegister,
@@ -30,6 +31,8 @@ class RestClientStub implements RestClient {
     this.onGetBackendInfo,
     this.onGetShoppingLists,
     this.onFetchShoppingList,
+    this.onCreateShoppingListItem,
+    this.onUpdateShoppingListItem,
   });
 
   void addUser(User user) => _users.add(user);
@@ -37,12 +40,6 @@ class RestClientStub implements RestClient {
   void addInviteCode(String code, RegistrationProcessType type) {
     _inviteCodes[code] = type;
   }
-
-  void mockCreateShoppingListItem(ShoppingListItem item) {
-    _createdShoppingListItem = item;
-  }
-
-  ShoppingListItem updatedShoppingListItem;
 
   @override
   Future<BackendInfo> getBackendInfo() async {
@@ -106,7 +103,8 @@ class RestClientStub implements RestClient {
 
   @override
   Future<ShoppingListItem> createShoppingListItem(String shoppingListId, String name, String category) async {
-    return _createdShoppingListItem;
+    if (onCreateShoppingListItem == null) throw UnimplementedError();
+    return onCreateShoppingListItem(shoppingListId, name, category);
   }
 
   @override
@@ -131,11 +129,13 @@ class RestClientStub implements RestClient {
 
   @override
   Future<List<ShoppingListInfo>> getShoppingLists() async {
+    if (onGetShoppingLists == null) throw UnimplementedError();
     return onGetShoppingLists();
   }
 
   @override
   Future<List<ShoppingListItem>> fetchShoppingList(String shoppingListId) async {
+    if (onFetchShoppingList == null) throw UnimplementedError();
     return onFetchShoppingList(shoppingListId);
   }
 
@@ -161,12 +161,14 @@ class RestClientStub implements RestClient {
 
   @override
   Future<void> requestPasswordReset(String emailAddress) async {
-    this?.onPasswordResetRequest(emailAddress);
+    if (onPasswordResetRequest == null) throw UnimplementedError();
+    onPasswordResetRequest(emailAddress);
   }
 
   @override
   Future<void> resetPassword(String emailAddress, String resetCode, String password) async {
-    this?.onPasswordReset(emailAddress, resetCode, password);
+    if (onPasswordReset == null) throw UnimplementedError();
+    onPasswordReset(emailAddress, resetCode, password);
   }
 
   @override
@@ -184,6 +186,7 @@ class RestClientStub implements RestClient {
 
   @override
   Future<void> updateShoppingListItem(String shoppingListId, ShoppingListItem item) async {
-    updatedShoppingListItem = item;
+    if (onUpdateShoppingListItem == null) throw UnimplementedError();
+    onUpdateShoppingListItem(shoppingListId, item);
   }
 }

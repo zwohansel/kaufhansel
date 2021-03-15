@@ -10,17 +10,18 @@ import 'rest_client_stub.dart';
 import 'settings_store_stub.dart';
 
 Future<Widget> makeBasicTestableWidget(Widget child, {Locale locale}) async {
+  final supportedLocale = locale ?? Locale("de");
   return MediaQuery(
     data: MediaQueryData(),
     child: MaterialApp(
-      home: Localizations(
-          locale: locale ?? Locale("de"),
-          delegates: [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            DefaultWidgetsLocalizations.delegate
-          ],
-          child: child),
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        DefaultWidgetsLocalizations.delegate
+      ],
+      supportedLocales: [supportedLocale],
+      locale: supportedLocale,
+      home: child,
     ),
   );
 }
