@@ -31,6 +31,8 @@ void main() {
 
 class App extends StatelessWidget {
   static const _serverUrl = kDebugMode ? "https://localhost:8080/api/" : "https://zwohansel.de/kaufhansel/api/";
+  static final _restClient = RestClient(Uri.parse(_serverUrl));
+  static final _settingsStore = SettingsStore();
 
   @override
   Widget build(BuildContext context) {
@@ -43,8 +45,8 @@ class App extends StatelessWidget {
         onGenerateTitle: (BuildContext context) => AppLocalizations.of(context).appTitle,
         theme: ThemeData(primarySwatch: Colors.green, fontFamily: 'Roboto'),
         home: ShoppingListApp(
-          client: RestClient(Uri.parse(_serverUrl)),
-          settingsStore: SettingsStore(),
+          client: _restClient,
+          settingsStore: _settingsStore,
           currentVersion: getCurrentVersion,
         ));
   }
