@@ -11,20 +11,17 @@ import 'package:kaufhansel_client/widgets/error_dialog.dart';
 import 'package:provider/provider.dart';
 
 class ShoppingListItemInput extends StatefulWidget {
-  final ScrollController _shoppingListScrollController;
-  final String _category;
-  final bool _enabled;
-  final void Function(String) _onChange;
+  final ScrollController shoppingListScrollController;
+  final String category;
+  final bool enabled;
+  final void Function(String) onChange;
 
-  ShoppingListItemInput(
-      {@required ScrollController shoppingListScrollController,
-      @required void Function(String) onChange,
-      String category,
-      bool enabled = true})
-      : _shoppingListScrollController = shoppingListScrollController,
-        _category = category,
-        _enabled = enabled,
-        _onChange = onChange;
+  ShoppingListItemInput({
+    @required this.shoppingListScrollController,
+    @required this.onChange,
+    this.category,
+    this.enabled = true,
+  });
 
   @override
   _ShoppingListItemInputState createState() => _ShoppingListItemInputState();
@@ -43,7 +40,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
     super.initState();
     _newItemNameController.addListener(() {
       setState(() => _nameValid = _newItemNameController.text.trim().isNotEmpty);
-      widget._onChange(_newItemNameController.text.trim());
+      widget.onChange(_newItemNameController.text.trim());
     });
   }
 
@@ -69,7 +66,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
     try {
       final shoppingList = Provider.of<ShoppingList>(context, listen: false);
       // category CATEGORY_ALL is virtual, do not add it to items
-      final category = widget._category == CATEGORY_ALL ? null : widget._category;
+      final category = widget.category == CATEGORY_ALL ? null : widget.category;
       ShoppingListItem shoppingListItem =
           await RestClientWidget.of(context).createShoppingListItem(shoppingList.id, name, category);
       shoppingList.addItem(shoppingListItem);
@@ -77,7 +74,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
       // Scroll to the new element after it has been added and rendered (at the end of this frame).
       // TODO: Does not work reliably (e.g. after hot reload)
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        widget._shoppingListScrollController.animateTo(widget._shoppingListScrollController.position.maxScrollExtent,
+        widget.shoppingListScrollController.animateTo(widget.shoppingListScrollController.position.maxScrollExtent,
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
       });
     } on Exception catch (e) {
@@ -92,7 +89,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
   Widget build(BuildContext context) {
     final addButton = AsyncOperationIconButton(
       icon: Icon(Icons.add),
-      onPressed: widget._enabled && _nameValid ? addNewItemIfValid : null,
+      onPressed: widget.enabled && _nameValid ? addNewItemIfValid : null,
       loading: _submitting,
     );
 
@@ -112,7 +109,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
                     hintText: AppLocalizations.of(context).shoppingListNeededHint,
                     suffixIcon: _buildClearButton()),
                 controller: _newItemNameController,
-                enabled: !_submitting && widget._enabled,
+                enabled: !_submitting && widget.enabled,
                 onSubmitted: (_) => addNewItemIfValid()),
           ),
           Container(child: addButton, margin: EdgeInsets.only(left: 6.0)),
