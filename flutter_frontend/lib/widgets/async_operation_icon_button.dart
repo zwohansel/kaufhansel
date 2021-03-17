@@ -32,7 +32,7 @@ class AsyncOperationIconButton extends StatelessWidget {
       child: IconButton(
         splashRadius: 23,
         icon: _icon,
-        onPressed: _onPressed != null ? _onPressed : null,
+        onPressed: _onPressed,
       ),
     );
   }

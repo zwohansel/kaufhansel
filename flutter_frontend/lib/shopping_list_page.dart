@@ -283,6 +283,9 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
   }
 
   void _moveItem(List<ShoppingListItem> itemsOfThisList, int oldIndexInThisList, int newIndexInThisList) async {
+    if (_loading == true) {
+      return;
+    }
     setState(() => _loading = true);
     final RestClient client = RestClientWidget.of(context);
     final ShoppingList list = Provider.of<ShoppingList>(context, listen: false);
