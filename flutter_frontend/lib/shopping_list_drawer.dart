@@ -5,9 +5,9 @@ import 'package:kaufhansel_client/settings/app_settings.dart';
 import 'package:kaufhansel_client/widgets/confirm_dialog.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
 import 'package:kaufhansel_client/widgets/invite_dialog.dart';
+import 'package:kaufhansel_client/widgets/text_input_dialog.dart';
 import 'package:provider/provider.dart';
 
-import 'create_shopping_list_dialog.dart';
 import 'list_settings/shopping_list_settings.dart';
 import 'model.dart';
 
@@ -94,15 +94,11 @@ class ShoppingListDrawer extends StatelessWidget {
             // tileColor: Theme.of(context).primaryColorLight,
             leading: Icon(Icons.post_add),
             title: Text(AppLocalizations.of(context).shoppingListCreateNew),
-            onTap: () {
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (context) {
-                  return CreateShoppingListDialog(onCreateShoppingList);
-                },
-              );
-            },
+            onTap: () => showTextInputDialog(context,
+                title: AppLocalizations.of(context).shoppingListCreateNewTitle,
+                hintText: AppLocalizations.of(context).shoppingListCreateNewEnterNameHint,
+                confirmBtnLabel: AppLocalizations.of(context).shoppingListCreateNewConfirm,
+                onConfirm: onCreateShoppingList),
           ),
           _buildMenuCategoryItem(context, AppLocalizations.of(context).appTitle),
           ListTile(
