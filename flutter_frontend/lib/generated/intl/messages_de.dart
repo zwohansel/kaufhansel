@@ -61,9 +61,17 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static m20(email) => "Wer ist ${email} ???";
 
-  static m21(version) => "Version ${version} ist verfügbar";
+  static m21(category) => "Kategorie ${category} entfernen";
 
-  static m22(roleName) => "Hier bist du ${roleName}:";
+  static m22(category) => "Alle abgehakten Dinge aus der Kategorie ${category} löschen";
+
+  static m23(category) => "Kategorie ${category} umbenennen...";
+
+  static m24(category) => "Häkchen in der Kategorie ${category} entfernen";
+
+  static m25(version) => "Version ${version} ist verfügbar";
+
+  static m26(roleName) => "Hier bist du ${roleName}:";
 
   static m23(listName) => "Jedenfalls können wir die Liste ${listName} nicht finden.";
 
@@ -156,8 +164,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "listSettingsLeaveListConfirmationText" : m15,
     "listSettingsListCleared" : m16,
     "listSettingsListInvitationSent" : m17,
-    "listSettingsRemoveAllCategories" : MessageLookupByLibrary.simpleMessage("Alle Kategorien entfernen..."),
-    "listSettingsRemoveAllCategoriesConfirmationText" : MessageLookupByLibrary.simpleMessage("Möchtest du wirklich alle Kategorien entfernen?"),
     "listSettingsRemoveUserFromList" : m18,
     "listSettingsSendListInvitationNo" : MessageLookupByLibrary.simpleMessage("Jetzt nicht"),
     "listSettingsSendListInvitationText" : m19,
@@ -167,10 +173,23 @@ class MessageLookup extends MessageLookupByLibrary {
     "listSettingsShareWithOtherInfo" : MessageLookupByLibrary.simpleMessage("Neue Hansel werden als Schreibhansel hinzugefügt: sie können Dinge hinzufügen und entfernen; Dinge abhaken und Haken entfernen. Das kannst ändern, nachdem der neue Hansel in der Liste ist."),
     "listSettingsSharingWith" : MessageLookupByLibrary.simpleMessage("Du teilst die Liste mit"),
     "listSettingsSharingWithSelf" : MessageLookupByLibrary.simpleMessage("Dir"),
-    "listSettingsUncheckAllItems" : MessageLookupByLibrary.simpleMessage("Alle Häkchen entfernen..."),
-    "listSettingsUncheckAllItemsConfirmationText" : MessageLookupByLibrary.simpleMessage("Möchtest du wirklich alle Häkchen entfernen?"),
+    "listSettingsUncheckItems" : MessageLookupByLibrary.simpleMessage("Häkchen entfernen..."),
+    "listSettingsUncheckItemsTitle" : MessageLookupByLibrary.simpleMessage("Welche Häkchen möchtest du entfernen?"),
     "manShrugging" : MessageLookupByLibrary.simpleMessage("🤷‍♂️"),
-    "newerVersionAvailable" : m21,
+    "manageCategories" : MessageLookupByLibrary.simpleMessage("Kategorien bearbeiten..."),
+    "manageCategoriesAction" : MessageLookupByLibrary.simpleMessage("Aktion:"),
+    "manageCategoriesCategory" : MessageLookupByLibrary.simpleMessage("Kategorie:"),
+    "manageCategoriesRemoveCategories" : MessageLookupByLibrary.simpleMessage("Alle Kategorien entfernen"),
+    "manageCategoriesRemoveCategory" : m21,
+    "manageCategoriesRemoveChecked" : MessageLookupByLibrary.simpleMessage("Alle abgehakten Dinge löschen"),
+    "manageCategoriesRemoveCheckedFromCategory" : m22,
+    "manageCategoriesRenameCategory" : m23,
+    "manageCategoriesRenameCategoryDialogTitle" : MessageLookupByLibrary.simpleMessage("Kategorie umbenennen"),
+    "manageCategoriesTitle" : MessageLookupByLibrary.simpleMessage("Kategorien bearbeiten"),
+    "manageCategoriesUncheckAll" : MessageLookupByLibrary.simpleMessage("Alle Häkchen entfernen"),
+    "manageCategoriesUncheckCategory" : m24,
+    "manageCategoriesWhich" : MessageLookupByLibrary.simpleMessage("Welche denn?"),
+    "newerVersionAvailable" : m25,
     "newerVersionAvailableObligatoryUpdate" : MessageLookupByLibrary.simpleMessage("Es hat sich viel getan. Damit dein Kaufhansel weiterhin funktioniert, musst du diese Aktualisierung installieren. Mehr Infos findest du, wenn du auf den Link zum Herunterladen klickst, oder im Play Store."),
     "no" : MessageLookupByLibrary.simpleMessage("Nein"),
     "ok" : MessageLookupByLibrary.simpleMessage("Ok"),
@@ -204,7 +223,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "roleReadWriteDescription" : MessageLookupByLibrary.simpleMessage("Darf Dinge hinzufügen und entfernen, darf Haken setzen und entfernen"),
     "roleReadWriteName" : MessageLookupByLibrary.simpleMessage("Schreibhansel"),
     "roleReadWriteWhatIsIt" : MessageLookupByLibrary.simpleMessage("Was ist ein Schreibhansel?"),
-    "roleYoursRoleName" : m22,
+    "roleYoursRoleName" : m26,
     "rolesWhich" : MessageLookupByLibrary.simpleMessage("Welche Rollen gibt es?"),
     "shoppingListCreateNew" : MessageLookupByLibrary.simpleMessage("Neue Liste..."),
     "shoppingListCreateNewConfirm" : MessageLookupByLibrary.simpleMessage("Anlegen"),

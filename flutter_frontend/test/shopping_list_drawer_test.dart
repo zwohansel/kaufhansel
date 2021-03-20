@@ -28,8 +28,7 @@ void main() {
     expect(find.widgetWithText(Container, localizations.appTitle), findsOneWidget);
     expect(find.widgetWithText(Container, "List0"), findsOneWidget);
     expect(find.widgetWithText(ListTile, localizations.listSettings), findsOneWidget);
-    expect(find.widgetWithText(ListTile, localizations.listSettingsUncheckAllItems), findsOneWidget);
-    expect(find.widgetWithText(ListTile, localizations.listSettingsRemoveAllCategories), findsOneWidget);
+    expect(find.widgetWithText(ListTile, localizations.manageCategories), findsOneWidget);
   });
 
   testWidgets('drawerWithReadWriteListSelected', (WidgetTester tester) async {
@@ -43,8 +42,7 @@ void main() {
     expect(find.widgetWithText(Container, localizations.appTitle), findsOneWidget);
     expect(find.widgetWithText(Container, "List0"), findsOneWidget);
     expect(find.widgetWithText(ListTile, localizations.listSettings), findsOneWidget);
-    expect(find.widgetWithText(ListTile, localizations.listSettingsUncheckAllItems), findsOneWidget);
-    expect(find.widgetWithText(ListTile, localizations.listSettingsRemoveAllCategories), findsOneWidget);
+    expect(find.widgetWithText(ListTile, localizations.manageCategories), findsOneWidget);
   });
 
   testWidgets('drawerWithCheckOnlyListSelected', (WidgetTester tester) async {
@@ -58,7 +56,7 @@ void main() {
     expect(find.widgetWithText(ListTile, localizations.listSettings), findsOneWidget);
     // finds 2 widgets in this case: section header and role name
     expect(find.widgetWithText(Container, localizations.appTitle), findsNWidgets(2));
-    expect(find.widgetWithText(ListTile, localizations.listSettingsUncheckAllItems), findsOneWidget);
+    expect(find.widgetWithText(ListTile, localizations.manageCategories), findsOneWidget);
     checkAlwaysPresentOptions(localizations);
   });
 
@@ -84,76 +82,6 @@ void main() {
 
     checkAlwaysPresentOptions(localizations);
     expect(find.widgetWithText(Container, localizations.general), findsOneWidget);
-  });
-
-  testWidgets('uncheckAllItems', (WidgetTester tester) async {
-    final RestClientStub client = RestClientStub();
-
-    final info = ShoppingListInfo("0", "List", ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true), []);
-
-    ShoppingListInfo uncheckAllCallbackValue;
-    final drawer = _buildDrawer(
-      shoppingLists: [info],
-      selectedShoppingListId: info.id,
-      onUncheckAllItems: (info) {
-        uncheckAllCallbackValue = info;
-        return null;
-      },
-    );
-
-    await tester.pumpWidget(await makeTestableWidget(drawer, restClient: client, locale: testLocale));
-    await tester.pumpAndSettle();
-
-    final uncheckAllMenuItem = find.widgetWithText(ListTile, localizations.listSettingsUncheckAllItems);
-    expect(uncheckAllMenuItem, findsOneWidget);
-    await tester.tap(uncheckAllMenuItem);
-    await tester.pumpAndSettle();
-
-    // Callback should not have been invoked yet... user has to confirm first
-    expect(uncheckAllCallbackValue, isNull);
-
-    expect(find.text(localizations.listSettingsUncheckAllItemsConfirmationText), findsOneWidget);
-    final confirmBtn = find.widgetWithText(ElevatedButton, localizations.yes);
-    expect(confirmBtn, findsOneWidget);
-    await tester.tap(confirmBtn);
-    await tester.pumpAndSettle();
-
-    expect(uncheckAllCallbackValue, equals(info));
-  });
-
-  testWidgets('removeAllCategories', (WidgetTester tester) async {
-    final RestClientStub client = RestClientStub();
-
-    final info = ShoppingListInfo("0", "List", ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true), []);
-
-    ShoppingListInfo removeAllCategoriesCallbackValue;
-    final drawer = _buildDrawer(
-      shoppingLists: [info],
-      selectedShoppingListId: info.id,
-      onRemoveAllCategories: (info) {
-        removeAllCategoriesCallbackValue = info;
-        return null;
-      },
-    );
-
-    await tester.pumpWidget(await makeTestableWidget(drawer, restClient: client, locale: testLocale));
-    await tester.pumpAndSettle();
-
-    final removeAllCategoriesMenuItem = find.widgetWithText(ListTile, localizations.listSettingsRemoveAllCategories);
-    expect(removeAllCategoriesMenuItem, findsOneWidget);
-    await tester.tap(removeAllCategoriesMenuItem);
-    await tester.pumpAndSettle();
-
-    // Callback should not have been invoked yet... user has to confirm first
-    expect(removeAllCategoriesCallbackValue, isNull);
-
-    expect(find.text(localizations.listSettingsRemoveAllCategoriesConfirmationText), findsOneWidget);
-    final confirmBtn = find.widgetWithText(ElevatedButton, localizations.yes);
-    expect(confirmBtn, findsOneWidget);
-    await tester.tap(confirmBtn);
-    await tester.pumpAndSettle();
-
-    expect(removeAllCategoriesCallbackValue, equals(info));
   });
 
   testWidgets('selectShoppingList', (WidgetTester tester) async {
@@ -316,5 +244,9 @@ ShoppingListDrawer _buildDrawer({
     onChangeShoppingListName: (info, name) => null,
     onLogOut: () => null,
     onDeleteUserAccount: () => null,
+    shoppingListCategories: [],
+    onRemoveCategory: (info, category) => null,
+    onUncheckItemsOfCategory: (info, category) => null,
+    onRenameCategory: (info, oldCategory) => null,
   );
 }

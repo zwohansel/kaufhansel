@@ -22,6 +22,7 @@ import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 import 'package:kaufhansel_client/utils/update_check.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
 import 'package:kaufhansel_client/widgets/overlay_menu.dart';
+import 'package:kaufhansel_client/widgets/text_input_dialog.dart';
 import 'package:provider/provider.dart';
 
 import 'model.dart';
@@ -31,7 +32,7 @@ void main() {
 }
 
 class App extends StatelessWidget {
-  static const _serverUrl = kDebugMode ? "https://192.168.188.60:8080/api/" : "https://zwohansel.de/kaufhansel/api/";
+  static const _serverUrl = kDebugMode ? "https://localhost:8080/api/" : "https://zwohansel.de/kaufhansel/api/";
   static final _restClient = RestClient(Uri.parse(_serverUrl));
   static final _settingsStore = SettingsStore();
 
@@ -188,14 +189,62 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   }
 
   Future<void> _uncheckAllItems(ShoppingListInfo info) async {
-    await widget.client.uncheckAllItems(info.id);
+    await widget.client.uncheckItems(info.id);
     if (_currentShoppingListInfo == info) {
       _currentShoppingList?.items?.forEach((item) => item.checked = false);
     }
   }
 
+  Future<void> _uncheckItemsOfCategory(ShoppingListInfo info, String category) async {
+    await widget.client.uncheckItems(info.id, ofCategory: category);
+    if (_currentShoppingListInfo == info) {
+      _currentShoppingList?.items?.forEach((item) => item.checked = false);
+    }
+  }
+
+  Future<void> _deleteCheckedItems(ShoppingListInfo info, {String ofCategory}) async {
+    await widget.client.deleteShoppingListItems(info.id, ofCategory);
+    if (_currentShoppingListInfo == info) {
+      _currentShoppingList
+          .removeItemsWhere((item) => item.checked && (ofCategory == null || item.category == ofCategory));
+    }
+  }
+
+  /// returns true, if category was renamed, false otherwise
+  Future<bool> _renameCategory(ShoppingListInfo info, String oldCategoryName) async {
+    String newCategoryName = await showTextInputDialog(context,
+        title: AppLocalizations.of(context).manageCategoriesRenameCategoryDialogTitle,
+        initialValue: oldCategoryName,
+        hintText: AppLocalizations.of(context).shoppingListCreateNewEnterNameHint);
+
+    if (newCategoryName == null || newCategoryName.isEmpty || newCategoryName == oldCategoryName) {
+      return false;
+    }
+
+    await widget.client.renameCategory(info.id, oldCategoryName, newCategoryName);
+    if (_currentShoppingListInfo == info) {
+      _currentShoppingList?.items?.forEach((item) {
+        if (item.category == oldCategoryName) {
+          item.category = newCategoryName;
+        }
+      });
+    }
+    return true;
+  }
+
+  Future<void> _removeCategory(ShoppingListInfo info, String category) async {
+    await widget.client.removeCategory(info.id, category: category);
+    if (_currentShoppingListInfo == info) {
+      _currentShoppingList?.items?.forEach((item) {
+        if (item.category == category) {
+          item.category = null;
+        }
+      });
+    }
+  }
+
   Future<void> _removeAllCategories(ShoppingListInfo info) async {
-    await widget.client.removeAllCategories(info.id);
+    await widget.client.removeCategory(info.id);
     if (_currentShoppingListInfo == info) {
       _currentShoppingList?.items?.forEach((item) => item.category = null);
     }
@@ -395,26 +444,40 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       return ChangeNotifierProvider.value(
         value: _currentShoppingList,
         builder: (context, child) {
-          return Scaffold(
-            key: _drawerKey,
-            appBar: AppBar(
-              actions: [
-                _buildOverlayMenuButton(),
-                IconButton(
-                    icon: Icon(Icons.menu), splashRadius: 23, onPressed: () => _drawerKey.currentState.openEndDrawer()),
-              ],
-              title: ShoppingListTitle(_currentShoppingListCategory),
-              shadowColor: Colors.transparent,
-            ),
-            endDrawer: ShoppingListDrawer(
+          // unfocus shopping list item input text field when clicked/tapped on other element
+          return GestureDetector(
+            onTap: () {
+              final FocusScopeNode currentFocus = FocusScope.of(context);
+              if (!currentFocus.hasPrimaryFocus) {
+                currentFocus.unfocus();
+              }
+            },
+            child: Scaffold(
+              key: _drawerKey,
+              appBar: AppBar(
+                actions: [
+                  _buildOverlayMenuButton(),
+                  IconButton(
+                      icon: Icon(Icons.menu),
+                      splashRadius: 23,
+                      onPressed: () => _drawerKey.currentState.openEndDrawer()),
+                ],
+                title: ShoppingListTitle(_currentShoppingListCategory),
+                shadowColor: Colors.transparent,
+              ),
+              endDrawer: ShoppingListDrawer(
                 onRefreshPressed: _fetchShoppingListInfos,
                 shoppingListInfos: _shoppingListInfos ?? [],
                 selectedShoppingListId: _currentShoppingListInfo?.id,
                 onShoppingListSelected: _selectShoppingList,
                 onCreateShoppingList: _createShoppingList,
                 onDeleteShoppingList: _deleteShoppingList,
+                onUncheckItemsOfCategory: _uncheckItemsOfCategory,
                 onUncheckAllItems: _uncheckAllItems,
+                shoppingListCategories: _currentShoppingListCategories,
+                onRemoveCategory: _removeCategory,
                 onRemoveAllCategories: _removeAllCategories,
+                onRenameCategory: _renameCategory,
                 onRemoveAllItems: _removeAllItems,
                 onAddUserToShoppingListIfPresent: _addUserToShoppingList,
                 onRemoveUserFromShoppingList: _removeUserFromShoppingList,
@@ -422,8 +485,11 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
                 onChangeShoppingListName: _changeShoppingListName,
                 userInfo: _userInfo,
                 onLogOut: _logOut,
-                onDeleteUserAccount: _deleteUserAccount),
-            body: _buildShoppingList(context),
+                onDeleteUserAccount: _deleteUserAccount,
+                onDeleteChecked: _deleteCheckedItems,
+              ),
+              body: _buildShoppingList(context),
+            ),
           );
         },
       );

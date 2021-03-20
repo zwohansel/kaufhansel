@@ -1195,41 +1195,151 @@ class AppLocalizations {
     );
   }
 
-  /// `Alle Häkchen entfernen...`
-  String get listSettingsUncheckAllItems {
+  /// `Häkchen entfernen...`
+  String get listSettingsUncheckItems {
     return Intl.message(
-      'Alle Häkchen entfernen...',
-      name: 'listSettingsUncheckAllItems',
+      'Häkchen entfernen...',
+      name: 'listSettingsUncheckItems',
       desc: '',
       args: [],
     );
   }
 
-  /// `Möchtest du wirklich alle Häkchen entfernen?`
-  String get listSettingsUncheckAllItemsConfirmationText {
+  /// `Welche Häkchen möchtest du entfernen?`
+  String get listSettingsUncheckItemsTitle {
     return Intl.message(
-      'Möchtest du wirklich alle Häkchen entfernen?',
-      name: 'listSettingsUncheckAllItemsConfirmationText',
+      'Welche Häkchen möchtest du entfernen?',
+      name: 'listSettingsUncheckItemsTitle',
       desc: '',
       args: [],
     );
   }
 
-  /// `Alle Kategorien entfernen...`
-  String get listSettingsRemoveAllCategories {
+  /// `Kategorien bearbeiten...`
+  String get manageCategories {
     return Intl.message(
-      'Alle Kategorien entfernen...',
-      name: 'listSettingsRemoveAllCategories',
+      'Kategorien bearbeiten...',
+      name: 'manageCategories',
       desc: '',
       args: [],
     );
   }
 
-  /// `Möchtest du wirklich alle Kategorien entfernen?`
-  String get listSettingsRemoveAllCategoriesConfirmationText {
+  /// `Kategorien bearbeiten`
+  String get manageCategoriesTitle {
     return Intl.message(
-      'Möchtest du wirklich alle Kategorien entfernen?',
-      name: 'listSettingsRemoveAllCategoriesConfirmationText',
+      'Kategorien bearbeiten',
+      name: 'manageCategoriesTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Kategorie:`
+  String get manageCategoriesCategory {
+    return Intl.message(
+      'Kategorie:',
+      name: 'manageCategoriesCategory',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Aktion:`
+  String get manageCategoriesAction {
+    return Intl.message(
+      'Aktion:',
+      name: 'manageCategoriesAction',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Welche denn?`
+  String get manageCategoriesWhich {
+    return Intl.message(
+      'Welche denn?',
+      name: 'manageCategoriesWhich',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Alle Häkchen entfernen`
+  String get manageCategoriesUncheckAll {
+    return Intl.message(
+      'Alle Häkchen entfernen',
+      name: 'manageCategoriesUncheckAll',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Häkchen in der Kategorie {category} entfernen`
+  String manageCategoriesUncheckCategory(Object category) {
+    return Intl.message(
+      'Häkchen in der Kategorie $category entfernen',
+      name: 'manageCategoriesUncheckCategory',
+      desc: '',
+      args: [category],
+    );
+  }
+
+  /// `Alle abgehakten Dinge löschen`
+  String get manageCategoriesRemoveChecked {
+    return Intl.message(
+      'Alle abgehakten Dinge löschen',
+      name: 'manageCategoriesRemoveChecked',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Alle abgehakten Dinge aus der Kategorie {category} löschen`
+  String manageCategoriesRemoveCheckedFromCategory(Object category) {
+    return Intl.message(
+      'Alle abgehakten Dinge aus der Kategorie $category löschen',
+      name: 'manageCategoriesRemoveCheckedFromCategory',
+      desc: '',
+      args: [category],
+    );
+  }
+
+  /// `Alle Kategorien entfernen`
+  String get manageCategoriesRemoveCategories {
+    return Intl.message(
+      'Alle Kategorien entfernen',
+      name: 'manageCategoriesRemoveCategories',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Kategorie {category} entfernen`
+  String manageCategoriesRemoveCategory(Object category) {
+    return Intl.message(
+      'Kategorie $category entfernen',
+      name: 'manageCategoriesRemoveCategory',
+      desc: '',
+      args: [category],
+    );
+  }
+
+  /// `Kategorie {category} umbenennen...`
+  String manageCategoriesRenameCategory(Object category) {
+    return Intl.message(
+      'Kategorie $category umbenennen...',
+      name: 'manageCategoriesRenameCategory',
+      desc: '',
+      args: [category],
+    );
+  }
+
+  /// `Kategorie umbenennen`
+  String get manageCategoriesRenameCategoryDialogTitle {
+    return Intl.message(
+      'Kategorie umbenennen',
+      name: 'manageCategoriesRenameCategoryDialogTitle',
       desc: '',
       args: [],
     );

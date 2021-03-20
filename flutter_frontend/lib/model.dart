@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 
-const CATEGORY_ALL = "Alle";
+const CATEGORY_ALL = "Alle"; //TODO: i18n
 
 class Optional<T> {
   final T _t;
@@ -153,6 +153,16 @@ class ShoppingList extends ChangeNotifier {
     _items.remove(item);
     item.categoryChangedCallback = null;
     item.checkedChangedCallback = null;
+    notifyListeners();
+  }
+
+  void removeItemsWhere(bool Function(ShoppingListItem item) filter) {
+    final toBeDeleted = _items.where(filter);
+    toBeDeleted.forEach((item) {
+      item.categoryChangedCallback = null;
+      item.checkedChangedCallback = null;
+    });
+    _items.removeWhere(filter);
     notifyListeners();
   }
 

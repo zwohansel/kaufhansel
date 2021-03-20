@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
@@ -50,14 +51,18 @@ public class ShoppingList {
         return items.stream().filter(item -> item.isChecked() == checked).collect(Collectors.toList());
     }
 
-    public Optional<ShoppingListItem> findItemById(String id) {
+    public Optional<ShoppingListItem> findItemById(ObjectId id) {
         return items.stream().filter(item -> item.getId().equals(id)).findAny();
     }
 
-    public Optional<ShoppingListItem> deleteItemById(String id) {
+    public Optional<ShoppingListItem> deleteItemById(ObjectId id) {
         Optional<ShoppingListItem> item = findItemById(id);
         item.ifPresent(items::remove);
         return item;
+    }
+
+    public void deleteItemIf(Predicate<ShoppingListItem> filter) {
+        items.removeIf(filter);
     }
 
     /**

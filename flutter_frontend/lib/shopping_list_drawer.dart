@@ -1,8 +1,10 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/settings/app_settings.dart';
-import 'package:kaufhansel_client/widgets/confirm_dialog.dart';
+import 'package:kaufhansel_client/widgets/category_manager_dialog.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
 import 'package:kaufhansel_client/widgets/invite_dialog.dart';
 import 'package:kaufhansel_client/widgets/text_input_dialog.dart';
@@ -19,6 +21,10 @@ class ShoppingListDrawer extends StatelessWidget {
     @required this.onRefreshPressed,
     @required this.onUncheckAllItems,
     @required this.onRemoveAllCategories,
+    @required this.onRemoveCategory,
+    @required this.onRenameCategory,
+    @required this.shoppingListCategories,
+    @required this.onUncheckItemsOfCategory,
     @required this.onRemoveAllItems,
     @required this.onShoppingListSelected,
     @required this.onCreateShoppingList,
@@ -29,6 +35,7 @@ class ShoppingListDrawer extends StatelessWidget {
     @required this.onChangeShoppingListName,
     @required this.onLogOut,
     @required this.onDeleteUserAccount,
+    @required this.onDeleteChecked,
   }) : assert(shoppingListInfos != null);
 
   final List<ShoppingListInfo> shoppingListInfos;
@@ -41,7 +48,12 @@ class ShoppingListDrawer extends StatelessWidget {
   final Future<bool> Function(ShoppingListInfo, String) onAddUserToShoppingListIfPresent;
   final Future<void> Function(ShoppingListInfo, ShoppingListUserReference) onRemoveUserFromShoppingList;
   final Future<void> Function(ShoppingListInfo) onUncheckAllItems;
+  final Future<void> Function(ShoppingListInfo shoppingListInfo, {String ofCategory}) onDeleteChecked;
+  final List<String> shoppingListCategories;
+  final Future<void> Function(ShoppingListInfo, String category) onUncheckItemsOfCategory;
   final Future<void> Function(ShoppingListInfo) onRemoveAllCategories;
+  final Future<void> Function(ShoppingListInfo, String category) onRemoveCategory;
+  final Future<bool> Function(ShoppingListInfo, String oldCategory) onRenameCategory;
   final Future<void> Function(ShoppingListInfo) onRemoveAllItems;
   final Future<void> Function(ShoppingListInfo info, String affectedUserId, ShoppingListRole newRole)
       onChangeShoppingListPermissions;
@@ -84,8 +96,7 @@ class ShoppingListDrawer extends StatelessWidget {
               Navigator.pop(context);
             },
           ),
-          _buildUncheckMenuItem(context, currentList),
-          _buildClearCategoriesMenuItem(context, currentList),
+          _buildManageCategoriesMenuItem(context, currentList),
           _buildListSettingsMenuItem(context, currentList),
           _buildMenuCategoryItem(context, AppLocalizations.of(context).shoppingListMyLists),
           ...infoTiles,
@@ -205,49 +216,109 @@ class ShoppingListDrawer extends StatelessWidget {
     );
   }
 
-  StatelessWidget _buildClearCategoriesMenuItem(BuildContext context, ShoppingListInfo currentList) {
-    if (currentList == null || !currentList.permissions.canEditItems) {
+  StatelessWidget _buildManageCategoriesMenuItem(BuildContext context, ShoppingListInfo currentList) {
+    if (currentList == null || (!currentList.permissions.canEditItems && !currentList.permissions.canCheckItems)) {
       return Container();
     }
     return ListTile(
       leading: Icon(Icons.more_outlined),
-      title: Text(AppLocalizations.of(context).listSettingsRemoveAllCategories),
-      onTap: () => _onRemoveAllCategoriesPressed(context, currentList),
+      title: Text(AppLocalizations.of(context).manageCategories),
+      onTap: () => _onManageCategoriesPressed(context, currentList),
     );
   }
 
-  StatelessWidget _buildUncheckMenuItem(BuildContext context, ShoppingListInfo currentList) {
-    if (currentList == null || !currentList.permissions.canCheckItems) {
-      return Container();
-    }
-    return ListTile(
-      leading: Icon(Icons.check_box_outline_blank_outlined),
-      title: Text(AppLocalizations.of(context).listSettingsUncheckAllItems),
-      onTap: () => _onUncheckAllItemsPressed(context, currentList),
-    );
+  Future<void> _onManageCategoriesPressed(BuildContext context, ShoppingListInfo currentList) async {
+    await showDialog<String>(
+        context: context,
+        builder: (context) => CategoryManager(
+              canCheckItems: currentList.permissions.canCheckItems,
+              canEditItems: currentList.permissions.canEditItems,
+              categories: shoppingListCategories,
+              onUncheckAll: () => uncheckAllItems(context, currentList),
+              onUncheckCategory: (category) => uncheckItems(context, currentList, category),
+              onRemoveCategories: () => removeAllCategories(context, currentList),
+              onRemoveCategory: (category) => removeCategory(context, currentList, category),
+              onRenameCategory: (category) => renameCategory(context, currentList, category),
+              onDeleteChecked: (category) => deleteChecked(context, currentList, category),
+              onDeleteAllChecked: () => deleteAllChecked(context, currentList),
+            ));
   }
 
-  Future<void> _onUncheckAllItemsPressed(BuildContext context, ShoppingListInfo shoppingListInfo) async {
-    if (await showConfirmDialog(context, AppLocalizations.of(context).listSettingsUncheckAllItemsConfirmationText,
-        confirmBtnLabel: AppLocalizations.of(context).yes, cancelBtnLabel: AppLocalizations.of(context).no)) {
-      try {
-        await onUncheckAllItems(shoppingListInfo);
-      } catch (e) {
-        showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralServerTooLazy);
-      }
+  Future<void> uncheckItems(BuildContext context, ShoppingListInfo currentList, String category) async {
+    try {
+      await onUncheckItemsOfCategory(currentList, category);
       Navigator.of(context).pop();
+    } on Exception catch (e) {
+      log("Could not uncheck items of category $category", error: e);
+      await showErrorDialogForException(context, e,
+          altText: AppLocalizations.of(context).exceptionGeneralServerTooLazy);
     }
   }
 
-  Future<void> _onRemoveAllCategoriesPressed(BuildContext context, ShoppingListInfo shoppingListInfo) async {
-    if (await showConfirmDialog(context, AppLocalizations.of(context).listSettingsRemoveAllCategoriesConfirmationText,
-        confirmBtnLabel: AppLocalizations.of(context).yes, cancelBtnLabel: AppLocalizations.of(context).no)) {
-      try {
-        await onRemoveAllCategories(shoppingListInfo);
-      } catch (e) {
-        showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralServerTooLazy);
-      }
+  Future<void> uncheckAllItems(BuildContext context, ShoppingListInfo currentList) async {
+    try {
+      await onUncheckAllItems(currentList);
       Navigator.of(context).pop();
+    } on Exception catch (e) {
+      log("Could not uncheck all items", error: e);
+      await showErrorDialogForException(context, e,
+          altText: AppLocalizations.of(context).exceptionGeneralServerTooLazy);
+    }
+  }
+
+  Future<void> deleteAllChecked(BuildContext context, ShoppingListInfo currentList) async {
+    try {
+      await onDeleteChecked(currentList);
+      Navigator.of(context).pop();
+    } on Exception catch (e) {
+      log("Could not uncheck all items", error: e);
+      await showErrorDialogForException(context, e,
+          altText: AppLocalizations.of(context).exceptionGeneralServerTooLazy);
+    }
+  }
+
+  Future<void> deleteChecked(BuildContext context, ShoppingListInfo currentList, String category) async {
+    try {
+      await onDeleteChecked(currentList, ofCategory: category);
+      Navigator.of(context).pop();
+    } on Exception catch (e) {
+      log("Could not uncheck all items", error: e);
+      await showErrorDialogForException(context, e,
+          altText: AppLocalizations.of(context).exceptionGeneralServerTooLazy);
+    }
+  }
+
+  Future<void> removeCategory(BuildContext context, ShoppingListInfo currentList, String category) async {
+    try {
+      await onRemoveCategory(currentList, category);
+      Navigator.of(context).pop();
+    } on Exception catch (e) {
+      log("Could not remove category $category", error: e);
+      await showErrorDialogForException(context, e,
+          altText: AppLocalizations.of(context).exceptionGeneralServerTooLazy);
+    }
+  }
+
+  Future<void> removeAllCategories(BuildContext context, ShoppingListInfo currentList) async {
+    try {
+      await onRemoveAllCategories(currentList);
+      Navigator.of(context).pop();
+    } on Exception catch (e) {
+      log("Could not remove all categories", error: e);
+      await showErrorDialogForException(context, e,
+          altText: AppLocalizations.of(context).exceptionGeneralServerTooLazy);
+    }
+  }
+
+  Future<void> renameCategory(BuildContext context, ShoppingListInfo currentList, String oldCategory) async {
+    try {
+      if (await onRenameCategory(currentList, oldCategory)) {
+        Navigator.of(context).pop();
+      }
+    } on Exception catch (e) {
+      log("Could not rename category $oldCategory", error: e);
+      await showErrorDialogForException(context, e,
+          altText: AppLocalizations.of(context).exceptionGeneralServerTooLazy);
     }
   }
 

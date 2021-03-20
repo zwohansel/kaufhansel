@@ -197,7 +197,7 @@ void main() {
     expect(find.widgetWithText(CheckboxListTile, item0.name), findsNothing);
   });
 
-  testWidgets('Remove current category', (WidgetTester tester) async {
+  testWidgets('Remove current category from item', (WidgetTester tester) async {
     final store = SettingsStoreStub();
     // Store a user info obj so that we start in a logged in state
     store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
@@ -315,6 +315,216 @@ void main() {
 
     expect(find.widgetWithText(CheckboxListTile, item0.name), findsOneWidget);
     expect(find.widgetWithText(CheckboxListTile, item1.name), findsOneWidget);
+  });
+
+  testWidgets("Uncheck all items", (WidgetTester tester) async {
+    final store = SettingsStoreStub();
+    // Store a user info obj so that we start in a logged in state
+    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
+
+    final item0 = ShoppingListItem("1", "A", true, "aCategory");
+    final item1 = ShoppingListItem("2", "B", false, "aCategory");
+    final item2 = ShoppingListItem("3", "C", true, null);
+    List<ShoppingListItem> backendItems = [item0, item1, item2];
+
+    final version = Version(1, 0, 0);
+    final client = RestClientStub(
+      onGetBackendInfo: () => BackendInfo(version, null),
+      onGetShoppingLists: () {
+        final adminPermissions = ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true);
+        return [ShoppingListInfo("1", "TestList", adminPermissions, [])];
+      },
+      onFetchShoppingList: (id) => backendItems,
+      onUncheckItems: (shoppingListId, ofCategory) {
+        expect(shoppingListId, equals("1"));
+        expect(ofCategory, isNull);
+      },
+    );
+
+    await tester.pumpWidget(await makeBasicTestableWidget(
+        ShoppingListApp(
+          client: client,
+          settingsStore: store,
+          currentVersion: () async => version,
+        ),
+        locale: testLocale));
+    await tester.pumpAndSettle();
+
+    // open drawer
+    final drawerIcon = find.widgetWithIcon(IconButton, Icons.menu);
+    expect(drawerIcon, findsOneWidget);
+    await tester.tap(drawerIcon);
+    await tester.pumpAndSettle();
+
+    // check that we see the menu item
+    final manageCategoriesMenuItem = find.widgetWithText(ListTile, localizations.manageCategories);
+    expect(manageCategoriesMenuItem, findsOneWidget);
+
+    // open the manage categories dialog
+    await tester.tap(manageCategoriesMenuItem);
+    await tester.pumpAndSettle();
+
+    // check that the dialog is open
+    expect(find.text(localizations.manageCategoriesTitle), findsOneWidget);
+
+    // select CATEGORY_ALL
+    final dropdownButton = find.widgetWithText(GestureDetector, localizations.manageCategoriesWhich);
+    // await tester.ensureVisible(dropdownButton);
+    await tester.tap(dropdownButton);
+    await tester.pumpAndSettle();
+
+    final menuItemCategoryAll = find.descendant(of: dropdownButton, matching: find.text(CATEGORY_ALL));
+    // await tester.ensureVisible(dropdownButton);
+    await tester.tap(menuItemCategoryAll, warnIfMissed: false);
+    await tester.pumpAndSettle();
+
+    // select uncheck items
+    final uncheckItemsOption = find.text(localizations.manageCategoriesUncheckAll);
+    await tester.tap(uncheckItemsOption);
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets("Uncheck items of category", (WidgetTester tester) async {
+    // TODO
+    final store = SettingsStoreStub();
+    // Store a user info obj so that we start in a logged in state
+    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
+
+    final item0 = ShoppingListItem("1", "A", true, "Test category");
+    final item1 = ShoppingListItem("2", "B", false, "Test category");
+    final item2 = ShoppingListItem("3", "C", true, null);
+    List<ShoppingListItem> backendItems = [item0, item1, item2];
+
+    final version = Version(1, 0, 0);
+    final client = RestClientStub(
+      onGetBackendInfo: () => BackendInfo(version, null),
+      onGetShoppingLists: () {
+        final adminPermissions = ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true);
+        return [ShoppingListInfo("1", "TestList", adminPermissions, [])];
+      },
+      onFetchShoppingList: (id) => backendItems,
+      onUncheckItems: (shoppingListId, ofCategory) {
+        expect(shoppingListId, equals("1"));
+        expect(ofCategory, equals("Test category"));
+      },
+    );
+
+    await tester.pumpWidget(await makeBasicTestableWidget(
+        ShoppingListApp(client: client, settingsStore: store, currentVersion: () async => version),
+        locale: testLocale));
+    await tester.pumpAndSettle();
+
+    // open drawer
+    final drawerIcon = find.widgetWithIcon(IconButton, Icons.menu);
+    expect(drawerIcon, findsOneWidget);
+    await tester.tap(drawerIcon);
+    await tester.pumpAndSettle();
+
+    // check that we see the menu item
+    final manageCategoriesMenuItem = find.widgetWithText(ListTile, localizations.manageCategories);
+    expect(manageCategoriesMenuItem, findsOneWidget);
+
+    // open the manage categories dialog
+    await tester.tap(manageCategoriesMenuItem);
+    await tester.pumpAndSettle();
+
+    // check that the dialog is open
+    expect(find.text(localizations.manageCategoriesTitle), findsOneWidget);
+
+    // select category "Test category"
+    final dropdownButton = find.widgetWithText(GestureDetector, localizations.manageCategoriesWhich);
+    // await tester.ensureVisible(dropdownButton);
+    await tester.tap(dropdownButton);
+    await tester.pumpAndSettle();
+
+    final menuItemCategory = find.byKey(ValueKey<String>("menuitem-Test_category"));
+    expect(menuItemCategory, findsOneWidget);
+    // await tester.ensureVisible(menuItemCategory);
+    await tester.tap(menuItemCategory, warnIfMissed: false);
+    await tester.
+    await tester.pumpAndSettle();
+
+    // select uncheck items
+    final uncheckItemsOption = find.byKey(ValueKey<String>("option-uncheck"));
+    //find.text(localizations.manageCategoriesUncheckCategory("Test category"));
+    expect(uncheckItemsOption, findsOneWidget);
+    await tester.tap(uncheckItemsOption);
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets("Remove all categories", (WidgetTester tester) async {
+    final store = SettingsStoreStub();
+    // Store a user info obj so that we start in a logged in state
+    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
+
+    final item0 = ShoppingListItem("1", "A", true, "Category1");
+    final item1 = ShoppingListItem("2", "B", false, "Category2");
+    final item2 = ShoppingListItem("3", "C", true, null);
+    List<ShoppingListItem> backendItems = [item0, item1, item2];
+
+    final version = Version(1, 0, 0);
+    final client = RestClientStub(
+      onGetBackendInfo: () => BackendInfo(version, null),
+      onGetShoppingLists: () {
+        final adminPermissions = ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true);
+        return [ShoppingListInfo("1", "TestList", adminPermissions, [])];
+      },
+      onFetchShoppingList: (id) => backendItems,
+      onRemoveCategory: (shoppingListId, category) {
+        expect(shoppingListId, equals("1"));
+        expect(category, isNull);
+      },
+    );
+
+    await tester.pumpWidget(await makeBasicTestableWidget(
+        ShoppingListApp(
+          client: client,
+          settingsStore: store,
+          currentVersion: () async => version,
+        ),
+        locale: testLocale));
+    await tester.pumpAndSettle();
+
+    // open drawer
+    final drawerIcon = find.widgetWithIcon(IconButton, Icons.menu);
+    expect(drawerIcon, findsOneWidget);
+    await tester.tap(drawerIcon);
+    await tester.pumpAndSettle();
+
+    // check that we see the menu item
+    final manageCategoriesMenuItem = find.widgetWithText(ListTile, localizations.manageCategories);
+    expect(manageCategoriesMenuItem, findsOneWidget);
+
+    // open the manage categories dialog
+    await tester.tap(manageCategoriesMenuItem);
+    await tester.pumpAndSettle();
+
+    // check that the dialog is open
+    expect(find.text(localizations.manageCategoriesTitle), findsOneWidget);
+
+    // select CATEGORY_ALL
+    final dropdownButton = find.widgetWithText(GestureDetector, localizations.manageCategoriesWhich);
+    // await tester.ensureVisible(dropdownButton);
+    await tester.tap(dropdownButton);
+    await tester.pumpAndSettle();
+
+    final menuItemCategoryAll = find.descendant(of: dropdownButton, matching: find.text(CATEGORY_ALL));
+    // await tester.ensureVisible(dropdownButton);
+    await tester.tap(menuItemCategoryAll, warnIfMissed: false);
+    await tester.pumpAndSettle();
+
+    // select uncheck items
+    final uncheckItemsOption = find.text(localizations.manageCategoriesRemoveCategories);
+    await tester.tap(uncheckItemsOption);
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets("Remove category", (WidgetTester tester) async {
+    fail("unimplemented");
+  });
+
+  testWidgets("Rename category", (WidgetTester tester) async {
+    fail("unimplemented");
   });
 
   testWidgets('Logout when fetching shopping list infos if unauthenticated', (WidgetTester tester) async {

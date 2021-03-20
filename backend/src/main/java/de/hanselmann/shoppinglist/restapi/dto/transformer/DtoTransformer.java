@@ -31,7 +31,7 @@ public class DtoTransformer {
     }
 
     public ShoppingListItemDto map(ShoppingListItem item) {
-        return new ShoppingListItemDto(item.getId(), item.getName(), item.isChecked(), item.getAssignee());
+        return new ShoppingListItemDto(item.getId().toString(), item.getName(), item.isChecked(), item.getAssignee());
     }
 
     public ShoppingListUserReferenceDto map(ShoppingListUser user, ObjectId shoppingListId) {

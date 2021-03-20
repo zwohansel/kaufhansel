@@ -169,11 +169,46 @@
   "appSettingsAccountDeletedText": "Wir haben alle deine Daten gelöscht. Tschüss!",
   "appSettingsAboutTitle": "Über die App",
 
-  "listSettingsUncheckAllItems": "Alle Häkchen entfernen...",
-  "listSettingsUncheckAllItemsConfirmationText": "Möchtest du wirklich alle Häkchen entfernen?",
+  "listSettingsUncheckItems": "Häkchen entfernen...",
+  "listSettingsUncheckItemsTitle": "Welche Häkchen möchtest du entfernen?",
 
-  "listSettingsRemoveAllCategories": "Alle Kategorien entfernen...",
-  "listSettingsRemoveAllCategoriesConfirmationText": "Möchtest du wirklich alle Kategorien entfernen?",
+  "manageCategories": "Kategorien bearbeiten...",
+  "manageCategoriesTitle": "Kategorien bearbeiten",
+  "manageCategoriesCategory": "Kategorie:",
+  "manageCategoriesAction": "Aktion:",
+  "manageCategoriesWhich": "Welche denn?",
+  "manageCategoriesUncheckAll": "Alle Häkchen entfernen",
+  "manageCategoriesUncheckCategory":"Häkchen in der Kategorie {category} entfernen",
+  "@manageCategoriesUncheckCategory": {
+    "type": "text",
+    "placeholders": {
+      "category": {}
+    }
+  },
+  "manageCategoriesRemoveChecked": "Alle abgehakten Dinge löschen",
+  "manageCategoriesRemoveCheckedFromCategory": "Alle abgehakten Dinge aus der Kategorie {category} löschen",
+  "@manageCategoriesRemoveCheckedFromCategory": {
+    "type": "text",
+    "placeholders": {
+      "category": {}
+    }
+  },
+  "manageCategoriesRemoveCategories": "Alle Kategorien entfernen",
+  "manageCategoriesRemoveCategory":  "Kategorie {category} entfernen",
+  "@manageCategoriesRemoveCategory": {
+    "type": "text",
+    "placeholders": {
+      "category": {}
+    }
+  },
+  "manageCategoriesRenameCategory":"Kategorie {category} umbenennen...",
+  "@manageCategoriesRenameCategory": {
+    "type": "text",
+    "placeholders": {
+      "category": {}
+    }
+  },
+  "manageCategoriesRenameCategoryDialogTitle":"Kategorie umbenennen",
 
   "listSettingsClearList": "Liste leeren...",
   "listSettingsClearListConfirmationText": "Möchtest du wirklich alle Elemente aus {shoppingListName} unwiederbringlich entfernen?",

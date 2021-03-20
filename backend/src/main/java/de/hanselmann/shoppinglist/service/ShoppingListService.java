@@ -152,11 +152,21 @@ public class ShoppingListService {
                 });
     }
 
-    public @Nullable List<ShoppingListItem> uncheckAllItems(ShoppingList list) {
+    /**
+     * Uncheck items of list.<br>
+     * All items, if category is null, only items with matching category otherwise.
+     * 
+     * @param list     ShoppingList
+     * @param category Items with this category will be unchecked. If null, all
+     *                 items will be unchecked.
+     * @return List of processed items. If the transaction fails, null is returned.
+     */
+    public @Nullable List<ShoppingListItem> uncheckItems(ShoppingList list, @Nullable String category) {
         try {
             return transactionTemplate.execute(status -> {
                 List<ShoppingListItem> itemsToUncheck = list.getItems().stream()
                         .filter(ShoppingListItem::isChecked)
+                        .filter(item -> category == null || category.equals(item.getAssignee()))
                         .collect(Collectors.toList());
                 itemsToUncheck.forEach(item -> item.setChecked(false));
                 shoppingListRepository.save(list);
@@ -167,13 +177,38 @@ public class ShoppingListService {
         }
     }
 
-    public @Nullable List<ShoppingListItem> removeAllCategories(ShoppingList list) {
+    /**
+     * Remove categories of list.<br>
+     * All categories, if category is null, only given category otherwise.
+     * 
+     * @param list     ShoppingList
+     * @param category This category will be removed. If null, all categories will
+     *                 be removed.
+     * @return List of processed items. If the transaction fails, null is returned.
+     */
+    public @Nullable List<ShoppingListItem> removeCategories(ShoppingList list, @Nullable String category) {
         try {
             return transactionTemplate.execute(status -> {
                 List<ShoppingListItem> itemsToChange = list.getItems().stream()
                         .filter(item -> item.getAssignee() != null && !item.getAssignee().isBlank())
+                        .filter(item -> category == null || category.equals(item.getAssignee()))
                         .collect(Collectors.toList());
                 itemsToChange.forEach(item -> item.setAssignee(""));
+                shoppingListRepository.save(list);
+                return itemsToChange;
+            });
+        } catch (TransactionException e) {
+            return null;
+        }
+    }
+
+    public List<ShoppingListItem> renameCategory(ShoppingList list, String oldCategory, String newCategory) {
+        try {
+            return transactionTemplate.execute(status -> {
+                List<ShoppingListItem> itemsToChange = list.getItems().stream()
+                        .filter(item -> item.getAssignee() != null && item.getAssignee().equals(oldCategory))
+                        .collect(Collectors.toList());
+                itemsToChange.forEach(item -> item.setAssignee(newCategory));
                 shoppingListRepository.save(list);
                 return itemsToChange;
             });
@@ -185,6 +220,19 @@ public class ShoppingListService {
     public @Nullable List<ShoppingListItem> removeAllItems(ShoppingList list) {
         try {
             return transactionTemplate.execute(status -> {
+                List<ShoppingListItem> deletedItems = list.clearItems();
+                shoppingListRepository.save(list);
+                return deletedItems;
+            });
+        } catch (TransactionException e) {
+            return null;
+        }
+    }
+
+    public @Nullable List<ShoppingListItem> removeItems(ShoppingList list, List<ObjectId> itemIdsToDelete) {
+        try {
+            return transactionTemplate.execute(status -> {
+                itemIdsToDelete.forEach(id -> list.deleteItemById(id));
                 List<ShoppingListItem> deletedItems = list.clearItems();
                 shoppingListRepository.save(list);
                 return deletedItems;

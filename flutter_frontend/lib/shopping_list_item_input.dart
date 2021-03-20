@@ -51,13 +51,13 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
     super.dispose();
   }
 
-  void addNewItemIfValid() {
+  void addNewItemIfValid() async {
+    if (_submitting) {
+      return;
+    }
     final name = _newItemNameController.value.text.trim();
     if (name.isNotEmpty) {
-      addNewItem(name);
-      _focus.unfocus();
-    } else {
-      _focus.requestFocus();
+      await addNewItem(name);
     }
   }
 
@@ -109,8 +109,11 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
                     hintText: AppLocalizations.of(context).createOrSearchHint,
                     suffixIcon: _buildClearButton()),
                 controller: _newItemNameController,
-                enabled: !_submitting && widget.enabled,
-                onSubmitted: (_) => addNewItemIfValid()),
+                enabled: widget.enabled,
+                onSubmitted: (_) {
+                  addNewItemIfValid();
+                  _focus.requestFocus();
+                }),
           ),
           Container(child: addButton, margin: EdgeInsets.only(left: 6.0)),
         ],
@@ -119,16 +122,16 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
   }
 
   IconButton _buildClearButton() {
-    if (_newItemNameController.text.isEmpty) {
-      return null;
+    if (_focus.hasFocus || _focus.hasPrimaryFocus) {
+      return IconButton(
+        icon: Icon(Icons.clear, color: Colors.black, size: 20),
+        splashRadius: 23,
+        onPressed: () {
+          _newItemNameController.clear();
+          _focus.unfocus();
+        },
+      );
     }
-    return IconButton(
-      icon: Icon(Icons.clear, color: Colors.black, size: 20),
-      splashRadius: 23,
-      onPressed: () {
-        _newItemNameController.clear();
-        _focus.unfocus();
-      },
-    );
+    return null;
   }
 }

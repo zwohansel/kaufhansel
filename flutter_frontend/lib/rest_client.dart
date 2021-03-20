@@ -168,6 +168,25 @@ class RestClient {
     }
   }
 
+  Future<void> deleteShoppingListItems(String shoppingListId, String ofCategory) async {
+    final body = jsonEncode({'ofCategory': ofCategory});
+    var request =
+        await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/item")).timeout(_timeout);
+    request.headers.contentType = ContentType.json;
+    _addAuthHeader(request);
+    request.write(body);
+    var response = await request.close().timeout(_timeout);
+
+    if (response.statusCode != 204) {
+      _invokeCallbackIfUnauthenticated(response);
+      throw HttpResponseException(
+        response.statusCode,
+        message:
+            "Failed to delete items of category ${ofCategory != null ? ofCategory : "ALL"} in list $shoppingListId",
+      );
+    }
+  }
+
   Future<void> updateShoppingListItem(String shoppingListId, ShoppingListItem item) async {
     final body = jsonEncode({'name': item.name, 'checked': item.checked, 'category': item.category});
 
@@ -274,33 +293,55 @@ class RestClient {
     }
   }
 
-  Future<void> uncheckAllItems(String shoppingListId) async {
+  Future<void> uncheckItems(String shoppingListId, {String ofCategory}) async {
+    final body = jsonEncode({'category': ofCategory});
     var request =
-        await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/uncheckallitems")).timeout(_timeout);
+        await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/uncheckitems")).timeout(_timeout);
+    request.headers.contentType = ContentType.json;
     _addAuthHeader(request);
+    request.write(body);
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
       _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(
         response.statusCode,
-        message: 'Failed to uncheck all items in list $shoppingListId',
+        message: 'Failed to uncheck items of category in list $shoppingListId',
       );
     }
   }
 
-  Future<void> removeAllCategories(String shoppingListId) async {
-    var request = await _httpClient
-        .postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/removeallcategories"))
-        .timeout(_timeout);
+  removeCategory(String shoppingListId, {String category}) async {
+    final body = jsonEncode({'category': category});
+    var request =
+        await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/removecategory")).timeout(_timeout);
+    request.headers.contentType = ContentType.json;
     _addAuthHeader(request);
+    request.write(body);
+    var response = await request.close().timeout(_timeout);
+
+    if (response.statusCode != 204) {
+      throw HttpResponseException(
+        response.statusCode,
+        message: 'Failed to remove category from list $shoppingListId',
+      );
+    }
+  }
+
+  renameCategory(String shoppingListId, String oldCategoryName, String newCategoryName) async {
+    final body = jsonEncode({'oldCategory': oldCategoryName, 'newCategory': newCategoryName});
+    var request =
+        await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/renamecategory")).timeout(_timeout);
+    request.headers.contentType = ContentType.json;
+    _addAuthHeader(request);
+    request.write(body);
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
       _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(
         response.statusCode,
-        message: 'Failed to remove all categories from list $shoppingListId',
+        message: 'Failed to rename category in list $shoppingListId',
       );
     }
   }

@@ -1,4 +1,5 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 
@@ -21,6 +22,9 @@ class RestClientStub implements RestClient {
   final List<ShoppingListItem> Function(String id) onFetchShoppingList;
   final ShoppingListItem Function(String shoppingListId, String name, String category) onCreateShoppingListItem;
   final void Function(String shoppingListId, ShoppingListItem item) onUpdateShoppingListItem;
+  final void Function(String shoppingListId, String category) onRemoveCategory;
+  final void Function(String shoppingListId, String oldCategoryName, String newCategoryName) onRenameCategory;
+  final void Function(String shoppingListId, String ofCategory) onUncheckItems;
   final void Function(String shoppingListId, ShoppingListItem item) onDeleteShoppingListItem;
 
   final List<User> _users = [];
@@ -36,6 +40,9 @@ class RestClientStub implements RestClient {
     this.onFetchShoppingList,
     this.onCreateShoppingListItem,
     this.onUpdateShoppingListItem,
+    this.onRemoveCategory,
+    this.onRenameCategory,
+    this.onUncheckItems,
     this.onDeleteShoppingListItem,
   });
 
@@ -135,6 +142,11 @@ class RestClientStub implements RestClient {
   }
 
   @override
+  Future<void> deleteShoppingListItems(String shoppingListId, String ofCategory) {
+    throw UnimplementedError();
+  }
+
+  @override
   Future<void> deleteShoppingListItem(String shoppingListId, ShoppingListItem item) async {
     if (onDeleteShoppingListItem == null) throw UnimplementedError();
     return _tryCall(() => onDeleteShoppingListItem(shoppingListId, item));
@@ -159,11 +171,6 @@ class RestClientStub implements RestClient {
 
   @override
   Future<void> moveShoppingListItem(String shoppingListId, ShoppingListItem item, int targetIndex) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<void> removeAllCategories(String shoppingListId) {
     throw UnimplementedError();
   }
 
@@ -198,13 +205,26 @@ class RestClientStub implements RestClient {
   void setAuthenticationToken(String token) {}
 
   @override
-  Future<void> uncheckAllItems(String shoppingListId) {
-    throw UnimplementedError();
-  }
-
-  @override
   Future<void> updateShoppingListItem(String shoppingListId, ShoppingListItem item) async {
     if (onUpdateShoppingListItem == null) throw UnimplementedError();
     _tryCall(() => onUpdateShoppingListItem(shoppingListId, item));
+  }
+
+  @override
+  Future<void> removeCategory(String shoppingListId, {String category}) async {
+    if (onRemoveCategory == null) throw UnimplementedError();
+    onRemoveCategory(shoppingListId, category);
+  }
+
+  @override
+  Future<void> renameCategory(String shoppingListId, String oldCategoryName, String newCategoryName) async {
+    if (onRenameCategory == null) throw UnimplementedError();
+    onRenameCategory(shoppingListId, oldCategoryName, newCategoryName);
+  }
+
+  @override
+  Future<void> uncheckItems(String shoppingListId, {String ofCategory}) async {
+    if (onUncheckItems == null) throw UnimplementedError();
+    onUncheckItems(shoppingListId, ofCategory);
   }
 }

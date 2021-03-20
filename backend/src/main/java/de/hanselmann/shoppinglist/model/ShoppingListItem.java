@@ -22,12 +22,12 @@ public class ShoppingListItem {
         this.assignee = "";
     }
 
-    public String getId() {
-        return id.toHexString();
+    public ObjectId getId() {
+        return id;
     }
 
-    public void setId(String id) {
-        this.id = new ObjectId(id);
+    public void setId(ObjectId id) {
+        this.id = id;
     }
 
     public String getName() {

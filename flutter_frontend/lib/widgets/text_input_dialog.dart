@@ -5,6 +5,7 @@ import 'error_dialog.dart';
 
 Future<String> showTextInputDialog(BuildContext context,
     {@required String title,
+    String initialValue,
     String hintText,
     String confirmBtnLabel,
     String cancelBtnLabel,
@@ -14,18 +15,21 @@ Future<String> showTextInputDialog(BuildContext context,
   return showDialog<String>(
     barrierDismissible: false,
     context: context,
-    builder: (context) => _TextInputDialog(title, hintText, displayConfirmBtnLabel, displayCancelBtnLabel, onConfirm),
+    builder: (context) =>
+        _TextInputDialog(title, initialValue, hintText, displayConfirmBtnLabel, displayCancelBtnLabel, onConfirm),
   );
 }
 
 class _TextInputDialog extends StatefulWidget {
   final String title;
+  final String initialValue;
   final String hintText;
   final String confirmBtnLabel;
   final String cancelBtnLabel;
   final Future<void> Function(String value) onConfirm;
 
-  const _TextInputDialog(this.title, this.hintText, this.confirmBtnLabel, this.cancelBtnLabel, this.onConfirm);
+  const _TextInputDialog(
+      this.title, this.initialValue, this.hintText, this.confirmBtnLabel, this.cancelBtnLabel, this.onConfirm);
 
   @override
   _CreateTextInputDialogState createState() => _CreateTextInputDialogState();
@@ -34,18 +38,22 @@ class _TextInputDialog extends StatefulWidget {
 class _CreateTextInputDialogState extends State<_TextInputDialog> {
   final TextEditingController _textController = new TextEditingController();
   final FocusNode _textInputFocusNode = new FocusNode();
-
-  bool _isListNameValid = false;
+  bool _isInputValid = false;
   bool _loading = false;
 
   @override
   void initState() {
     super.initState();
+    if (widget.initialValue != null) {
+      _textController.text = widget.initialValue;
+      _textController.selection = TextSelection(baseOffset: 0, extentOffset: _textController.text.length);
+      setState(() => _isInputValid = _textController.text.trim().isNotEmpty);
+    }
+
     _textController.addListener(() {
-      setState(() {
-        _isListNameValid = _textController.text.trim().isNotEmpty;
-      });
+      setState(() => _isInputValid = _textController.text.trim().isNotEmpty);
     });
+    _textInputFocusNode.requestFocus();
   }
 
   @override
@@ -59,7 +67,7 @@ class _CreateTextInputDialogState extends State<_TextInputDialog> {
             TextField(
               focusNode: _textInputFocusNode,
               onSubmitted: (_) {
-                if (_isListNameValid) {
+                if (_isInputValid) {
                   Navigator.pop(context, _textController.text);
                 } else {
                   _textInputFocusNode.requestFocus();
@@ -84,7 +92,7 @@ class _CreateTextInputDialogState extends State<_TextInputDialog> {
                 SizedBox(width: 10),
                 Expanded(
                     child: ElevatedButton(
-                        onPressed: (_isListNameValid && !_loading) ? _onConfirmPressed : null,
+                        onPressed: (_isInputValid && !_loading) ? _onConfirmPressed : null,
                         child: Text(widget.confirmBtnLabel)))
               ],
             )

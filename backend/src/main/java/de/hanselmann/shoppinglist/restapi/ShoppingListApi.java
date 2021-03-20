@@ -12,15 +12,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import de.hanselmann.shoppinglist.restapi.dto.AddUserToShoppingListDto;
+import de.hanselmann.shoppinglist.restapi.dto.DeleteItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.MoveShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListDto;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListItemDto;
+import de.hanselmann.shoppinglist.restapi.dto.RemoveShoppingListCategoryDto;
+import de.hanselmann.shoppinglist.restapi.dto.RenameShoppingListCategoryDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemUpdateDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListNameUpdateDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListPermissionsUpdateDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserReferenceDto;
+import de.hanselmann.shoppinglist.restapi.dto.UncheckShoppingListItemsDto;
 
 @RequestMapping("/api")
 public interface ShoppingListApi {
@@ -40,13 +44,20 @@ public interface ShoppingListApi {
     ResponseEntity<List<ShoppingListItemDto>> getShoppingListItems(
             @PathVariable String id);
 
-    @PostMapping("/shoppinglist/{id}/uncheckallitems")
-    ResponseEntity<Void> uncheckAllShoppingListItems(
-            @PathVariable String id);
+    @PutMapping("/shoppinglist/{id}/uncheckitems")
+    ResponseEntity<Void> uncheckShoppingListItems(
+            @PathVariable String id,
+            @RequestBody UncheckShoppingListItemsDto uncheckShoppingListItemsDto);
 
-    @PostMapping("/shoppinglist/{id}/removeallcategories")
-    ResponseEntity<Void> removeAllCategoriesFromShoppingList(
-            @PathVariable String id);
+    @PutMapping("/shoppinglist/{id}/removecategory")
+    ResponseEntity<Void> removeShoppingListCategory(
+            @PathVariable String id,
+            @RequestBody RemoveShoppingListCategoryDto removeShoppingListCategoryDto);
+
+    @PutMapping("/shoppinglist/{id}/renamecategory")
+    ResponseEntity<Void> renameShoppingListCategory(
+            @PathVariable String id,
+            @RequestBody RenameShoppingListCategoryDto renameShoppingListCategoryDto);
 
     @PostMapping("/shoppinglist/{id}/clear")
     ResponseEntity<Void> clearShoppingList(
@@ -66,6 +77,11 @@ public interface ShoppingListApi {
     ResponseEntity<Void> deleteShoppingListItem(
             @PathVariable String id,
             @PathVariable String itemId);
+
+    @DeleteMapping("/shoppinglist/{id}/item")
+    ResponseEntity<Void> deleteShoppingListItems(
+            @PathVariable String id,
+            @RequestBody DeleteItemDto deleteItemDto);
 
     @PutMapping("/shoppinglist/{id}/item/{itemId}")
     ResponseEntity<Void> updateShoppingListItem(

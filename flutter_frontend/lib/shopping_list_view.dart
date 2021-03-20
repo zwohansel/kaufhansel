@@ -57,6 +57,7 @@ class ShoppingListView extends StatelessWidget {
         child: RefreshIndicator(
           onRefresh: onRefresh,
           child: ListView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             physics: const AlwaysScrollableScrollPhysics(), // allow overscroll to trigger refresh indicator
             shrinkWrap: true,
             children: dividedTiles,
