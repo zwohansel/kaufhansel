@@ -25,6 +25,7 @@
   "general": "Allgemein",
   "appSettings": "App-Einstellungen",
   "listSettings": "Mehr Listeneinstellungen...",
+  "willLoginAgain" : "Ok... Ich melde mich gerne neu an.",
 
   "privacyPolicy": "Datenschutzerklärung",
   "privacyPolicyLink": "https://zwohansel.de/kaufhansel/privacy_de.html",
@@ -104,7 +105,6 @@
   "shoppingListCreateNewTitle": "Neue Liste anlegen",
   "shoppingListCreateNewConfirm": "Anlegen",
   "shoppingListCreateNewEnterNameHint": "Gib einen Namen ein",
-  "shoppingListNeededHint": "Suchen oder hinzufügen",
   "shoppingListFilterTitle":"Filter",
   "shoppingListFilterNone":"Kein Filter",
   "shoppingListFilterNeeded":"Was muss ich noch kaufen",
@@ -113,6 +113,8 @@
   "shoppingListModeDefault": "Guck-Modus",
   "shoppingListModeShopping": "Einkaufs-Modus",
   "shoppingListModeEditing": "Editier-Modus",
+
+  "createOrSearchHint": "Suchen oder hinzufügen",
 
   "itemRename": "Umbenennen",
   "itemRemove": "Löschen",
@@ -311,5 +313,13 @@
   "exceptionSendListInvitationFailed": "Das Verschicken der Einladungs-Email hat leider nicht geklappt. Ruf den Hansel doch einfach mal an.",
   "exceptionDeleteListFailed": "Kann die Liste nicht gelöscht werden oder hast du kein Internet?",
   "exceptionLogOutFailed" : "Die Abmeldung hat nicht funktioniert...",
-  "exceptionListCreationFailed": "Ist der Speicher voll oder hast du einen Fehler beim Anlegen der Liste gemacht?"
+  "exceptionListCreationFailed": "Ist der Speicher voll oder hast du einen Fehler beim Anlegen der Liste gemacht?",
+  "exceptionUnAuthenticated": "Das hat nicht funktioniert. Sieht so aus als ob deine Sitzung abgelaufen ist.",
+  "exceptionUnknown": "Irgendetwas ist schiefgelaufen ({exception})",
+  "@exceptionUnknown": {
+    "type": "text",
+    "placeholders": {
+      "exception": {}
+    }
+  }
 }

@@ -8,6 +8,7 @@ import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/shopping_list_item_edit_dialog.dart';
 import 'package:kaufhansel_client/shopping_list_mode.dart';
 import 'package:kaufhansel_client/widgets/async_operation_icon_button.dart';
+import 'package:kaufhansel_client/widgets/error_dialog.dart';
 import 'package:provider/provider.dart';
 
 class ShoppingListItemTile extends StatefulWidget {
@@ -129,10 +130,10 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
       final shoppingList = Provider.of<ShoppingList>(context, listen: false);
       await RestClientWidget.of(context).deleteShoppingListItem(shoppingList.id, item);
       shoppingList.removeItem(item);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(AppLocalizations.of(context).exceptionDeleteItemFailed(item.name)),
-          duration: Duration(seconds: 2)));
+    } on Exception catch (e) {
+      log("Could not remove item", error: e);
+      showErrorDialogForException(context, e,
+          altText: AppLocalizations.of(context).exceptionDeleteItemFailed(item.name));
     } finally {
       setState(() {
         _loading = false;

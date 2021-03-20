@@ -190,8 +190,8 @@ class _ShareListCardState extends State<ShareListCard> {
       }
       _addUserTextEditingController.clear();
     } on Exception catch (e) {
-      log("Could not add user to shopping list.", error: e);
-      showErrorDialog(context, AppLocalizations.of(context).exceptionCantFindOtherUser);
+      log("Could not add user to shopping list", error: e);
+      showErrorDialogForException(context, e, altText: AppLocalizations.of(context).exceptionCantFindOtherUser);
     } finally {
       widget._setLoading(false);
     }
@@ -211,8 +211,9 @@ class _ShareListCardState extends State<ShareListCard> {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(AppLocalizations.of(context).listSettingsListInvitationSent(emailAddress))));
       } on Exception catch (e) {
-        log("Failed to send list invite", error: e);
-        showErrorDialog(context, AppLocalizations.of(context).exceptionSendListInvitationFailed);
+        log("Could not send list invite", error: e);
+        showErrorDialogForException(context, e,
+            altText: AppLocalizations.of(context).exceptionSendListInvitationFailed);
       }
     }
   }
@@ -230,8 +231,8 @@ class _ShareListCardState extends State<ShareListCard> {
         await widget._onChangeShoppingListPermissions(user.userId, nextRole);
       }
     } on Exception catch (e) {
-      log("Could not change user permissions.", error: e);
-      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralServerSleeping);
+      log("Could not change user permissions", error: e);
+      showErrorDialogForException(context, e, altText: AppLocalizations.of(context).exceptionGeneralServerSleeping);
     } finally {
       widget._setLoading(false);
     }
@@ -246,8 +247,8 @@ class _ShareListCardState extends State<ShareListCard> {
         await widget._onRemoveUserFromShoppingList(user);
       }
     } on Exception catch (e) {
-      log("Could not remove user from shopping list.", error: e);
-      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralServerSleeping);
+      log("Could not remove user from shopping list", error: e);
+      showErrorDialogForException(context, e, altText: AppLocalizations.of(context).exceptionGeneralServerSleeping);
     } finally {
       widget._setLoading(false);
     }

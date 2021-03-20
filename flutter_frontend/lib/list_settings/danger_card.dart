@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/model.dart';
@@ -79,8 +81,9 @@ class DangerCard extends StatelessWidget {
         await _deleteShoppingList();
         Navigator.pop(context);
       }
-    } catch (e) {
-      showErrorDialog(context, localization.exceptionDeleteListFailed);
+    } on Exception catch (e) {
+      log("Could not delete shopping list", error: e);
+      showErrorDialogForException(context, e, altText: localization.exceptionDeleteListFailed);
     } finally {
       _setLoading(false);
     }

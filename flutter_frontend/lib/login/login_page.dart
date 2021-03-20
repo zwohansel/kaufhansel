@@ -270,8 +270,10 @@ class _LoginPageState extends State<LoginPage> {
       }
     } on TimeoutException {
       showErrorDialog(context, AppLocalizations.of(context).exceptionConnectionTimeout);
-    } catch (e) {
-      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralComputerSays + e.toString());
+    } on Exception catch (e) {
+      log("Could not login", error: e);
+      showErrorDialogForException(context, e,
+          altText: AppLocalizations.of(context).exceptionGeneralComputerSays + e.toString());
     } finally {
       setState(() => _loading = false);
     }
@@ -311,8 +313,8 @@ class _LoginPageState extends State<LoginPage> {
       });
       return true;
     } on Exception catch (e) {
-      log("Get registration process type failed.", error: e);
-      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralTryAgainLater);
+      log("Could not get registration process type", error: e);
+      showErrorDialogForException(context, e, altText: AppLocalizations.of(context).exceptionGeneralTryAgainLater);
       return false;
     } finally {
       setState(() => _loading = false);
@@ -402,8 +404,8 @@ class _LoginPageState extends State<LoginPage> {
       await RestClientWidget.of(context).requestPasswordReset(email);
       setState(() => _pageMode = _PageMode.RESET_PASSWORD);
     } on Exception catch (e) {
-      log("Reset password failed.", error: e);
-      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralTryAgainLater);
+      log("Could not reset password", error: e);
+      showErrorDialogForException(context, e, altText: AppLocalizations.of(context).exceptionGeneralTryAgainLater);
     } finally {
       setState(() => _loading = false);
     }
@@ -431,8 +433,8 @@ class _LoginPageState extends State<LoginPage> {
       _goBackToLogin();
       _showPasswordResetSuccessMessage();
     } on Exception catch (e) {
-      log("Set new password failed.", error: e);
-      showErrorDialog(context, AppLocalizations.of(context).exceptionResetPassword);
+      log("Could not set new password", error: e);
+      showErrorDialogForException(context, e, altText: AppLocalizations.of(context).exceptionResetPassword);
     } finally {
       setState(() => _loading = false);
     }

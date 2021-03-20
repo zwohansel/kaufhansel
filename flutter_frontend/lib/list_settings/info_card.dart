@@ -64,8 +64,9 @@ class _InfoCardState extends State<InfoCard> {
             content: Text(AppLocalizations.of(context).listSettingsListCleared(widget._shoppingListInfo.name)),
             duration: Duration(seconds: 1)));
       }
-    } catch (e) {
-      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralServerSleeping);
+    } on Exception catch (e) {
+      developer.log("Could not remove all items from shopping list", error: e);
+      showErrorDialogForException(context, e, altText: AppLocalizations.of(context).exceptionGeneralServerSleeping);
     } finally {
       widget._setLoading(false);
     }
@@ -77,7 +78,7 @@ class _InfoCardState extends State<InfoCard> {
       return true;
     } on Exception catch (e) {
       developer.log("Could not change shopping list name to $newName", error: e);
-      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralTryAgainLater);
+      showErrorDialogForException(context, e, altText: AppLocalizations.of(context).exceptionGeneralTryAgainLater);
       return false;
     }
   }

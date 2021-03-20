@@ -12,6 +12,10 @@ class HttpResponseException implements Exception {
 
   HttpResponseException(this._statusCode, {String message = "Request failed"}) : _message = message;
 
+  factory HttpResponseException.unAuthenticated() => HttpResponseException(401, message: "Unauthenticated");
+
+  bool isUnauthenticated() => _statusCode == 401;
+
   @override
   String toString() {
     return "$_message - HTTP status code: $_statusCode";
@@ -34,12 +38,18 @@ class RestClientWidget extends InheritedWidget {
 class RestClient {
   HttpClient _httpClient;
   String _token;
+  VoidCallback _onUnauthenticated = () {};
   final Uri _serverUrl;
   final Duration _timeout = Duration(seconds: 10);
 
+  /// Creates a new rest client that sends its request to the given [_serverUrl].
   RestClient(this._serverUrl) {
     _init();
   }
+
+  /// Set a callback that is called if a request fails because the user is not authenticated [onUnauthenticated]
+  /// (e.g. the auth token has expired or the login was never performed).
+  set onUnauthenticated(VoidCallback onUnauthenticated) => _onUnauthenticated = onUnauthenticated;
 
   void _init() {
     _httpClient = HttpClient();
@@ -85,7 +95,14 @@ class RestClient {
       List<dynamic> lists = jsonDecode(decoded);
       return lists.map((json) => ShoppingListInfo.fromJson(json)).toList();
     } else {
+      _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(response.statusCode, message: 'Failed to load shopping list infos');
+    }
+  }
+
+  void _invokeCallbackIfUnauthenticated(HttpClientResponse response) {
+    if (response.statusCode == 401 && _onUnauthenticated != null) {
+      _onUnauthenticated();
     }
   }
 
@@ -109,6 +126,7 @@ class RestClient {
         message: "Could not find list $shoppingListId",
       );
     } else {
+      _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(response.statusCode, message: 'Failed to load list $shoppingListId');
     }
   }
@@ -126,6 +144,7 @@ class RestClient {
       final decoded = await response.transform(utf8.decoder).join();
       return ShoppingListItem.fromJson(jsonDecode(decoded));
     } else {
+      _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(
         response.statusCode,
         message: "Failed to create new item $name in category $category for list $shoppingListId",
@@ -141,6 +160,7 @@ class RestClient {
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
+      _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(
         response.statusCode,
         message: "Failed to delete item ${item.name} (${item.id}) in list $shoppingListId",
@@ -159,6 +179,7 @@ class RestClient {
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
+      _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(
         response.statusCode,
         message: "Failed to update item ${item.id} in list $shoppingListId",
@@ -177,6 +198,7 @@ class RestClient {
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
+      _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(
         response.statusCode,
         message: "Failed to move item ${item.name} (${item.id}) to $targetIndex in list $shoppingListId",
@@ -197,6 +219,7 @@ class RestClient {
       final String decoded = await response.transform(utf8.decoder).join();
       return ShoppingListInfo.fromJson(jsonDecode(decoded));
     } else {
+      _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(response.statusCode,
           message: "Failed to create new list with name $shoppingListName");
     }
@@ -208,6 +231,7 @@ class RestClient {
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
+      _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(response.statusCode, message: "Failed to delete list $shoppingListId");
     }
   }
@@ -227,6 +251,7 @@ class RestClient {
     } else if (response.statusCode == 404) {
       return Optional.empty();
     } else {
+      _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(
         response.statusCode,
         message: "Failed to add $userEmailAddress to list $shoppingListId.",
@@ -241,6 +266,7 @@ class RestClient {
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
+      _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(
         response.statusCode,
         message: 'Failed to remove user $userId from list $shoppingListId',
@@ -255,6 +281,7 @@ class RestClient {
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
+      _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(
         response.statusCode,
         message: 'Failed to uncheck all items in list $shoppingListId',
@@ -270,6 +297,7 @@ class RestClient {
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
+      _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(
         response.statusCode,
         message: 'Failed to remove all categories from list $shoppingListId',
@@ -283,6 +311,7 @@ class RestClient {
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
+      _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(
         response.statusCode,
         message: 'Failed to remove all items from the shopping list $shoppingListId',
@@ -304,6 +333,7 @@ class RestClient {
       final String decoded = await response.transform(utf8.decoder).join();
       return ShoppingListUserReference.fromJson(jsonDecode(decoded));
     } else {
+      _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(
         response.statusCode,
         message: 'Could not change role of user $affectedUserId to $newRole in list $shoppingListId',
@@ -320,6 +350,7 @@ class RestClient {
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
+      _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(response.statusCode, message: 'Failed to rename list $shoppingListId to $newName');
     }
   }
@@ -366,6 +397,7 @@ class RestClient {
       final Map<String, dynamic> json = jsonDecode(decoded);
       return json.get('code');
     } else {
+      _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(response.statusCode, message: "Failed to generate invite code.");
     }
   }
@@ -380,6 +412,7 @@ class RestClient {
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
+      _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(response.statusCode,
           message: "Failed to invite user $emailAddress to shopping list $shoppingListId.");
     }
@@ -435,6 +468,7 @@ class RestClient {
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
+      _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(
         response.statusCode,
         message: "Failed attempt to delete account of user $userId.",

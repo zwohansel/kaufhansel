@@ -5,11 +5,28 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/main.dart';
 import 'package:kaufhansel_client/model.dart';
+import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 
 import 'rest_client_stub.dart';
 import 'settings_store_stub.dart';
 import 'utils.dart';
+
+/// Checks whether we are on the login page
+void checkIsLoginPage(AppLocalizations localizations) {
+  expect(find.text(localizations.appTitle), findsOneWidget);
+  expect(find.widgetWithText(TextFormField, localizations.emailHint), findsOneWidget);
+  expect(find.widgetWithText(TextFormField, localizations.passwordHint), findsOneWidget);
+  expect(find.widgetWithText(ElevatedButton, localizations.buttonLogin), findsOneWidget);
+}
+
+Future<void> checkIsUnAuthenticatedDialogAndDismiss(WidgetTester tester, AppLocalizations localizations) async {
+  expect(find.text(localizations.exceptionUnAuthenticated), findsOneWidget);
+  final dismissDialogBtn = find.widgetWithText(OutlinedButton, localizations.willLoginAgain);
+  expect(dismissDialogBtn, findsOneWidget);
+  await tester.tap(dismissDialogBtn);
+  await tester.pumpAndSettle();
+}
 
 void main() {
   const testLocale = Locale("de");
@@ -69,7 +86,7 @@ void main() {
     await enterText(
       tester,
       widgetType: TextField,
-      fieldLabelOrHint: localizations.shoppingListNeededHint,
+      fieldLabelOrHint: localizations.createOrSearchHint,
       text: nameOfNewItem,
     );
     await tester.testTextInput.receiveAction(TextInputAction.done);
@@ -142,7 +159,7 @@ void main() {
     await enterText(
       tester,
       widgetType: TextField,
-      fieldLabelOrHint: localizations.shoppingListNeededHint,
+      fieldLabelOrHint: localizations.createOrSearchHint,
       text: nameOfNewItem,
     );
     await tester.testTextInput.receiveAction(TextInputAction.done);
@@ -298,5 +315,271 @@ void main() {
 
     expect(find.widgetWithText(CheckboxListTile, item0.name), findsOneWidget);
     expect(find.widgetWithText(CheckboxListTile, item1.name), findsOneWidget);
+  });
+
+  testWidgets('Logout when fetching shopping list infos if unauthenticated', (WidgetTester tester) async {
+    final store = SettingsStoreStub();
+
+    // Store a user info obj so that we start in a logged in state
+    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
+
+    final version = Version(1, 0, 0);
+    final client = RestClientStub(
+      onGetBackendInfo: () => BackendInfo(version, null),
+      onGetShoppingLists: () => throw HttpResponseException.unAuthenticated(),
+    );
+
+    await tester.pumpWidget(await makeBasicTestableWidget(
+        ShoppingListApp(
+          client: client,
+          settingsStore: store,
+          currentVersion: () async => version,
+        ),
+        locale: testLocale));
+    await tester.pumpAndSettle();
+
+    await checkIsUnAuthenticatedDialogAndDismiss(tester, localizations);
+    checkIsLoginPage(localizations);
+  });
+
+  testWidgets('Logout when fetching shopping list if unauthenticated', (WidgetTester tester) async {
+    final store = SettingsStoreStub();
+
+    // Store a user info obj so that we start in a logged in state
+    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
+
+    final version = Version(1, 0, 0);
+    final client = RestClientStub(
+      onGetBackendInfo: () => BackendInfo(version, null),
+      onGetShoppingLists: () {
+        final adminPermissions = ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true);
+        return [ShoppingListInfo("1", "TestList", adminPermissions, [])];
+      },
+      onFetchShoppingList: (id) => throw HttpResponseException.unAuthenticated(),
+    );
+
+    await tester.pumpWidget(await makeBasicTestableWidget(
+        ShoppingListApp(
+          client: client,
+          settingsStore: store,
+          currentVersion: () async => version,
+        ),
+        locale: testLocale));
+    await tester.pumpAndSettle();
+
+    await checkIsUnAuthenticatedDialogAndDismiss(tester, localizations);
+    checkIsLoginPage(localizations);
+  });
+
+  testWidgets('Logout when setting category if unauthenticated', (WidgetTester tester) async {
+    final store = SettingsStoreStub();
+
+    // Store a user info obj so that we start in a logged in state
+    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
+
+    final item = ShoppingListItem("1", "A", false, null);
+
+    final version = Version(1, 0, 0);
+    final client = RestClientStub(
+        onGetBackendInfo: () => BackendInfo(version, null),
+        onGetShoppingLists: () {
+          final adminPermissions = ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true);
+          return [ShoppingListInfo("1", "TestList", adminPermissions, [])];
+        },
+        onFetchShoppingList: (id) => [item],
+        onUpdateShoppingListItem: (id, item) => throw HttpResponseException.unAuthenticated());
+
+    await tester.pumpWidget(await makeBasicTestableWidget(
+        ShoppingListApp(
+          client: client,
+          settingsStore: store,
+          currentVersion: () async => version,
+        ),
+        locale: testLocale));
+    await tester.pumpAndSettle();
+
+    // Find list tile of new item
+    final itemTile = find.widgetWithText(CheckboxListTile, item.name);
+    expect(itemTile, findsOneWidget);
+
+    // Find edit icon in tile of the item
+    final itemEditBtn = find.descendant(of: itemTile, matching: find.byIcon(Icons.edit));
+    expect(itemEditBtn, findsOneWidget);
+
+    // Tap edit icon to open item edit dialog
+    await tester.tap(itemEditBtn);
+    await tester.pumpAndSettle();
+
+    // Enter name of new category
+    await enterText(
+      tester,
+      widgetType: TextField,
+      fieldLabelOrHint: localizations.categoryCreateNew,
+      text: "FooBar",
+    );
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    await checkIsUnAuthenticatedDialogAndDismiss(tester, localizations);
+    checkIsLoginPage(localizations);
+  });
+
+  testWidgets('Logout when renaming item if unauthenticated', (WidgetTester tester) async {
+    final store = SettingsStoreStub();
+
+    // Store a user info obj so that we start in a logged in state
+    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
+
+    final item = ShoppingListItem("1", "A", false, null);
+
+    final version = Version(1, 0, 0);
+    final client = RestClientStub(
+        onGetBackendInfo: () => BackendInfo(version, null),
+        onGetShoppingLists: () {
+          final adminPermissions = ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true);
+          return [ShoppingListInfo("1", "TestList", adminPermissions, [])];
+        },
+        onFetchShoppingList: (id) => [item],
+        onUpdateShoppingListItem: (id, item) => throw HttpResponseException.unAuthenticated());
+
+    await tester.pumpWidget(await makeBasicTestableWidget(
+        ShoppingListApp(
+          client: client,
+          settingsStore: store,
+          currentVersion: () async => version,
+        ),
+        locale: testLocale));
+    await tester.pumpAndSettle();
+
+    // Find list tile of new item
+    final itemTile = find.widgetWithText(CheckboxListTile, item.name);
+    expect(itemTile, findsOneWidget);
+
+    // Find edit icon in tile of the item
+    final itemEditBtn = find.descendant(of: itemTile, matching: find.byIcon(Icons.edit));
+    expect(itemEditBtn, findsOneWidget);
+
+    // Tap edit icon to open item edit dialog
+    await tester.tap(itemEditBtn);
+    await tester.pumpAndSettle();
+
+    // Find and tap more options button
+    final moreBtn = find.widgetWithIcon(IconButton, Icons.more_vert);
+    expect(moreBtn, findsOneWidget);
+    await tester.tap(moreBtn);
+    await tester.pumpAndSettle();
+
+    // Find and tap rename option
+    final renameMenuItem = find.text(localizations.itemRename);
+    expect(renameMenuItem, findsOneWidget);
+    await tester.tap(renameMenuItem);
+    await tester.pumpAndSettle();
+
+    // Enter new item name
+    await enterText(
+      tester,
+      widgetType: TextField,
+      fieldLabelOrHint: item.name,
+      text: "FooBar",
+    );
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    await checkIsUnAuthenticatedDialogAndDismiss(tester, localizations);
+    checkIsLoginPage(localizations);
+  });
+
+  testWidgets('Logout when removing item if unauthenticated', (WidgetTester tester) async {
+    final store = SettingsStoreStub();
+
+    // Store a user info obj so that we start in a logged in state
+    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
+
+    final item = ShoppingListItem("1", "A", false, null);
+
+    final version = Version(1, 0, 0);
+    final client = RestClientStub(
+        onGetBackendInfo: () => BackendInfo(version, null),
+        onGetShoppingLists: () {
+          final adminPermissions = ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true);
+          return [ShoppingListInfo("1", "TestList", adminPermissions, [])];
+        },
+        onFetchShoppingList: (id) => [item],
+        onDeleteShoppingListItem: (id, item) => throw HttpResponseException.unAuthenticated());
+
+    await tester.pumpWidget(await makeBasicTestableWidget(
+        ShoppingListApp(
+          client: client,
+          settingsStore: store,
+          currentVersion: () async => version,
+        ),
+        locale: testLocale));
+    await tester.pumpAndSettle();
+
+    // Find list tile of new item
+    final itemTile = find.widgetWithText(CheckboxListTile, item.name);
+    expect(itemTile, findsOneWidget);
+
+    // Find edit icon in tile of the item
+    final itemEditBtn = find.descendant(of: itemTile, matching: find.byIcon(Icons.edit));
+    expect(itemEditBtn, findsOneWidget);
+
+    // Tap edit icon to open item edit dialog
+    await tester.tap(itemEditBtn);
+    await tester.pumpAndSettle();
+
+    // Find and tap more options button
+    final moreBtn = find.widgetWithIcon(IconButton, Icons.more_vert);
+    expect(moreBtn, findsOneWidget);
+    await tester.tap(moreBtn);
+    await tester.pumpAndSettle();
+
+    // Find and tap rename option
+    final removeMenuItem = find.text(localizations.itemRemove);
+    expect(removeMenuItem, findsOneWidget);
+    await tester.tap(removeMenuItem);
+    await tester.pumpAndSettle();
+
+    await checkIsUnAuthenticatedDialogAndDismiss(tester, localizations);
+    checkIsLoginPage(localizations);
+  });
+
+  testWidgets('Logout when adding new item if unauthenticated', (WidgetTester tester) async {
+    final store = SettingsStoreStub();
+
+    // Store a user info obj so that we start in a logged in state
+    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
+
+    final version = Version(1, 0, 0);
+    final client = RestClientStub(
+        onGetBackendInfo: () => BackendInfo(version, null),
+        onGetShoppingLists: () {
+          final adminPermissions = ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true);
+          return [ShoppingListInfo("1", "TestList", adminPermissions, [])];
+        },
+        onFetchShoppingList: (id) => [],
+        onCreateShoppingListItem: (id, name, category) => throw HttpResponseException.unAuthenticated());
+
+    await tester.pumpWidget(await makeBasicTestableWidget(
+        ShoppingListApp(
+          client: client,
+          settingsStore: store,
+          currentVersion: () async => version,
+        ),
+        locale: testLocale));
+    await tester.pumpAndSettle();
+
+    // Enter name of new category
+    await enterText(
+      tester,
+      widgetType: TextField,
+      fieldLabelOrHint: localizations.createOrSearchHint,
+      text: "FooBar",
+    );
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    await checkIsUnAuthenticatedDialogAndDismiss(tester, localizations);
+    checkIsLoginPage(localizations);
   });
 }

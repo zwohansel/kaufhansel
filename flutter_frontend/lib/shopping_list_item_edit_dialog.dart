@@ -145,8 +145,9 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
       // ...change the actual item once we know that the request was successful
       widget._item.name = newItemName;
     } on Exception catch (e) {
-      developer.log("Could not set item name.", error: e);
-      showErrorDialog(context, AppLocalizations.of(context).exceptionRenameItemFailed(newItemName));
+      developer.log("Could not set item name", error: e);
+      showErrorDialogForException(context, e,
+          altText: AppLocalizations.of(context).exceptionRenameItemFailed(newItemName));
     } finally {
       setState(() => _loading = false);
     }
@@ -177,18 +178,16 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
       widget._item.category = category;
       Navigator.pop(context);
     } on Exception catch (e) {
-      developer.log("Could not set item category.", error: e);
-      showErrorDialog(context, AppLocalizations.of(context).exceptionNoInternetDidNotWork);
+      developer.log("Could not set item category", error: e);
+      showErrorDialogForException(context, e, altText: AppLocalizations.of(context).exceptionNoInternetDidNotWork);
     } finally {
       setState(() => _loading = false);
     }
   }
 
   Future<void> onDelete() async {
-    setState(() => _loading = true);
-    await widget._onDeleteItem(widget._item);
-    setState(() => _loading = false);
     Navigator.pop(context);
+    await widget._onDeleteItem(widget._item);
   }
 
   Widget _buildProgress() {

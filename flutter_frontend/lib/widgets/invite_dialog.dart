@@ -100,9 +100,9 @@ class _InviteDialogState extends State<InviteDialog> {
         _loading = false;
       });
     } on Exception catch (e) {
-      log("Failed to generate invite code", error: e);
+      log("Could not generate invite code", error: e);
       Navigator.pop(context);
-      showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralTryAgainLater);
+      showErrorDialogForException(context, e, altText: AppLocalizations.of(context).exceptionGeneralTryAgainLater);
     }
   }
 }

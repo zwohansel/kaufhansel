@@ -78,8 +78,8 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
       });
     } on Exception catch (e) {
-      developer.log("Could not add $name to list.", error: e);
-      showErrorDialog(context, AppLocalizations.of(context).exceptionAddItemFailed(name));
+      developer.log("Could not add $name to list", error: e);
+      showErrorDialogForException(context, e, altText: AppLocalizations.of(context).exceptionAddItemFailed(name));
     } finally {
       setState(() => _submitting = false);
     }
@@ -106,7 +106,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
                 decoration: InputDecoration(
                     contentPadding: EdgeInsets.fromLTRB(12, 8, 12, 8),
                     border: OutlineInputBorder(),
-                    hintText: AppLocalizations.of(context).shoppingListNeededHint,
+                    hintText: AppLocalizations.of(context).createOrSearchHint,
                     suffixIcon: _buildClearButton()),
                 controller: _newItemNameController,
                 enabled: !_submitting && widget.enabled,

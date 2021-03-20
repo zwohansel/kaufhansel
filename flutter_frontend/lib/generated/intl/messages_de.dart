@@ -37,31 +37,33 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static m8(itemName) => "Findet der Server ${itemName} doof oder hast du kein Internet?";
 
-  static m9(userName) => "Was ist ${userName} für ein Hansel?";
+  static m9(exception) => "Irgendetwas ist schiefgelaufen (${exception})";
 
-  static m10(shoppingListName) => "Möchtest du wirklich alle Elemente aus ${shoppingListName} unwiederbringlich entfernen?";
+  static m10(userName) => "Was ist ${userName} für ein Hansel?";
 
-  static m11(shoppingListName) => "Möchtest du ${shoppingListName} wirklich für immer und unwiederbringlich löschen?";
+  static m11(shoppingListName) => "Möchtest du wirklich alle Elemente aus ${shoppingListName} unwiederbringlich entfernen?";
 
-  static m12(roleName) => "Du bist der einzige ${roleName} der Liste. Wenn du die Liste löschst, können auch die anderen Hansel mit denen du die Liste teilst nicht mehr darauf zugreifen.";
+  static m12(shoppingListName) => "Möchtest du ${shoppingListName} wirklich für immer und unwiederbringlich löschen?";
 
-  static m13(roleName) => "Es gibt noch andere ${roleName} in der Liste, daher kannst du sie nicht löschen. Wenn du die Liste verlässt, können die anderen Hansel weiterhin darauf zugreifen.";
+  static m13(roleName) => "Du bist der einzige ${roleName} der Liste. Wenn du die Liste löschst, können auch die anderen Hansel mit denen du die Liste teilst nicht mehr darauf zugreifen.";
 
-  static m14(shoppingListName) => "Möchtest du ${shoppingListName} wirklich verlassen?";
+  static m14(roleName) => "Es gibt noch andere ${roleName} in der Liste, daher kannst du sie nicht löschen. Wenn du die Liste verlässt, können die anderen Hansel weiterhin darauf zugreifen.";
 
-  static m15(shoppingListName) => "Alle Elemente in ${shoppingListName} wurden entfernt.";
+  static m15(shoppingListName) => "Möchtest du ${shoppingListName} wirklich verlassen?";
 
-  static m16(email) => "Wir haben eine Einladung an ${email} geschickt.";
+  static m16(shoppingListName) => "Alle Elemente in ${shoppingListName} wurden entfernt.";
 
-  static m17(userName, shoppingListName) => "Möchtest du ${userName} wirklich von ${shoppingListName} entfernen?";
+  static m17(email) => "Wir haben eine Einladung an ${email} geschickt.";
 
-  static m18(email) => "Hast du dich vertippt? Diese Emailadresse kennen wir noch nicht.\n\nOder möchtest du, dass wir an ${email} eine Einladung schicken?\nWenn sich der Hansel registriert, hat er Zugriff auf diese Liste.";
+  static m18(userName, shoppingListName) => "Möchtest du ${userName} wirklich von ${shoppingListName} entfernen?";
 
-  static m19(email) => "Wer ist ${email} ???";
+  static m19(email) => "Hast du dich vertippt? Diese Emailadresse kennen wir noch nicht.\n\nOder möchtest du, dass wir an ${email} eine Einladung schicken?\nWenn sich der Hansel registriert, hat er Zugriff auf diese Liste.";
 
-  static m20(version) => "Version ${version} ist verfügbar";
+  static m20(email) => "Wer ist ${email} ???";
 
-  static m21(roleName) => "Hier bist du ${roleName}:";
+  static m21(version) => "Version ${version} ist verfügbar";
+
+  static m22(roleName) => "Hier bist du ${roleName}:";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => <String, Function> {
@@ -92,6 +94,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "categoryCreateNew" : MessageLookupByLibrary.simpleMessage("Neue Kategorie"),
     "categoryNone" : MessageLookupByLibrary.simpleMessage("Keine"),
     "close" : MessageLookupByLibrary.simpleMessage("Schließen"),
+    "createOrSearchHint" : MessageLookupByLibrary.simpleMessage("Suchen oder hinzufügen"),
     "disclaimer" : MessageLookupByLibrary.simpleMessage("Haftungsausschluss"),
     "disclaimerLink" : MessageLookupByLibrary.simpleMessage("https://zwohansel.de/kaufhansel/disclaimer.html"),
     "dontCare" : MessageLookupByLibrary.simpleMessage("Egal"),
@@ -122,6 +125,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "exceptionRenameItemFailed" : m8,
     "exceptionResetPassword" : MessageLookupByLibrary.simpleMessage("Das hat nicht geklappt.\n\nStimmt die Email-Adresse?\nIst der Wiederherstellungs-Code richtig? \nHast du ein vernünftiges Passwort gewählt?\nDenk auch daran, dass der Wiederherstellungs-Code nur eine Stunde gültig ist."),
     "exceptionSendListInvitationFailed" : MessageLookupByLibrary.simpleMessage("Das Verschicken der Einladungs-Email hat leider nicht geklappt. Ruf den Hansel doch einfach mal an."),
+    "exceptionUnAuthenticated" : MessageLookupByLibrary.simpleMessage("Das hat nicht funktioniert. Sieht so aus als ob deine Sitzung abgelaufen ist."),
+    "exceptionUnknown" : m9,
     "exceptionUpdateCheckFailed" : MessageLookupByLibrary.simpleMessage("Hast du kein Internet oder ist der Server nicht erreichbar?\nSo können wir jedenfalls nicht prüfen, ob dein Kaufhansel noch aktuell ist!"),
     "exceptionWrongCredentials" : MessageLookupByLibrary.simpleMessage("Haben wir Deinen Account gelöscht oder hast Du Deine Zugangsdaten vergessen?"),
     "general" : MessageLookupByLibrary.simpleMessage("Allgemein"),
@@ -137,24 +142,24 @@ class MessageLookup extends MessageLookupByLibrary {
     "itemRename" : MessageLookupByLibrary.simpleMessage("Umbenennen"),
     "listSettings" : MessageLookupByLibrary.simpleMessage("Mehr Listeneinstellungen..."),
     "listSettingsAddUserToListEmailAddressHint" : MessageLookupByLibrary.simpleMessage("Email-Adresse vom Hansel"),
-    "listSettingsChangeUserRole" : m9,
+    "listSettingsChangeUserRole" : m10,
     "listSettingsClearList" : MessageLookupByLibrary.simpleMessage("Liste leeren..."),
-    "listSettingsClearListConfirmationText" : m10,
+    "listSettingsClearListConfirmationText" : m11,
     "listSettingsDangerZoneTitle" : MessageLookupByLibrary.simpleMessage("Gefahrenzone"),
     "listSettingsDeleteList" : MessageLookupByLibrary.simpleMessage("Liste löschen..."),
-    "listSettingsDeleteListConfirmationText" : m11,
-    "listSettingsLeaveExplanationOnlyAdmin" : m12,
-    "listSettingsLeaveExplanationOtherAdminsPresent" : m13,
+    "listSettingsDeleteListConfirmationText" : m12,
+    "listSettingsLeaveExplanationOnlyAdmin" : m13,
+    "listSettingsLeaveExplanationOtherAdminsPresent" : m14,
     "listSettingsLeaveList" : MessageLookupByLibrary.simpleMessage("Liste verlassen..."),
-    "listSettingsLeaveListConfirmationText" : m14,
-    "listSettingsListCleared" : m15,
-    "listSettingsListInvitationSent" : m16,
+    "listSettingsLeaveListConfirmationText" : m15,
+    "listSettingsListCleared" : m16,
+    "listSettingsListInvitationSent" : m17,
     "listSettingsRemoveAllCategories" : MessageLookupByLibrary.simpleMessage("Alle Kategorien entfernen..."),
     "listSettingsRemoveAllCategoriesConfirmationText" : MessageLookupByLibrary.simpleMessage("Möchtest du wirklich alle Kategorien entfernen?"),
-    "listSettingsRemoveUserFromList" : m17,
+    "listSettingsRemoveUserFromList" : m18,
     "listSettingsSendListInvitationNo" : MessageLookupByLibrary.simpleMessage("Jetzt nicht"),
-    "listSettingsSendListInvitationText" : m18,
-    "listSettingsSendListInvitationTitle" : m19,
+    "listSettingsSendListInvitationText" : m19,
+    "listSettingsSendListInvitationTitle" : m20,
     "listSettingsSendListInvitationYes" : MessageLookupByLibrary.simpleMessage("Ja, gerne!"),
     "listSettingsShareWithOther" : MessageLookupByLibrary.simpleMessage("Mit einem weiteren Hansel teilen"),
     "listSettingsShareWithOtherInfo" : MessageLookupByLibrary.simpleMessage("Neue Hansel werden als Schreibhansel hinzugefügt: sie können Dinge hinzufügen und entfernen; Dinge abhaken und Haken entfernen. Das kannst ändern, nachdem der neue Hansel in der Liste ist."),
@@ -163,7 +168,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "listSettingsUncheckAllItems" : MessageLookupByLibrary.simpleMessage("Alle Häkchen entfernen..."),
     "listSettingsUncheckAllItemsConfirmationText" : MessageLookupByLibrary.simpleMessage("Möchtest du wirklich alle Häkchen entfernen?"),
     "manShrugging" : MessageLookupByLibrary.simpleMessage("🤷‍♂️"),
-    "newerVersionAvailable" : m20,
+    "newerVersionAvailable" : m21,
     "newerVersionAvailableObligatoryUpdate" : MessageLookupByLibrary.simpleMessage("Es hat sich viel getan. Damit dein Kaufhansel weiterhin funktioniert, musst du diese Aktualisierung installieren. Mehr Infos findest du, wenn du auf den Link zum Herunterladen klickst, oder im Play Store."),
     "no" : MessageLookupByLibrary.simpleMessage("Nein"),
     "ok" : MessageLookupByLibrary.simpleMessage("Ok"),
@@ -197,7 +202,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "roleReadWriteDescription" : MessageLookupByLibrary.simpleMessage("Darf Dinge hinzufügen und entfernen, darf Haken setzen und entfernen"),
     "roleReadWriteName" : MessageLookupByLibrary.simpleMessage("Schreibhansel"),
     "roleReadWriteWhatIsIt" : MessageLookupByLibrary.simpleMessage("Was ist ein Schreibhansel?"),
-    "roleYoursRoleName" : m21,
+    "roleYoursRoleName" : m22,
     "rolesWhich" : MessageLookupByLibrary.simpleMessage("Welche Rollen gibt es?"),
     "shoppingListCreateNew" : MessageLookupByLibrary.simpleMessage("Neue Liste..."),
     "shoppingListCreateNewConfirm" : MessageLookupByLibrary.simpleMessage("Anlegen"),
@@ -215,11 +220,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "shoppingListModeShopping" : MessageLookupByLibrary.simpleMessage("Einkaufs-Modus"),
     "shoppingListModeTitle" : MessageLookupByLibrary.simpleMessage("Modus"),
     "shoppingListMyLists" : MessageLookupByLibrary.simpleMessage("Meine Listen"),
-    "shoppingListNeededHint" : MessageLookupByLibrary.simpleMessage("Suchen oder hinzufügen"),
     "thatsJustHowItIs" : MessageLookupByLibrary.simpleMessage("Ist dann halt schon so..."),
     "tryAgain" : MessageLookupByLibrary.simpleMessage("Nochmal versuchen"),
     "userNameHint" : MessageLookupByLibrary.simpleMessage("Nutzername"),
     "userNameInvalid" : MessageLookupByLibrary.simpleMessage("Gib einen Nutzernamen ein"),
+    "willLoginAgain" : MessageLookupByLibrary.simpleMessage("Ok... Ich melde mich gerne neu an."),
     "yes" : MessageLookupByLibrary.simpleMessage("Ja"),
     "zwoHanselKaufhanselGithubLink" : MessageLookupByLibrary.simpleMessage("https://github.com/zwohansel/kaufhansel"),
     "zwoHanselKaufhanselGithubLinkInfo" : MessageLookupByLibrary.simpleMessage("Der Kaufhansel-Quellcode auf GitHub"),

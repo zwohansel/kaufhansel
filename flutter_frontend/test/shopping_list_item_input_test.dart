@@ -28,7 +28,7 @@ void main() {
         await makeTestableWidget(Material(child: itemInput), restClient: RestClientStub(), locale: testLocale));
     await tester.pumpAndSettle();
 
-    await enterText(tester, widgetType: TextField, fieldLabelOrHint: localizations.shoppingListNeededHint, text: "foo");
+    await enterText(tester, widgetType: TextField, fieldLabelOrHint: localizations.createOrSearchHint, text: "foo");
     await tester.pumpAndSettle();
     expect(find.widgetWithIcon(TextField, Icons.clear), findsOneWidget);
 
@@ -59,7 +59,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await enterText(tester,
-        widgetType: TextField, fieldLabelOrHint: localizations.shoppingListNeededHint, text: "New Item");
+        widgetType: TextField, fieldLabelOrHint: localizations.createOrSearchHint, text: "New Item");
     await tester.pumpAndSettle();
 
     await tester.tap(find.widgetWithIcon(AsyncOperationIconButton, Icons.add));

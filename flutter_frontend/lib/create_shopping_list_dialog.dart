@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 
 import 'widgets/error_dialog.dart';
@@ -84,8 +86,10 @@ class _CreateShoppingListDialogState extends State<CreateShoppingListDialog> {
     try {
       await widget._onCreateShoppingList(_textController.text.trim());
       Navigator.pop(context);
-    } catch (e) {
-      showErrorDialog(context, "Ist der Speicher voll oder hast du einen Fehler beim Anlegen der Liste gemacht?");
+    } on Exception catch (e) {
+      log("Could not create shopping list", error: e);
+      showErrorDialogForException(context, e,
+          altText: "Ist der Speicher voll oder hast du einen Fehler beim Anlegen der Liste gemacht?");
     } finally {
       setState(() => _loading = false);
     }

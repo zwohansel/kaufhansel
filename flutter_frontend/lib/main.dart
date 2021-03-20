@@ -20,6 +20,7 @@ import 'package:kaufhansel_client/shopping_list_page.dart';
 import 'package:kaufhansel_client/shopping_list_title.dart';
 import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 import 'package:kaufhansel_client/utils/update_check.dart';
+import 'package:kaufhansel_client/widgets/error_dialog.dart';
 import 'package:kaufhansel_client/widgets/overlay_menu.dart';
 import 'package:provider/provider.dart';
 
@@ -30,7 +31,7 @@ void main() {
 }
 
 class App extends StatelessWidget {
-  static const _serverUrl = kDebugMode ? "https://localhost:8080/api/" : "https://zwohansel.de/kaufhansel/api/";
+  static const _serverUrl = kDebugMode ? "https://192.168.188.60:8080/api/" : "https://zwohansel.de/kaufhansel/api/";
   static final _restClient = RestClient(Uri.parse(_serverUrl));
   static final _settingsStore = SettingsStore();
 
@@ -82,10 +83,14 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   void initState() {
     super.initState();
     _initializing = true;
-    asyncInit();
+    _asyncInit();
+    widget.client.onUnauthenticated = () {
+      Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+      _logOut();
+    };
   }
 
-  void asyncInit() async {
+  void _asyncInit() async {
     try {
       Version currentVersion = await widget.currentVersion();
       final updateOpt = await checkForUpdate(context, widget.client, widget.settingsStore, currentVersion);
@@ -249,6 +254,9 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       });
     } on Exception catch (e) {
       developer.log("Failed to fetch shopping list infos.", error: e);
+      if (e is HttpResponseException && e.isUnauthenticated()) {
+        showErrorDialogForException(context, e);
+      }
       setState(() {
         _error = e.toString();
       });
@@ -296,6 +304,9 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       disposeShoppingListAfterNextFrame(oldShoppingList);
     } on Exception catch (e) {
       developer.log("Failed to fetch shopping list.", error: e);
+      if (e is HttpResponseException && e.isUnauthenticated()) {
+        showErrorDialogForException(context, e);
+      }
       setState(() {
         _error = e.toString();
       });
@@ -479,14 +490,19 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
-            child: Text(AppLocalizations.of(context).manShrugging,
-                style: TextStyle(fontFamilyFallback: ["NotoColorEmoji"], fontSize: 100)),
+            child: Text(
+              AppLocalizations.of(context).manShrugging,
+              style: TextStyle(fontFamilyFallback: ["NotoColorEmoji"], fontSize: 100),
+            ),
             padding: EdgeInsets.all(20),
           ),
-          Text(
-            AppLocalizations.of(context).shoppingListError,
-            style: Theme.of(context).textTheme.headline6,
-          ),
+          Padding(
+              child: Text(
+                AppLocalizations.of(context).shoppingListError,
+                style: Theme.of(context).textTheme.headline6,
+                textAlign: TextAlign.center,
+              ),
+              padding: EdgeInsets.only(left: 20, right: 20)),
           Padding(
               child: ElevatedButton(child: Text(AppLocalizations.of(context).tryAgain), onPressed: _handleRetry),
               padding: EdgeInsets.all(20))

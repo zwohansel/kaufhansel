@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 
@@ -20,9 +21,11 @@ class RestClientStub implements RestClient {
   final List<ShoppingListItem> Function(String id) onFetchShoppingList;
   final ShoppingListItem Function(String shoppingListId, String name, String category) onCreateShoppingListItem;
   final void Function(String shoppingListId, ShoppingListItem item) onUpdateShoppingListItem;
+  final void Function(String shoppingListId, ShoppingListItem item) onDeleteShoppingListItem;
 
   final List<User> _users = [];
   final Map<String, RegistrationProcessType> _inviteCodes = {};
+  VoidCallback _onUnauthenticated;
 
   RestClientStub({
     this.onRegister,
@@ -33,6 +36,7 @@ class RestClientStub implements RestClient {
     this.onFetchShoppingList,
     this.onCreateShoppingListItem,
     this.onUpdateShoppingListItem,
+    this.onDeleteShoppingListItem,
   });
 
   void addUser(User user) => _users.add(user);
@@ -40,6 +44,8 @@ class RestClientStub implements RestClient {
   void addInviteCode(String code, RegistrationProcessType type) {
     _inviteCodes[code] = type;
   }
+
+  set onUnauthenticated(VoidCallback onUnauthenticated) => _onUnauthenticated = onUnauthenticated;
 
   @override
   Future<BackendInfo> getBackendInfo() async {
@@ -104,7 +110,18 @@ class RestClientStub implements RestClient {
   @override
   Future<ShoppingListItem> createShoppingListItem(String shoppingListId, String name, String category) async {
     if (onCreateShoppingListItem == null) throw UnimplementedError();
-    return onCreateShoppingListItem(shoppingListId, name, category);
+    return _tryCall(() => onCreateShoppingListItem(shoppingListId, name, category));
+  }
+
+  T _tryCall<T>(T Function() callee) {
+    try {
+      return callee();
+    } on HttpResponseException catch (e) {
+      if (e.isUnauthenticated() && _onUnauthenticated != null) {
+        _onUnauthenticated();
+      }
+      rethrow;
+    }
   }
 
   @override
@@ -118,8 +135,9 @@ class RestClientStub implements RestClient {
   }
 
   @override
-  Future<void> deleteShoppingListItem(String shoppingListId, ShoppingListItem item) {
-    throw UnimplementedError();
+  Future<void> deleteShoppingListItem(String shoppingListId, ShoppingListItem item) async {
+    if (onDeleteShoppingListItem == null) throw UnimplementedError();
+    return _tryCall(() => onDeleteShoppingListItem(shoppingListId, item));
   }
 
   @override
@@ -130,13 +148,13 @@ class RestClientStub implements RestClient {
   @override
   Future<List<ShoppingListInfo>> getShoppingLists() async {
     if (onGetShoppingLists == null) throw UnimplementedError();
-    return onGetShoppingLists();
+    return _tryCall(onGetShoppingLists);
   }
 
   @override
   Future<List<ShoppingListItem>> fetchShoppingList(String shoppingListId) async {
     if (onFetchShoppingList == null) throw UnimplementedError();
-    return onFetchShoppingList(shoppingListId);
+    return _tryCall(() => onFetchShoppingList(shoppingListId));
   }
 
   @override
@@ -187,6 +205,6 @@ class RestClientStub implements RestClient {
   @override
   Future<void> updateShoppingListItem(String shoppingListId, ShoppingListItem item) async {
     if (onUpdateShoppingListItem == null) throw UnimplementedError();
-    onUpdateShoppingListItem(shoppingListId, item);
+    _tryCall(() => onUpdateShoppingListItem(shoppingListId, item));
   }
 }

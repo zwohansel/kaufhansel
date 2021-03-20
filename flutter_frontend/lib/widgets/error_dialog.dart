@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
+import 'package:kaufhansel_client/rest_client.dart';
 
-Future<void> showErrorDialog(BuildContext context, String text) {
-  final closeLabel = AppLocalizations.of(context).thatsJustHowItIs;
-  return showCustomErrorDialog(context, Text(text, textAlign: TextAlign.center), closeLabel);
+Future<void> showErrorDialogForException(BuildContext context, Exception e, {String altText}) {
+  final localization = AppLocalizations.of(context);
+  if (e is HttpResponseException && e.isUnauthenticated()) {
+    return showErrorDialog(context, localization.exceptionUnAuthenticated, closeLabel: localization.willLoginAgain);
+  }
+  return showErrorDialog(context, altText ?? localization.exceptionUnknown(e));
+}
+
+Future<void> showErrorDialog(BuildContext context, String text, {String closeLabel}) {
+  final chosenCloseLabel = closeLabel ?? AppLocalizations.of(context).thatsJustHowItIs;
+  return showCustomErrorDialog(context, Text(text, textAlign: TextAlign.center), chosenCloseLabel);
 }
 
 Future<void> showCustomErrorDialog(BuildContext context, Widget message, String closeLabel, {String emoji}) {

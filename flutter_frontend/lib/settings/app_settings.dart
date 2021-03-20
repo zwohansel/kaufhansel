@@ -159,8 +159,9 @@ class _AppSettingsState extends State<AppSettings> {
     try {
       widget._onLogOut();
       Navigator.pop(context);
-    } catch (e) {
-      showErrorDialog(context, AppLocalizations.of(context).exceptionLogOutFailed);
+    } on Exception catch (e) {
+      log("Could not perform logout.", error: e);
+      showErrorDialogForException(context, e, altText: AppLocalizations.of(context).exceptionLogOutFailed);
     } finally {
       setState(() => _loading = false);
     }
@@ -183,8 +184,9 @@ class _AppSettingsState extends State<AppSettings> {
             emoji: AppLocalizations.of(context).appSettingsAccountDeletedEmoji);
         Navigator.pop(context);
       }
-    } catch (e) {
-      showErrorDialog(context, AppLocalizations.of(context).exceptionDeleteListFailed);
+    } on Exception catch (e) {
+      log("Could not delete account", error: e);
+      showErrorDialogForException(context, e, altText: AppLocalizations.of(context).exceptionDeleteListFailed);
     } finally {
       setState(() => _loading = false);
     }

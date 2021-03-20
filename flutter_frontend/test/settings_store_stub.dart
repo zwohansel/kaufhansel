@@ -24,7 +24,9 @@ class SettingsStoreStub implements SettingsStore {
   }
 
   @override
-  Future<void> removeUserInfo() async {}
+  Future<void> removeUserInfo() async {
+    _userInfo = null;
+  }
 
   @override
   Future<void> saveUserInfo(ShoppingListUserInfo info) async {

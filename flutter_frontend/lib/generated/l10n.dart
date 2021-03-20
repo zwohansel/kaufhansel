@@ -285,6 +285,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Ok... Ich melde mich gerne neu an.`
+  String get willLoginAgain {
+    return Intl.message(
+      'Ok... Ich melde mich gerne neu an.',
+      name: 'willLoginAgain',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Datenschutzerklärung`
   String get privacyPolicy {
     return Intl.message(
@@ -905,16 +915,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Suchen oder hinzufügen`
-  String get shoppingListNeededHint {
-    return Intl.message(
-      'Suchen oder hinzufügen',
-      name: 'shoppingListNeededHint',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Filter`
   String get shoppingListFilterTitle {
     return Intl.message(
@@ -990,6 +990,16 @@ class AppLocalizations {
     return Intl.message(
       'Editier-Modus',
       name: 'shoppingListModeEditing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Suchen oder hinzufügen`
+  String get createOrSearchHint {
+    return Intl.message(
+      'Suchen oder hinzufügen',
+      name: 'createOrSearchHint',
       desc: '',
       args: [],
     );
@@ -1662,6 +1672,26 @@ class AppLocalizations {
       name: 'exceptionListCreationFailed',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `Das hat nicht funktioniert. Sieht so aus als ob deine Sitzung abgelaufen ist.`
+  String get exceptionUnAuthenticated {
+    return Intl.message(
+      'Das hat nicht funktioniert. Sieht so aus als ob deine Sitzung abgelaufen ist.',
+      name: 'exceptionUnAuthenticated',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Irgendetwas ist schiefgelaufen ({exception})`
+  String exceptionUnknown(Object exception) {
+    return Intl.message(
+      'Irgendetwas ist schiefgelaufen ($exception)',
+      name: 'exceptionUnknown',
+      desc: '',
+      args: [exception],
     );
   }
 }
