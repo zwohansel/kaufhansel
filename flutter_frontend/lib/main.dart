@@ -98,6 +98,9 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       if (!updateOpt.isPresent() || !updateOpt.get.isBreakingChange()) {
         await _loadUserInfo();
       }
+
+      Optional<ShoppingListInfo> activeShoppingList = await widget.settingsStore.getActiveShoppingList();
+      _fetchShoppingListInfos(activeShoppingList: activeShoppingList.orElse(null));
     } finally {
       setState(() => _initializing = false);
     }
@@ -120,7 +123,6 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   void _logIn(ShoppingListUserInfo userInfo) {
     widget.client.setAuthenticationToken(userInfo.token);
     setState(() => _userInfo = userInfo);
-    _fetchShoppingListInfos();
   }
 
   Future<void> _logOut() async {
@@ -159,6 +161,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
         _fetchCurrentShoppingList();
       });
     }
+    widget.settingsStore.saveActiveShoppingList(info);
   }
 
   Future<void> _createShoppingList(String shoppingListName) async {
@@ -174,10 +177,11 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   Future<void> _deleteShoppingList(ShoppingListInfo info) async {
     await widget.client.deleteShoppingList(info.id);
+    await widget.settingsStore.removeActiveShoppingList();
     setState(() {
       _shoppingListInfos.remove(info);
     });
-    if (_currentShoppingListInfo == info) {
+    if (_currentShoppingListInfo.id == info.id) {
       _currentShoppingListInfo = _shoppingListInfos.isNotEmpty ? _shoppingListInfos.first : null;
       _fetchCurrentShoppingList();
     }
@@ -230,7 +234,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     info.updateShoppingListName(newName);
   }
 
-  void _fetchShoppingListInfos() async {
+  void _fetchShoppingListInfos({ShoppingListInfo activeShoppingList}) async {
     final oldShoppingList = _currentShoppingList;
     final oldCategory = _currentShoppingListCategory;
     setState(() {
@@ -246,10 +250,11 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       final lists = await widget.client.getShoppingLists();
       setState(() {
         _shoppingListInfos = lists;
-        _currentShoppingListInfo = lists.firstWhere(
-          (list) => list.id == oldShoppingList?.id,
-          orElse: () => lists.firstOrNull,
-        );
+        _currentShoppingListInfo = activeShoppingList ??
+            lists.firstWhere(
+              (list) => list.id == oldShoppingList?.id,
+              orElse: () => lists.firstOrNull,
+            );
         _fetchCurrentShoppingList(initialCategory: oldCategory);
       });
     } on Exception catch (e) {
@@ -502,12 +507,34 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
                 style: Theme.of(context).textTheme.headline6,
                 textAlign: TextAlign.center,
               ),
-              padding: EdgeInsets.only(left: 20, right: 20)),
+              padding: EdgeInsets.only(left: 20, right: 20, bottom: 10)),
+          ..._openOtherList(),
           Padding(
               child: ElevatedButton(child: Text(AppLocalizations.of(context).tryAgain), onPressed: _handleRetry),
-              padding: EdgeInsets.all(20))
+              padding: EdgeInsets.all(10))
         ],
       ),
     );
+  }
+
+  List<Widget> _openOtherList() {
+    if (_currentShoppingListInfo == null) {
+      return [];
+    }
+
+    return [
+      Padding(
+          child: Text(
+            AppLocalizations.of(context).shoppingListNotPresent(_currentShoppingListInfo.name),
+            style: Theme.of(context).textTheme.headline6,
+            textAlign: TextAlign.center,
+          ),
+          padding: EdgeInsets.only(left: 20, right: 20, bottom: 10)),
+      Padding(
+          child: ElevatedButton(
+              onPressed: () => _drawerKey.currentState.openEndDrawer(),
+              child: Text(AppLocalizations.of(context).shoppingListOpenOther)),
+          padding: EdgeInsets.all(10))
+    ];
   }
 }

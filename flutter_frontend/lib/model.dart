@@ -21,6 +21,10 @@ class Optional<T> {
       then(_t);
     }
   }
+
+  T orElse(T other) {
+    return _t ?? other;
+  }
 }
 
 extension JsonParseExtension<K, V> on Map<K, V> {
@@ -200,10 +204,14 @@ class ShoppingList extends ChangeNotifier {
 enum ShoppingListRole { ADMIN, READ_WRITE, CHECK_ONLY, READ_ONLY }
 
 const Map<String, ShoppingListRole> _strToRole = {
+  'ShoppingListRole.ADMIN': ShoppingListRole.ADMIN,
   'ADMIN': ShoppingListRole.ADMIN,
   'READ_WRITE': ShoppingListRole.READ_WRITE,
+  'ShoppingListRole.READ_WRITE': ShoppingListRole.READ_WRITE,
   'CHECK_ONLY': ShoppingListRole.CHECK_ONLY,
-  'READ_ONLY': ShoppingListRole.READ_ONLY
+  'ShoppingListRole.CHECK_ONLY': ShoppingListRole.CHECK_ONLY,
+  'READ_ONLY': ShoppingListRole.READ_ONLY,
+  'ShoppingListRole.READ_ONLY': ShoppingListRole.READ_ONLY
 };
 
 extension ShoppingListRoles on ShoppingListRole {
@@ -286,6 +294,15 @@ class ShoppingListUserReference {
         ShoppingListRoles.fromRoleString(json.get('userRole')));
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'userId': _userId,
+      'userName': _userName,
+      'userEmailAddress': _userEmailAddress,
+      'userRole': _userRole.toString()
+    };
+  }
+
   String get userId => _userId;
   String get userName => _userName;
   String get userEmailAddress => _userEmailAddress;
@@ -303,6 +320,10 @@ class ShoppingListInfo extends ChangeNotifier {
   factory ShoppingListInfo.fromJson(Map<String, dynamic> json) {
     return ShoppingListInfo(json.get('id'), json.get('name'), ShoppingListPermissions.fromJson(json.get('permissions')),
         _parseUserReferences(json.get('otherUsers')));
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'id': _id, 'name': _name, 'permissions': _permissions, 'otherUsers': users};
   }
 
   static List<ShoppingListUserReference> _parseUserReferences(List<dynamic> json) {
@@ -349,6 +370,15 @@ class ShoppingListPermissions {
   factory ShoppingListPermissions.fromJson(Map<String, dynamic> json) {
     return new ShoppingListPermissions(ShoppingListRoles.fromRoleString(json.get('role')), json.get('canEditList'),
         json.get('canEditItems'), json.get('canCheckItems'));
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'role': role.toString(),
+      'canEditList': canEditList,
+      'canEditItems': canEditItems,
+      'canCheckItems': canCheckItems
+    };
   }
 
   ShoppingListRole get role => _role;

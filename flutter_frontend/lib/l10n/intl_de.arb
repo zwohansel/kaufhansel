@@ -101,6 +101,14 @@
   "shoppingListEmpty": "\uD83C\uDF3D\uD83E\uDD66\uD83E\uDDC0",
   "shoppingListEmptyText": "Du hast noch keine Einkaufsliste.\nIm Menü oben rechts kannst du neue Listen anlegen.",
   "shoppingListError": "Oh nein! Haben wir Deine Einkaufslisten etwa verlegt?",
+  "shoppingListNotPresent": "Jedenfalls können wir die Liste {listName} nicht finden.",
+  "@shoppingListNotPresent": {
+    "type": "text",
+    "placeholders": {
+      "listName": {}
+    }
+  },
+  "shoppingListOpenOther": "Andere Liste öffnen",
   "shoppingListCreateNew": "Neue Liste...",
   "shoppingListCreateNewTitle": "Neue Liste anlegen",
   "shoppingListCreateNewConfirm": "Anlegen",

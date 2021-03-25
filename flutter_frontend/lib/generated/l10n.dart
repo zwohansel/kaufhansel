@@ -875,6 +875,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Jedenfalls können wir die Liste {listName} nicht finden.`
+  String shoppingListNotPresent(Object listName) {
+    return Intl.message(
+      'Jedenfalls können wir die Liste $listName nicht finden.',
+      name: 'shoppingListNotPresent',
+      desc: '',
+      args: [listName],
+    );
+  }
+
+  /// `Andere Liste öffnen`
+  String get shoppingListOpenOther {
+    return Intl.message(
+      'Andere Liste öffnen',
+      name: 'shoppingListOpenOther',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Neue Liste...`
   String get shoppingListCreateNew {
     return Intl.message(

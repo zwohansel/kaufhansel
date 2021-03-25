@@ -5,6 +5,7 @@ import 'package:localstorage/localstorage.dart';
 
 const _userInfoStorageKey = "userInfo";
 const _infoMessageConfirmedStorageKey = "infoMessageConfirmed";
+const _lastActiveShoppingListKey = "lastActiveShoppingListId";
 
 class SettingsStore {
   final LocalStorage _storage = new LocalStorage('kaufhansel_settings');
@@ -52,5 +53,31 @@ class SettingsStore {
       return false;
     }
     return confirmedMessageNumber >= messageNumber;
+  }
+
+  Future<void> saveActiveShoppingList(ShoppingListInfo shoppingListInfo) async {
+    if (await _storage.ready) {
+      await _storage.setItem(_lastActiveShoppingListKey, shoppingListInfo);
+    } else {
+      log("Could not save active shopping list id: Storage not writeable.");
+    }
+  }
+
+  Future<void> removeActiveShoppingList() async {
+    if (!await _storage.ready) {
+      throw Exception("Failed to remove active shopping list info: Storage not writeable");
+    }
+    await _storage.deleteItem(_lastActiveShoppingListKey);
+  }
+
+  Future<Optional<ShoppingListInfo>> getActiveShoppingList() async {
+    if (!await _storage.ready) {
+      return Optional.empty();
+    }
+    final lastActiveShoppingList = _storage.getItem(_lastActiveShoppingListKey);
+    if (lastActiveShoppingList == null) {
+      return Optional.empty();
+    }
+    return Optional(ShoppingListInfo.fromJson(lastActiveShoppingList));
   }
 }
