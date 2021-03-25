@@ -32,4 +32,19 @@ class SettingsStoreStub implements SettingsStore {
   Future<void> saveUserInfo(ShoppingListUserInfo info) async {
     _userInfo = info;
   }
+
+  @override
+  Future<Optional<ShoppingListInfo>> getActiveShoppingList() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> removeActiveShoppingList() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> saveActiveShoppingList(ShoppingListInfo shoppingListInfo) {
+    throw UnimplementedError();
+  }
 }
