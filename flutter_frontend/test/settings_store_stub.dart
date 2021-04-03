@@ -34,17 +34,17 @@ class SettingsStoreStub implements SettingsStore {
   }
 
   @override
-  Future<Optional<ShoppingListInfo>> getActiveShoppingList() {
-    throw UnimplementedError();
+  Future<Optional<ShoppingListInfo>> getActiveShoppingList() async {
+    return Optional.empty();
   }
 
   @override
   Future<void> removeActiveShoppingList() {
-    throw UnimplementedError();
+    return null;
   }
 
   @override
   Future<void> saveActiveShoppingList(ShoppingListInfo shoppingListInfo) {
-    throw UnimplementedError();
+    return null;
   }
 }
