@@ -99,9 +99,6 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       if (!updateOpt.isPresent() || !updateOpt.get.isBreakingChange()) {
         await _loadUserInfo();
       }
-
-      Optional<ShoppingListInfo> activeShoppingList = await widget.settingsStore.getActiveShoppingList();
-      _fetchShoppingListInfos(activeShoppingList: activeShoppingList.orElse(null));
     } finally {
       setState(() => _initializing = false);
     }
@@ -121,15 +118,21 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     return _userInfo != null;
   }
 
-  void _logIn(ShoppingListUserInfo userInfo) {
+  void _logIn(ShoppingListUserInfo userInfo) async {
     widget.client.setAuthenticationToken(userInfo.token);
     setState(() => _userInfo = userInfo);
+    Optional<ShoppingListInfo> activeShoppingList = await widget.settingsStore.getActiveShoppingList();
+    _fetchShoppingListInfos(activeShoppingList: activeShoppingList.orElse(null));
   }
 
   Future<void> _logOut() async {
     widget.client.logOut();
-    await widget.settingsStore.removeUserInfo();
-    setState(() => _userInfo = null);
+    await widget.settingsStore.removeAll();
+    setState(() {
+      _userInfo = null;
+      _clearCurrentShoppingListState();
+      _error = null;
+    });
   }
 
   Future<void> _deleteUserAccount() async {
@@ -287,10 +290,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     final oldShoppingList = _currentShoppingList;
     final oldCategory = _currentShoppingListCategory;
     setState(() {
-      _shoppingListInfos = null;
-      _currentShoppingList = null;
-      _currentShoppingListCategories = null;
-      _currentShoppingListCategory = null;
+      _clearCurrentShoppingListState();
       _error = null;
     });
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) => oldShoppingList?.dispose());
@@ -315,6 +315,13 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
         _error = e.toString();
       });
     }
+  }
+
+  void _clearCurrentShoppingListState() {
+    _shoppingListInfos = null;
+    _currentShoppingList = null;
+    _currentShoppingListCategories = null;
+    _currentShoppingListCategory = null;
   }
 
   void _fetchCurrentShoppingList({String initialCategory}) async {

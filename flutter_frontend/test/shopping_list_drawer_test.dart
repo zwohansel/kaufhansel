@@ -248,5 +248,6 @@ ShoppingListDrawer _buildDrawer({
     onRemoveCategory: (info, category) => null,
     onUncheckItemsOfCategory: (info, category) => null,
     onRenameCategory: (info, oldCategory) => null,
+    onDeleteChecked: (ShoppingListInfo shoppingListInfo, {String ofCategory}) => null,
   );
 }

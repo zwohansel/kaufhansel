@@ -10,6 +10,10 @@ const _lastActiveShoppingListKey = "lastActiveShoppingListId";
 class SettingsStore {
   final LocalStorage _storage = new LocalStorage('kaufhansel_settings');
 
+  Future<void> removeAll() async {
+    _storage.clear();
+  }
+
   Future<Optional<ShoppingListUserInfo>> getUserInfo() async {
     if (!await _storage.ready) {
       return Optional.empty();

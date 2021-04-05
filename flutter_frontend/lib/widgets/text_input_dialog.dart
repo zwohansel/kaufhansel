@@ -66,13 +66,7 @@ class _CreateTextInputDialogState extends State<_TextInputDialog> {
           children: [
             TextField(
               focusNode: _textInputFocusNode,
-              onSubmitted: (_) {
-                if (_isInputValid) {
-                  Navigator.pop(context, _textController.text);
-                } else {
-                  _textInputFocusNode.requestFocus();
-                }
-              },
+              onSubmitted: (_) => _isInputValid ? _onConfirm() : _textInputFocusNode.requestFocus(),
               controller: _textController,
               enabled: !_loading,
               textCapitalization: TextCapitalization.sentences,
@@ -92,7 +86,7 @@ class _CreateTextInputDialogState extends State<_TextInputDialog> {
                 SizedBox(width: 10),
                 Expanded(
                     child: ElevatedButton(
-                        onPressed: (_isInputValid && !_loading) ? _onConfirmPressed : null,
+                        onPressed: (_isInputValid && !_loading) ? _onConfirm : null,
                         child: Text(widget.confirmBtnLabel)))
               ],
             )
@@ -110,7 +104,7 @@ class _CreateTextInputDialogState extends State<_TextInputDialog> {
     }
   }
 
-  void _onConfirmPressed() async {
+  Future<void> _onConfirm() async {
     setState(() => _loading = true);
     try {
       if (widget.onConfirm != null) {

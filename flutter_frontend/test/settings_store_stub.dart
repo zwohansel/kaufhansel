@@ -47,4 +47,9 @@ class SettingsStoreStub implements SettingsStore {
   Future<void> saveActiveShoppingList(ShoppingListInfo shoppingListInfo) {
     return null;
   }
+
+  @override
+  Future<void> removeAll() {
+    return null;
+  }
 }
