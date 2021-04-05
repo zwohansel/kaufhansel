@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_item_tile.dart';
@@ -13,11 +12,9 @@ import 'utils.dart';
 
 void main() {
   const testLocale = Locale("de");
-  AppLocalizations localizations;
   ScrollController scrollController;
 
   setUp(() async {
-    localizations = await AppLocalizations.load(testLocale);
     scrollController = ScrollController();
   });
 

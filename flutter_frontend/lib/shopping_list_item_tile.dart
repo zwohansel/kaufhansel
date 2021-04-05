@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
@@ -107,10 +108,16 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
 
     switch (widget._mode) {
       case ShoppingListModeOption.EDITING:
-        return Padding(
-          padding: const EdgeInsets.only(right: 20.0),
-          child: AsyncOperationIconButton(
-              icon: Icon(Icons.delete), loading: _deleting, onPressed: _allowInput() ? () => _deleteItem(item) : null),
+        return Wrap(
+          children: [
+            AsyncOperationIconButton(
+              icon: Icon(Icons.delete),
+              loading: _deleting,
+              onPressed: _allowInput() ? () => _deleteItem(item) : null,
+            ),
+            SizedBox(width: 5),
+            Handle(child: SizedBox(width: 48, height: 48, child: Center(child: Icon(Icons.drag_handle))))
+          ],
         );
       case ShoppingListModeOption.SHOPPING:
         return null;

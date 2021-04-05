@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
+import 'package:implicitly_animated_reorderable_list/transitions.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_item_tile.dart';
 import 'package:kaufhansel_client/shopping_list_mode.dart';
@@ -42,30 +44,69 @@ class ShoppingListView extends StatelessWidget {
 
   Widget _buildListView(BuildContext context, List<ShoppingListItem> items, bool canEditItems) {
     final visibleItems = items.where(_isItemVisible);
+    final Decoration dividerDecoration = BoxDecoration(
+      border: Border(
+        bottom: Divider.createBorderSide(context),
+      ),
+    );
+    final itemBuilder = (BuildContext context, Animation animation, ShoppingListItem item, int i) {
+      final tile = _createListTileForItem(item);
+      return SizeFadeTransition(
+        animation: animation,
+        curve: Curves.easeInOut,
+        sizeFraction: 0.7,
+        child: DecoratedBox(
+          key: tile.key,
+          position: DecorationPosition.foreground,
+          decoration: dividerDecoration,
+          child: tile,
+        ),
+      );
+    };
 
     if (mode == ShoppingListModeOption.EDITING && canEditItems) {
-      final dividedTiles = _divideTilesWithKey(visibleItems.map(_createListTileForItem), context).toList();
-      return ReorderableListView(
-        children: dividedTiles,
-        onReorder: (oldIndex, newIndex) => onItemMoved(items, oldIndex, newIndex),
-        scrollController: scrollController,
+      return ImplicitlyAnimatedReorderableList<ShoppingListItem>(
+        // TODO: Add scrollbar once dispose bug is fixed.
+        // The ImplicitlyAnimatedReorderableList supports shrinkWrap (the native reorderable list does not).
+        // This means we can finally add a scrollbar around the reorderable list.
+        // However; ImplicitlyAnimatedReorderableList disposes the ScrollController in its dispose method
+        // although it has not created the controller. This has to be fixed first: https://github.com/bnxm/implicitly_animated_reorderable_list/issues/72
+
+        // shrinkWrap: true,
+        // controller: scrollController,
+        items: visibleItems.toList(),
+        areItemsTheSame: (a, b) => a.id == b.id,
+        itemBuilder: (context, animation, item, i) {
+          return Reorderable(
+            key: ValueKey(item.id),
+            builder: (context, dragAnimation, inDrag) {
+              final tile = itemBuilder(context, animation, item, i);
+              return Material(
+                child: tile,
+                elevation: inDrag ? 5 : 0,
+              );
+            },
+          );
+        },
+        onReorderFinished: (item, oldIndex, newIndex, newItems) => onItemMoved(items, oldIndex, newIndex),
       );
     } else {
       final checkedItems = visibleItems.where((item) => item.checked);
       final uncheckedItems = visibleItems.where((item) => !item.checked);
       final orderedItems = [...uncheckedItems, ...checkedItems];
-      final dividedTiles = _divideTilesWithKey(orderedItems.map(_createListTileForItem), context).toList();
+
       return Scrollbar(
         isAlwaysShown: false, // Setting this value to true causes an assertion error when the first category is created
         controller: scrollController,
         child: RefreshIndicator(
           onRefresh: onRefresh,
-          child: ListView(
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: ImplicitlyAnimatedList<ShoppingListItem>(
             physics: const AlwaysScrollableScrollPhysics(), // allow overscroll to trigger refresh indicator
             shrinkWrap: true,
-            children: dividedTiles,
             controller: scrollController,
+            items: orderedItems,
+            areItemsTheSame: (a, b) => a.id == b.id,
+            itemBuilder: itemBuilder,
           ),
         ),
       );
@@ -95,7 +136,7 @@ class ShoppingListView extends StatelessWidget {
     return item.name.toLowerCase().contains(filterText);
   }
 
-  Widget _createListTileForItem(ShoppingListItem item) {
+  Widget _createListTileForItem(ShoppingListItem item, {bool showReorderHandle = false}) {
     return ChangeNotifierProvider<ShoppingListItem>.value(
         value: item,
         key: ValueKey(item.id),
@@ -109,21 +150,4 @@ class ShoppingListView extends StatelessWidget {
                   canEditItems: permissions.canEditItems,
                 )));
   }
-}
-
-List<Widget> _divideTilesWithKey(Iterable<Widget> tiles, BuildContext context) {
-  final Decoration decoration = BoxDecoration(
-    border: Border(
-      bottom: Divider.createBorderSide(context),
-    ),
-  );
-
-  return tiles.map((tile) {
-    return DecoratedBox(
-      key: tile.key,
-      position: DecorationPosition.foreground,
-      decoration: decoration,
-      child: tile,
-    );
-  }).toList(growable: false);
 }

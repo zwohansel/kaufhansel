@@ -93,10 +93,7 @@ public class ShoppingList {
             return false;
         }
         items.remove(currentIndex);
-
-        int correctedTargetIndex = targetIndex > currentIndex ? targetIndex - 1 : targetIndex;
-
-        items.add(Math.min(items.size(), correctedTargetIndex), item);
+        items.add(Math.min(items.size(), targetIndex), item);
         return true;
     }
 }

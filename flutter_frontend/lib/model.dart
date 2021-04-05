@@ -204,8 +204,7 @@ class ShoppingList extends ChangeNotifier {
     }
 
     _items.removeAt(currentIndex);
-    int correctedTargetIndex = targetIndex > currentIndex ? targetIndex - 1 : targetIndex;
-    _items.insert(min(correctedTargetIndex, _items.length), item);
+    _items.insert(min(targetIndex, _items.length), item);
 
     notifyListeners();
   }
