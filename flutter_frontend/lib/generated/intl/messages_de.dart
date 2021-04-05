@@ -73,7 +73,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static m26(roleName) => "Hier bist du ${roleName}:";
 
-  static m23(listName) => "Jedenfalls können wir die Liste ${listName} nicht finden.";
+  static m27(listName) => "Jedenfalls können wir die Liste ${listName} nicht finden.";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => <String, Function> {
@@ -241,7 +241,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "shoppingListModeShopping" : MessageLookupByLibrary.simpleMessage("Einkaufs-Modus"),
     "shoppingListModeTitle" : MessageLookupByLibrary.simpleMessage("Modus"),
     "shoppingListMyLists" : MessageLookupByLibrary.simpleMessage("Meine Listen"),
-    "shoppingListNotPresent" : m23,
+    "shoppingListNotPresent" : m27,
     "shoppingListOpenOther" : MessageLookupByLibrary.simpleMessage("Andere Liste öffnen"),
     "thatsJustHowItIs" : MessageLookupByLibrary.simpleMessage("Ist dann halt schon so..."),
     "tryAgain" : MessageLookupByLibrary.simpleMessage("Nochmal versuchen"),
