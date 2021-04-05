@@ -41,16 +41,20 @@ class ShoppingListView extends StatelessWidget {
   }
 
   Widget _buildListView(BuildContext context, List<ShoppingListItem> items, bool canEditItems) {
-    Iterable<ShoppingListItem> visibleItems = items.where(_isItemVisible);
-    final dividedTiles = _divideTilesWithKey(visibleItems.map(_createListTileForItem), context).toList();
+    final visibleItems = items.where(_isItemVisible);
 
     if (mode == ShoppingListModeOption.EDITING && canEditItems) {
+      final dividedTiles = _divideTilesWithKey(visibleItems.map(_createListTileForItem), context).toList();
       return ReorderableListView(
         children: dividedTiles,
         onReorder: (oldIndex, newIndex) => onItemMoved(items, oldIndex, newIndex),
         scrollController: scrollController,
       );
     } else {
+      final checkedItems = visibleItems.where((item) => item.checked);
+      final uncheckedItems = visibleItems.where((item) => !item.checked);
+      final orderedItems = [...uncheckedItems, ...checkedItems];
+      final dividedTiles = _divideTilesWithKey(orderedItems.map(_createListTileForItem), context).toList();
       return Scrollbar(
         isAlwaysShown: false, // Setting this value to true causes an assertion error when the first category is created
         controller: scrollController,
