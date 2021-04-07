@@ -36,6 +36,24 @@ public class ShoppingListUser {
         return user;
     }
 
+    private ShoppingListUser() {
+    }
+
+    protected ShoppingListUser(ObjectId id, boolean superUser, String username, String password, String emailAddress,
+            LocalDateTime registrationDate, ObjectId invitedBy, List<ShoppingListReference> shoppingLists,
+            String passwordResetCode, LocalDateTime passwordResetRequestedAt) {
+        this.id = id;
+        this.superUser = superUser;
+        this.username = username;
+        this.password = password;
+        this.emailAddress = emailAddress;
+        this.registrationDate = registrationDate;
+        this.invitedBy = invitedBy;
+        this.shoppingLists = shoppingLists;
+        this.passwordResetCode = passwordResetCode;
+        this.passwordResetRequestedAt = passwordResetRequestedAt;
+    }
+
     public ObjectId getId() {
         return id;
     }
