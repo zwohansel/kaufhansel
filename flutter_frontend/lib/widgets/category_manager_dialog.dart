@@ -130,12 +130,10 @@ class _CategoryManagerState extends State<CategoryManager> {
       return Container();
     } else if (_selected == CATEGORY_ALL) {
       return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesUncheckAll,
-          Icons.browser_not_supported_outlined, () => widget.onUncheckAll(),
-          option: "uncheck-all");
+          Icons.browser_not_supported_outlined, () => widget.onUncheckAll());
     } else {
       return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesUncheckCategory(_selected),
-          Icons.browser_not_supported_outlined, () => widget.onUncheckCategory(_selected),
-          option: "uncheck");
+          Icons.browser_not_supported_outlined, () => widget.onUncheckCategory(_selected));
     }
   }
 
@@ -147,24 +145,17 @@ class _CategoryManagerState extends State<CategoryManager> {
       icon: const Icon(Icons.arrow_downward),
       iconSize: 24,
       underline: Container(height: 2, color: Theme.of(context).primaryColor),
-      onChanged: _loading ? null : (String newValue) => blubb(newValue),
-      items: widget.categories.map<DropdownMenuItem<String>>((String value) {
+      onChanged: _loading ? null : (newValue) => setState(() => _selected = newValue),
+      items: widget.categories.map((value) {
         return DropdownMenuItem<String>(
           value: value,
-          child: Text(value, key: ValueKey<String>("menuitem-" + value.replaceAll(" ", "_"))),
+          child: Text(value),
         );
       }).toList(),
     );
   }
 
-  void blubb(String newValue) {
-    setState(() {
-      _selected = newValue;
-    });
-  }
-
-  Widget _buildDialogOption(BuildContext context, String text, IconData icon, Future<void> Function() onPressed,
-      {String option}) {
+  Widget _buildDialogOption(BuildContext context, String text, IconData icon, Future<void> Function() onPressed) {
     return SimpleDialogOption(
       padding: EdgeInsets.only(left: 24, right: 24, top: 12, bottom: 12),
       child: Row(children: [
@@ -173,12 +164,18 @@ class _CategoryManagerState extends State<CategoryManager> {
           color: _loading ? Theme.of(context).disabledColor : null,
         ),
         SizedBox(width: 12),
-        Flexible(
-            child: Text(text,
-                key: ValueKey<String>("option-$option"),
-                style: TextStyle(color: _loading ? Theme.of(context).disabledColor : null))),
+        Flexible(child: Text(text, style: TextStyle(color: _loading ? Theme.of(context).disabledColor : null))),
       ]),
-      onPressed: _loading ? null : () => _handleLoading(onPressed),
+      onPressed: _loading
+          ? null
+          : () async {
+              setState(() => _loading = true);
+              try {
+                await onPressed();
+              } finally {
+                setState(() => _loading = false);
+              }
+            },
     );
   }
 
@@ -187,15 +184,6 @@ class _CategoryManagerState extends State<CategoryManager> {
       return LinearProgressIndicator(minHeight: 5);
     } else {
       return SizedBox(height: 5);
-    }
-  }
-
-  void _handleLoading(Future<void> Function() fn) async {
-    setState(() => _loading = true);
-    try {
-      await fn();
-    } finally {
-      setState(() => _loading = false);
     }
   }
 }

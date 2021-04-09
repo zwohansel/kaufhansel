@@ -32,15 +32,27 @@ void main() {
   const testLocale = Locale("de");
   AppLocalizations localizations;
 
+  final Version version = Version(1, 0, 0);
+
   setUp(() async {
     localizations = await AppLocalizations.load(testLocale);
   });
 
-  testWidgets('Add item to existing category', (WidgetTester tester) async {
+  Future<Widget> makeTestableShoppingListApp(RestClient restClient) {
     final store = SettingsStoreStub();
     // Store a user info obj so that we start in a logged in state
     store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
 
+    return makeBasicTestableWidget(
+        ShoppingListApp(
+          client: restClient,
+          settingsStore: store,
+          currentVersion: () async => version,
+        ),
+        locale: testLocale);
+  }
+
+  testWidgets('Add item to existing category', (WidgetTester tester) async {
     final categoryOfNewItem = "CategoryB";
     final nameOfNewItem = "C";
 
@@ -48,7 +60,6 @@ void main() {
     final item1 = ShoppingListItem("2", "B", false, categoryOfNewItem);
     List<ShoppingListItem> backendItems = [item0, item1];
 
-    final version = Version(1, 0, 0);
     final client = RestClientStub(
         onGetBackendInfo: () => BackendInfo(version, null),
         onGetShoppingLists: () {
@@ -63,13 +74,7 @@ void main() {
           return ShoppingListItem("3", name, false, category);
         });
 
-    await tester.pumpWidget(await makeBasicTestableWidget(
-        ShoppingListApp(
-          client: client,
-          settingsStore: store,
-          currentVersion: () async => version,
-        ),
-        locale: testLocale));
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
     await tester.pumpAndSettle();
 
     // Switch to tab of CategoryB
@@ -108,10 +113,6 @@ void main() {
   });
 
   testWidgets('Add item to new category', (WidgetTester tester) async {
-    final store = SettingsStoreStub();
-    // Store a user info obj so that we start in a logged in state
-    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
-
     final categoryOfNewItem = "CategoryB";
     final nameOfNewItem = "B";
     final idOfNewItem = "2";
@@ -119,7 +120,6 @@ void main() {
     final item0 = ShoppingListItem("1", "A", false, "CategoryA");
     List<ShoppingListItem> backendItems = [item0];
 
-    final version = Version(1, 0, 0);
     final client = RestClientStub(
         onGetBackendInfo: () => BackendInfo(version, null),
         onGetShoppingLists: () {
@@ -142,13 +142,7 @@ void main() {
           expect(item.checked, isFalse);
         });
 
-    await tester.pumpWidget(await makeBasicTestableWidget(
-        ShoppingListApp(
-          client: client,
-          settingsStore: store,
-          currentVersion: () async => version,
-        ),
-        locale: testLocale));
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
     await tester.pumpAndSettle();
 
     // Check that we only see the initial item
@@ -198,17 +192,12 @@ void main() {
   });
 
   testWidgets('Remove current category from item', (WidgetTester tester) async {
-    final store = SettingsStoreStub();
-    // Store a user info obj so that we start in a logged in state
-    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
-
     final categoryToRemove = "CategoryB";
 
     final item0 = ShoppingListItem("1", "A", false, "CategoryA");
     final item1 = ShoppingListItem("2", "B", false, categoryToRemove);
     List<ShoppingListItem> backendItems = [item0, item1];
 
-    final version = Version(1, 0, 0);
     final client = RestClientStub(
         onGetBackendInfo: () => BackendInfo(version, null),
         onGetShoppingLists: () {
@@ -225,13 +214,7 @@ void main() {
           expect(item.checked, isFalse);
         });
 
-    await tester.pumpWidget(await makeBasicTestableWidget(
-        ShoppingListApp(
-          client: client,
-          settingsStore: store,
-          currentVersion: () async => version,
-        ),
-        locale: testLocale));
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
     await tester.pumpAndSettle();
 
     // Switch to tab of CategoryB
@@ -277,15 +260,10 @@ void main() {
   });
 
   testWidgets('Refresh list using swipe to refresh', (WidgetTester tester) async {
-    final store = SettingsStoreStub();
-    // Store a user info obj so that we start in a logged in state
-    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
-
     final item0 = ShoppingListItem("1", "A", false, null);
     final item1 = ShoppingListItem("2", "B", false, null);
     List<ShoppingListItem> backendItems = [item0];
 
-    final version = Version(1, 0, 0);
     final client = RestClientStub(
       onGetBackendInfo: () => BackendInfo(version, null),
       onGetShoppingLists: () {
@@ -295,13 +273,7 @@ void main() {
       onFetchShoppingList: (id) => backendItems,
     );
 
-    await tester.pumpWidget(await makeBasicTestableWidget(
-        ShoppingListApp(
-          client: client,
-          settingsStore: store,
-          currentVersion: () async => version,
-        ),
-        locale: testLocale));
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
     await tester.pumpAndSettle();
 
     expect(find.widgetWithText(CheckboxListTile, item0.name), findsOneWidget);
@@ -318,16 +290,13 @@ void main() {
   });
 
   testWidgets("Uncheck all items", (WidgetTester tester) async {
-    final store = SettingsStoreStub();
-    // Store a user info obj so that we start in a logged in state
-    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
-
     final item0 = ShoppingListItem("1", "A", true, "aCategory");
     final item1 = ShoppingListItem("2", "B", false, "aCategory");
     final item2 = ShoppingListItem("3", "C", true, null);
     List<ShoppingListItem> backendItems = [item0, item1, item2];
 
-    final version = Version(1, 0, 0);
+    bool uncheckedAllItems = false;
+
     final client = RestClientStub(
       onGetBackendInfo: () => BackendInfo(version, null),
       onGetShoppingLists: () {
@@ -338,16 +307,11 @@ void main() {
       onUncheckItems: (shoppingListId, ofCategory) {
         expect(shoppingListId, equals("1"));
         expect(ofCategory, isNull);
+        uncheckedAllItems = ofCategory == null;
       },
     );
 
-    await tester.pumpWidget(await makeBasicTestableWidget(
-        ShoppingListApp(
-          client: client,
-          settingsStore: store,
-          currentVersion: () async => version,
-        ),
-        locale: testLocale));
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
     await tester.pumpAndSettle();
 
     // open drawer
@@ -374,7 +338,6 @@ void main() {
     await tester.pumpAndSettle();
 
     final menuItemCategoryAll = find.descendant(of: dropdownButton, matching: find.text(CATEGORY_ALL));
-    // await tester.ensureVisible(dropdownButton);
     await tester.tap(menuItemCategoryAll, warnIfMissed: false);
     await tester.pumpAndSettle();
 
@@ -382,20 +345,20 @@ void main() {
     final uncheckItemsOption = find.text(localizations.manageCategoriesUncheckAll);
     await tester.tap(uncheckItemsOption);
     await tester.pumpAndSettle();
+
+    expect(uncheckedAllItems, isTrue,
+        reason: "This is probably because the onUncheckItems callback of the RestClient was not called.");
   });
 
   testWidgets("Uncheck items of category", (WidgetTester tester) async {
-    // TODO
-    final store = SettingsStoreStub();
-    // Store a user info obj so that we start in a logged in state
-    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
-
-    final item0 = ShoppingListItem("1", "A", true, "Test category");
-    final item1 = ShoppingListItem("2", "B", false, "Test category");
+    final categoryToUncheck = "Test category";
+    final item0 = ShoppingListItem("1", "A", true, categoryToUncheck);
+    final item1 = ShoppingListItem("2", "B", false, categoryToUncheck);
     final item2 = ShoppingListItem("3", "C", true, null);
     List<ShoppingListItem> backendItems = [item0, item1, item2];
 
-    final version = Version(1, 0, 0);
+    String uncheckedCategory;
+
     final client = RestClientStub(
       onGetBackendInfo: () => BackendInfo(version, null),
       onGetShoppingLists: () {
@@ -405,14 +368,30 @@ void main() {
       onFetchShoppingList: (id) => backendItems,
       onUncheckItems: (shoppingListId, ofCategory) {
         expect(shoppingListId, equals("1"));
-        expect(ofCategory, equals("Test category"));
+        uncheckedCategory = ofCategory;
       },
     );
 
-    await tester.pumpWidget(await makeBasicTestableWidget(
-        ShoppingListApp(client: client, settingsStore: store, currentVersion: () async => version),
-        locale: testLocale));
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
     await tester.pumpAndSettle();
+
+    // check that item0 is checked
+    final item0Tile = find.widgetWithText(CheckboxListTile, item0.name);
+    expect(item0Tile, findsOneWidget);
+    {
+      final item0TileWidget = item0Tile.evaluate().first.widget;
+      expect(item0TileWidget, isInstanceOf<CheckboxListTile>());
+      expect((item0TileWidget as CheckboxListTile).value, isTrue);
+    }
+
+    // check that item1 is unchecked
+    final item1Tile = find.widgetWithText(CheckboxListTile, item1.name);
+    expect(item1Tile, findsOneWidget);
+    {
+      final item1TileWidget = item1Tile.evaluate().first.widget;
+      expect(item1TileWidget, isInstanceOf<CheckboxListTile>());
+      expect((item1TileWidget as CheckboxListTile).value, isFalse);
+    }
 
     // open drawer
     final drawerIcon = find.widgetWithIcon(IconButton, Icons.menu);
@@ -431,38 +410,210 @@ void main() {
     // check that the dialog is open
     expect(find.text(localizations.manageCategoriesTitle), findsOneWidget);
 
-    // select category "Test category"
     final dropdownButton = find.widgetWithText(GestureDetector, localizations.manageCategoriesWhich);
-    // await tester.ensureVisible(dropdownButton);
     await tester.tap(dropdownButton);
     await tester.pumpAndSettle();
 
-    //FIXME: does not work: finds two widgets instead of one
-    final menuItemCategory = find.byKey(ValueKey<String>("menuitem-Test_category"));
-    expect(menuItemCategory, findsOneWidget);
-    // await tester.ensureVisible(menuItemCategory);
-    await tester.tap(menuItemCategory, warnIfMissed: false);
+    final menuItemCategory = find.text(categoryToUncheck);
+    // The DropDownButton creates two widgets with for each menu item.
+    // The widget that is found last is always the one that is clickable.
+    // See: https://github.com/flutter/flutter/blob/master/packages/flutter/test/material/dropdown_test.dart
+    expect(menuItemCategory, findsWidgets);
+    await tester.tap(menuItemCategory.last);
     await tester.pumpAndSettle();
 
     // select uncheck items
-    final uncheckItemsOption = find.byKey(ValueKey<String>("option-uncheck"));
-    //find.text(localizations.manageCategoriesUncheckCategory("Test category"));
+    final uncheckItemsOption = find.text(localizations.manageCategoriesUncheckCategory(categoryToUncheck));
     expect(uncheckItemsOption, findsOneWidget);
     await tester.tap(uncheckItemsOption);
     await tester.pumpAndSettle();
-  }, skip: true);
+
+    // check that both items of the category are now unchecked
+    {
+      final item0TileWidget = item0Tile.evaluate().first.widget;
+      expect(item0TileWidget, isInstanceOf<CheckboxListTile>());
+      expect((item0TileWidget as CheckboxListTile).value, isFalse);
+    }
+
+    // check that item1 is unchecked
+    {
+      final item1TileWidget = item1Tile.evaluate().first.widget;
+      expect(item1TileWidget, isInstanceOf<CheckboxListTile>());
+      expect((item1TileWidget as CheckboxListTile).value, isFalse);
+    }
+
+    expect(uncheckedCategory, isNotNull,
+        reason: "This is probably because the onUncheckItems callback of the RestClient was not called.");
+    expect(uncheckedCategory, equals(categoryToUncheck));
+  });
+
+  testWidgets("Remove category", (WidgetTester tester) async {
+    final categoryToRemove = "Test category";
+    final item0 = ShoppingListItem("1", "A", true, categoryToRemove);
+    final item1 = ShoppingListItem("2", "B", false, categoryToRemove);
+    final item2 = ShoppingListItem("3", "C", true, null);
+    List<ShoppingListItem> backendItems = [item0, item1, item2];
+
+    String removedCategory;
+
+    final client = RestClientStub(
+      onGetBackendInfo: () => BackendInfo(version, null),
+      onGetShoppingLists: () {
+        final adminPermissions = ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true);
+        return [ShoppingListInfo("1", "TestList", adminPermissions, [])];
+      },
+      onFetchShoppingList: (id) => backendItems,
+      onRemoveCategory: (shoppingListId, category) {
+        expect(shoppingListId, equals("1"));
+        removedCategory = category;
+      },
+    );
+
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
+    await tester.pumpAndSettle();
+
+    // Check that we find two items with the category
+    expect(find.widgetWithText(CheckboxListTile, categoryToRemove), findsNWidgets(2));
+
+    // open drawer
+    final drawerIcon = find.widgetWithIcon(IconButton, Icons.menu);
+    expect(drawerIcon, findsOneWidget);
+    await tester.tap(drawerIcon);
+    await tester.pumpAndSettle();
+
+    // check that we see the menu item
+    final manageCategoriesMenuItem = find.widgetWithText(ListTile, localizations.manageCategories);
+    expect(manageCategoriesMenuItem, findsOneWidget);
+
+    // open the manage categories dialog
+    await tester.tap(manageCategoriesMenuItem);
+    await tester.pumpAndSettle();
+
+    // check that the dialog is open
+    expect(find.text(localizations.manageCategoriesTitle), findsOneWidget);
+
+    final dropdownButton = find.widgetWithText(GestureDetector, localizations.manageCategoriesWhich);
+    await tester.tap(dropdownButton);
+    await tester.pumpAndSettle();
+
+    final menuItemCategory = find.text(categoryToRemove);
+    expect(menuItemCategory, findsWidgets);
+    await tester.tap(menuItemCategory.last);
+    await tester.pumpAndSettle();
+
+    // select remove category
+    final removeCategoryOption = find.text(localizations.manageCategoriesRemoveCategory(categoryToRemove));
+    expect(removeCategoryOption, findsOneWidget);
+    await tester.tap(removeCategoryOption);
+    await tester.pumpAndSettle();
+
+    // check that we no longer find an item with that category...
+    expect(find.widgetWithText(CheckboxListTile, categoryToRemove), findsNothing);
+
+    // ...but there should still be 3 items
+    expect(find.byType(CheckboxListTile), findsNWidgets(3));
+
+    expect(removedCategory, isNotNull,
+        reason: "This is probably because the onRemoveCategory callback of the RestClient was not called.");
+    expect(removedCategory, equals(categoryToRemove));
+  });
+
+  testWidgets("Rename category", (WidgetTester tester) async {
+    final categoryToRename = "Test category";
+    final newCategoryName = "Renamed test category";
+    final item0 = ShoppingListItem("1", "A", true, categoryToRename);
+    final item1 = ShoppingListItem("2", "B", false, categoryToRename);
+    final item2 = ShoppingListItem("3", "C", true, null);
+    List<ShoppingListItem> backendItems = [item0, item1, item2];
+
+    String renamedCategory;
+    String newNameOfRenamedCategory;
+
+    final client = RestClientStub(
+      onGetBackendInfo: () => BackendInfo(version, null),
+      onGetShoppingLists: () {
+        final adminPermissions = ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true);
+        return [ShoppingListInfo("1", "TestList", adminPermissions, [])];
+      },
+      onFetchShoppingList: (id) => backendItems,
+      onRenameCategory: (shoppingListId, oldCategoryName, newCategoryName) {
+        expect(shoppingListId, equals("1"));
+        renamedCategory = oldCategoryName;
+        newNameOfRenamedCategory = newCategoryName;
+      },
+    );
+
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
+    await tester.pumpAndSettle();
+
+    // check that we find two items with the category
+    expect(find.widgetWithText(CheckboxListTile, categoryToRename), findsNWidgets(2));
+
+    // open drawer
+    final drawerIcon = find.widgetWithIcon(IconButton, Icons.menu);
+    expect(drawerIcon, findsOneWidget);
+    await tester.tap(drawerIcon);
+    await tester.pumpAndSettle();
+
+    // check that we see the menu item
+    final manageCategoriesMenuItem = find.widgetWithText(ListTile, localizations.manageCategories);
+    expect(manageCategoriesMenuItem, findsOneWidget);
+
+    // open the manage categories dialog
+    await tester.tap(manageCategoriesMenuItem);
+    await tester.pumpAndSettle();
+
+    // check that the dialog is open
+    expect(find.text(localizations.manageCategoriesTitle), findsOneWidget);
+
+    final dropdownButton = find.widgetWithText(GestureDetector, localizations.manageCategoriesWhich);
+    await tester.tap(dropdownButton);
+    await tester.pumpAndSettle();
+
+    final menuItemCategory = find.text(categoryToRename);
+    expect(menuItemCategory, findsWidgets);
+    await tester.tap(menuItemCategory.last);
+    await tester.pumpAndSettle();
+
+    // select rename category
+    final renameCategoryOption = find.text(localizations.manageCategoriesRenameCategory(categoryToRename));
+    expect(renameCategoryOption, findsOneWidget);
+    await tester.tap(renameCategoryOption);
+    // once the rename option has been pressed a progress animation is shown in the background
+    // until the rename operation has been completed. Therefore we use pump instead of pumpAndSettle.
+    await tester.pump();
+
+    // enter the new category name
+    final newCategoryNameInput = find.widgetWithText(TextField, categoryToRename);
+    expect(newCategoryNameInput, findsOneWidget);
+    await tester.enterText(newCategoryNameInput, newCategoryName);
+    await tester.pump();
+
+    // press confirm button
+    final confirmButton = find.widgetWithText(ElevatedButton, localizations.ok);
+    expect(confirmButton, findsOneWidget);
+    await tester.tap(confirmButton);
+    await tester.pumpAndSettle();
+
+    // check that we no longer find an item with the old category name...
+    expect(find.widgetWithText(CheckboxListTile, categoryToRename), findsNothing);
+    // ...but two with the new category name
+    expect(find.widgetWithText(CheckboxListTile, newCategoryName), findsNWidgets(2));
+
+    expect(renamedCategory, isNotNull,
+        reason: "This is probably because the onRenameCategory callback of the RestClient was not called.");
+    expect(renamedCategory, equals(categoryToRename));
+    expect(newNameOfRenamedCategory, equals(newCategoryName));
+  });
 
   testWidgets("Remove all categories", (WidgetTester tester) async {
-    final store = SettingsStoreStub();
-    // Store a user info obj so that we start in a logged in state
-    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
-
     final item0 = ShoppingListItem("1", "A", true, "Category1");
     final item1 = ShoppingListItem("2", "B", false, "Category2");
     final item2 = ShoppingListItem("3", "C", true, null);
     List<ShoppingListItem> backendItems = [item0, item1, item2];
 
-    final version = Version(1, 0, 0);
+    bool removedAllCategories = false;
+
     final client = RestClientStub(
       onGetBackendInfo: () => BackendInfo(version, null),
       onGetShoppingLists: () {
@@ -473,17 +624,16 @@ void main() {
       onRemoveCategory: (shoppingListId, category) {
         expect(shoppingListId, equals("1"));
         expect(category, isNull);
+        removedAllCategories = category == null;
       },
     );
 
-    await tester.pumpWidget(await makeBasicTestableWidget(
-        ShoppingListApp(
-          client: client,
-          settingsStore: store,
-          currentVersion: () async => version,
-        ),
-        locale: testLocale));
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
     await tester.pumpAndSettle();
+
+    // check that we find an item for each category
+    expect(find.widgetWithText(CheckboxListTile, item0.category), findsOneWidget);
+    expect(find.widgetWithText(CheckboxListTile, item1.category), findsOneWidget);
 
     // open drawer
     final drawerIcon = find.widgetWithIcon(IconButton, Icons.menu);
@@ -517,35 +667,22 @@ void main() {
     final uncheckItemsOption = find.text(localizations.manageCategoriesRemoveCategories);
     await tester.tap(uncheckItemsOption);
     await tester.pumpAndSettle();
+
+    // check that we no longer find the categories
+    expect(find.widgetWithText(CheckboxListTile, item0.category), findsNothing);
+    expect(find.widgetWithText(CheckboxListTile, item1.category), findsNothing);
+
+    expect(removedAllCategories, isTrue,
+        reason: "This is probably because the onRemoveCategory callback of the RestClient was not called.");
   });
 
-  testWidgets("Remove category", (WidgetTester tester) async {
-    //TODO: fix problem with 'Uncheck items of category' first
-  }, skip: true);
-
-  testWidgets("Rename category", (WidgetTester tester) async {
-    // TODO: fix problem with 'Uncheck items of category' first
-  }, skip: true);
-
   testWidgets('Logout when fetching shopping list infos if unauthenticated', (WidgetTester tester) async {
-    final store = SettingsStoreStub();
-
-    // Store a user info obj so that we start in a logged in state
-    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
-
-    final version = Version(1, 0, 0);
     final client = RestClientStub(
       onGetBackendInfo: () => BackendInfo(version, null),
       onGetShoppingLists: () => throw HttpResponseException.unAuthenticated(),
     );
 
-    await tester.pumpWidget(await makeBasicTestableWidget(
-        ShoppingListApp(
-          client: client,
-          settingsStore: store,
-          currentVersion: () async => version,
-        ),
-        locale: testLocale));
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
     await tester.pumpAndSettle();
 
     await checkIsUnAuthenticatedDialogAndDismiss(tester, localizations);
@@ -553,12 +690,6 @@ void main() {
   });
 
   testWidgets('Logout when fetching shopping list if unauthenticated', (WidgetTester tester) async {
-    final store = SettingsStoreStub();
-
-    // Store a user info obj so that we start in a logged in state
-    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
-
-    final version = Version(1, 0, 0);
     final client = RestClientStub(
       onGetBackendInfo: () => BackendInfo(version, null),
       onGetShoppingLists: () {
@@ -568,13 +699,7 @@ void main() {
       onFetchShoppingList: (id) => throw HttpResponseException.unAuthenticated(),
     );
 
-    await tester.pumpWidget(await makeBasicTestableWidget(
-        ShoppingListApp(
-          client: client,
-          settingsStore: store,
-          currentVersion: () async => version,
-        ),
-        locale: testLocale));
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
     await tester.pumpAndSettle();
 
     await checkIsUnAuthenticatedDialogAndDismiss(tester, localizations);
@@ -582,14 +707,8 @@ void main() {
   });
 
   testWidgets('Logout when setting category if unauthenticated', (WidgetTester tester) async {
-    final store = SettingsStoreStub();
-
-    // Store a user info obj so that we start in a logged in state
-    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
-
     final item = ShoppingListItem("1", "A", false, null);
 
-    final version = Version(1, 0, 0);
     final client = RestClientStub(
         onGetBackendInfo: () => BackendInfo(version, null),
         onGetShoppingLists: () {
@@ -599,13 +718,7 @@ void main() {
         onFetchShoppingList: (id) => [item],
         onUpdateShoppingListItem: (id, item) => throw HttpResponseException.unAuthenticated());
 
-    await tester.pumpWidget(await makeBasicTestableWidget(
-        ShoppingListApp(
-          client: client,
-          settingsStore: store,
-          currentVersion: () async => version,
-        ),
-        locale: testLocale));
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
     await tester.pumpAndSettle();
 
     // Find list tile of new item
@@ -635,14 +748,8 @@ void main() {
   });
 
   testWidgets('Logout when renaming item if unauthenticated', (WidgetTester tester) async {
-    final store = SettingsStoreStub();
-
-    // Store a user info obj so that we start in a logged in state
-    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
-
     final item = ShoppingListItem("1", "A", false, null);
 
-    final version = Version(1, 0, 0);
     final client = RestClientStub(
         onGetBackendInfo: () => BackendInfo(version, null),
         onGetShoppingLists: () {
@@ -652,13 +759,7 @@ void main() {
         onFetchShoppingList: (id) => [item],
         onUpdateShoppingListItem: (id, item) => throw HttpResponseException.unAuthenticated());
 
-    await tester.pumpWidget(await makeBasicTestableWidget(
-        ShoppingListApp(
-          client: client,
-          settingsStore: store,
-          currentVersion: () async => version,
-        ),
-        locale: testLocale));
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
     await tester.pumpAndSettle();
 
     // Find list tile of new item
@@ -700,14 +801,8 @@ void main() {
   });
 
   testWidgets('Logout when removing item if unauthenticated', (WidgetTester tester) async {
-    final store = SettingsStoreStub();
-
-    // Store a user info obj so that we start in a logged in state
-    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
-
     final item = ShoppingListItem("1", "A", false, null);
 
-    final version = Version(1, 0, 0);
     final client = RestClientStub(
         onGetBackendInfo: () => BackendInfo(version, null),
         onGetShoppingLists: () {
@@ -717,13 +812,7 @@ void main() {
         onFetchShoppingList: (id) => [item],
         onDeleteShoppingListItem: (id, item) => throw HttpResponseException.unAuthenticated());
 
-    await tester.pumpWidget(await makeBasicTestableWidget(
-        ShoppingListApp(
-          client: client,
-          settingsStore: store,
-          currentVersion: () async => version,
-        ),
-        locale: testLocale));
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
     await tester.pumpAndSettle();
 
     // Find list tile of new item
@@ -755,12 +844,6 @@ void main() {
   });
 
   testWidgets('Logout when adding new item if unauthenticated', (WidgetTester tester) async {
-    final store = SettingsStoreStub();
-
-    // Store a user info obj so that we start in a logged in state
-    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
-
-    final version = Version(1, 0, 0);
     final client = RestClientStub(
         onGetBackendInfo: () => BackendInfo(version, null),
         onGetShoppingLists: () {
@@ -770,13 +853,7 @@ void main() {
         onFetchShoppingList: (id) => [],
         onCreateShoppingListItem: (id, name, category) => throw HttpResponseException.unAuthenticated());
 
-    await tester.pumpWidget(await makeBasicTestableWidget(
-        ShoppingListApp(
-          client: client,
-          settingsStore: store,
-          currentVersion: () async => version,
-        ),
-        locale: testLocale));
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
     await tester.pumpAndSettle();
 
     // Enter name of new category
