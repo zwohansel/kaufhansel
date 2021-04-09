@@ -61,14 +61,17 @@ class _CategoryManagerState extends State<CategoryManager> {
           _buildProgress(),
           SizedBox(height: 12),
           Padding(
-              padding: EdgeInsets.only(left: 24, right: 24, bottom: 0),
-              child: Text(AppLocalizations.of(context).manageCategoriesCategory,
-                  style: Theme.of(context).textTheme.caption)),
-          Padding(
-            padding: EdgeInsets.only(left: 24, right: 24, bottom: 18),
-            child: _buildDropdownMenu(context),
+            padding: EdgeInsets.only(left: 24, right: 24, bottom: 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(AppLocalizations.of(context).manageCategoriesCategory, style: Theme.of(context).textTheme.caption),
+                _buildDropdownMenu(context),
+                SizedBox(height: 18),
+                ..._buildOptions()
+              ],
+            ),
           ),
-          ..._buildOptions(),
         ]);
   }
 
@@ -77,10 +80,8 @@ class _CategoryManagerState extends State<CategoryManager> {
       return [];
     } else {
       return [
-        Padding(
-            padding: EdgeInsets.only(left: 24, right: 24, bottom: 10),
-            child:
-                Text(AppLocalizations.of(context).manageCategoriesAction, style: Theme.of(context).textTheme.caption)),
+        Text(AppLocalizations.of(context).manageCategoriesAction, style: Theme.of(context).textTheme.caption),
+        SizedBox(height: 10),
         _buildUncheck(context),
         _buildRemoveChecked(context),
         _buildRemoveCategory(context),
@@ -157,7 +158,7 @@ class _CategoryManagerState extends State<CategoryManager> {
 
   Widget _buildDialogOption(BuildContext context, String text, IconData icon, Future<void> Function() onPressed) {
     return SimpleDialogOption(
-      padding: EdgeInsets.only(left: 24, right: 24, top: 12, bottom: 12),
+      padding: EdgeInsets.only(top: 12, bottom: 12),
       child: Row(children: [
         Icon(
           icon,
