@@ -185,7 +185,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     setState(() {
       _shoppingListInfos.remove(info);
     });
-    if (_currentShoppingListInfo.id == info.id) {
+    if (_currentShoppingListInfo?.id == info.id) {
       _currentShoppingListInfo = _shoppingListInfos.isNotEmpty ? _shoppingListInfos.first : null;
       _fetchCurrentShoppingList();
     }
@@ -193,21 +193,21 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   Future<void> _uncheckAllItems(ShoppingListInfo info) async {
     await widget.client.uncheckItems(info.id);
-    if (_currentShoppingListInfo == info) {
+    if (_currentShoppingListInfo?.id == info.id) {
       _currentShoppingList?.items?.forEach((item) => item.checked = false);
     }
   }
 
   Future<void> _uncheckItemsOfCategory(ShoppingListInfo info, String category) async {
     await widget.client.uncheckItems(info.id, ofCategory: category);
-    if (_currentShoppingListInfo == info) {
+    if (_currentShoppingListInfo?.id == info.id) {
       _currentShoppingList?.items?.forEach((item) => item.checked = false);
     }
   }
 
   Future<void> _deleteCheckedItems(ShoppingListInfo info, {String ofCategory}) async {
     await widget.client.deleteShoppingListItems(info.id, ofCategory);
-    if (_currentShoppingListInfo == info) {
+    if (_currentShoppingListInfo?.id == info.id) {
       _currentShoppingList
           .removeItemsWhere((item) => item.checked && (ofCategory == null || item.category == ofCategory));
     }
@@ -225,7 +225,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     }
 
     await widget.client.renameCategory(info.id, oldCategoryName, newCategoryName);
-    if (_currentShoppingListInfo == info) {
+    if (_currentShoppingListInfo?.id == info.id) {
       _currentShoppingList?.items?.forEach((item) {
         if (item.category == oldCategoryName) {
           item.category = newCategoryName;
@@ -237,7 +237,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   Future<void> _removeCategory(ShoppingListInfo info, String category) async {
     await widget.client.removeCategory(info.id, category: category);
-    if (_currentShoppingListInfo == info) {
+    if (_currentShoppingListInfo?.id == info.id) {
       _currentShoppingList?.items?.forEach((item) {
         if (item.category == category) {
           item.category = null;
@@ -248,14 +248,14 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   Future<void> _removeAllCategories(ShoppingListInfo info) async {
     await widget.client.removeCategory(info.id);
-    if (_currentShoppingListInfo == info) {
+    if (_currentShoppingListInfo?.id == info.id) {
       _currentShoppingList?.items?.forEach((item) => item.category = null);
     }
   }
 
   Future<void> _removeAllItems(ShoppingListInfo info) async {
     await widget.client.removeAllItems(info.id);
-    if (_currentShoppingListInfo == info) {
+    if (_currentShoppingListInfo?.id == info.id) {
       _currentShoppingList?.removeAllItems();
     }
   }

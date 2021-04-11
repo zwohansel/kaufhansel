@@ -28,6 +28,11 @@ Future<void> checkIsUnAuthenticatedDialogAndDismiss(WidgetTester tester, AppLoca
   await tester.pumpAndSettle();
 }
 
+final Type dropdownButtonType = DropdownButton<String>(
+  onChanged: (_) {},
+  items: const <DropdownMenuItem<String>>[],
+).runtimeType;
+
 void main() {
   const testLocale = Locale("de");
   AppLocalizations localizations;
@@ -332,13 +337,16 @@ void main() {
     expect(find.text(localizations.manageCategoriesTitle), findsOneWidget);
 
     // select CATEGORY_ALL
-    final dropdownButton = find.widgetWithText(GestureDetector, localizations.manageCategoriesWhich);
-    // await tester.ensureVisible(dropdownButton);
+    final dropdownButton = find.widgetWithText(dropdownButtonType, localizations.manageCategoriesWhich);
     await tester.tap(dropdownButton);
     await tester.pumpAndSettle();
 
-    final menuItemCategoryAll = find.descendant(of: dropdownButton, matching: find.text(CATEGORY_ALL));
-    await tester.tap(menuItemCategoryAll, warnIfMissed: false);
+    final menuItemCategoryAll = find.text(CATEGORY_ALL);
+    // The DropDownButton creates two widgets with for each menu item.
+    // The widget that is found last is always the one that is clickable.
+    // See: https://github.com/flutter/flutter/blob/master/packages/flutter/test/material/dropdown_test.dart
+    expect(menuItemCategoryAll, findsWidgets);
+    await tester.tap(menuItemCategoryAll.last);
     await tester.pumpAndSettle();
 
     // select uncheck items
@@ -410,14 +418,11 @@ void main() {
     // check that the dialog is open
     expect(find.text(localizations.manageCategoriesTitle), findsOneWidget);
 
-    final dropdownButton = find.widgetWithText(GestureDetector, localizations.manageCategoriesWhich);
+    final dropdownButton = find.widgetWithText(dropdownButtonType, localizations.manageCategoriesWhich);
     await tester.tap(dropdownButton);
     await tester.pumpAndSettle();
 
     final menuItemCategory = find.text(categoryToUncheck);
-    // The DropDownButton creates two widgets with for each menu item.
-    // The widget that is found last is always the one that is clickable.
-    // See: https://github.com/flutter/flutter/blob/master/packages/flutter/test/material/dropdown_test.dart
     expect(menuItemCategory, findsWidgets);
     await tester.tap(menuItemCategory.last);
     await tester.pumpAndSettle();
@@ -428,15 +433,19 @@ void main() {
     await tester.tap(uncheckItemsOption);
     await tester.pumpAndSettle();
 
-    // check that both items of the category are now unchecked
+    // the drawer should still be open... close it by tapping on the barrier
+    await tester.tapAt(const Offset(0, 0));
+    await tester.pumpAndSettle();
+
+    // check that both items of the category are now unchecked and not obscured by a modal dialog or the drawer
     {
+      expect(item0Tile.hitTestable(), findsOneWidget);
       final item0TileWidget = item0Tile.evaluate().first.widget;
       expect(item0TileWidget, isInstanceOf<CheckboxListTile>());
       expect((item0TileWidget as CheckboxListTile).value, isFalse);
     }
-
-    // check that item1 is unchecked
     {
+      expect(item1Tile.hitTestable(), findsOneWidget);
       final item1TileWidget = item1Tile.evaluate().first.widget;
       expect(item1TileWidget, isInstanceOf<CheckboxListTile>());
       expect((item1TileWidget as CheckboxListTile).value, isFalse);
@@ -492,7 +501,7 @@ void main() {
     // check that the dialog is open
     expect(find.text(localizations.manageCategoriesTitle), findsOneWidget);
 
-    final dropdownButton = find.widgetWithText(GestureDetector, localizations.manageCategoriesWhich);
+    final dropdownButton = find.widgetWithText(dropdownButtonType, localizations.manageCategoriesWhich);
     await tester.tap(dropdownButton);
     await tester.pumpAndSettle();
 
@@ -507,11 +516,15 @@ void main() {
     await tester.tap(removeCategoryOption);
     await tester.pumpAndSettle();
 
+    // the drawer should still be open... close it by tapping on the barrier
+    await tester.tapAt(const Offset(0, 0));
+    await tester.pumpAndSettle();
+
     // check that we no longer find an item with that category...
     expect(find.widgetWithText(CheckboxListTile, categoryToRemove), findsNothing);
 
-    // ...but there should still be 3 items
-    expect(find.byType(CheckboxListTile), findsNWidgets(3));
+    // ...but there should still be 3 items (not obscured by a dialog or the drawer)
+    expect(find.byType(CheckboxListTile).hitTestable(), findsNWidgets(3));
 
     expect(removedCategory, isNotNull,
         reason: "This is probably because the onRemoveCategory callback of the RestClient was not called.");
@@ -566,7 +579,7 @@ void main() {
     // check that the dialog is open
     expect(find.text(localizations.manageCategoriesTitle), findsOneWidget);
 
-    final dropdownButton = find.widgetWithText(GestureDetector, localizations.manageCategoriesWhich);
+    final dropdownButton = find.widgetWithText(dropdownButtonType, localizations.manageCategoriesWhich);
     await tester.tap(dropdownButton);
     await tester.pumpAndSettle();
 
@@ -579,7 +592,7 @@ void main() {
     final renameCategoryOption = find.text(localizations.manageCategoriesRenameCategory(categoryToRename));
     expect(renameCategoryOption, findsOneWidget);
     await tester.tap(renameCategoryOption);
-    // once the rename option has been pressed a progress animation is shown in the background
+    // Once the rename option has been pressed a progress animation is shown in the background
     // until the rename operation has been completed. Therefore we use pump instead of pumpAndSettle.
     await tester.pump();
 
@@ -595,10 +608,14 @@ void main() {
     await tester.tap(confirmButton);
     await tester.pumpAndSettle();
 
+    // the drawer should still be open... close it by tapping on the barrier
+    await tester.tapAt(const Offset(0, 0));
+    await tester.pumpAndSettle();
+
     // check that we no longer find an item with the old category name...
     expect(find.widgetWithText(CheckboxListTile, categoryToRename), findsNothing);
-    // ...but two with the new category name
-    expect(find.widgetWithText(CheckboxListTile, newCategoryName), findsNWidgets(2));
+    // ...but two with the new category name (not obscured by a dialog or the drawer)
+    expect(find.widgetWithText(CheckboxListTile, newCategoryName).hitTestable(), findsNWidgets(2));
 
     expect(renamedCategory, isNotNull,
         reason: "This is probably because the onRenameCategory callback of the RestClient was not called.");
@@ -653,14 +670,13 @@ void main() {
     expect(find.text(localizations.manageCategoriesTitle), findsOneWidget);
 
     // select CATEGORY_ALL
-    final dropdownButton = find.widgetWithText(GestureDetector, localizations.manageCategoriesWhich);
-    // await tester.ensureVisible(dropdownButton);
+    final dropdownButton = find.widgetWithText(dropdownButtonType, localizations.manageCategoriesWhich);
     await tester.tap(dropdownButton);
     await tester.pumpAndSettle();
 
-    final menuItemCategoryAll = find.descendant(of: dropdownButton, matching: find.text(CATEGORY_ALL));
-    // await tester.ensureVisible(dropdownButton);
-    await tester.tap(menuItemCategoryAll, warnIfMissed: false);
+    final menuItemCategoryAll = find.text(CATEGORY_ALL);
+    expect(menuItemCategoryAll, findsWidgets);
+    await tester.tap(menuItemCategoryAll.last);
     await tester.pumpAndSettle();
 
     // select uncheck items
@@ -668,9 +684,18 @@ void main() {
     await tester.tap(uncheckItemsOption);
     await tester.pumpAndSettle();
 
+    // the drawer should still be open... close it by tapping on the barrier
+    await tester.tapAt(const Offset(0, 0));
+    await tester.pumpAndSettle();
+
     // check that we no longer find the categories
     expect(find.widgetWithText(CheckboxListTile, item0.category), findsNothing);
     expect(find.widgetWithText(CheckboxListTile, item1.category), findsNothing);
+
+    // but we still find the items (not obscured by a dialog or the drawer)
+    expect(find.widgetWithText(CheckboxListTile, item0.name).hitTestable(), findsOneWidget);
+    expect(find.widgetWithText(CheckboxListTile, item1.name).hitTestable(), findsOneWidget);
+    expect(find.widgetWithText(CheckboxListTile, item2.name).hitTestable(), findsOneWidget);
 
     expect(removedAllCategories, isTrue,
         reason: "This is probably because the onRemoveCategory callback of the RestClient was not called.");
