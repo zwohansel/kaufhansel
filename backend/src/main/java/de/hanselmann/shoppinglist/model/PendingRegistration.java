@@ -9,6 +9,8 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 
 public class PendingRegistration {
+    public static final int EXPIRES_IN_WEEKS = 2;
+
     @Id
     private ObjectId id;
     private String emailAddress;
@@ -39,6 +41,22 @@ public class PendingRegistration {
         return pendingRegistration;
     }
 
+    private PendingRegistration() {
+    };
+
+    protected PendingRegistration(ObjectId id, String emailAddress, String userName, String password,
+            String activationCode, ObjectId invitedBy, List<ObjectId> invitedToShoppingLists,
+            LocalDateTime creationDate) {
+        this.id = id;
+        this.emailAddress = emailAddress;
+        this.userName = userName;
+        this.password = password;
+        this.activationCode = activationCode;
+        this.invitedBy = invitedBy;
+        this.invitedToShoppingLists = invitedToShoppingLists;
+        this.creationDate = creationDate;
+    }
+
     public ObjectId getId() {
         return id;
     }
@@ -60,7 +78,7 @@ public class PendingRegistration {
     }
 
     public boolean isExpired() {
-        return LocalDateTime.now().isAfter(creationDate.plusWeeks(2));
+        return LocalDateTime.now().isAfter(creationDate.plusWeeks(EXPIRES_IN_WEEKS));
     }
 
     public boolean isNotExpired() {
