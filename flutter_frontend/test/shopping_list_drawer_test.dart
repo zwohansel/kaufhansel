@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/model.dart';
+import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/shopping_list_drawer.dart';
+import 'package:kaufhansel_client/synced_shoppinglist.dart';
 
 import 'rest_client_stub.dart';
 import 'utils.dart';
@@ -19,7 +21,7 @@ void main() {
 
   testWidgets('drawerWithAdminListSelected', (WidgetTester tester) async {
     final RestClientStub client = new RestClientStub();
-    final drawer = createDrawer(createAdminList());
+    final drawer = createDrawer(createAdminList(client));
 
     await tester.pumpWidget(await makeTestableWidget(drawer, restClient: client, locale: testLocale));
     await tester.pumpAndSettle();
@@ -33,7 +35,7 @@ void main() {
 
   testWidgets('drawerWithReadWriteListSelected', (WidgetTester tester) async {
     final RestClientStub client = new RestClientStub();
-    final drawer = createDrawer(createReadWriteList());
+    final drawer = createDrawer(createReadWriteList(client));
 
     await tester.pumpWidget(await makeTestableWidget(drawer, restClient: client, locale: testLocale));
     await tester.pumpAndSettle();
@@ -47,7 +49,7 @@ void main() {
 
   testWidgets('drawerWithCheckOnlyListSelected', (WidgetTester tester) async {
     final RestClientStub client = new RestClientStub();
-    final drawer = createDrawer(createCheckOnlyList());
+    final drawer = createDrawer(createCheckOnlyList(client));
 
     await tester.pumpWidget(await makeTestableWidget(drawer, restClient: client, locale: testLocale));
     await tester.pumpAndSettle();
@@ -62,7 +64,7 @@ void main() {
 
   testWidgets('drawerWithReadOnlyListSelected', (WidgetTester tester) async {
     final RestClientStub client = new RestClientStub();
-    final drawer = createDrawer(createReadOnlyList());
+    final drawer = createDrawer(createReadOnlyList(client));
 
     await tester.pumpWidget(await makeTestableWidget(drawer, restClient: client, locale: testLocale));
     await tester.pumpAndSettle();
@@ -91,9 +93,10 @@ void main() {
     final info1 = ShoppingListInfo("1", "List1", ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true), []);
 
     ShoppingListInfo selectedList;
+    final list = SyncedShoppingList(client, ShoppingList(info0, []));
     final drawer = _buildDrawer(
       shoppingLists: [info0, info1],
-      selectedShoppingListId: info0.id,
+      selectedList: list,
       onShoppingListSelected: (info) => selectedList = info,
     );
 
@@ -124,9 +127,11 @@ void main() {
       [],
     );
 
+    final list = SyncedShoppingList(client, ShoppingList(info0, []));
+
     final drawer = _buildDrawer(
       shoppingLists: [info0, info1],
-      selectedShoppingListId: info0.id,
+      selectedList: list,
     );
 
     // We need a drawer for the snackbar that contains the info message
@@ -160,9 +165,11 @@ void main() {
       [],
     );
 
+    final list = SyncedShoppingList(client, ShoppingList(info0, []));
+
     final drawer = _buildDrawer(
       shoppingLists: [info0, info1],
-      selectedShoppingListId: info0.id,
+      selectedList: list,
     );
 
     // We need a drawer for the snackbar that contains the info message
@@ -189,32 +196,32 @@ void checkAlwaysPresentOptions(AppLocalizations localizations) {
   expect(find.widgetWithText(ListTile, localizations.appSettings), findsOneWidget);
 }
 
-ShoppingListInfo createAdminList() {
+SyncedShoppingList createAdminList(RestClient client) {
   final shoppingListRole = ShoppingListRole.ADMIN;
   final permissions = ShoppingListPermissions(shoppingListRole, true, true, true);
-  return buildShoppingListInfo(permissions);
+  return SyncedShoppingList(client, ShoppingList(buildShoppingListInfo(permissions), []));
 }
 
-ShoppingListInfo createReadWriteList() {
+SyncedShoppingList createReadWriteList(RestClient client) {
   final shoppingListRole = ShoppingListRole.READ_WRITE;
   final permissions = ShoppingListPermissions(shoppingListRole, false, true, true);
-  return buildShoppingListInfo(permissions);
+  return SyncedShoppingList(client, ShoppingList(buildShoppingListInfo(permissions), []));
 }
 
-ShoppingListInfo createCheckOnlyList() {
+SyncedShoppingList createCheckOnlyList(RestClient client) {
   final shoppingListRole = ShoppingListRole.CHECK_ONLY;
   final permissions = ShoppingListPermissions(shoppingListRole, false, false, true);
-  return buildShoppingListInfo(permissions);
+  return SyncedShoppingList(client, ShoppingList(buildShoppingListInfo(permissions), []));
 }
 
-ShoppingListInfo createReadOnlyList() {
+SyncedShoppingList createReadOnlyList(RestClient client) {
   final shoppingListRole = ShoppingListRole.READ_ONLY;
   final permissions = ShoppingListPermissions(shoppingListRole, false, false, false);
-  return buildShoppingListInfo(permissions);
+  return SyncedShoppingList(client, ShoppingList(buildShoppingListInfo(permissions), []));
 }
 
-ShoppingListDrawer createDrawer(ShoppingListInfo singleShoppingList) {
-  return _buildDrawer(shoppingLists: [singleShoppingList], selectedShoppingListId: "id0");
+ShoppingListDrawer createDrawer(SyncedShoppingList list) {
+  return _buildDrawer(shoppingLists: [list.list.info], selectedList: list);
 }
 
 ShoppingListInfo buildShoppingListInfo(ShoppingListPermissions permissions) =>
@@ -222,32 +229,23 @@ ShoppingListInfo buildShoppingListInfo(ShoppingListPermissions permissions) =>
 
 ShoppingListDrawer _buildDrawer({
   List<ShoppingListInfo> shoppingLists,
-  String selectedShoppingListId,
-  Future<void> onUncheckAllItems(ShoppingListInfo info),
-  Future<void> onRemoveAllCategories(ShoppingListInfo info),
+  SyncedShoppingList selectedList,
   void onShoppingListSelected(ShoppingListInfo info),
 }) {
   return ShoppingListDrawer(
     shoppingListInfos: shoppingLists ?? [],
-    selectedShoppingListId: selectedShoppingListId,
+    selectedShoppingList: selectedList,
     userInfo: ShoppingListUserInfo("0", "Test", "test@test.de", "token"),
     onRefreshPressed: () {},
     onShoppingListSelected: onShoppingListSelected ?? (info) {},
     onCreateShoppingList: (name) => null,
     onDeleteShoppingList: (info) => null,
     onAddUserToShoppingListIfPresent: (info, user) => null,
-    onUncheckAllItems: onUncheckAllItems ?? (info) => null,
-    onRemoveAllCategories: onRemoveAllCategories ?? (info) => null,
-    onRemoveAllItems: (info) => null,
     onChangeShoppingListPermissions: (info, string, role) => null,
     onRemoveUserFromShoppingList: (info, userRef) => null,
     onChangeShoppingListName: (info, name) => null,
     onLogOut: () => null,
     onDeleteUserAccount: () => null,
     shoppingListCategories: [],
-    onRemoveCategory: (info, category) => null,
-    onUncheckItemsOfCategory: (info, category) => null,
-    onRenameCategory: (info, oldCategory) => null,
-    onDeleteChecked: (shoppingListInfo, {ofCategory}) => null,
   );
 }

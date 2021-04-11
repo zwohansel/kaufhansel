@@ -18,11 +18,11 @@ import 'package:kaufhansel_client/shopping_list_mode.dart';
 import 'package:kaufhansel_client/shopping_list_mode_selection.dart';
 import 'package:kaufhansel_client/shopping_list_page.dart';
 import 'package:kaufhansel_client/shopping_list_title.dart';
+import 'package:kaufhansel_client/synced_shoppinglist.dart';
 import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 import 'package:kaufhansel_client/utils/update_check.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
 import 'package:kaufhansel_client/widgets/overlay_menu.dart';
-import 'package:kaufhansel_client/widgets/text_input_dialog.dart';
 import 'package:provider/provider.dart';
 
 import 'model.dart';
@@ -74,7 +74,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   String _error;
   List<ShoppingListInfo> _shoppingListInfos;
   ShoppingListInfo _currentShoppingListInfo; // TODO: unnecessary, also contained in _currentShoppingList
-  ShoppingList _currentShoppingList;
+  SyncedShoppingList _currentShoppingList;
   List<String> _currentShoppingListCategories;
   String _currentShoppingListCategory;
   ShoppingListUserInfo _userInfo;
@@ -191,75 +191,6 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     }
   }
 
-  Future<void> _uncheckAllItems(ShoppingListInfo info) async {
-    await widget.client.uncheckItems(info.id);
-    if (_currentShoppingListInfo?.id == info.id) {
-      _currentShoppingList?.items?.forEach((item) => item.checked = false);
-    }
-  }
-
-  Future<void> _uncheckItemsOfCategory(ShoppingListInfo info, String category) async {
-    await widget.client.uncheckItems(info.id, ofCategory: category);
-    if (_currentShoppingListInfo?.id == info.id) {
-      _currentShoppingList?.items?.forEach((item) => item.checked = false);
-    }
-  }
-
-  Future<void> _deleteCheckedItems(ShoppingListInfo info, {String ofCategory}) async {
-    await widget.client.deleteShoppingListItems(info.id, ofCategory);
-    if (_currentShoppingListInfo?.id == info.id) {
-      _currentShoppingList
-          .removeItemsWhere((item) => item.checked && (ofCategory == null || item.category == ofCategory));
-    }
-  }
-
-  /// returns true, if category was renamed, false otherwise
-  Future<bool> _renameCategory(ShoppingListInfo info, String oldCategoryName) async {
-    String newCategoryName = await showTextInputDialog(context,
-        title: AppLocalizations.of(context).manageCategoriesRenameCategoryDialogTitle,
-        initialValue: oldCategoryName,
-        hintText: AppLocalizations.of(context).shoppingListCreateNewEnterNameHint);
-
-    if (newCategoryName == null || newCategoryName.isEmpty || newCategoryName == oldCategoryName) {
-      return false;
-    }
-
-    await widget.client.renameCategory(info.id, oldCategoryName, newCategoryName);
-    if (_currentShoppingListInfo?.id == info.id) {
-      _currentShoppingList?.items?.forEach((item) {
-        if (item.category == oldCategoryName) {
-          item.category = newCategoryName;
-        }
-      });
-    }
-    return true;
-  }
-
-  Future<void> _removeCategory(ShoppingListInfo info, String category) async {
-    await widget.client.removeCategory(info.id, category: category);
-    if (_currentShoppingListInfo?.id == info.id) {
-      _currentShoppingList?.items?.forEach((item) {
-        if (item.category == category) {
-          item.category = null;
-        }
-      });
-    }
-  }
-
-  Future<void> _removeAllCategories(ShoppingListInfo info) async {
-    await widget.client.removeCategory(info.id);
-    if (_currentShoppingListInfo?.id == info.id) {
-      _currentShoppingList?.items?.forEach((item) => item.category = null);
-    }
-  }
-
-  Future<void> _removeAllItems(ShoppingListInfo info) async {
-    await widget.client.removeAllItems(info.id);
-    if (_currentShoppingListInfo?.id == info.id) {
-      _currentShoppingList?.removeAllItems();
-    }
-  }
-
   Future<bool> _addUserToShoppingList(ShoppingListInfo info, String userEmailAddress) async {
     final userReference = await widget.client.addUserToShoppingList(info.id, userEmailAddress);
     if (userReference.isPresent()) {
@@ -301,7 +232,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
         _shoppingListInfos = lists;
         _currentShoppingListInfo = activeShoppingList ??
             lists.firstWhere(
-              (list) => list.id == oldShoppingList?.id,
+              (list) => list.id == oldShoppingList?.list?.id,
               orElse: () => lists.firstOrNull,
             );
         _fetchCurrentShoppingList(initialCategory: oldCategory);
@@ -337,7 +268,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     await _refreshCurrentShoppingList(initialCategory: initialCategory);
   }
 
-  void disposeShoppingListAfterNextFrame(ShoppingList list) {
+  void disposeShoppingListAfterNextFrame(SyncedShoppingList list) {
     if (list != null) {
       SchedulerBinding.instance.addPostFrameCallback((timeStamp) => list.dispose());
     }
@@ -350,17 +281,17 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
     try {
       final items = await widget.client.fetchShoppingList(_currentShoppingListInfo.id);
-      final shoppingList = new ShoppingList(_currentShoppingListInfo, items);
+      final shoppingList = SyncedShoppingList(widget.client, new ShoppingList(_currentShoppingListInfo, items));
       final oldShoppingList = _currentShoppingList;
       setState(() {
         _currentShoppingList = shoppingList;
-        _currentShoppingListCategories = shoppingList.getAllCategories();
+        _currentShoppingListCategories = shoppingList.list.getAllCategories();
         if (initialCategory != null && _currentShoppingListCategories.contains(initialCategory)) {
           _currentShoppingListCategory = initialCategory;
         } else {
           _currentShoppingListCategory = _currentShoppingListCategories.first;
         }
-        _currentShoppingList.addListener(setCurrentShoppingListCategories);
+        _currentShoppingList.list.addListener(setCurrentShoppingListCategories);
       });
       disposeShoppingListAfterNextFrame(oldShoppingList);
     } on Exception catch (e) {
@@ -380,7 +311,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     }
 
     final listEq = const ListEquality().equals;
-    final nextCategories = _currentShoppingList.getAllCategories();
+    final nextCategories = _currentShoppingList.list.getAllCategories();
     if (listEq(nextCategories, _currentShoppingListCategories)) {
       return;
     }
@@ -449,7 +380,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   Widget _buildContent(BuildContext context) {
     if (_isLoggedIn()) {
       return ChangeNotifierProvider.value(
-        value: _currentShoppingList,
+        value: _currentShoppingList?.list,
         builder: (context, child) {
           // unfocus shopping list item input text field when clicked/tapped on other element
           return GestureDetector(
@@ -475,17 +406,11 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               endDrawer: ShoppingListDrawer(
                 onRefreshPressed: _fetchShoppingListInfos,
                 shoppingListInfos: _shoppingListInfos ?? [],
-                selectedShoppingListId: _currentShoppingListInfo?.id,
+                selectedShoppingList: _currentShoppingList,
                 onShoppingListSelected: _selectShoppingList,
                 onCreateShoppingList: _createShoppingList,
                 onDeleteShoppingList: _deleteShoppingList,
-                onUncheckItemsOfCategory: _uncheckItemsOfCategory,
-                onUncheckAllItems: _uncheckAllItems,
                 shoppingListCategories: _currentShoppingListCategories,
-                onRemoveCategory: _removeCategory,
-                onRemoveAllCategories: _removeAllCategories,
-                onRenameCategory: _renameCategory,
-                onRemoveAllItems: _removeAllItems,
                 onAddUserToShoppingListIfPresent: _addUserToShoppingList,
                 onRemoveUserFromShoppingList: _removeUserFromShoppingList,
                 onChangeShoppingListPermissions: _changeShoppingListPermissions,
@@ -493,7 +418,6 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
                 userInfo: _userInfo,
                 onLogOut: _logOut,
                 onDeleteUserAccount: _deleteUserAccount,
-                onDeleteChecked: _deleteCheckedItems,
               ),
               body: _buildShoppingList(context),
             ),

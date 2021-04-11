@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/settings/app_settings.dart';
+import 'package:kaufhansel_client/synced_shoppinglist.dart';
 import 'package:kaufhansel_client/widgets/category_manager_dialog.dart';
 import 'package:kaufhansel_client/widgets/invite_dialog.dart';
 import 'package:kaufhansel_client/widgets/text_input_dialog.dart';
@@ -13,16 +14,10 @@ import 'model.dart';
 class ShoppingListDrawer extends StatelessWidget {
   const ShoppingListDrawer({
     @required this.shoppingListInfos,
-    this.selectedShoppingListId,
+    this.selectedShoppingList,
     @required this.userInfo,
     @required this.onRefreshPressed,
-    @required this.onUncheckAllItems,
-    @required this.onRemoveAllCategories,
-    @required this.onRemoveCategory,
-    @required this.onRenameCategory,
     @required this.shoppingListCategories,
-    @required this.onUncheckItemsOfCategory,
-    @required this.onRemoveAllItems,
     @required this.onShoppingListSelected,
     @required this.onCreateShoppingList,
     @required this.onDeleteShoppingList,
@@ -32,11 +27,10 @@ class ShoppingListDrawer extends StatelessWidget {
     @required this.onChangeShoppingListName,
     @required this.onLogOut,
     @required this.onDeleteUserAccount,
-    @required this.onDeleteChecked,
   }) : assert(shoppingListInfos != null);
 
   final List<ShoppingListInfo> shoppingListInfos;
-  final String selectedShoppingListId;
+  final SyncedShoppingList selectedShoppingList;
   final ShoppingListUserInfo userInfo;
   final VoidCallback onRefreshPressed;
   final void Function(ShoppingListInfo info) onShoppingListSelected;
@@ -44,14 +38,7 @@ class ShoppingListDrawer extends StatelessWidget {
   final Future<void> Function(ShoppingListInfo) onDeleteShoppingList;
   final Future<bool> Function(ShoppingListInfo, String) onAddUserToShoppingListIfPresent;
   final Future<void> Function(ShoppingListInfo, ShoppingListUserReference) onRemoveUserFromShoppingList;
-  final Future<void> Function(ShoppingListInfo) onUncheckAllItems;
-  final Future<void> Function(ShoppingListInfo shoppingListInfo, {String ofCategory}) onDeleteChecked;
   final List<String> shoppingListCategories;
-  final Future<void> Function(ShoppingListInfo, String category) onUncheckItemsOfCategory;
-  final Future<void> Function(ShoppingListInfo) onRemoveAllCategories;
-  final Future<void> Function(ShoppingListInfo, String category) onRemoveCategory;
-  final Future<bool> Function(ShoppingListInfo, String oldCategory) onRenameCategory;
-  final Future<void> Function(ShoppingListInfo) onRemoveAllItems;
   final Future<void> Function(ShoppingListInfo info, String affectedUserId, ShoppingListRole newRole)
       onChangeShoppingListPermissions;
   final Future<void> Function(ShoppingListInfo, String) onChangeShoppingListName;
@@ -60,12 +47,7 @@ class ShoppingListDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ShoppingListInfo currentList = shoppingListInfos.firstWhere(
-      (info) => info.id == selectedShoppingListId,
-      orElse: () => null,
-    );
-
-    final infoTiles = shoppingListInfos.where((info) => info.id != selectedShoppingListId)?.map(
+    final infoTiles = shoppingListInfos.where((info) => info.id != selectedShoppingList?.list?.id)?.map(
           (info) => ChangeNotifierProvider.value(
             value: info,
             builder: (context, child) => ListTile(
@@ -83,7 +65,7 @@ class ShoppingListDrawer extends StatelessWidget {
         children: [
           Container(
             color: Theme.of(context).primaryColor,
-            child: _buildDrawerHeader(context, currentList),
+            child: _buildDrawerHeader(context, selectedShoppingList),
           ),
           ListTile(
             leading: Icon(Icons.refresh_outlined),
@@ -93,8 +75,8 @@ class ShoppingListDrawer extends StatelessWidget {
               Navigator.pop(context);
             },
           ),
-          _buildManageCategoriesMenuItem(context, currentList),
-          _buildListSettingsMenuItem(context, currentList),
+          _buildManageCategoriesMenuItem(context, selectedShoppingList),
+          _buildListSettingsMenuItem(context, selectedShoppingList),
           _buildMenuCategoryItem(context, AppLocalizations.of(context).shoppingListMyLists),
           ...infoTiles,
           Container(height: 2, color: Theme.of(context).hoverColor),
@@ -143,7 +125,7 @@ class ShoppingListDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerHeader(BuildContext context, ShoppingListInfo currentList) {
+  Widget _buildDrawerHeader(BuildContext context, SyncedShoppingList currentList) {
     return Padding(
       padding: EdgeInsets.only(left: 15, top: 10, right: 15, bottom: 10),
       child: Row(
@@ -155,14 +137,15 @@ class ShoppingListDrawer extends StatelessWidget {
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(currentList.name, style: Theme.of(context).primaryTextTheme.headline6),
+                      Text(currentList.list.name, style: Theme.of(context).primaryTextTheme.headline6),
                       SizedBox(height: 5),
-                      Text(currentList.permissions.role.toDisplayString(context),
+                      Text(currentList.list.info.permissions.role.toDisplayString(context),
                           style: Theme.of(context).primaryTextTheme.bodyText1)
                     ],
                   ),
           ),
-          Icon(currentList?.permissions?.role?.toIcon(), color: Theme.of(context).primaryTextTheme.bodyText1.color)
+          Icon(currentList?.list?.info?.permissions?.role?.toIcon(),
+              color: Theme.of(context).primaryTextTheme.bodyText1.color)
         ],
       ),
     );
@@ -178,7 +161,7 @@ class ShoppingListDrawer extends StatelessWidget {
     );
   }
 
-  StatelessWidget _buildListSettingsMenuItem(BuildContext context, ShoppingListInfo currentList) {
+  StatelessWidget _buildListSettingsMenuItem(BuildContext context, SyncedShoppingList currentList) {
     if (currentList == null) {
       return Container();
     }
@@ -192,18 +175,18 @@ class ShoppingListDrawer extends StatelessWidget {
           MaterialPageRoute(builder: (context) {
             // Providers are scoped and not shared between routes. We need to pass it explicitly to the new route
             return ChangeNotifierProvider.value(
-              value: currentList,
+              value: currentList.list,
               child: RestClientWidget(
                 client,
                 child: ShoppingListSettings(
-                  onDeleteShoppingList: () => onDeleteShoppingList(currentList),
-                  onRemoveAllItems: () => onRemoveAllItems(currentList),
+                  onDeleteShoppingList: () => onDeleteShoppingList(currentList.list.info),
+                  onRemoveAllItems: currentList.removeAllItems,
                   onAddUserToShoppingListIfPresent: (userEmailAddress) =>
-                      onAddUserToShoppingListIfPresent(currentList, userEmailAddress),
-                  onRemoveUserFromShoppingList: (user) => onRemoveUserFromShoppingList(currentList, user),
+                      onAddUserToShoppingListIfPresent(currentList.list.info, userEmailAddress),
+                  onRemoveUserFromShoppingList: (user) => onRemoveUserFromShoppingList(currentList.list.info, user),
                   onChangeShoppingListPermissions: (affectedUserId, newRole) =>
-                      onChangeShoppingListPermissions(currentList, affectedUserId, newRole),
-                  onChangeShoppingListName: (newName) => onChangeShoppingListName(currentList, newName),
+                      onChangeShoppingListPermissions(currentList.list.info, affectedUserId, newRole),
+                  onChangeShoppingListName: (newName) => onChangeShoppingListName(currentList.list.info, newName),
                 ),
               ),
             );
@@ -213,8 +196,9 @@ class ShoppingListDrawer extends StatelessWidget {
     );
   }
 
-  StatelessWidget _buildManageCategoriesMenuItem(BuildContext context, ShoppingListInfo currentList) {
-    if (currentList == null || (!currentList.permissions.canEditItems && !currentList.permissions.canCheckItems)) {
+  StatelessWidget _buildManageCategoriesMenuItem(BuildContext context, SyncedShoppingList currentList) {
+    if (currentList == null ||
+        (!currentList.list.info.permissions.canEditItems && !currentList.list.info.permissions.canCheckItems)) {
       return Container();
     }
     return ListTile(
@@ -224,18 +208,12 @@ class ShoppingListDrawer extends StatelessWidget {
     );
   }
 
-  Future<void> _onManageCategoriesPressed(BuildContext context, ShoppingListInfo currentList) async {
+  Future<void> _onManageCategoriesPressed(BuildContext context, SyncedShoppingList currentList) async {
     await showDialog(
         context: context,
         builder: (context) => CategoryManager(
               categories: shoppingListCategories,
-              listInfo: currentList,
-              onUncheckAllItems: onUncheckAllItems,
-              onDeleteChecked: onDeleteChecked,
-              onRemoveAllCategories: onRemoveAllCategories,
-              onRemoveCategory: onRemoveCategory,
-              onRenameCategory: onRenameCategory,
-              onUncheckItemsOfCategory: onUncheckItemsOfCategory,
+              list: currentList,
               onClose: () => Navigator.pop(context),
             ));
   }

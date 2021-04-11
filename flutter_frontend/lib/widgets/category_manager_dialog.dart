@@ -2,6 +2,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
+import 'package:kaufhansel_client/synced_shoppinglist.dart';
+import 'package:kaufhansel_client/widgets/text_input_dialog.dart';
 
 import '../model.dart';
 import 'error_dialog.dart';
@@ -9,25 +11,13 @@ import 'error_dialog.dart';
 class CategoryManager extends StatefulWidget {
   final String initialSelected;
   final List<String> categories;
-  final ShoppingListInfo listInfo;
-  final Future<void> Function(ShoppingListInfo) onUncheckAllItems;
-  final Future<void> Function(ShoppingListInfo shoppingListInfo, {String ofCategory}) onDeleteChecked;
-  final Future<void> Function(ShoppingListInfo, String category) onUncheckItemsOfCategory;
-  final Future<void> Function(ShoppingListInfo) onRemoveAllCategories;
-  final Future<void> Function(ShoppingListInfo, String category) onRemoveCategory;
-  final Future<bool> Function(ShoppingListInfo, String oldCategory) onRenameCategory;
+  final SyncedShoppingList list;
   final VoidCallback onClose;
 
   const CategoryManager({
     this.initialSelected,
     @required this.categories,
-    @required this.listInfo,
-    @required this.onUncheckItemsOfCategory,
-    @required this.onDeleteChecked,
-    @required this.onRemoveCategory,
-    @required this.onRenameCategory,
-    @required this.onUncheckAllItems,
-    @required this.onRemoveAllCategories,
+    @required this.list,
     this.onClose,
   });
   @override
@@ -36,12 +26,12 @@ class CategoryManager extends StatefulWidget {
 
 class _CategoryManagerState extends State<CategoryManager> {
   bool _loading = false;
-  String _selected;
+  String _selectedCategory;
 
   @override
   void initState() {
     super.initState();
-    _selected = widget.initialSelected;
+    _selectedCategory = widget.initialSelected;
   }
 
   @override
@@ -78,7 +68,7 @@ class _CategoryManagerState extends State<CategoryManager> {
   }
 
   List<Widget> _buildOptions() {
-    if (_selected == null) {
+    if (_selectedCategory == null) {
       return [];
     } else {
       return [
@@ -93,62 +83,78 @@ class _CategoryManagerState extends State<CategoryManager> {
   }
 
   Widget _buildRemoveChecked(BuildContext context) {
-    if (!widget.listInfo.permissions.canEditItems) {
+    if (!widget.list.list.info.permissions.canEditItems) {
       return Container();
-    } else if (_selected == CATEGORY_ALL) {
+    } else if (_selectedCategory == CATEGORY_ALL) {
       return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesRemoveChecked,
-          Icons.delete_outlined, () => widget.onDeleteChecked(widget.listInfo));
+          Icons.delete_outlined, () => widget.list.deleteCheckedItems());
     } else {
       return _buildDialogOption(
           context,
-          AppLocalizations.of(context).manageCategoriesRemoveCheckedFromCategory(_selected),
+          AppLocalizations.of(context).manageCategoriesRemoveCheckedFromCategory(_selectedCategory),
           Icons.delete_outlined,
-          () => widget.onDeleteChecked(widget.listInfo, ofCategory: _selected));
+          () => widget.list.deleteCheckedItems(ofCategory: _selectedCategory));
     }
   }
 
   Widget _buildRename(BuildContext context) {
-    if (_selected == CATEGORY_ALL || !widget.listInfo.permissions.canEditItems) {
+    if (_selectedCategory == CATEGORY_ALL || !widget.list.list.info.permissions.canEditItems) {
       return Container();
     } else {
-      return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesRenameCategory(_selected),
-          Icons.drive_file_rename_outline, () => widget.onRenameCategory(widget.listInfo, _selected));
+      return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesRenameCategory(_selectedCategory),
+          Icons.drive_file_rename_outline, () => _renameSelectedCategory());
     }
   }
 
+  Future<void> _renameSelectedCategory() async {
+    String newCategoryName = await showTextInputDialog(context,
+        title: AppLocalizations.of(context).manageCategoriesRenameCategoryDialogTitle,
+        initialValue: _selectedCategory,
+        hintText: AppLocalizations.of(context).shoppingListCreateNewEnterNameHint);
+
+    if (newCategoryName == null || newCategoryName.isEmpty || newCategoryName == _selectedCategory) {
+      return;
+    }
+
+    await widget.list.renameCategory(_selectedCategory, newCategoryName);
+  }
+
   Widget _buildRemoveCategory(BuildContext context) {
-    if (widget.categories.length == 1 || !widget.listInfo.permissions.canEditItems) {
+    if (widget.categories.length == 1 || !widget.list.list.info.permissions.canEditItems) {
       return Container();
-    } else if (_selected == CATEGORY_ALL) {
+    } else if (_selectedCategory == CATEGORY_ALL) {
       return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesRemoveCategories,
-          Icons.more_outlined, () => widget.onRemoveAllCategories(widget.listInfo));
+          Icons.more_outlined, () => widget.list.removeAllCategories());
     } else {
-      return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesRemoveCategory(_selected),
-          Icons.more_outlined, () => widget.onRemoveCategory(widget.listInfo, _selected));
+      return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesRemoveCategory(_selectedCategory),
+          Icons.more_outlined, () => widget.list.removeCategory(_selectedCategory));
     }
   }
 
   Widget _buildUncheck(BuildContext context) {
-    if (!widget.listInfo.permissions.canCheckItems) {
+    if (!widget.list.list.info.permissions.canCheckItems) {
       return Container();
-    } else if (_selected == CATEGORY_ALL) {
+    } else if (_selectedCategory == CATEGORY_ALL) {
       return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesUncheckAll,
-          Icons.browser_not_supported_outlined, () => widget.onUncheckAllItems(widget.listInfo));
+          Icons.browser_not_supported_outlined, () => widget.list.uncheckItems());
     } else {
-      return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesUncheckCategory(_selected),
-          Icons.browser_not_supported_outlined, () => widget.onUncheckItemsOfCategory(widget.listInfo, _selected));
+      return _buildDialogOption(
+          context,
+          AppLocalizations.of(context).manageCategoriesUncheckCategory(_selectedCategory),
+          Icons.browser_not_supported_outlined,
+          () => widget.list.uncheckItems(ofCategory: _selectedCategory));
     }
   }
 
   DropdownButton<String> _buildDropdownMenu(BuildContext context) {
     return DropdownButton<String>(
-      value: _selected,
+      value: _selectedCategory,
       hint: Text(AppLocalizations.of(context).manageCategoriesWhich),
       isExpanded: true,
       icon: const Icon(Icons.arrow_downward),
       iconSize: 24,
       underline: Container(height: 2, color: Theme.of(context).primaryColor),
-      onChanged: _loading ? null : (newValue) => setState(() => _selected = newValue),
+      onChanged: _loading ? null : (newValue) => setState(() => _selectedCategory = newValue),
       items: widget.categories.map((value) {
         return DropdownMenuItem<String>(
           value: value,
@@ -187,7 +193,7 @@ class _CategoryManagerState extends State<CategoryManager> {
       await optionHandler();
       widget?.onClose();
     } on Exception catch (e) {
-      log("Could not execute option for category $_selected", error: e);
+      log("Could not execute option for category $_selectedCategory", error: e);
       await showErrorDialogForException(context, e,
           altText: AppLocalizations.of(context).exceptionGeneralServerTooLazy);
     } finally {
