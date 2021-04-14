@@ -16,12 +16,39 @@ import de.hanselmann.shoppinglist.model.TestShoppingListUser;
 
 public class Creator {
 
+    public static ShoppingListUser userWithOneList(ObjectId userId) {
+        List<ShoppingListReference> shoppingLists = new ArrayList<>();
+        shoppingLists.add(new ShoppingListReference(new ObjectId(), ShoppingListRole.ADMIN));
+
+        ShoppingListUser user = new TestShoppingListUser(userId, false, "Testuser", "secret", "test@test.de",
+                null, null, shoppingLists, null, null);
+        return user;
+    }
+
+    public static ShoppingListUser userWithOneList(ObjectId shoppingListId, ShoppingListRole role) {
+        List<ShoppingListReference> shoppingLists = new ArrayList<>();
+        shoppingLists.add(new ShoppingListReference(shoppingListId, role));
+
+        ShoppingListUser user = new TestShoppingListUser(new ObjectId(), false, "Testuser", "secret", "test@test.de",
+                null, null, shoppingLists, null, null);
+        return user;
+    }
+
     public static ShoppingListUser userWithTwoLists(ObjectId userId, ObjectId shoppingListId) {
         List<ShoppingListReference> shoppingLists = new ArrayList<>();
         shoppingLists.add(new ShoppingListReference(shoppingListId, ShoppingListRole.ADMIN));
         shoppingLists.add(new ShoppingListReference(new ObjectId(), ShoppingListRole.CHECK_ONLY));
 
         ShoppingListUser user = new TestShoppingListUser(userId, false, "Testuser", "secret", "test@test.de",
+                null, null, shoppingLists, null, null);
+        return user;
+    }
+
+    public static ShoppingListUser superUser(ObjectId userId) {
+        List<ShoppingListReference> shoppingLists = new ArrayList<>();
+        shoppingLists.add(new ShoppingListReference(new ObjectId(), ShoppingListRole.ADMIN));
+
+        ShoppingListUser user = new TestShoppingListUser(userId, true, "Testuser", "secret", "test@test.de",
                 null, null, shoppingLists, null, null);
         return user;
     }

@@ -60,7 +60,7 @@ public class ShoppingListGuard {
         return ObjectId.isValid(id) && canEditShoppingList(new ObjectId(id));
     }
 
-    private boolean canEditShoppingList(ObjectId id) {
+    public boolean canEditShoppingList(ObjectId id) {
         return userService.findCurrentUser().map(user -> canEditShoppingList(user, id)).orElse(false);
     }
 
@@ -71,12 +71,13 @@ public class ShoppingListGuard {
     }
 
     public boolean canDeleteUser(String userToBeDeletedId) {
-        if (!ObjectId.isValid(userToBeDeletedId)) {
-            return false;
-        }
-        boolean userCanBeDeleted = userService.findUser(new ObjectId(userToBeDeletedId))
+        return ObjectId.isValid(userToBeDeletedId) && canDeleteUser(new ObjectId(userToBeDeletedId));
+    }
+
+    public boolean canDeleteUser(ObjectId userToBeDeletedId) {
+        boolean userCanBeDeleted = userService.findUser(userToBeDeletedId)
                 .map(user -> !user.isSuperUser()).orElse(false);
-        boolean currentUserCanDeleteUser = userService.getCurrentUser().getId().equals(new ObjectId(userToBeDeletedId))
+        boolean currentUserCanDeleteUser = userService.getCurrentUser().getId().equals(userToBeDeletedId)
                 || userService.getCurrentUser().isSuperUser();
         return userCanBeDeleted && currentUserCanDeleteUser;
     }
