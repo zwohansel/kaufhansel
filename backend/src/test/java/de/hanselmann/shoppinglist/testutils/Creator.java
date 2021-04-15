@@ -35,8 +35,12 @@ public class Creator {
     }
 
     public static ShoppingListUser userWithTwoLists(ObjectId userId, ObjectId shoppingListId) {
+        return userWithCheckOnlyListAnd(userId, shoppingListId, ShoppingListRole.ADMIN);
+    }
+
+    public static ShoppingListUser userWithCheckOnlyListAnd(ObjectId userId, ObjectId shoppingListId, ShoppingListRole role) {
         List<ShoppingListReference> shoppingLists = new ArrayList<>();
-        shoppingLists.add(new ShoppingListReference(shoppingListId, ShoppingListRole.ADMIN));
+        shoppingLists.add(new ShoppingListReference(shoppingListId, role));
         shoppingLists.add(new ShoppingListReference(new ObjectId(), ShoppingListRole.CHECK_ONLY));
 
         ShoppingListUser user = new TestShoppingListUser(userId, false, "Testuser", "secret", "test@test.de",

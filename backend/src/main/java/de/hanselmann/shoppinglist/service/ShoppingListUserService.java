@@ -1,6 +1,5 @@
 package de.hanselmann.shoppinglist.service;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.bson.types.ObjectId;
@@ -17,6 +16,7 @@ import de.hanselmann.shoppinglist.model.ShoppingListReference;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
+import de.hanselmann.shoppinglist.utils.TimeSource;
 
 @Service
 public class ShoppingListUserService {
@@ -24,15 +24,16 @@ public class ShoppingListUserService {
     private final CodeGenerator codeGenerator;
     private final PasswordEncoder passwordEncoder;
     private final EMailService emailService;
+    private final TimeSource timeSource;
 
     @Autowired
     public ShoppingListUserService(ShoppingListUserRepository userRepository, CodeGenerator codeGenerator,
-            PasswordEncoder passwordEncoder,
-            EMailService emailService) {
+            PasswordEncoder passwordEncoder, EMailService emailService, TimeSource timeSource) {
         this.userRepository = userRepository;
         this.codeGenerator = codeGenerator;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
+        this.timeSource = timeSource;
     }
 
     public ShoppingListUser getCurrentUser() {
@@ -128,7 +129,7 @@ public class ShoppingListUserService {
 
     public void requestPasswordReset(ShoppingListUser user) {
         String resetCode = codeGenerator.generatePasswordResetCode();
-        user.setPasswordResetCode(resetCode);
+        user.setPasswordResetCode(resetCode, timeSource.dateTimeNow());
         userRepository.save(user);
         emailService.sendPasswortResetCodeMail(user, resetCode);
     }
@@ -138,7 +139,7 @@ public class ShoppingListUserService {
                 .map(code -> code.equals(resetCode.strip()))
                 .orElse(false);
         boolean isResetCodeNotExpired = user.getPasswordResetRequestedAt()
-                .map(at -> LocalDateTime.now().isBefore(at.plusHours(1)))
+                .map(at -> timeSource.dateTimeNow().isBefore(at.plusHours(1)))
                 .orElse(false);
         if (isResetCodeValid && isResetCodeNotExpired && isPasswordValid(password)) {
             user.setPassword(passwordEncoder.encode(password));

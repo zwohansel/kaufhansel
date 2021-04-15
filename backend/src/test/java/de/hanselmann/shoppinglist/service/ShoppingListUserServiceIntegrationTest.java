@@ -2,9 +2,12 @@ package de.hanselmann.shoppinglist.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
@@ -19,6 +22,7 @@ import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
 import de.hanselmann.shoppinglist.testutils.Creator;
+import de.hanselmann.shoppinglist.utils.TimeSource;
 
 @SpringBootTest(classes = { ShoppingListUserService.class })
 @TestPropertySource(locations = "classpath:application-test.properties")
@@ -35,6 +39,9 @@ public class ShoppingListUserServiceIntegrationTest {
 
     @MockBean
     private EMailService emailService;
+
+    @MockBean
+    private TimeSource timeSource;
 
     @Autowired
     private ShoppingListUserService cut;
@@ -70,6 +77,104 @@ public class ShoppingListUserServiceIntegrationTest {
         cut.addShoppingListToUser(user, new ObjectId(), ShoppingListRole.CHECK_ONLY);
 
         assertThat(user.getShoppingLists().size()).isEqualTo(3);
+    }
+
+    @Test
+    public void removeShoppingListFromUser() {
+        ObjectId userId = new ObjectId();
+        ObjectId shoppingListId = new ObjectId();
+        ShoppingListUser user = Creator.userWithTwoLists(userId, shoppingListId);
+        when(userRepository.findById(eq(userId))).thenReturn(Optional.of(user));
+
+        assertThat(user.getShoppingLists().size()).isEqualTo(2);
+        cut.removeShoppingListFromUser(userId, shoppingListId);
+        assertThat(user.getShoppingLists().size()).isEqualTo(1);
+    }
+
+    @Test
+    public void getRoleForUser() {
+        ObjectId userId = new ObjectId();
+        ObjectId shoppingListId = new ObjectId();
+        ShoppingListUser user = Creator.userWithCheckOnlyListAnd(userId, shoppingListId, ShoppingListRole.ADMIN);
+        when(userRepository.findById(eq(userId))).thenReturn(Optional.of(user));
+
+        ShoppingListRole role = cut.getRoleForUser(userId, shoppingListId);
+        assertThat(role).isEqualTo(ShoppingListRole.ADMIN);
+    }
+
+    @Test
+    public void changePermission() {
+        ObjectId shoppingListId = new ObjectId();
+        ShoppingListUser user = Creator.userWithCheckOnlyListAnd(new ObjectId(), shoppingListId,
+                ShoppingListRole.ADMIN);
+
+        cut.changePermission(user, shoppingListId, ShoppingListRole.READ_ONLY);
+
+        assertThat(user.getShoppingLists().stream().map(l -> l.getRole()))
+                .containsExactlyInAnyOrder(ShoppingListRole.READ_ONLY, ShoppingListRole.CHECK_ONLY);
+    }
+
+    @Test
+    public void successfullyResetPassword() {
+        when(timeSource.dateTimeNow()).thenReturn(LocalDateTime.now());
+
+        String passwordResetCode = "P4SSW0RD";
+        ShoppingListUser user = requestAndTestPasswordReset(passwordResetCode);
+
+        boolean success = cut.resetPassword(user, passwordResetCode, "N3u3$P4$Sw0rT!");
+        assertThat(success).isTrue();
+        assertThat(user.getPasswordResetCode().isEmpty()).isTrue();
+        assertThat(user.getPasswordResetRequestedAt().isEmpty()).isTrue();
+        org.mockito.Mockito.verify(emailService).sendPasswortSuccessfullyChangedMail(any());
+    }
+
+    @Test
+    public void resetPasswordFailsWithInvalidCode() {
+        when(timeSource.dateTimeNow()).thenReturn(LocalDateTime.now());
+
+        String passwordResetCode = "P4SSW0RD";
+        ShoppingListUser user = requestAndTestPasswordReset(passwordResetCode);
+
+        boolean success = cut.resetPassword(user, "WR0NG", "N3u3$P4$Sw0rT!");
+        assertThat(success).isFalse();
+        assertThat(user.getPasswordResetCode().isPresent()).isTrue();
+        assertThat(user.getPasswordResetRequestedAt().isPresent()).isTrue();
+    }
+
+    @Test
+    public void resetPasswordFailsWithExpiredCode() {
+        when(timeSource.dateTimeNow()).thenReturn(LocalDateTime.of(2021, 1, 1, 12, 0));
+
+        String passwordResetCode = "P4SSW0RD";
+        ShoppingListUser user = requestAndTestPasswordReset(passwordResetCode);
+
+        when(timeSource.dateTimeNow()).thenReturn(LocalDateTime.of(2021, 1, 1, 15, 0));
+
+        boolean success = cut.resetPassword(user, passwordResetCode, "N3u3$P4$Sw0rT!");
+        assertThat(success).isFalse();
+        assertThat(user.getPasswordResetCode().isPresent()).isTrue();
+        assertThat(user.getPasswordResetRequestedAt().isPresent()).isTrue();
+    }
+
+    private ShoppingListUser requestAndTestPasswordReset(String passwordResetCode) {
+        when(codeGenerator.generatePasswordResetCode()).thenReturn(passwordResetCode);
+
+        ObjectId userId = new ObjectId();
+        ObjectId shoppingListId = new ObjectId();
+        ShoppingListUser user = Creator.userWithTwoLists(userId, shoppingListId);
+
+        cut.requestPasswordReset(user);
+
+        assertThat(user.getPasswordResetCode().get()).isEqualTo(passwordResetCode);
+        assertThat(user.getPasswordResetRequestedAt().isPresent()).isTrue();
+        return user;
+    }
+
+    @Test
+    public void deleteUser() {
+        ObjectId userId = new ObjectId();
+        cut.deleteUser(userId);
+        org.mockito.Mockito.verify(userRepository).deleteById(eq(userId));
     }
 
 }

@@ -100,9 +100,9 @@ public class ShoppingListUser {
         }
     }
 
-    public void setPasswordResetCode(String code) {
+    public void setPasswordResetCode(String code, LocalDateTime requestedAt) {
         passwordResetCode = code;
-        passwordResetRequestedAt = LocalDateTime.now();
+        passwordResetRequestedAt = requestedAt;
     }
 
     public Optional<String> getPasswordResetCode() {
