@@ -344,13 +344,7 @@
       "itemName": {}
     }
   },
-  "exceptionMoveItemFailed": "{itemName} konnte nicht verschoben werden...",
-  "@exceptionMoveItemFailed": {
-    "type": "text",
-    "placeholders": {
-      "itemName": {}
-    }
-  },
+  "exceptionMoveItemFailed": "Das Element konnte nicht verschoben werden...",
   "exceptionCantChangeAdminRole": "Einmal Chefhansel, immer Chefhansel. Daran kannst du nichts mehr ändern.",
   "exceptionCantFindOtherUser": "Hast du dich vertippt oder können wir den Hansel nicht finden?",
   "exceptionSendListInvitationFailed": "Das Verschicken der Einladungs-Email hat leider nicht geklappt. Ruf den Hansel doch einfach mal an.",

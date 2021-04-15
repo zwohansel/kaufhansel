@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
@@ -6,7 +8,9 @@ import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_item_input.dart';
 import 'package:kaufhansel_client/shopping_list_mode.dart';
 import 'package:kaufhansel_client/shopping_list_view.dart';
+import 'package:kaufhansel_client/synced_shoppinglist.dart';
 import 'package:kaufhansel_client/utils/update_check.dart';
+import 'package:kaufhansel_client/widgets/category_manager_dialog.dart';
 import 'package:kaufhansel_client/widgets/link.dart';
 import 'package:provider/provider.dart';
 
@@ -113,7 +117,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
                 type: MaterialType.transparency,
                 child: TabBar(
                   controller: _tabController,
-                  tabs: widget._categories.map((category) => Tab(text: category)).toList(),
+                  tabs: widget._categories.map((category) => _buildTab(category, context)).toList(),
                   indicator: BoxDecoration(border: Border(bottom: BorderSide(width: 3, color: Colors.white))),
                 ))),
         _buildProgress(),
@@ -262,8 +266,29 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
     return Container();
   }
 
+  Widget _buildTab(String category, BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque, // necessary to detected a long press in the complete tab not only the text part
+      onLongPress: () {
+        final list = Provider.of<SyncedShoppingList>(context, listen: false);
+        showDialog(
+          context: context,
+          builder: (context) => CategoryManager(
+            list: list,
+            initialSelected: category,
+            onClose: () => Navigator.pop(context),
+          ),
+        );
+      },
+      child: SizedBox(
+        width: double.infinity,
+        child: Tab(text: category),
+      ),
+    );
+  }
+
   Widget _buildItemInput() {
-    final canEditItems = Provider.of<ShoppingList>(context).info.permissions.canEditItems;
+    final canEditItems = Provider.of<SyncedShoppingList>(context).info.permissions.canEditItems;
     if (!canEditItems) {
       return Container();
     }
@@ -282,34 +307,18 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
         ]));
   }
 
-  void _moveItem(List<ShoppingListItem> itemsOfThisList, int oldIndexInThisList, int newIndexInThisList) async {
+  void _moveItem(List<SyncedShoppingListItem> itemsOfThisList, int oldIndexInThisList, int newIndexInThisList) async {
     if (_loading == true) {
       return;
     }
     setState(() => _loading = true);
-    final RestClient client = RestClientWidget.of(context);
-    final ShoppingList list = Provider.of<ShoppingList>(context, listen: false);
-    final ShoppingListItem item = itemsOfThisList[oldIndexInThisList];
-    final oldIndex = list.items.indexOf(item);
+    final SyncedShoppingList list = Provider.of<SyncedShoppingList>(context, listen: false);
     try {
-      int targetIndexInCompleteList;
-      if (newIndexInThisList < itemsOfThisList.length) {
-        targetIndexInCompleteList = list.items.indexOf(itemsOfThisList[newIndexInThisList]);
-      } else {
-        targetIndexInCompleteList = list.items.indexOf(itemsOfThisList.last) + 1;
-      }
-      // Perform the move even if the move request to the server fails.
-      // Otherwise the item is first moved back to its original position
-      // and then jumps to the new position once the request is finished.
-      list.moveItem(item, targetIndexInCompleteList);
-      await client.moveShoppingListItem(list.id, item, targetIndexInCompleteList);
-    } catch (e) {
-      // restore the old position on error
-      list.moveItem(item, oldIndex);
+      await list.moveItemsInSubList(itemsOfThisList, oldIndexInThisList, newIndexInThisList);
+    } on HttpResponseException catch (e) {
+      log("Could not move item from $oldIndexInThisList to $newIndexInThisList", error: e);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(AppLocalizations.of(context).exceptionMoveItemFailed(item.name)),
-            duration: Duration(seconds: 2)),
+        SnackBar(content: Text(AppLocalizations.of(context).exceptionMoveItemFailed), duration: Duration(seconds: 2)),
       );
     } finally {
       setState(() => _loading = false);

@@ -4,27 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/model.dart';
-import 'package:kaufhansel_client/rest_client.dart';
+import 'package:kaufhansel_client/synced_shoppinglist.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
 
 class EditShoppingListItemDialog extends StatefulWidget {
-  final String _shoppingListId;
-  final ShoppingListItem _item;
+  final SyncedShoppingListItem _item;
   final List<String> _categories;
-  final RestClient _client;
-  final Future<void> Function(ShoppingListItem) _onDeleteItem;
 
-  const EditShoppingListItemDialog(
-      {@required ShoppingListItem item,
-      @required String shoppingListId,
-      @required RestClient client,
-      @required List<String> categories,
-      @required Future<void> Function(ShoppingListItem) onDeleteItem})
-      : _shoppingListId = shoppingListId,
-        _item = item,
-        _categories = categories,
-        _client = client,
-        _onDeleteItem = onDeleteItem;
+  const EditShoppingListItemDialog({
+    @required SyncedShoppingListItem item,
+    @required List<String> categories,
+  })  : _item = item,
+        _categories = categories;
 
   @override
   _EditShoppingListItemDialogState createState() => _EditShoppingListItemDialogState();
@@ -138,12 +129,7 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
   Future<void> submitNewItemName(String newItemName) async {
     setState(() => _loading = true);
     try {
-      // apply the change to a copy of the actual item and send the copy to the server...
-      final itemCopy = widget._item.copy();
-      itemCopy.name = newItemName;
-      await widget._client.updateShoppingListItem(widget._shoppingListId, itemCopy);
-      // ...change the actual item once we know that the request was successful
-      widget._item.name = newItemName;
+      await widget._item.setName(newItemName);
     } on Exception catch (e) {
       developer.log("Could not set item name", error: e);
       showErrorDialogForException(context, e,
@@ -170,12 +156,7 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
 
     try {
       setState(() => _loading = true);
-      // apply the change to a copy of the actual item and send the copy to the server...
-      final itemCopy = widget._item.copy();
-      itemCopy.category = category;
-      await widget._client.updateShoppingListItem(widget._shoppingListId, itemCopy);
-      // ...change the actual item once we know that the request was successful
-      widget._item.category = category;
+      await widget._item.setCategory(category);
       Navigator.pop(context);
     } on Exception catch (e) {
       developer.log("Could not set item category", error: e);
@@ -186,8 +167,17 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
   }
 
   Future<void> onDelete() async {
-    Navigator.pop(context);
-    await widget._onDeleteItem(widget._item);
+    try {
+      setState(() => _loading = true);
+      await widget._item.delete();
+      Navigator.pop(context);
+    } on Exception catch (e) {
+      developer.log("Could not remove item", error: e);
+      showErrorDialogForException(context, e,
+          altText: AppLocalizations.of(context).exceptionDeleteItemFailed(widget._item.name));
+    } finally {
+      setState(() => _loading = false);
+    }
   }
 
   Widget _buildProgress() {

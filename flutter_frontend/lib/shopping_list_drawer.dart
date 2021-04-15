@@ -17,7 +17,6 @@ class ShoppingListDrawer extends StatelessWidget {
     this.selectedShoppingList,
     @required this.userInfo,
     @required this.onRefreshPressed,
-    @required this.shoppingListCategories,
     @required this.onShoppingListSelected,
     @required this.onCreateShoppingList,
     @required this.onDeleteShoppingList,
@@ -38,7 +37,6 @@ class ShoppingListDrawer extends StatelessWidget {
   final Future<void> Function(ShoppingListInfo) onDeleteShoppingList;
   final Future<bool> Function(ShoppingListInfo, String) onAddUserToShoppingListIfPresent;
   final Future<void> Function(ShoppingListInfo, ShoppingListUserReference) onRemoveUserFromShoppingList;
-  final List<String> shoppingListCategories;
   final Future<void> Function(ShoppingListInfo info, String affectedUserId, ShoppingListRole newRole)
       onChangeShoppingListPermissions;
   final Future<void> Function(ShoppingListInfo, String) onChangeShoppingListName;
@@ -47,7 +45,7 @@ class ShoppingListDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final infoTiles = shoppingListInfos.where((info) => info.id != selectedShoppingList?.list?.id)?.map(
+    final infoTiles = shoppingListInfos.where((info) => info.id != selectedShoppingList?.info?.id)?.map(
           (info) => ChangeNotifierProvider.value(
             value: info,
             builder: (context, child) => ListTile(
@@ -137,14 +135,14 @@ class ShoppingListDrawer extends StatelessWidget {
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(currentList.list.name, style: Theme.of(context).primaryTextTheme.headline6),
+                      Text(currentList.info.name, style: Theme.of(context).primaryTextTheme.headline6),
                       SizedBox(height: 5),
-                      Text(currentList.list.info.permissions.role.toDisplayString(context),
+                      Text(currentList.info.permissions.role.toDisplayString(context),
                           style: Theme.of(context).primaryTextTheme.bodyText1)
                     ],
                   ),
           ),
-          Icon(currentList?.list?.info?.permissions?.role?.toIcon(),
+          Icon(currentList?.info?.permissions?.role?.toIcon(),
               color: Theme.of(context).primaryTextTheme.bodyText1.color)
         ],
       ),
@@ -175,18 +173,18 @@ class ShoppingListDrawer extends StatelessWidget {
           MaterialPageRoute(builder: (context) {
             // Providers are scoped and not shared between routes. We need to pass it explicitly to the new route
             return ChangeNotifierProvider.value(
-              value: currentList.list,
+              value: currentList.info,
               child: RestClientWidget(
                 client,
                 child: ShoppingListSettings(
-                  onDeleteShoppingList: () => onDeleteShoppingList(currentList.list.info),
+                  onDeleteShoppingList: () => onDeleteShoppingList(currentList.info),
                   onRemoveAllItems: currentList.removeAllItems,
                   onAddUserToShoppingListIfPresent: (userEmailAddress) =>
-                      onAddUserToShoppingListIfPresent(currentList.list.info, userEmailAddress),
-                  onRemoveUserFromShoppingList: (user) => onRemoveUserFromShoppingList(currentList.list.info, user),
+                      onAddUserToShoppingListIfPresent(currentList.info, userEmailAddress),
+                  onRemoveUserFromShoppingList: (user) => onRemoveUserFromShoppingList(currentList.info, user),
                   onChangeShoppingListPermissions: (affectedUserId, newRole) =>
-                      onChangeShoppingListPermissions(currentList.list.info, affectedUserId, newRole),
-                  onChangeShoppingListName: (newName) => onChangeShoppingListName(currentList.list.info, newName),
+                      onChangeShoppingListPermissions(currentList.info, affectedUserId, newRole),
+                  onChangeShoppingListName: (newName) => onChangeShoppingListName(currentList.info, newName),
                 ),
               ),
             );
@@ -198,7 +196,7 @@ class ShoppingListDrawer extends StatelessWidget {
 
   StatelessWidget _buildManageCategoriesMenuItem(BuildContext context, SyncedShoppingList currentList) {
     if (currentList == null ||
-        (!currentList.list.info.permissions.canEditItems && !currentList.list.info.permissions.canCheckItems)) {
+        (!currentList.info.permissions.canEditItems && !currentList.info.permissions.canCheckItems)) {
       return Container();
     }
     return ListTile(
@@ -211,11 +209,7 @@ class ShoppingListDrawer extends StatelessWidget {
   Future<void> _onManageCategoriesPressed(BuildContext context, SyncedShoppingList currentList) async {
     await showDialog(
         context: context,
-        builder: (context) => CategoryManager(
-              categories: shoppingListCategories,
-              list: currentList,
-              onClose: () => Navigator.pop(context),
-            ));
+        builder: (context) => CategoryManager(list: currentList, onClose: () => Navigator.pop(context)));
   }
 
   void _onShoppingListSelected(BuildContext context, ShoppingListInfo info) async {

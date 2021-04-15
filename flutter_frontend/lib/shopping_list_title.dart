@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:kaufhansel_client/generated/l10n.dart';
+import 'package:kaufhansel_client/synced_shoppinglist.dart';
 import 'package:kaufhansel_client/widgets/title_widget.dart';
 import 'package:provider/provider.dart';
-
-import 'package:kaufhansel_client/generated/l10n.dart';
-import 'model.dart';
 
 class ShoppingListTitle extends StatelessWidget {
   final String _currentCategory;
@@ -12,7 +11,7 @@ class ShoppingListTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Selector<ShoppingList, _ShoppingListTitleInfo>(
+    return Selector<SyncedShoppingList, _ShoppingListTitleInfo>(
       selector: (_, shoppingList) {
         if (shoppingList == null) {
           return null;
@@ -24,7 +23,7 @@ class ShoppingListTitle extends StatelessWidget {
 
         final itemsInCategory = shoppingList.items.where((item) => item.isInCategory(_currentCategory));
         final checkedItemsInCategory = itemsInCategory.where((item) => item.checked);
-        return _ShoppingListTitleInfo(shoppingList.name, itemsInCategory.length, checkedItemsInCategory.length);
+        return _ShoppingListTitleInfo(shoppingList.info.name, itemsInCategory.length, checkedItemsInCategory.length);
       },
       builder: (context, titleInfo, child) {
         return TitleWidget(AppLocalizations.of(context).appTitle,

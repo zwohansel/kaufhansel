@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
-import 'package:kaufhansel_client/model.dart';
-import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/shopping_list_item_edit_dialog.dart';
 import 'package:kaufhansel_client/shopping_list_mode.dart';
+import 'package:kaufhansel_client/synced_shoppinglist.dart';
 import 'package:kaufhansel_client/widgets/async_operation_icon_button.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
 import 'package:provider/provider.dart';
@@ -41,7 +40,7 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ShoppingListItem>(builder: (context, item, child) {
+    return Consumer<SyncedShoppingListItem>(builder: (context, item, child) {
       final List<Widget> titleElements = [
         Container(
           child: SelectableText(
@@ -79,7 +78,7 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
     });
   }
 
-  CheckboxListTile buildCheckboxListTitle(List<Widget> titleElements, ShoppingListItem item) {
+  CheckboxListTile buildCheckboxListTitle(List<Widget> titleElements, SyncedShoppingListItem item) {
     return CheckboxListTile(
       title: Wrap(children: titleElements),
       controlAffinity: ListTileControlAffinity.leading,
@@ -89,7 +88,7 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
     );
   }
 
-  ListTile buildListTile(List<Widget> titleElements, ShoppingListItem item) {
+  ListTile buildListTile(List<Widget> titleElements, SyncedShoppingListItem item) {
     return ListTile(
       title: Wrap(children: titleElements),
       leading: item.checked ? Icon(Icons.check_box_outlined) : Icon(Icons.check_box_outline_blank),
@@ -101,7 +100,7 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
     return widget._enabled && !_loading;
   }
 
-  Widget _buildActionButton(ShoppingListItem item) {
+  Widget _buildActionButton(SyncedShoppingListItem item) {
     if (!widget._canEditItems) {
       return null;
     }
@@ -128,15 +127,13 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
     }
   }
 
-  Future<void> _deleteItem(ShoppingListItem item) async {
+  void _deleteItem(SyncedShoppingListItem item) async {
     setState(() {
       _loading = true;
       _deleting = true;
     });
     try {
-      final shoppingList = Provider.of<ShoppingList>(context, listen: false);
-      await RestClientWidget.of(context).deleteShoppingListItem(shoppingList.id, item);
-      shoppingList.removeItem(item);
+      await item.delete();
     } on Exception catch (e) {
       log("Could not remove item", error: e);
       showErrorDialogForException(context, e,
@@ -149,35 +146,22 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
     }
   }
 
-  void _checkItem(ShoppingListItem item, bool checked) {
-    // Checking and un-checking an item should be a fast and work under all circumstances (even if there is not internet connection)
-    // Therefore we do not wait for the server reply and accept that the
-    // checked state of an item may get out of sync with the state stored on the server.
-    item.checked = checked;
-    _performCheckItemRequest(item, checked);
-  }
-
-  void _performCheckItemRequest(ShoppingListItem item, bool checked) async {
+  void _checkItem(SyncedShoppingListItem item, bool checked) async {
     try {
-      final shoppingList = Provider.of<ShoppingList>(context, listen: false);
-      await RestClientWidget.of(context).updateShoppingListItem(shoppingList.id, item);
+      await item.setChecked(checked);
     } on Exception catch (e) {
       log("Could not check or uncheck item.", error: e);
     }
   }
 
-  void _editItem(ShoppingListItem item) {
-    final RestClient client = RestClientWidget.of(context);
-    final shoppingList = Provider.of<ShoppingList>(context, listen: false);
+  void _editItem(SyncedShoppingListItem item) {
+    final shoppingList = Provider.of<SyncedShoppingList>(context, listen: false);
     showDialog(
         context: context,
         builder: (context) {
           return EditShoppingListItemDialog(
-            shoppingListId: shoppingList.id,
             item: item,
             categories: shoppingList.getUserCategories(),
-            client: client,
-            onDeleteItem: _deleteItem,
           );
         });
   }

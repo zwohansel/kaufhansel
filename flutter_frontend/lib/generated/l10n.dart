@@ -1735,13 +1735,13 @@ class AppLocalizations {
     );
   }
 
-  /// `{itemName} konnte nicht verschoben werden...`
-  String exceptionMoveItemFailed(Object itemName) {
+  /// `Das Element konnte nicht verschoben werden...`
+  String get exceptionMoveItemFailed {
     return Intl.message(
-      '$itemName konnte nicht verschoben werden...',
+      'Das Element konnte nicht verschoben werden...',
       name: 'exceptionMoveItemFailed',
       desc: '',
-      args: [itemName],
+      args: [],
     );
   }
 

@@ -701,6 +701,41 @@ void main() {
         reason: "This is probably because the onRemoveCategory callback of the RestClient was not called.");
   });
 
+  testWidgets("Open category manager dialog with long press on category tab", (WidgetTester tester) async {
+    final categoryToOpenDialog = "Test category";
+    final item0 = ShoppingListItem("1", "A", true, categoryToOpenDialog);
+    final item1 = ShoppingListItem("2", "B", false, categoryToOpenDialog);
+    final item2 = ShoppingListItem("3", "C", true, null);
+    List<ShoppingListItem> backendItems = [item0, item1, item2];
+
+    final client = RestClientStub(
+      onGetBackendInfo: () => BackendInfo(version, null),
+      onGetShoppingLists: () {
+        final adminPermissions = ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true);
+        return [ShoppingListInfo("1", "TestList", adminPermissions, [])];
+      },
+      onFetchShoppingList: (id) => backendItems,
+    );
+
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
+    await tester.pumpAndSettle();
+
+    // Check that we find a tab for the category
+    final categoryTab = find.widgetWithText(Tab, categoryToOpenDialog);
+    expect(categoryTab, findsOneWidget);
+    await tester.longPress(categoryTab);
+    await tester.pumpAndSettle();
+
+    // check that the dialog is open
+    expect(find.text(localizations.manageCategoriesTitle), findsOneWidget);
+
+    // check that the category is preselected
+    final dropDownButton = find.widgetWithText(dropdownButtonType, categoryToOpenDialog);
+    expect(dropDownButton, findsOneWidget);
+    final dropDownButtonWidget = dropDownButton.evaluate().first.widget as DropdownButton<String>;
+    expect(dropDownButtonWidget.value, equals(categoryToOpenDialog));
+  });
+
   testWidgets('Logout when fetching shopping list infos if unauthenticated', (WidgetTester tester) async {
     final client = RestClientStub(
       onGetBackendInfo: () => BackendInfo(version, null),

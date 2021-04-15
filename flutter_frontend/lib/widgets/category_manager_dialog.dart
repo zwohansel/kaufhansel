@@ -10,13 +10,11 @@ import 'error_dialog.dart';
 
 class CategoryManager extends StatefulWidget {
   final String initialSelected;
-  final List<String> categories;
   final SyncedShoppingList list;
   final VoidCallback onClose;
 
   const CategoryManager({
     this.initialSelected,
-    @required this.categories,
     @required this.list,
     this.onClose,
   });
@@ -27,11 +25,40 @@ class CategoryManager extends StatefulWidget {
 class _CategoryManagerState extends State<CategoryManager> {
   bool _loading = false;
   String _selectedCategory;
+  List<String> _categories;
 
   @override
   void initState() {
     super.initState();
     _selectedCategory = widget.initialSelected;
+    updateAndObserveShoppingListCategories();
+  }
+
+  void updateAndObserveShoppingListCategories() {
+    widget.list.addListener(shoppingListChanged);
+    updateCategories();
+  }
+
+  void shoppingListChanged() {
+    setState(updateCategories);
+  }
+
+  void updateCategories() {
+    _categories = widget.list.getAllCategories();
+    _selectedCategory = _categories.contains(_selectedCategory) ? _selectedCategory : null;
+  }
+
+  @override
+  void didUpdateWidget(covariant CategoryManager oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    oldWidget.list.removeListener(shoppingListChanged);
+    updateAndObserveShoppingListCategories();
+  }
+
+  @override
+  void dispose() {
+    widget.list.removeListener(shoppingListChanged);
+    super.dispose();
   }
 
   @override
@@ -83,7 +110,7 @@ class _CategoryManagerState extends State<CategoryManager> {
   }
 
   Widget _buildRemoveChecked(BuildContext context) {
-    if (!widget.list.list.info.permissions.canEditItems) {
+    if (!widget.list.info.permissions.canEditItems) {
       return Container();
     } else if (_selectedCategory == CATEGORY_ALL) {
       return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesRemoveChecked,
@@ -98,7 +125,7 @@ class _CategoryManagerState extends State<CategoryManager> {
   }
 
   Widget _buildRename(BuildContext context) {
-    if (_selectedCategory == CATEGORY_ALL || !widget.list.list.info.permissions.canEditItems) {
+    if (_selectedCategory == CATEGORY_ALL || !widget.list.info.permissions.canEditItems) {
       return Container();
     } else {
       return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesRenameCategory(_selectedCategory),
@@ -120,7 +147,7 @@ class _CategoryManagerState extends State<CategoryManager> {
   }
 
   Widget _buildRemoveCategory(BuildContext context) {
-    if (widget.categories.length == 1 || !widget.list.list.info.permissions.canEditItems) {
+    if (widget.list.getAllCategories().length == 1 || !widget.list.info.permissions.canEditItems) {
       return Container();
     } else if (_selectedCategory == CATEGORY_ALL) {
       return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesRemoveCategories,
@@ -132,7 +159,7 @@ class _CategoryManagerState extends State<CategoryManager> {
   }
 
   Widget _buildUncheck(BuildContext context) {
-    if (!widget.list.list.info.permissions.canCheckItems) {
+    if (!widget.list.info.permissions.canCheckItems) {
       return Container();
     } else if (_selectedCategory == CATEGORY_ALL) {
       return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesUncheckAll,
@@ -155,7 +182,7 @@ class _CategoryManagerState extends State<CategoryManager> {
       iconSize: 24,
       underline: Container(height: 2, color: Theme.of(context).primaryColor),
       onChanged: _loading ? null : (newValue) => setState(() => _selectedCategory = newValue),
-      items: widget.categories.map((value) {
+      items: _categories.map((value) {
         return DropdownMenuItem<String>(
           value: value,
           child: Text(value),

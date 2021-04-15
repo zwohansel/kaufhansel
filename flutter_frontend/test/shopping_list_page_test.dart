@@ -6,10 +6,12 @@ import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_page.dart';
+import 'package:kaufhansel_client/synced_shoppinglist.dart';
 import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 import 'package:kaufhansel_client/utils/update_check.dart';
 import 'package:provider/provider.dart';
 
+import 'rest_client_stub.dart';
 import 'settings_store_stub.dart';
 import 'utils.dart';
 
@@ -31,13 +33,15 @@ void main() {
       [],
     );
 
+    final syncedList = SyncedShoppingList(RestClientStub(), list);
+
     final page = ShoppingListPage(
       list.getAllCategories(),
       ShoppingListFilterOption.ALL,
       update: update,
       onRefresh: () => null,
     );
-    final provider = ChangeNotifierProvider.value(value: list, child: Material(child: page));
+    final provider = ChangeNotifierProvider.value(value: syncedList, child: Material(child: page));
     await tester.pumpWidget(await makeTestableWidget(provider, store: store, locale: testLocale));
     await tester.pumpAndSettle();
 

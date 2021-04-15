@@ -6,6 +6,7 @@ import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/shopping_list_item_edit_dialog.dart';
+import 'package:kaufhansel_client/synced_shoppinglist.dart';
 
 import 'rest_client_stub.dart';
 import 'utils.dart';
@@ -18,63 +19,101 @@ void main() {
     localizations = await AppLocalizations.load(testLocale);
   });
 
+  final listId = "1234";
+
+  SyncedShoppingList createSyncedListForItem(ShoppingListItem item, RestClient client) {
+    final permission = ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true);
+    final listInfo = ShoppingListInfo(listId, "test", permission, []);
+    final list = ShoppingList(listInfo, [item]);
+    return SyncedShoppingList(client, list);
+  }
+
+  Widget createDialog(SyncedShoppingListItem item, {List<String> categories}) {
+    return EditShoppingListItemDialog(item: item, categories: categories ?? []);
+  }
+
   testWidgets('showDialog', (WidgetTester tester) async {
     final client = RestClientStub();
-    final dialog = createDialog(client, item(), []);
+
+    final item = ShoppingListItem("0", "name", false, null);
+    final list = createSyncedListForItem(item, client);
+    final dialog = createDialog(list.items.first);
 
     await tester.pumpWidget(await makeTestableWidget(dialog, restClient: client, locale: testLocale));
     await tester.pumpAndSettle();
 
-    checkAlwaysPresent(localizations);
+    expect(find.widgetWithText(MoreOptionsEditableTextLabel, item.name), findsOneWidget);
+    expect(find.text(localizations.categoryChooseOne), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, localizations.categoryNone), findsOneWidget);
+    expect(find.widgetWithText(TextField, localizations.categoryCreateNew), findsOneWidget);
   });
 
   testWidgets('showDialogWithCategoriesAndChooseCategory', (WidgetTester tester) async {
     ShoppingListItem updatedShoppingListItem;
-    final client =
-        RestClientStub(onUpdateShoppingListItem: (String id, ShoppingListItem item) => updatedShoppingListItem = item);
-    final dialog = createDialog(client, item(), ["Category1", "Category2"]);
+    final client = RestClientStub(onUpdateShoppingListItem: (String shoppingListId, ShoppingListItem item) {
+      expect(shoppingListId, equals(listId));
+      updatedShoppingListItem = item;
+    });
+
+    final item = ShoppingListItem("0", "Item name", false, null);
+    final list = createSyncedListForItem(item, client);
+    final dialog = createDialog(list.items.first, categories: ["Category1", "Category2"]);
 
     await tester.pumpWidget(await makeTestableWidget(dialog, restClient: client, locale: testLocale));
     await tester.pumpAndSettle();
 
-    checkAlwaysPresent(localizations);
-    //TODO: check for color
-    expect(find.widgetWithText(OutlinedButton, "Category1"), findsOneWidget);
+    final categoryOneBtn = find.widgetWithText(OutlinedButton, "Category1");
+    expect(categoryOneBtn, findsOneWidget);
 
-    final categoryButton = find.widgetWithText(OutlinedButton, "Category2");
-    expect(categoryButton, findsOneWidget);
+    final categoryTwoBtn = find.widgetWithText(OutlinedButton, "Category2");
+    expect(categoryTwoBtn, findsOneWidget);
 
-    await tester.tap(categoryButton);
+    await tester.tap(categoryTwoBtn);
     await tester.pumpAndSettle();
 
-    expect(updatedShoppingListItem?.category, "Category2");
+    expect(updatedShoppingListItem, isNotNull);
+    expect(updatedShoppingListItem.category, "Category2");
+    expect(item.category, equals("Category2"));
   });
 
   testWidgets('addNewCategory', (WidgetTester tester) async {
+    final newCategoryName = "New category";
     ShoppingListItem updatedShoppingListItem;
-    final client =
-        RestClientStub(onUpdateShoppingListItem: (String id, ShoppingListItem item) => updatedShoppingListItem = item);
-    final dialog = createDialog(client, item(), []);
+    final client = RestClientStub(onUpdateShoppingListItem: (String shoppingListId, ShoppingListItem item) {
+      expect(shoppingListId, equals(listId));
+      updatedShoppingListItem = item;
+    });
+    final item = ShoppingListItem("0", "name", false, null);
+    final list = createSyncedListForItem(item, client);
+    final dialog = createDialog(list.items.first);
 
     await tester.pumpWidget(await makeTestableWidget(dialog, restClient: client, locale: testLocale));
     await tester.pumpAndSettle();
 
     await enterText(tester,
-        widgetType: TextField, fieldLabelOrHint: localizations.categoryCreateNew, text: "New category");
+        widgetType: TextField, fieldLabelOrHint: localizations.categoryCreateNew, text: newCategoryName);
     await tester.pumpAndSettle();
     final submitButton = find.widgetWithIcon(IconButton, Icons.check);
     expect(submitButton, findsOneWidget);
     await tester.tap(submitButton);
     await tester.pumpAndSettle();
 
-    expect(updatedShoppingListItem?.category, "New category");
+    expect(updatedShoppingListItem, isNotNull);
+    expect(updatedShoppingListItem.category, newCategoryName);
+    expect(item.category, equals(newCategoryName));
   });
 
   testWidgets('editItemName', (WidgetTester tester) async {
+    final newItemName = "New item name";
     ShoppingListItem updatedShoppingListItem;
-    final client =
-        RestClientStub(onUpdateShoppingListItem: (String id, ShoppingListItem item) => updatedShoppingListItem = item);
-    final dialog = createDialog(client, item(), []);
+    final client = RestClientStub(onUpdateShoppingListItem: (String shoppingListId, ShoppingListItem item) {
+      expect(shoppingListId, equals(listId));
+      updatedShoppingListItem = item;
+    });
+
+    final item = ShoppingListItem("0", "Item name", false, null);
+    final list = createSyncedListForItem(item, client);
+    final dialog = createDialog(list.items.first);
 
     await tester.pumpWidget(await makeTestableWidget(dialog, restClient: client, locale: testLocale));
     await tester.pumpAndSettle();
@@ -89,20 +128,25 @@ void main() {
     await tester.tap(renameMenuEntry);
     await tester.pumpAndSettle();
 
-    await enterText(tester, widgetType: TextField, fieldLabelOrHint: "Item name", text: "New item name");
+    await enterText(tester, widgetType: TextField, fieldLabelOrHint: item.name, text: newItemName);
     await tester.testTextInput.receiveAction(TextInputAction.done);
 
-    expect(updatedShoppingListItem?.name, "New item name");
+    expect(updatedShoppingListItem, isNotNull);
+    expect(updatedShoppingListItem.name, equals(newItemName));
+    expect(item.name, equals(newItemName));
   });
 
   testWidgets('deleteItem', (WidgetTester tester) async {
-    final client = RestClientStub();
-    ShoppingListItem deletedItem;
-    final dialog = createDialog(client, item(), [], onDeleteItem: (item) async {
-      deletedItem = item;
+    ShoppingListItem removedItem;
+    final client = RestClientStub(onDeleteShoppingListItem: (shoppingListId, item) {
+      expect(shoppingListId, equals(listId));
+      removedItem = item;
     });
+    final item = ShoppingListItem(listId, "Test", false, null);
+    final list = createSyncedListForItem(item, client);
+    final dialog = createDialog(list.items.first);
 
-    await tester.pumpWidget(await makeTestableWidget(dialog, restClient: client, locale: testLocale));
+    await tester.pumpWidget(await makeTestableWidget(dialog, locale: testLocale));
     await tester.pumpAndSettle();
 
     final moreButton = find.widgetWithIcon(IconButton, Icons.more_vert);
@@ -115,23 +159,7 @@ void main() {
     await tester.tap(removeMenuEntry);
     await tester.pumpAndSettle();
 
-    expect(deletedItem.id, "id0");
+    expect(list.items, isEmpty);
+    expect(removedItem, equals(item));
   });
-}
-
-void checkAlwaysPresent(AppLocalizations localizations) {
-  expect(find.widgetWithText(MoreOptionsEditableTextLabel, "Item name"), findsOneWidget);
-  expect(find.text(localizations.categoryChooseOne), findsOneWidget);
-  expect(find.widgetWithText(OutlinedButton, localizations.categoryNone), findsOneWidget);
-  expect(find.widgetWithText(TextField, localizations.categoryCreateNew), findsOneWidget);
-}
-
-ShoppingListItem item({String category = ""}) {
-  return ShoppingListItem("id0", "Item name", false, "");
-}
-
-Widget createDialog(RestClient client, ShoppingListItem item, List<String> categories,
-    {Future<void> Function(ShoppingListItem) onDeleteItem}) {
-  return EditShoppingListItemDialog(
-      item: item, shoppingListId: null, client: client, categories: categories, onDeleteItem: onDeleteItem);
 }

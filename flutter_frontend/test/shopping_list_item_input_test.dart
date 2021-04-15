@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/shopping_list_item_input.dart';
+import 'package:kaufhansel_client/synced_shoppinglist.dart';
 import 'package:kaufhansel_client/widgets/async_operation_icon_button.dart';
 import 'package:provider/provider.dart';
 
@@ -24,8 +25,7 @@ void main() {
   });
 
   testWidgets("showClearButtonIfTextFieldIsNotEmpty", (WidgetTester tester) async {
-    await tester.pumpWidget(
-        await makeTestableWidget(Material(child: itemInput), restClient: RestClientStub(), locale: testLocale));
+    await tester.pumpWidget(await makeTestableWidget(Material(child: itemInput), locale: testLocale));
     await tester.pumpAndSettle();
 
     await enterText(tester, widgetType: TextField, fieldLabelOrHint: localizations.createOrSearchHint, text: "foo");
@@ -49,12 +49,11 @@ void main() {
 
     await tester.pumpWidget(await makeTestableWidget(
         Material(
-          child: ChangeNotifierProvider<ShoppingList>.value(
-            value: shoppingList,
+          child: ChangeNotifierProvider<SyncedShoppingList>.value(
+            value: SyncedShoppingList(client, shoppingList),
             builder: (context, child) => itemInput,
           ),
         ),
-        restClient: client,
         locale: testLocale));
     await tester.pumpAndSettle();
 

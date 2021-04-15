@@ -232,7 +232,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
         _shoppingListInfos = lists;
         _currentShoppingListInfo = activeShoppingList ??
             lists.firstWhere(
-              (list) => list.id == oldShoppingList?.list?.id,
+              (list) => list.id == oldShoppingList?.info?.id,
               orElse: () => lists.firstOrNull,
             );
         _fetchCurrentShoppingList(initialCategory: oldCategory);
@@ -285,13 +285,13 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       final oldShoppingList = _currentShoppingList;
       setState(() {
         _currentShoppingList = shoppingList;
-        _currentShoppingListCategories = shoppingList.list.getAllCategories();
+        _currentShoppingListCategories = shoppingList.getAllCategories();
         if (initialCategory != null && _currentShoppingListCategories.contains(initialCategory)) {
           _currentShoppingListCategory = initialCategory;
         } else {
           _currentShoppingListCategory = _currentShoppingListCategories.first;
         }
-        _currentShoppingList.list.addListener(setCurrentShoppingListCategories);
+        _currentShoppingList.addListener(setCurrentShoppingListCategories);
       });
       disposeShoppingListAfterNextFrame(oldShoppingList);
     } on Exception catch (e) {
@@ -311,7 +311,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     }
 
     final listEq = const ListEquality().equals;
-    final nextCategories = _currentShoppingList.list.getAllCategories();
+    final nextCategories = _currentShoppingList.getAllCategories();
     if (listEq(nextCategories, _currentShoppingListCategories)) {
       return;
     }
@@ -346,24 +346,22 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       widthOffset: (3 * 40.0), // ToggleButton width
       button: _buildModeMenuButton(),
       buttonOpen: Icon(Icons.close),
-      child: ChangeNotifierProvider.value(
-        value: _mode,
-        builder: (_, child) => ChangeNotifierProvider.value(
-          value: _filter,
-          builder: (_, child) => Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(AppLocalizations.of(context).shoppingListFilterTitle, style: Theme.of(context).textTheme.caption),
-              Consumer<ShoppingListFilter>(
-                  builder: (_, value, __) =>
-                      ShoppingListFilterSelection(context, (nextFilter) => _setFilter(nextFilter), _filter.get)),
-              SizedBox(height: 8),
-              Text(AppLocalizations.of(context).shoppingListModeTitle, style: Theme.of(context).textTheme.caption),
-              Consumer<ShoppingListMode>(
-                  builder: (_, value, __) =>
-                      ShoppingListModeSelection(context, (nextMode) => _setMode(nextMode), _mode.get)),
-            ],
-          ),
+      // TODO: Refactor. Should not be necessary to use a provider/consumer here.
+      child: MultiProvider(
+        providers: [ChangeNotifierProvider.value(value: _mode), ChangeNotifierProvider.value(value: _filter)],
+        builder: (_, child) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(AppLocalizations.of(context).shoppingListFilterTitle, style: Theme.of(context).textTheme.caption),
+            Consumer<ShoppingListFilter>(
+                builder: (context, value, __) =>
+                    ShoppingListFilterSelection(context, (nextFilter) => _setFilter(nextFilter), _filter.get)),
+            SizedBox(height: 8),
+            Text(AppLocalizations.of(context).shoppingListModeTitle, style: Theme.of(context).textTheme.caption),
+            Consumer<ShoppingListMode>(
+                builder: (context, value, __) =>
+                    ShoppingListModeSelection(context, (nextMode) => _setMode(nextMode), _mode.get)),
+          ],
         ),
       ),
     );
@@ -380,7 +378,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   Widget _buildContent(BuildContext context) {
     if (_isLoggedIn()) {
       return ChangeNotifierProvider.value(
-        value: _currentShoppingList?.list,
+        value: _currentShoppingList,
         builder: (context, child) {
           // unfocus shopping list item input text field when clicked/tapped on other element
           return GestureDetector(
@@ -410,7 +408,6 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
                 onShoppingListSelected: _selectShoppingList,
                 onCreateShoppingList: _createShoppingList,
                 onDeleteShoppingList: _deleteShoppingList,
-                shoppingListCategories: _currentShoppingListCategories,
                 onAddUserToShoppingListIfPresent: _addUserToShoppingList,
                 onRemoveUserFromShoppingList: _removeUserFromShoppingList,
                 onChangeShoppingListPermissions: _changeShoppingListPermissions,

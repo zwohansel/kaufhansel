@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
-import 'package:kaufhansel_client/model.dart';
-import 'package:kaufhansel_client/rest_client.dart';
+import 'package:kaufhansel_client/synced_shoppinglist.dart';
 import 'package:kaufhansel_client/widgets/async_operation_icon_button.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
 import 'package:provider/provider.dart';
@@ -64,15 +63,10 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
   Future<void> addNewItem(String name) async {
     setState(() => _submitting = true);
     try {
-      final shoppingList = Provider.of<ShoppingList>(context, listen: false);
-      // category CATEGORY_ALL is virtual, do not add it to items
-      final category = widget.category == CATEGORY_ALL ? null : widget.category;
-      ShoppingListItem shoppingListItem =
-          await RestClientWidget.of(context).createShoppingListItem(shoppingList.id, name, category);
-      shoppingList.addItem(shoppingListItem);
+      final shoppingList = Provider.of<SyncedShoppingList>(context, listen: false);
+      await shoppingList.addNewItem(name, widget.category);
       _newItemNameController.clear();
       // Scroll to the new element after it has been added and rendered (at the end of this frame).
-      // TODO: Does not work reliably (e.g. after hot reload)
       SchedulerBinding.instance.addPostFrameCallback((_) {
         widget.shoppingListScrollController.animateTo(widget.shoppingListScrollController.position.maxScrollExtent,
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);

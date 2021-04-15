@@ -6,8 +6,10 @@ import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_item_tile.dart';
 import 'package:kaufhansel_client/shopping_list_view.dart';
+import 'package:kaufhansel_client/synced_shoppinglist.dart';
 import 'package:provider/provider.dart';
 
+import 'rest_client_stub.dart';
 import 'utils.dart';
 
 void main() {
@@ -39,7 +41,10 @@ void main() {
       onRefresh: () => null,
       onItemMoved: (items, oldIndex, newIndex) {},
     );
-    final provider = ChangeNotifierProvider.value(value: list, child: Material(child: view));
+    final provider = ChangeNotifierProvider.value(
+      value: SyncedShoppingList(RestClientStub(), list),
+      child: Material(child: view),
+    );
     await tester.pumpWidget(await makeTestableWidget(provider, locale: testLocale));
     await tester.pumpAndSettle();
 

@@ -221,7 +221,7 @@ SyncedShoppingList createReadOnlyList(RestClient client) {
 }
 
 ShoppingListDrawer createDrawer(SyncedShoppingList list) {
-  return _buildDrawer(shoppingLists: [list.list.info], selectedList: list);
+  return _buildDrawer(shoppingLists: [list.info], selectedList: list);
 }
 
 ShoppingListInfo buildShoppingListInfo(ShoppingListPermissions permissions) =>
@@ -246,6 +246,5 @@ ShoppingListDrawer _buildDrawer({
     onChangeShoppingListName: (info, name) => null,
     onLogOut: () => null,
     onDeleteUserAccount: () => null,
-    shoppingListCategories: [],
   );
 }
