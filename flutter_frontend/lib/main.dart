@@ -66,8 +66,8 @@ class ShoppingListApp extends StatefulWidget {
 }
 
 class _ShoppingListAppState extends State<ShoppingListApp> {
-  ShoppingListFilter _filter = ShoppingListFilter();
-  ShoppingListMode _mode = ShoppingListMode();
+  ShoppingListFilterOption _filter = ShoppingListFilterOption.ALL;
+  ShoppingListModeOption _mode = ShoppingListModeOption.DEFAULT;
 
   GlobalKey<ScaffoldState> _drawerKey = new GlobalKey();
 
@@ -141,15 +141,11 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   }
 
   void _setFilter(ShoppingListFilterOption nextFilter) {
-    setState(() {
-      _filter.set(nextFilter);
-    });
+    setState(() => _filter = nextFilter);
   }
 
   void _setMode(ShoppingListModeOption nextMode) {
-    setState(() {
-      _mode.set(nextMode);
-    });
+    setState(() => _mode = nextMode);
   }
 
   void _setCurrentShoppingListCategory(String nextCategory) {
@@ -346,29 +342,21 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       widthOffset: (3 * 40.0), // ToggleButton width
       button: _buildModeMenuButton(),
       buttonOpen: Icon(Icons.close),
-      // TODO: Refactor. Should not be necessary to use a provider/consumer here.
-      child: MultiProvider(
-        providers: [ChangeNotifierProvider.value(value: _mode), ChangeNotifierProvider.value(value: _filter)],
-        builder: (_, child) => Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(AppLocalizations.of(context).shoppingListFilterTitle, style: Theme.of(context).textTheme.caption),
-            Consumer<ShoppingListFilter>(
-                builder: (context, value, __) =>
-                    ShoppingListFilterSelection(context, (nextFilter) => _setFilter(nextFilter), _filter.get)),
-            SizedBox(height: 8),
-            Text(AppLocalizations.of(context).shoppingListModeTitle, style: Theme.of(context).textTheme.caption),
-            Consumer<ShoppingListMode>(
-                builder: (context, value, __) =>
-                    ShoppingListModeSelection(context, (nextMode) => _setMode(nextMode), _mode.get)),
-          ],
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(AppLocalizations.of(context).shoppingListFilterTitle, style: Theme.of(context).textTheme.caption),
+          ShoppingListFilterSelection(context, (nextFilter) => _setFilter(nextFilter), _filter),
+          SizedBox(height: 8),
+          Text(AppLocalizations.of(context).shoppingListModeTitle, style: Theme.of(context).textTheme.caption),
+          ShoppingListModeSelection(context, (nextMode) => _setMode(nextMode), _mode),
+        ],
       ),
     );
   }
 
   Icon _buildModeMenuButton() {
-    if (_mode.get != ShoppingListModeOption.DEFAULT || _filter.get != ShoppingListFilterOption.ALL) {
+    if (_mode != ShoppingListModeOption.DEFAULT || _filter != ShoppingListFilterOption.ALL) {
       return Icon(Icons.filter_alt);
     } else {
       return Icon(Icons.filter_alt_outlined);
@@ -473,8 +461,8 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     } else {
       return ShoppingListPage(
         _currentShoppingListCategories,
-        _filter.get,
-        mode: _mode.get,
+        _filter,
+        mode: _mode,
         initialCategory: _currentShoppingListCategory,
         onCategoryChanged: _setCurrentShoppingListCategory,
         update: _update,

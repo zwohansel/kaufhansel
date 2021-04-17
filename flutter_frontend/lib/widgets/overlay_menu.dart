@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 // Overlay menu inspired by https://github.com/shubham030/simple_account_menu
 
@@ -43,6 +44,17 @@ class _OverlayMenuButtonState extends State<OverlayMenuButton> {
         widthOffset: widget._widthOffset,
       ),
     );
+  }
+
+  @override
+  void didUpdateWidget(covariant OverlayMenuButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The overlay entry builder does notice that its input values (e.g. the child) has
+    // changed and does not rebuild the _OverlayMenu. Therefore we have to trigger the rebuild manually.
+    // However; We can not do that directly since we are already in the build phase.
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+      _overlayEntry.markNeedsBuild();
+    });
   }
 
   @override
