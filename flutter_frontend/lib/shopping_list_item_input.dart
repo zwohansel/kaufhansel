@@ -68,8 +68,12 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
       _newItemNameController.clear();
       // Scroll to the new element after it has been added and rendered (at the end of this frame).
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        widget.shoppingListScrollController.animateTo(widget.shoppingListScrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+        Future.delayed(
+            Duration(milliseconds: 500),
+            () => widget.shoppingListScrollController.animateTo(
+                widget.shoppingListScrollController.position.maxScrollExtent,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut));
       });
     } on Exception catch (e) {
       developer.log("Could not add $name to list", error: e);

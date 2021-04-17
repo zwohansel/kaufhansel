@@ -39,7 +39,15 @@ class ShoppingListView extends StatelessWidget {
             shoppingList.items.where((item) => item.isInCategory(category)).toList(growable: false),
             shoppingList.info.permissions),
         builder: (context, tuple, child) {
-          return _buildListView(context, tuple.item1, tuple.item2.canEditItems);
+          return Scrollbar(
+            isAlwaysShown:
+                false, // Setting this value to true causes an assertion error when the first category is created
+            controller: scrollController,
+            child: RefreshIndicator(
+              onRefresh: onRefresh,
+              child: _buildListView(context, tuple.item1, tuple.item2.canEditItems),
+            ),
+          );
         });
   }
 
@@ -67,14 +75,8 @@ class ShoppingListView extends StatelessWidget {
 
     if (mode == ShoppingListModeOption.EDITING && canEditItems) {
       return ImplicitlyAnimatedReorderableList<SyncedShoppingListItem>(
-        // TODO: Add scrollbar once dispose bug is fixed.
-        // The ImplicitlyAnimatedReorderableList supports shrinkWrap (the native reorderable list does not).
-        // This means we can finally add a scrollbar around the reorderable list.
-        // However; ImplicitlyAnimatedReorderableList disposes the ScrollController in its dispose method
-        // although it has not created the controller. This has to be fixed first: https://github.com/bnxm/implicitly_animated_reorderable_list/issues/72
-
-        // shrinkWrap: true,
-        // controller: scrollController,
+        shrinkWrap: true,
+        controller: scrollController,
         items: visibleItems.toList(),
         areItemsTheSame: (a, b) => a.id == b.id,
         itemBuilder: (context, animation, item, i) {
@@ -96,20 +98,13 @@ class ShoppingListView extends StatelessWidget {
       final uncheckedItems = visibleItems.where((item) => !item.checked);
       final orderedItems = [...uncheckedItems, ...checkedItems];
 
-      return Scrollbar(
-        isAlwaysShown: false, // Setting this value to true causes an assertion error when the first category is created
+      return ImplicitlyAnimatedList<SyncedShoppingListItem>(
+        physics: const AlwaysScrollableScrollPhysics(), // allow overscroll to trigger refresh indicator
+        shrinkWrap: true,
         controller: scrollController,
-        child: RefreshIndicator(
-          onRefresh: onRefresh,
-          child: ImplicitlyAnimatedList<SyncedShoppingListItem>(
-            physics: const AlwaysScrollableScrollPhysics(), // allow overscroll to trigger refresh indicator
-            shrinkWrap: true,
-            controller: scrollController,
-            items: orderedItems,
-            areItemsTheSame: (a, b) => a.id == b.id,
-            itemBuilder: itemBuilder,
-          ),
-        ),
+        items: orderedItems,
+        areItemsTheSame: (a, b) => a.id == b.id,
+        itemBuilder: itemBuilder,
       );
     }
   }

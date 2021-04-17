@@ -62,7 +62,8 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.widgetWithIcon(AsyncOperationIconButton, Icons.add));
-    await tester.pumpAndSettle();
+    await tester.pump(); // pump one frame to start the scroll down animation
+    await tester.pump(Duration(seconds: 1)); // the animation should be over after less than one second
 
     expect(find.widgetWithText(TextField, "New Item"), findsNothing);
     expect(shoppingList.items.length, 1);
