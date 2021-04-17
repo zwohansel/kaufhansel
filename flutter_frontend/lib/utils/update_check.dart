@@ -6,7 +6,7 @@ import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/settings/settings_store.dart';
 import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 import 'package:kaufhansel_client/widgets/confirm_dialog.dart';
-import 'package:package_info/package_info.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../model.dart';
 

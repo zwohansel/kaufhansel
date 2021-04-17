@@ -3,10 +3,10 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/model.dart';
+import 'package:kaufhansel_client/utils/update_check.dart';
 import 'package:kaufhansel_client/widgets/confirm_dialog.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
 import 'package:kaufhansel_client/widgets/link.dart';
-import 'package:package_info/package_info.dart';
 
 import '../widgets/title_widget.dart';
 
@@ -39,17 +39,10 @@ class _AppSettingsState extends State<AppSettings> {
   }
 
   void _setVersion() async {
-    try {
-      final info = await PackageInfo.fromPlatform();
-      setState(() {
-        _version = info.version;
-      });
-    } on Exception catch (e) {
-      log("Could not get app version.", error: e);
-      setState(() {
-        _version = "?.?.?";
-      });
-    }
+    final version = await getCurrentVersion();
+    setState(() {
+      _version = version?.toString() ?? "?.?.?";
+    });
   }
 
   @override
@@ -127,7 +120,7 @@ class _AppSettingsState extends State<AppSettings> {
       child: Padding(
           padding: EdgeInsets.all(10),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(AppLocalizations.of(context).appSettingsAboutTitle,
