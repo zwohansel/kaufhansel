@@ -99,7 +99,7 @@ class _OverlayMenu extends StatelessWidget {
         widthOffset = widthOffset;
 
   @override
-  Widget build(_) {
+  Widget build(context) {
     final double padding = 12.0;
     final double borderRadius = 4.0;
     RenderBox renderBox = _overlayKey.currentContext.findRenderObject();
@@ -107,6 +107,7 @@ class _OverlayMenu extends StatelessWidget {
     Offset buttonPosition = renderBox.localToGlobal(Offset.zero);
     double calculatedWidthOffset = (widthOffset != 0) ? (widthOffset + 2 * padding + 2 * borderRadius) : 0;
 
+    final theme = Theme.of(context);
     return Stack(children: [
       GestureDetector(
         onTap: _onBarrierClicked,
@@ -132,11 +133,7 @@ class _OverlayMenu extends StatelessWidget {
               borderRadius: BorderRadius.circular(borderRadius),
             ),
             child: Theme(
-              data: ThemeData(
-                iconTheme: IconThemeData(
-                  color: Colors.white,
-                ),
-              ),
+              data: theme.copyWith(iconTheme: theme.iconTheme.copyWith(color: Colors.white)),
               child: Padding(
                 padding: EdgeInsets.all(padding),
                 child: _child,
