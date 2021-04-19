@@ -7,6 +7,7 @@ import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/shopping_list_drawer.dart';
 import 'package:kaufhansel_client/synced_shoppinglist.dart';
+import 'package:provider/provider.dart';
 
 import 'rest_client_stub.dart';
 import 'utils.dart';
@@ -220,31 +221,32 @@ SyncedShoppingList createReadOnlyList(RestClient client) {
   return SyncedShoppingList(client, ShoppingList(buildShoppingListInfo(permissions), []));
 }
 
-ShoppingListDrawer createDrawer(SyncedShoppingList list) {
+Widget createDrawer(SyncedShoppingList list) {
   return _buildDrawer(shoppingLists: [list.info], selectedList: list);
 }
 
 ShoppingListInfo buildShoppingListInfo(ShoppingListPermissions permissions) =>
     ShoppingListInfo("id0", "List0", permissions, []);
 
-ShoppingListDrawer _buildDrawer({
+Widget _buildDrawer({
   List<ShoppingListInfo> shoppingLists,
   SyncedShoppingList selectedList,
   void onShoppingListSelected(ShoppingListInfo info),
 }) {
-  return ShoppingListDrawer(
-    shoppingListInfos: shoppingLists ?? [],
-    selectedShoppingList: selectedList,
-    userInfo: ShoppingListUserInfo("0", "Test", "test@test.de", "token"),
-    onRefreshPressed: () {},
-    onShoppingListSelected: onShoppingListSelected ?? (info) {},
-    onCreateShoppingList: (name) => null,
-    onDeleteShoppingList: (info) => null,
-    onAddUserToShoppingListIfPresent: (info, user) => null,
-    onChangeShoppingListPermissions: (info, string, role) => null,
-    onRemoveUserFromShoppingList: (info, userRef) => null,
-    onChangeShoppingListName: (info, name) => null,
-    onLogOut: () => null,
-    onDeleteUserAccount: () => null,
-  );
+  return ChangeNotifierProvider.value(
+      value: selectedList,
+      child: ShoppingListDrawer(
+        shoppingListInfos: shoppingLists ?? [],
+        userInfo: ShoppingListUserInfo("0", "Test", "test@test.de", "token"),
+        onRefreshPressed: () {},
+        onShoppingListSelected: onShoppingListSelected ?? (info) {},
+        onCreateShoppingList: (name) => null,
+        onDeleteShoppingList: (info) => null,
+        onAddUserToShoppingListIfPresent: (info, user) => null,
+        onChangeShoppingListPermissions: (info, string, role) => null,
+        onRemoveUserFromShoppingList: (info, userRef) => null,
+        onChangeShoppingListName: (info, name) => null,
+        onLogOut: () => null,
+        onDeleteUserAccount: () => null,
+      ));
 }

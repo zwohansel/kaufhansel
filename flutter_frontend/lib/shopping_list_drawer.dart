@@ -14,7 +14,6 @@ import 'model.dart';
 class ShoppingListDrawer extends StatelessWidget {
   const ShoppingListDrawer({
     @required this.shoppingListInfos,
-    this.selectedShoppingList,
     @required this.userInfo,
     @required this.onRefreshPressed,
     @required this.onShoppingListSelected,
@@ -29,7 +28,6 @@ class ShoppingListDrawer extends StatelessWidget {
   }) : assert(shoppingListInfos != null);
 
   final List<ShoppingListInfo> shoppingListInfos;
-  final SyncedShoppingList selectedShoppingList;
   final ShoppingListUserInfo userInfo;
   final VoidCallback onRefreshPressed;
   final void Function(ShoppingListInfo info) onShoppingListSelected;
@@ -45,80 +43,69 @@ class ShoppingListDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final infoTiles = shoppingListInfos.where((info) => info.id != selectedShoppingList?.info?.id)?.map(
-          (info) => ChangeNotifierProvider.value(
-            value: info,
-            builder: (context, child) => ListTile(
-                key: ValueKey(info.id),
-                title: Consumer<ShoppingListInfo>(builder: (context, info, child) => Text(info.name)),
-                leading: Tooltip(
-                    message: info.permissions.role.toDisplayString(context),
-                    child: Icon(info.permissions.role.toIcon(), size: 18)),
-                onTap: () => _onShoppingListSelected(context, info)),
-          ),
-        );
-
-    return Drawer(
-      child: ListView(
-        children: [
-          Container(
-            color: Theme.of(context).primaryColor,
-            child: _buildDrawerHeader(context, selectedShoppingList),
-          ),
-          ListTile(
-            leading: Icon(Icons.refresh_outlined),
-            title: Text(AppLocalizations.of(context).refresh),
-            onTap: () {
-              onRefreshPressed();
-              Navigator.pop(context);
-            },
-          ),
-          _buildManageCategoriesMenuItem(context, selectedShoppingList),
-          _buildListSettingsMenuItem(context, selectedShoppingList),
-          _buildMenuCategoryItem(context, AppLocalizations.of(context).shoppingListMyLists),
-          ...infoTiles,
-          Container(height: 2, color: Theme.of(context).hoverColor),
-          ListTile(
-            // tileColor: Theme.of(context).primaryColorLight,
-            leading: Icon(Icons.post_add),
-            title: Text(AppLocalizations.of(context).shoppingListCreateNew),
-            onTap: () => showTextInputDialog(context,
-                title: AppLocalizations.of(context).shoppingListCreateNewTitle,
-                hintText: AppLocalizations.of(context).shoppingListCreateNewEnterNameHint,
-                confirmBtnLabel: AppLocalizations.of(context).shoppingListCreateNewConfirm,
-                onConfirm: onCreateShoppingList),
-          ),
-          _buildMenuCategoryItem(context, AppLocalizations.of(context).appTitle),
-          ListTile(
-            // tileColor: Theme.of(context).primaryColorLight,
-            leading: Icon(Icons.person_add),
-            title: Text(AppLocalizations.of(context).invitationCodeGenerate),
-            onTap: () {
-              final RestClient client = RestClientWidget.of(context);
-              showDialog(
-                  context: context,
-                  builder: (context) {
-                    return InviteDialog(client);
-                  });
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.settings),
-            title: Text(AppLocalizations.of(context).appSettings),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => new AppSettings(
-                    userInfo: userInfo,
-                    onLogOut: onLogOut,
-                    onDeleteAccount: onDeleteUserAccount,
+    return Consumer<SyncedShoppingList>(
+      builder: (context, selectedList, child) => Drawer(
+        child: ListView(
+          children: [
+            Container(
+              color: Theme.of(context).primaryColor,
+              child: _buildDrawerHeader(context, selectedList),
+            ),
+            ListTile(
+              leading: Icon(Icons.refresh_outlined),
+              title: Text(AppLocalizations.of(context).refresh),
+              onTap: () {
+                onRefreshPressed();
+                Navigator.pop(context);
+              },
+            ),
+            _buildManageCategoriesMenuItem(context, selectedList),
+            _buildListSettingsMenuItem(context, selectedList),
+            _buildMenuCategoryItem(context, AppLocalizations.of(context).shoppingListMyLists),
+            ..._buildInfoTiles(context, selectedList),
+            Container(height: 2, color: Theme.of(context).hoverColor),
+            ListTile(
+              // tileColor: Theme.of(context).primaryColorLight,
+              leading: Icon(Icons.post_add),
+              title: Text(AppLocalizations.of(context).shoppingListCreateNew),
+              onTap: () => showTextInputDialog(context,
+                  title: AppLocalizations.of(context).shoppingListCreateNewTitle,
+                  hintText: AppLocalizations.of(context).shoppingListCreateNewEnterNameHint,
+                  confirmBtnLabel: AppLocalizations.of(context).shoppingListCreateNewConfirm,
+                  onConfirm: onCreateShoppingList),
+            ),
+            _buildMenuCategoryItem(context, AppLocalizations.of(context).appTitle),
+            ListTile(
+              // tileColor: Theme.of(context).primaryColorLight,
+              leading: Icon(Icons.person_add),
+              title: Text(AppLocalizations.of(context).invitationCodeGenerate),
+              onTap: () {
+                final RestClient client = RestClientWidget.of(context);
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return InviteDialog(client);
+                    });
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text(AppLocalizations.of(context).appSettings),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => new AppSettings(
+                      userInfo: userInfo,
+                      onLogOut: onLogOut,
+                      onDeleteAccount: onDeleteUserAccount,
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-        ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -157,6 +144,21 @@ class ShoppingListDrawer extends StatelessWidget {
         child: Text(text, style: Theme.of(context).primaryTextTheme.bodyText1),
       ),
     );
+  }
+
+  Iterable<Widget> _buildInfoTiles(BuildContext context, SyncedShoppingList selectedList) {
+    return shoppingListInfos.where((info) => info.id != selectedList?.info?.id)?.map(
+          (info) => ChangeNotifierProvider.value(
+            value: info,
+            builder: (context, child) => ListTile(
+                key: ValueKey(info.id),
+                title: Consumer<ShoppingListInfo>(builder: (context, info, child) => Text(info.name)),
+                leading: Tooltip(
+                    message: info.permissions.role.toDisplayString(context),
+                    child: Icon(info.permissions.role.toIcon(), size: 18)),
+                onTap: () => _onShoppingListSelected(context, info)),
+          ),
+        );
   }
 
   StatelessWidget _buildListSettingsMenuItem(BuildContext context, SyncedShoppingList currentList) {

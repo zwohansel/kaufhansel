@@ -26,25 +26,26 @@ class RestClientStub implements RestClient {
   final void Function(String shoppingListId, String oldCategoryName, String newCategoryName) onRenameCategory;
   final void Function(String shoppingListId, String ofCategory) onUncheckItems;
   final void Function(String shoppingListId, ShoppingListItem item) onDeleteShoppingListItem;
+  final void Function(String shoppingListId, String newName) onRenameShoppingList;
 
   final List<User> _users = [];
   final Map<String, RegistrationProcessType> _inviteCodes = {};
   VoidCallback _onUnauthenticated;
 
-  RestClientStub({
-    this.onRegister,
-    this.onPasswordResetRequest,
-    this.onPasswordReset,
-    this.onGetBackendInfo,
-    this.onGetShoppingLists,
-    this.onFetchShoppingList,
-    this.onCreateShoppingListItem,
-    this.onUpdateShoppingListItem,
-    this.onRemoveCategory,
-    this.onRenameCategory,
-    this.onUncheckItems,
-    this.onDeleteShoppingListItem,
-  });
+  RestClientStub(
+      {this.onRegister,
+      this.onPasswordResetRequest,
+      this.onPasswordReset,
+      this.onGetBackendInfo,
+      this.onGetShoppingLists,
+      this.onFetchShoppingList,
+      this.onCreateShoppingListItem,
+      this.onUpdateShoppingListItem,
+      this.onRemoveCategory,
+      this.onRenameCategory,
+      this.onUncheckItems,
+      this.onDeleteShoppingListItem,
+      this.onRenameShoppingList});
 
   void addUser(User user) => _users.add(user);
 
@@ -96,8 +97,9 @@ class RestClientStub implements RestClient {
   }
 
   @override
-  Future<void> changeShoppingListName(String shoppingListId, String newName) {
-    throw UnimplementedError();
+  Future<void> changeShoppingListName(String shoppingListId, String newName) async {
+    if (onRenameShoppingList == null) throw UnimplementedError();
+    onRenameShoppingList(shoppingListId, newName);
   }
 
   @override

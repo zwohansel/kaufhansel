@@ -929,4 +929,80 @@ void main() {
     await checkIsUnAuthenticatedDialogAndDismiss(tester, localizations);
     checkIsLoginPage(localizations);
   });
+
+  testWidgets('Rename shopping list', (WidgetTester tester) async {
+    final adminPermissions = ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true);
+    final listId = "1";
+    final oldListName = "TestList";
+    final newListName = "NewListName";
+
+    String renamedListName;
+    final client = RestClientStub(
+      onGetBackendInfo: () => BackendInfo(version, null),
+      onGetShoppingLists: () => [ShoppingListInfo(listId, oldListName, adminPermissions, [])],
+      onFetchShoppingList: (id) => [],
+      onRenameShoppingList: (shoppingListId, newName) {
+        expect(shoppingListId, equals(listId));
+        renamedListName = newName;
+      },
+    );
+
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
+    await tester.pumpAndSettle();
+
+    // open drawer
+    final drawerIcon = find.widgetWithIcon(IconButton, Icons.menu);
+    expect(drawerIcon, findsOneWidget);
+    await tester.tap(drawerIcon);
+    await tester.pumpAndSettle();
+
+    // open list settings
+    final listSettingsMenuItem = find.widgetWithText(ListTile, localizations.listSettings);
+    expect(listSettingsMenuItem, findsOneWidget);
+    await tester.tap(listSettingsMenuItem);
+    await tester.pumpAndSettle();
+
+    // check that we see the list name
+    expect(find.text(oldListName), findsOneWidget);
+
+    // find and tap the rename button
+    final renameListBtn = find.widgetWithIcon(IconButton, Icons.drive_file_rename_outline);
+    expect(renameListBtn, findsOneWidget);
+    await tester.tap(renameListBtn);
+    await tester.pumpAndSettle();
+
+    // find the input field for the list name and enter the new name
+    final renameField = find.widgetWithText(TextField, oldListName);
+    expect(renameField, findsOneWidget);
+    await tester.enterText(renameField, newListName);
+
+    // find and press the confirm button
+    final confirmRenameListBtn = find.widgetWithIcon(IconButton, Icons.check);
+    expect(confirmRenameListBtn, findsOneWidget);
+    await tester.tap(confirmRenameListBtn);
+    await tester.pumpAndSettle();
+
+    // check that we find the new name
+    expect(find.text(newListName), findsOneWidget);
+
+    // ...but no longer the old name
+    expect(find.text(oldListName), findsNothing);
+
+    // leave the list settings
+    final backBtn = find.widgetWithIcon(IconButton, Icons.arrow_back);
+    expect(backBtn, findsOneWidget);
+    await tester.tap(backBtn);
+    await tester.pumpAndSettle();
+
+    // check that we find the new name (visible in drawer and appbar)
+    expect(find.text(newListName), findsWidgets);
+
+    // ...but no longer the old name
+    expect(find.text(oldListName), findsNothing);
+
+    // check that the rename was sent to the backend
+    expect(renamedListName, isNotNull,
+        reason: "This is probably because the onRenameShoppingList callback of the RestClient was not called.");
+    expect(renamedListName, equals(newListName));
+  });
 }
