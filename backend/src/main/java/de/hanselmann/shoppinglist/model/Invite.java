@@ -51,6 +51,16 @@ public class Invite {
         this.invitedToShoppingLists.addAll(invite.invitedToShoppingLists);
     }
 
+    protected Invite(ObjectId id, String code, ObjectId generatedByUser, LocalDateTime generatedAt,
+            String inviteeEmailAddress, List<ObjectId> invitedToShoppingLists) {
+        this.id = id;
+        this.code = code;
+        this.generatedByUser = generatedByUser;
+        this.generatedAt = generatedAt;
+        this.inviteeEmailAddress = inviteeEmailAddress;
+        this.invitedToShoppingLists = invitedToShoppingLists;
+    }
+
     public Invite forEmailAddress(String emailAddress) {
         return new Invite(this, emailAddress);
     }

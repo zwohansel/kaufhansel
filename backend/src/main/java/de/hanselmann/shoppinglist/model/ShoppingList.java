@@ -19,6 +19,17 @@ public class ShoppingList {
     private List<ShoppingListItem> items = new ArrayList<>();
     private List<ShoppingListUserReference> users = new ArrayList<>();
 
+    public ShoppingList() {
+    }
+
+    protected ShoppingList(ObjectId id, String name, List<ShoppingListItem> items,
+            List<ShoppingListUserReference> users) {
+        this.id = id;
+        this.name = name;
+        this.items = items;
+        this.users = users;
+    }
+
     public ObjectId getId() {
         return id;
     }

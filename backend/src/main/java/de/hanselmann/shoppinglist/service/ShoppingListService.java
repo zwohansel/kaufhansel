@@ -38,39 +38,42 @@ public class ShoppingListService {
 
     public @Nullable ShoppingList createShoppingListForCurrentUser(String name) {
         try {
-            return transactionTemplate.execute(status -> {
-                ShoppingListUser user = userService.getCurrentUser();
-                ShoppingList shoppingList = new ShoppingList();
-                shoppingList.setName(name);
-                shoppingList.addUser(new ShoppingListUserReference(user.getId()));
-                shoppingListRepository.save(shoppingList);
-                userService.addShoppingListToUser(user, shoppingList.getId(), ShoppingListRole.ADMIN);
-                return shoppingList;
-            });
+            return transactionTemplate.execute(status -> createShoppingListForCurrentUserImpl(name));
         } catch (TransactionException e) {
             return null;
         }
     }
 
+    ShoppingList createShoppingListForCurrentUserImpl(String name) {
+        ShoppingListUser user = userService.getCurrentUser();
+        ShoppingList shoppingList = new ShoppingList();
+        shoppingList.setName(name);
+        shoppingList.addUser(new ShoppingListUserReference(user.getId()));
+        shoppingListRepository.save(shoppingList);
+        userService.addShoppingListToUser(user, shoppingList.getId(), ShoppingListRole.ADMIN);
+        return shoppingList;
+    }
+
     public boolean addUserToShoppingList(ObjectId shoppingListId, ShoppingListUser user) {
         try {
-            return transactionTemplate.execute(status -> {
-                ShoppingList shoppingList = shoppingListRepository.findById(shoppingListId)
-                        .orElseThrow(() -> new IllegalArgumentException("User does not exist."));
-
-                if (shoppingList.getUsers().stream().anyMatch(listUser -> listUser.getUserId().equals(user.getId()))) {
-                    throw new IllegalArgumentException("Shopping list is alread shared with user.");
-                }
-
-                shoppingList.addUser(new ShoppingListUserReference(user.getId()));
-                shoppingListRepository.save(shoppingList);
-                userService.addShoppingListToUser(user, shoppingListId, ShoppingListRole.READ_WRITE);
-                return true;
-            });
-
+            return transactionTemplate.execute(status -> addUserToShoppingListImpl(shoppingListId, user));
         } catch (TransactionException e) {
             return false;
         }
+    }
+
+    boolean addUserToShoppingListImpl(ObjectId shoppingListId, ShoppingListUser user) {
+        ShoppingList shoppingList = shoppingListRepository.findById(shoppingListId)
+                .orElseThrow(() -> new IllegalArgumentException("Shopping list does not exist."));
+
+        if (shoppingList.getUsers().stream().anyMatch(listUser -> listUser.getUserId().equals(user.getId()))) {
+            throw new IllegalArgumentException("Shopping list is alread shared with user.");
+        }
+
+        shoppingList.addUser(new ShoppingListUserReference(user.getId()));
+        shoppingListRepository.save(shoppingList);
+        userService.addShoppingListToUser(user, shoppingListId, ShoppingListRole.READ_WRITE);
+        return true;
     }
 
     public Stream<ShoppingList> getShoppingListsOfCurrentUser() {
@@ -122,7 +125,7 @@ public class ShoppingListService {
         }
     }
 
-    private void tryDeleteShoppingList(ObjectId shoppingListId) {
+    void tryDeleteShoppingList(ObjectId shoppingListId) {
         ShoppingList list = findShoppingList(shoppingListId).orElseThrow();
         ShoppingListUser user = userService.getCurrentUser();
         userService.removeShoppingListFromUser(user, shoppingListId);
