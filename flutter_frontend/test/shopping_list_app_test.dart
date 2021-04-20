@@ -1005,4 +1005,78 @@ void main() {
         reason: "This is probably because the onRenameShoppingList callback of the RestClient was not called.");
     expect(renamedListName, equals(newListName));
   });
+
+  testWidgets('Remove all items from shopping list', (WidgetTester tester) async {
+    final adminPermissions = ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true);
+    final listId = "1";
+    final listName = "RemoveAllItemsTestList";
+
+    final item0 = ShoppingListItem("0", "item0", false, null);
+    final item1 = ShoppingListItem("1", "item1", false, null);
+
+    bool allItemsRemoved = false;
+    final client = RestClientStub(
+      onGetBackendInfo: () => BackendInfo(version, null),
+      onGetShoppingLists: () => [ShoppingListInfo(listId, listName, adminPermissions, [])],
+      onFetchShoppingList: (id) => allItemsRemoved ? [] : [item0, item1],
+      onRemoveAllItems: (shoppingListId) {
+        expect(shoppingListId, equals(listId));
+        allItemsRemoved = true;
+      },
+    );
+
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
+    await tester.pumpAndSettle();
+
+    // check that both items are visible
+    expect(find.widgetWithText(CheckboxListTile, item0.name), findsOneWidget);
+    expect(find.widgetWithText(CheckboxListTile, item1.name), findsOneWidget);
+
+    // open drawer
+    final drawerIcon = find.widgetWithIcon(IconButton, Icons.menu);
+    expect(drawerIcon, findsOneWidget);
+    await tester.tap(drawerIcon);
+    await tester.pumpAndSettle();
+
+    // open list settings
+    final listSettingsMenuItem = find.widgetWithText(ListTile, localizations.listSettings);
+    expect(listSettingsMenuItem, findsOneWidget);
+    await tester.tap(listSettingsMenuItem);
+    await tester.pumpAndSettle();
+
+    // find and tap the remove-all-items button
+    final removeItemsBtn = find.widgetWithText(OutlinedButton, localizations.listSettingsClearList);
+    expect(removeItemsBtn, findsOneWidget);
+    await tester.tap(removeItemsBtn);
+
+    // Once the remove-all-items button has been pressed a progress animation is shown in the background
+    // until the remove operation has been completed. Therefore we use pump instead of pumpAndSettle.
+    await tester.pump();
+
+    // check that a confirmation message is visible
+    expect(find.text(localizations.listSettingsClearListConfirmationText(listName)), findsOneWidget);
+
+    // press the confirm button
+    final confirmBtn = find.widgetWithText(ElevatedButton, localizations.ok);
+    expect(confirmBtn, findsOneWidget);
+    await tester.tap(confirmBtn);
+    await tester.pumpAndSettle();
+
+    // leave the list settings
+    final backBtn = find.widgetWithIcon(IconButton, Icons.arrow_back);
+    expect(backBtn, findsOneWidget);
+    await tester.tap(backBtn);
+    await tester.pumpAndSettle();
+
+    // close the drawer
+    await tester.tapAt(const Offset(0, 0));
+    await tester.pumpAndSettle();
+
+    // no items should be visible
+    expect(find.byType(CheckboxListTile), findsNothing);
+
+    // check that the remove endpoint was called
+    expect(allItemsRemoved, isTrue,
+        reason: "This is probably because the onRemoveAllItems callback of the RestClient was not called.");
+  });
 }
