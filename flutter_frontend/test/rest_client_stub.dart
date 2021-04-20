@@ -28,6 +28,7 @@ class RestClientStub implements RestClient {
   final void Function(String shoppingListId, ShoppingListItem item) onDeleteShoppingListItem;
   final void Function(String shoppingListId, String newName) onRenameShoppingList;
   final void Function(String shoppingListId) onRemoveAllItems;
+  final ShoppingListUserReference Function(String shoppingListId, String userEmailAddress) onAddUserToShoppingList;
 
   final List<User> _users = [];
   final Map<String, RegistrationProcessType> _inviteCodes = {};
@@ -47,7 +48,8 @@ class RestClientStub implements RestClient {
       this.onUncheckItems,
       this.onDeleteShoppingListItem,
       this.onRenameShoppingList,
-      this.onRemoveAllItems});
+      this.onRemoveAllItems,
+      this.onAddUserToShoppingList});
 
   void addUser(User user) => _users.add(user);
 
@@ -94,8 +96,10 @@ class RestClientStub implements RestClient {
   }
 
   @override
-  Future<Optional<ShoppingListUserReference>> addUserToShoppingList(String shoppingListId, String userEmailAddress) {
-    throw UnimplementedError();
+  Future<Optional<ShoppingListUserReference>> addUserToShoppingList(
+      String shoppingListId, String userEmailAddress) async {
+    if (onAddUserToShoppingList == null) return throw UnimplementedError();
+    return Optional(onAddUserToShoppingList(shoppingListId, userEmailAddress));
   }
 
   @override
