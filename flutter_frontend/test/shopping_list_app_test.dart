@@ -1131,11 +1131,74 @@ void main() {
     expect(otherUserInfoTile, findsOneWidget);
     // ...the tile should show the email address
     expect(find.descendant(of: otherUserInfoTile, matching: find.text(otherUser.userEmailAddress)), findsOneWidget);
-    // ...and the permission icon
+    // ...and the role icon
     expect(find.descendant(of: otherUserInfoTile, matching: find.byIcon(otherUser.userRole.toIcon())), findsOneWidget);
 
     // check that the add user to list endpoint was called
     expect(otherUserAdded, isTrue,
+        reason: "This is probably because the onAddUserToShoppingList callback of the RestClient was not called.");
+  });
+
+  testWidgets('Change shopping list user role', (WidgetTester tester) async {
+    final adminPermissions = ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true);
+    final listId = "1";
+
+    final otherUser = ShoppingListUserReference("0", "Other User", "other@user.test", ShoppingListRole.READ_ONLY);
+    final newRoleToSet = ShoppingListRole.ADMIN;
+
+    bool newRoleSet = false;
+    final client = RestClientStub(
+      onGetBackendInfo: () => BackendInfo(version, null),
+      onGetShoppingLists: () => [
+        ShoppingListInfo(listId, "Test List", adminPermissions, [otherUser])
+      ],
+      onFetchShoppingList: (id) => [],
+      onChangeShoppingListPermissions: (shoppingListId, userId, newRole) {
+        expect(shoppingListId, listId);
+        expect(userId, equals(otherUser.userId));
+        expect(newRole, equals(newRoleToSet));
+        newRoleSet = true;
+        return ShoppingListUserReference(userId, otherUser.userName, otherUser.userEmailAddress, newRole);
+      },
+    );
+
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
+    await tester.pumpAndSettle();
+
+    // open drawer
+    final drawerIcon = find.widgetWithIcon(IconButton, Icons.menu);
+    expect(drawerIcon, findsOneWidget);
+    await tester.tap(drawerIcon);
+    await tester.pumpAndSettle();
+
+    // open list settings
+    final listSettingsMenuItem = find.widgetWithText(ListTile, localizations.listSettings);
+    expect(listSettingsMenuItem, findsOneWidget);
+    await tester.tap(listSettingsMenuItem);
+    await tester.pumpAndSettle();
+
+    // find the list tile of the user
+    final otherUserInfoTile = find.widgetWithText(ListTile, otherUser.userName);
+    expect(otherUserInfoTile, findsOneWidget);
+
+    // ...check his role icon
+    expect(find.descendant(of: otherUserInfoTile, matching: find.byIcon(otherUser.userRole.toIcon())), findsOneWidget);
+
+    // ...tap the tile to open the role selection dialog
+    await tester.tap(otherUserInfoTile);
+    await tester.pump();
+
+    // select the new role
+    final newRoleOption = find.widgetWithIcon(SimpleDialogOption, newRoleToSet.toIcon());
+    expect(newRoleOption, findsOneWidget);
+    await tester.tap(newRoleOption);
+    await tester.pumpAndSettle();
+
+    // ...check that the user tile shows the new role icon
+    expect(find.descendant(of: otherUserInfoTile, matching: find.byIcon(newRoleToSet.toIcon())), findsOneWidget);
+
+    // check that the add user to list endpoint was called
+    expect(newRoleSet, isTrue,
         reason: "This is probably because the onAddUserToShoppingList callback of the RestClient was not called.");
   });
 }
