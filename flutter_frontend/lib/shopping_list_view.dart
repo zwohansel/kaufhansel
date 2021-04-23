@@ -79,6 +79,10 @@ class ShoppingListView extends StatelessWidget {
         controller: scrollController,
         items: visibleItems.toList(),
         areItemsTheSame: (a, b) => a.id == b.id,
+        // Disable computation of the diff in an isolate (thread).
+        // A SyncedShoppingListItem can not be moved to an isolate because it is a ChangeNotifier
+        // and therefore can have references (listeners) to other objects that live in the main isolate.
+        spawnIsolate: false,
         itemBuilder: (context, animation, item, i) {
           return Reorderable(
             key: ValueKey(item.id),
@@ -104,6 +108,7 @@ class ShoppingListView extends StatelessWidget {
         controller: scrollController,
         items: orderedItems,
         areItemsTheSame: (a, b) => a.id == b.id,
+        spawnIsolate: false, // see above
         itemBuilder: itemBuilder,
       );
     }
