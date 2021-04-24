@@ -134,7 +134,7 @@ public class ShoppingListController implements ShoppingListApi {
     }
 
     private ResponseEntity<Void> removeCategoriesFromShoppingList(ShoppingList list, @Nullable String category) {
-        List<ShoppingListItem> changedItems = shoppingListService.removeCategories(list, category);
+        List<ShoppingListItem> changedItems = shoppingListService.removeCategory(list, category);
         if (changedItems == null) {
             return ResponseEntity.badRequest().build();
         }

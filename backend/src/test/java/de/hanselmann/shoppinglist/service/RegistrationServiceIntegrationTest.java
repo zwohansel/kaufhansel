@@ -140,7 +140,7 @@ public class RegistrationServiceIntegrationTest {
     public void generateInviteCode() {
         when(codeGenerator.generateInviteCode()).thenReturn("1NV1T3");
         ObjectId userId = new ObjectId();
-        when(userService.getCurrentUser()).thenReturn(Creator.userWithOneList(userId));
+        when(userService.getCurrentUser()).thenReturn(Creator.userWithOneListReference(userId));
 
         cut.generateInviteCode();
         verify(inviteRepository).save(
@@ -152,7 +152,7 @@ public class RegistrationServiceIntegrationTest {
     public void sendInvite(boolean inviteExists, boolean pendingRegistrationExists, boolean userExists,
             boolean expectedSuccess) {
         when(codeGenerator.generateInviteCode()).thenReturn("1NV1T3");
-        when(userService.getCurrentUser()).thenReturn(Creator.userWithOneList(new ObjectId()));
+        when(userService.getCurrentUser()).thenReturn(Creator.userWithOneListReference(new ObjectId()));
 
         when(inviteRepository.existsByInviteeEmailAddress(any())).thenReturn(inviteExists);
         when(pendingRegistrationRepository.existsByEmailAddress(any())).thenReturn(pendingRegistrationExists);
@@ -175,7 +175,7 @@ public class RegistrationServiceIntegrationTest {
     @Test
     public void sendInviteForShoppingList() {
         when(codeGenerator.generateInviteCode()).thenReturn("1NV1T3");
-        when(userService.getCurrentUser()).thenReturn(Creator.userWithOneList(new ObjectId()));
+        when(userService.getCurrentUser()).thenReturn(Creator.userWithOneListReference(new ObjectId()));
 
         ObjectId shoppingListId = new ObjectId();
         boolean success = cut.sendInviteForShoppingList("neuer.hansel@mail.de", shoppingListId);

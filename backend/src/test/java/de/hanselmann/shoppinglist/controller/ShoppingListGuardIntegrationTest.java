@@ -86,7 +86,7 @@ public class ShoppingListGuardIntegrationTest {
 
     private ObjectId mockUserWithShoppingList(ShoppingListRole role) {
         ObjectId shoppingListId = new ObjectId();
-        ShoppingListUser user = Creator.userWithOneList(shoppingListId, role);
+        ShoppingListUser user = Creator.userWithOneListReference(shoppingListId, role);
         when(userService.findCurrentUser()).thenReturn(Optional.of(user));
         return shoppingListId;
     }
@@ -105,7 +105,7 @@ public class ShoppingListGuardIntegrationTest {
     @Test
     public void testSuperUserCanDeleteAnyOtherUser() {
         ObjectId userToBeDeletedId = new ObjectId();
-        ShoppingListUser userToBeDeleted = Creator.userWithOneList(userToBeDeletedId);
+        ShoppingListUser userToBeDeleted = Creator.userWithOneListReference(userToBeDeletedId);
         when(userService.findUser(eq(userToBeDeletedId))).thenReturn(Optional.of(userToBeDeleted));
 
         ObjectId superUserId = new ObjectId();
@@ -119,7 +119,7 @@ public class ShoppingListGuardIntegrationTest {
     @Test
     public void testUserCanDelteOwnAccount() {
         ObjectId userId = new ObjectId();
-        ShoppingListUser user = Creator.userWithOneList(userId);
+        ShoppingListUser user = Creator.userWithOneListReference(userId);
 
         when(userService.findUser(eq(userId))).thenReturn(Optional.of(user));
         when(userService.getCurrentUser()).thenReturn(user);

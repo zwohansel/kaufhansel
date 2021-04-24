@@ -3,7 +3,6 @@ package de.hanselmann.shoppinglist.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -88,9 +87,7 @@ public class ShoppingList {
     }
 
     public void removeUserFromShoppingList(ObjectId userId) {
-        if (!users.removeIf(user -> user.getUserId().equals(userId))) {
-            throw new NoSuchElementException();
-        }
+        users.removeIf(user -> user.getUserId().equals(userId));
     }
 
     public boolean moveItem(ShoppingListItem item, int targetIndex) {

@@ -151,7 +151,7 @@ public class ShoppingListService {
                     shoppingListRepository.save(shoppingList);
                 },
                 () -> {
-                    throw new IllegalArgumentException("");
+                    throw new IllegalArgumentException("No such shopping list");
                 });
     }
 
@@ -166,18 +166,20 @@ public class ShoppingListService {
      */
     public @Nullable List<ShoppingListItem> uncheckItems(ShoppingList list, @Nullable String category) {
         try {
-            return transactionTemplate.execute(status -> {
-                List<ShoppingListItem> itemsToUncheck = list.getItems().stream()
-                        .filter(ShoppingListItem::isChecked)
-                        .filter(item -> category == null || category.equals(item.getAssignee()))
-                        .collect(Collectors.toList());
-                itemsToUncheck.forEach(item -> item.setChecked(false));
-                shoppingListRepository.save(list);
-                return itemsToUncheck;
-            });
+            return transactionTemplate.execute(status -> uncheckItemsImpl(list, category));
         } catch (TransactionException e) {
             return null;
         }
+    }
+
+    List<ShoppingListItem> uncheckItemsImpl(ShoppingList list, String category) {
+        List<ShoppingListItem> itemsToUncheck = list.getItems().stream()
+                .filter(ShoppingListItem::isChecked)
+                .filter(item -> category == null || category.equals(item.getAssignee()))
+                .collect(Collectors.toList());
+        itemsToUncheck.forEach(item -> item.setChecked(false));
+        shoppingListRepository.save(list);
+        return itemsToUncheck;
     }
 
     /**
@@ -189,60 +191,71 @@ public class ShoppingListService {
      *                 be removed.
      * @return List of processed items. If the transaction fails, null is returned.
      */
-    public @Nullable List<ShoppingListItem> removeCategories(ShoppingList list, @Nullable String category) {
+    public @Nullable List<ShoppingListItem> removeCategory(ShoppingList list, @Nullable String category) {
         try {
-            return transactionTemplate.execute(status -> {
-                List<ShoppingListItem> itemsToChange = list.getItems().stream()
-                        .filter(item -> item.getAssignee() != null && !item.getAssignee().isBlank())
-                        .filter(item -> category == null || category.equals(item.getAssignee()))
-                        .collect(Collectors.toList());
-                itemsToChange.forEach(item -> item.setAssignee(""));
-                shoppingListRepository.save(list);
-                return itemsToChange;
-            });
+            return transactionTemplate.execute(status -> removeCategoryImpl(list, category));
         } catch (TransactionException e) {
             return null;
         }
+    }
+
+    List<ShoppingListItem> removeCategoryImpl(ShoppingList list, String category) {
+        List<ShoppingListItem> itemsToChange = list.getItems().stream()
+                .filter(item -> item.getAssignee() != null && !item.getAssignee().isBlank())
+                .filter(item -> category == null || category.equals(item.getAssignee()))
+                .collect(Collectors.toList());
+        itemsToChange.forEach(item -> item.setAssignee(""));
+        shoppingListRepository.save(list);
+        return itemsToChange;
     }
 
     public List<ShoppingListItem> renameCategory(ShoppingList list, String oldCategory, String newCategory) {
         try {
-            return transactionTemplate.execute(status -> {
-                List<ShoppingListItem> itemsToChange = list.getItems().stream()
-                        .filter(item -> item.getAssignee() != null && item.getAssignee().equals(oldCategory))
-                        .collect(Collectors.toList());
-                itemsToChange.forEach(item -> item.setAssignee(newCategory));
-                shoppingListRepository.save(list);
-                return itemsToChange;
-            });
+            return transactionTemplate.execute(status -> renameCategoryImpl(list, oldCategory, newCategory));
         } catch (TransactionException e) {
             return null;
         }
+    }
+
+    List<ShoppingListItem> renameCategoryImpl(ShoppingList list, String oldCategory, String newCategory) {
+        List<ShoppingListItem> itemsToChange = list.getItems().stream()
+                .filter(item -> item.getAssignee() != null && item.getAssignee().equals(oldCategory))
+                .collect(Collectors.toList());
+        itemsToChange.forEach(item -> item.setAssignee(newCategory));
+        shoppingListRepository.save(list);
+        return itemsToChange;
     }
 
     public @Nullable List<ShoppingListItem> removeAllItems(ShoppingList list) {
         try {
-            return transactionTemplate.execute(status -> {
-                List<ShoppingListItem> deletedItems = list.clearItems();
-                shoppingListRepository.save(list);
-                return deletedItems;
-            });
+            return transactionTemplate.execute(status -> removeAllItemsImpl(list));
         } catch (TransactionException e) {
             return null;
         }
     }
 
+    List<ShoppingListItem> removeAllItemsImpl(ShoppingList list) {
+        List<ShoppingListItem> deletedItems = list.clearItems();
+        shoppingListRepository.save(list);
+        return deletedItems;
+    }
+
     public @Nullable List<ShoppingListItem> removeItems(ShoppingList list, List<ObjectId> itemIdsToDelete) {
         try {
-            return transactionTemplate.execute(status -> {
-                itemIdsToDelete.forEach(id -> list.deleteItemById(id));
-                List<ShoppingListItem> deletedItems = list.clearItems();
-                shoppingListRepository.save(list);
-                return deletedItems;
-            });
+            return transactionTemplate.execute(status -> removeItemsImpl(list, itemIdsToDelete));
         } catch (TransactionException e) {
             return null;
         }
+    }
+
+    List<ShoppingListItem> removeItemsImpl(ShoppingList list, List<ObjectId> itemIdsToDelete) {
+        List<ShoppingListItem> deletedItems = itemIdsToDelete.stream()
+                .map(id -> list.deleteItemById(id))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+        shoppingListRepository.save(list);
+        return deletedItems;
     }
 
     public boolean moveShoppingListItem(ShoppingList list, ShoppingListItem item, int targetIndex) {

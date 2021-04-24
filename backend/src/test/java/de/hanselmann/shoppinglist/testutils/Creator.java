@@ -4,12 +4,15 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.bson.types.ObjectId;
 
 import de.hanselmann.shoppinglist.model.Invite;
 import de.hanselmann.shoppinglist.model.PendingRegistration;
 import de.hanselmann.shoppinglist.model.ShoppingList;
+import de.hanselmann.shoppinglist.model.ShoppingListItem;
 import de.hanselmann.shoppinglist.model.ShoppingListReference;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
@@ -32,7 +35,7 @@ public class Creator {
                 null, null, new ArrayList<>(), null, null);
     }
 
-    public static ShoppingListUser userWithOneList(ObjectId userId) {
+    public static ShoppingListUser userWithOneListReference(ObjectId userId) {
         List<ShoppingListReference> shoppingLists = new ArrayList<>();
         shoppingLists.add(new ShoppingListReference(new ObjectId(), ShoppingListRole.ADMIN));
 
@@ -40,7 +43,7 @@ public class Creator {
                 null, null, shoppingLists, null, null);
     }
 
-    public static ShoppingListUser userWithOneList(ObjectId userId, ObjectId shoppingListId) {
+    public static ShoppingListUser userWithOneListReference(ObjectId userId, ObjectId shoppingListId) {
         List<ShoppingListReference> shoppingLists = new ArrayList<>();
         shoppingLists.add(new ShoppingListReference(shoppingListId, ShoppingListRole.ADMIN));
 
@@ -48,7 +51,7 @@ public class Creator {
                 null, null, shoppingLists, null, null);
     }
 
-    public static ShoppingListUser userWithOneList(ObjectId shoppingListId, ShoppingListRole role) {
+    public static ShoppingListUser userWithOneListReference(ObjectId shoppingListId, ShoppingListRole role) {
         List<ShoppingListReference> shoppingLists = new ArrayList<>();
         shoppingLists.add(new ShoppingListReference(shoppingListId, role));
 
@@ -56,11 +59,11 @@ public class Creator {
                 null, null, shoppingLists, null, null);
     }
 
-    public static ShoppingListUser userWithTwoLists(ObjectId userId, ObjectId shoppingListId) {
-        return userWithCheckOnlyListAnd(userId, shoppingListId, ShoppingListRole.ADMIN);
+    public static ShoppingListUser userWithTwoListReferences(ObjectId userId, ObjectId shoppingListId) {
+        return userWithCheckOnlyListReferenceAnd(userId, shoppingListId, ShoppingListRole.ADMIN);
     }
 
-    public static ShoppingListUser userWithCheckOnlyListAnd(ObjectId userId, ObjectId shoppingListId,
+    public static ShoppingListUser userWithCheckOnlyListReferenceAnd(ObjectId userId, ObjectId shoppingListId,
             ShoppingListRole role) {
         List<ShoppingListReference> shoppingLists = new ArrayList<>();
         shoppingLists.add(new ShoppingListReference(shoppingListId, role));
@@ -105,8 +108,26 @@ public class Creator {
         return shoppingList(new ObjectId());
     }
 
-    public static ShoppingList shoppingList(ObjectId id) {
-        return new TestShoppingList(id, null, new ArrayList<>(), new ArrayList<>());
+    public static ShoppingList shoppingList(ObjectId shoppingListId) {
+        return new TestShoppingList(shoppingListId, null, new ArrayList<>(), new ArrayList<>());
+    }
+
+    public static ShoppingList shoppingList(ObjectId shoppingListId, ShoppingListItem... items) {
+        return new TestShoppingList(shoppingListId, null, Stream.of(items).collect(Collectors.toList()),
+                new ArrayList<>());
+    }
+
+    public static ShoppingListItem item(String name, String category, boolean checked) {
+        ShoppingListItem item = new ShoppingListItem(name);
+        item.setAssignee(category);
+        item.setChecked(checked);
+        return item;
+    }
+
+    public static ShoppingListItem item(ObjectId itemId, String name) {
+        ShoppingListItem item = new ShoppingListItem(name);
+        item.setId(itemId);
+        return item;
     }
 
 }

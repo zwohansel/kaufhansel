@@ -72,7 +72,7 @@ public class ShoppingListUserServiceIntegrationTest {
 
     @Test
     public void addShoppingListToUser() {
-        ShoppingListUser user = Creator.userWithTwoLists(new ObjectId(), new ObjectId());
+        ShoppingListUser user = Creator.userWithTwoListReferences(new ObjectId(), new ObjectId());
 
         cut.addShoppingListToUser(user, new ObjectId(), ShoppingListRole.CHECK_ONLY);
 
@@ -83,7 +83,7 @@ public class ShoppingListUserServiceIntegrationTest {
     public void removeShoppingListFromUser() {
         ObjectId userId = new ObjectId();
         ObjectId shoppingListId = new ObjectId();
-        ShoppingListUser user = Creator.userWithTwoLists(userId, shoppingListId);
+        ShoppingListUser user = Creator.userWithTwoListReferences(userId, shoppingListId);
         when(userRepository.findById(eq(userId))).thenReturn(Optional.of(user));
 
         assertThat(user.getShoppingLists().size()).isEqualTo(2);
@@ -95,7 +95,8 @@ public class ShoppingListUserServiceIntegrationTest {
     public void getRoleForUser() {
         ObjectId userId = new ObjectId();
         ObjectId shoppingListId = new ObjectId();
-        ShoppingListUser user = Creator.userWithCheckOnlyListAnd(userId, shoppingListId, ShoppingListRole.ADMIN);
+        ShoppingListUser user = Creator.userWithCheckOnlyListReferenceAnd(userId, shoppingListId,
+                ShoppingListRole.ADMIN);
         when(userRepository.findById(eq(userId))).thenReturn(Optional.of(user));
 
         ShoppingListRole role = cut.getRoleForUser(userId, shoppingListId);
@@ -105,7 +106,7 @@ public class ShoppingListUserServiceIntegrationTest {
     @Test
     public void changePermission() {
         ObjectId shoppingListId = new ObjectId();
-        ShoppingListUser user = Creator.userWithCheckOnlyListAnd(new ObjectId(), shoppingListId,
+        ShoppingListUser user = Creator.userWithCheckOnlyListReferenceAnd(new ObjectId(), shoppingListId,
                 ShoppingListRole.ADMIN);
 
         cut.changePermission(user, shoppingListId, ShoppingListRole.READ_ONLY);
@@ -161,7 +162,7 @@ public class ShoppingListUserServiceIntegrationTest {
 
         ObjectId userId = new ObjectId();
         ObjectId shoppingListId = new ObjectId();
-        ShoppingListUser user = Creator.userWithTwoLists(userId, shoppingListId);
+        ShoppingListUser user = Creator.userWithTwoListReferences(userId, shoppingListId);
 
         cut.requestPasswordReset(user);
 
