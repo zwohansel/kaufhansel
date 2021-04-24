@@ -75,7 +75,6 @@ class ShoppingListView extends StatelessWidget {
 
     if (mode == ShoppingListModeOption.EDITING && canEditItems) {
       return ImplicitlyAnimatedReorderableList<SyncedShoppingListItem>(
-        shrinkWrap: true,
         controller: scrollController,
         items: visibleItems.toList(),
         areItemsTheSame: (a, b) => a.id == b.id,
@@ -104,7 +103,6 @@ class ShoppingListView extends StatelessWidget {
 
       return ImplicitlyAnimatedList<SyncedShoppingListItem>(
         physics: const AlwaysScrollableScrollPhysics(), // allow overscroll to trigger refresh indicator
-        shrinkWrap: true,
         controller: scrollController,
         items: orderedItems,
         areItemsTheSame: (a, b) => a.id == b.id,
