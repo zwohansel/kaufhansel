@@ -1201,4 +1201,124 @@ void main() {
     expect(newRoleSet, isTrue,
         reason: "This is probably because the onAddUserToShoppingList callback of the RestClient was not called.");
   });
+
+  testWidgets('Invite other user to shopping list', (WidgetTester tester) async {
+    final adminPermissions = ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true);
+    final listId = "1";
+
+    final otherUserEMail = "other@user.test";
+
+    bool otherUserInvited = false;
+    final client = RestClientStub(
+      onGetBackendInfo: () => BackendInfo(version, null),
+      onGetShoppingLists: () => [ShoppingListInfo(listId, "Test List", adminPermissions, [])],
+      onFetchShoppingList: (id) => [],
+      onSendInvite: (String emailAddress, {String shoppingListId}) {
+        expect(shoppingListId, listId);
+        expect(emailAddress, equals(otherUserEMail));
+        otherUserInvited = true;
+      },
+      // return null to indicate that the user does not exist
+      onAddUserToShoppingList: (shoppingListId, userEmailAddress) => null,
+    );
+
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
+    await tester.pumpAndSettle();
+
+    // open drawer
+    final drawerIcon = find.widgetWithIcon(IconButton, Icons.menu);
+    expect(drawerIcon, findsOneWidget);
+    await tester.tap(drawerIcon);
+    await tester.pumpAndSettle();
+
+    // open list settings
+    final listSettingsMenuItem = find.widgetWithText(ListTile, localizations.listSettings);
+    expect(listSettingsMenuItem, findsOneWidget);
+    await tester.tap(listSettingsMenuItem);
+    await tester.pumpAndSettle();
+
+    // find the input field for adding another user to the list by entering his email address
+    final otherUserEmailField = find.widgetWithText(TextField, localizations.listSettingsAddUserToListEmailAddressHint);
+    expect(otherUserEmailField, findsOneWidget);
+    await tester.enterText(otherUserEmailField, otherUserEMail);
+
+    // press the add button
+    final addBtn = find.widgetWithIcon(IconButton, Icons.add);
+    expect(addBtn, findsOneWidget);
+    await tester.tap(addBtn);
+    await tester.pump();
+
+    // since the user does not exist the app should ask us whether we want to send an invite email to that address
+    expect(find.text(localizations.listSettingsSendListInvitationTitle(otherUserEMail)), findsOneWidget);
+    expect(find.text(localizations.listSettingsSendListInvitationText(otherUserEMail)), findsOneWidget);
+    final confirmSendInviteBtn = find.widgetWithText(ElevatedButton, localizations.listSettingsSendListInvitationYes);
+    expect(confirmSendInviteBtn, findsOneWidget);
+    await tester.tap(confirmSendInviteBtn);
+    await tester.pump();
+
+    // check that we see the confirmation that the invite has been sent
+    expect(find.text(localizations.listSettingsListInvitationSent(otherUserEMail)), findsOneWidget);
+
+    // check that the invite user to list endpoint was called
+    expect(otherUserInvited, isTrue,
+        reason: "This is probably because the onSendInvite callback of the RestClient was not called.");
+  });
+
+  testWidgets('Remove user from shopping list', (WidgetTester tester) async {
+    final adminPermissions = ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true);
+    final listId = "1";
+
+    final otherUser = ShoppingListUserReference("0", "Other User", "other@user.test", ShoppingListRole.READ_ONLY);
+
+    bool otherUserRemoved = false;
+    final client = RestClientStub(
+      onGetBackendInfo: () => BackendInfo(version, null),
+      onGetShoppingLists: () => [
+        ShoppingListInfo(listId, "Test List", adminPermissions, otherUserRemoved ? [] : [otherUser])
+      ],
+      onFetchShoppingList: (id) => [],
+      onRemoveUserFromShoppingList: (shoppingListId, userId) {
+        expect(shoppingListId, listId);
+        expect(userId, equals(otherUser.userId));
+        otherUserRemoved = true;
+      },
+    );
+
+    await tester.pumpWidget(await makeTestableShoppingListApp(client));
+    await tester.pumpAndSettle();
+
+    // open drawer
+    final drawerIcon = find.widgetWithIcon(IconButton, Icons.menu);
+    expect(drawerIcon, findsOneWidget);
+    await tester.tap(drawerIcon);
+    await tester.pumpAndSettle();
+
+    // open list settings
+    final listSettingsMenuItem = find.widgetWithText(ListTile, localizations.listSettings);
+    expect(listSettingsMenuItem, findsOneWidget);
+    await tester.tap(listSettingsMenuItem);
+    await tester.pumpAndSettle();
+
+    // find the list tile of the user
+    final otherUserInfoTile = find.widgetWithText(ListTile, otherUser.userName);
+    expect(otherUserInfoTile, findsOneWidget);
+
+    // find and tap the remove button
+    final removeBtn = find.descendant(of: otherUserInfoTile, matching: find.byIcon(Icons.delete));
+    expect(removeBtn, findsOneWidget);
+    await tester.tap(removeBtn);
+    await tester.pump();
+
+    // confirm the removal
+    final confirmBtn = find.widgetWithText(ElevatedButton, localizations.ok);
+    await tester.tap(confirmBtn);
+    await tester.pumpAndSettle();
+
+    // check that we do not see the user tile anymore
+    expect(otherUserInfoTile, findsNothing);
+
+    // check that the add user to list endpoint was called
+    expect(otherUserRemoved, isTrue,
+        reason: "This is probably because the onRemoveUserFromShoppingList callback of the RestClient was not called.");
+  });
 }

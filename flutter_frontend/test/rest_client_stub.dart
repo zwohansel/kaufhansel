@@ -31,6 +31,8 @@ class RestClientStub implements RestClient {
   final ShoppingListUserReference Function(String shoppingListId, String userEmailAddress) onAddUserToShoppingList;
   final ShoppingListUserReference Function(String shoppingListId, String userId, ShoppingListRole newRole)
       onChangeShoppingListPermissions;
+  final void Function(String emailAddress, {String shoppingListId}) onSendInvite;
+  final void Function(String shoppingListId, String userId) onRemoveUserFromShoppingList;
 
   final List<User> _users = [];
   final Map<String, RegistrationProcessType> _inviteCodes = {};
@@ -52,7 +54,9 @@ class RestClientStub implements RestClient {
       this.onRenameShoppingList,
       this.onRemoveAllItems,
       this.onAddUserToShoppingList,
-      this.onChangeShoppingListPermissions});
+      this.onChangeShoppingListPermissions,
+      this.onSendInvite,
+      this.onRemoveUserFromShoppingList});
 
   void addUser(User user) => _users.add(user);
 
@@ -193,8 +197,9 @@ class RestClientStub implements RestClient {
   }
 
   @override
-  Future<void> removeUserFromShoppingList(String shoppingListId, String userId) {
-    throw UnimplementedError();
+  Future<void> removeUserFromShoppingList(String shoppingListId, String userId) async {
+    if (onRemoveUserFromShoppingList == null) throw UnimplementedError();
+    onRemoveUserFromShoppingList(shoppingListId, userId);
   }
 
   @override
@@ -210,8 +215,9 @@ class RestClientStub implements RestClient {
   }
 
   @override
-  Future<void> sendInvite(String emailAddress, {String shoppingListId}) {
-    throw UnimplementedError();
+  Future<void> sendInvite(String emailAddress, {String shoppingListId}) async {
+    if (onSendInvite == null) throw UnimplementedError();
+    onSendInvite(emailAddress, shoppingListId: shoppingListId);
   }
 
   @override
