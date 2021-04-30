@@ -1,32 +1,34 @@
 package de.hanselmann.shoppinglist.model;
 
-import org.bson.types.ObjectId;
+import javax.persistence.Entity;
+
 import org.springframework.data.annotation.Id;
 
 /**
  * Reference from a user to a shopping list.
  */
+@Entity
 public class ShoppingListReference {
 
     @Id
-    private ObjectId id;
-    private ObjectId shoppingListId;
+    private long id;
+    private long shoppingListId;
     private ShoppingListRole role;
 
     public ShoppingListReference() {
 
     }
 
-    public ShoppingListReference(ObjectId shoppingListId, ShoppingListRole role) {
+    public ShoppingListReference(long shoppingListId, ShoppingListRole role) {
         this.shoppingListId = shoppingListId;
         this.role = role;
     }
 
-    public ObjectId getId() {
+    public long getId() {
         return id;
     }
 
-    public ObjectId getShoppingListId() {
+    public long getShoppingListId() {
         return shoppingListId;
     }
 

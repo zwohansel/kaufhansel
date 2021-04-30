@@ -2,27 +2,29 @@ package de.hanselmann.shoppinglist.model;
 
 import java.time.LocalDateTime;
 
-import org.bson.types.ObjectId;
+import javax.persistence.Entity;
+
 import org.springframework.data.annotation.Id;
 
+@Entity
 public class Token {
     @Id
-    private ObjectId id;
+    private long id;
     private String value;
-    private ObjectId userId;
+    private long userId; // TODO: userId oder user?
     private LocalDateTime expirationDate;
 
     public Token() {
 
     }
 
-    public Token(String value, ObjectId userId, LocalDateTime expirationDate) {
+    public Token(String value, long userId, LocalDateTime expirationDate) {
         this.value = value;
         this.userId = userId;
         this.expirationDate = expirationDate;
     }
 
-    public ObjectId getId() {
+    public long getId() {
         return id;
     }
 
@@ -30,7 +32,7 @@ public class Token {
         return value;
     }
 
-    public ObjectId getUserId() {
+    public long getUserId() {
         return userId;
     }
 

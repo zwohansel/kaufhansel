@@ -2,9 +2,11 @@ package de.hanselmann.shoppinglist.model;
 
 import java.time.LocalDateTime;
 
-import org.bson.types.ObjectId;
+import javax.persistence.Entity;
+
 import org.springframework.data.annotation.Id;
 
+@Entity
 public class InfoMessage {
     public enum Severity {
         CRITICAL,
@@ -12,7 +14,7 @@ public class InfoMessage {
     }
 
     @Id
-    private ObjectId id;
+    private long id;
     private boolean enabled;
     private int messageNumber;
     private Severity severity;
@@ -21,7 +23,7 @@ public class InfoMessage {
     private LocalDateTime validFrom;
     private LocalDateTime validTo;
 
-    public ObjectId getId() {
+    public long getId() {
         return id;
     }
 

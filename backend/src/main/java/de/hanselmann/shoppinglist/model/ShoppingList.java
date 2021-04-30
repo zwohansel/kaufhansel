@@ -7,13 +7,15 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.bson.types.ObjectId;
+import javax.persistence.Entity;
+
 import org.springframework.data.annotation.Id;
 
+@Entity
 public class ShoppingList {
 
     @Id
-    private ObjectId id;
+    private long id;
     private String name;
     private List<ShoppingListItem> items = new ArrayList<>();
     private List<ShoppingListUserReference> users = new ArrayList<>();
@@ -21,7 +23,7 @@ public class ShoppingList {
     public ShoppingList() {
     }
 
-    protected ShoppingList(ObjectId id, String name, List<ShoppingListItem> items,
+    protected ShoppingList(long id, String name, List<ShoppingListItem> items,
             List<ShoppingListUserReference> users) {
         this.id = id;
         this.name = name;
@@ -29,7 +31,7 @@ public class ShoppingList {
         this.users = users;
     }
 
-    public ObjectId getId() {
+    public long getId() {
         return id;
     }
 
@@ -61,11 +63,11 @@ public class ShoppingList {
         return items.stream().filter(item -> item.isChecked() == checked).collect(Collectors.toList());
     }
 
-    public Optional<ShoppingListItem> findItemById(ObjectId id) {
-        return items.stream().filter(item -> item.getId().equals(id)).findAny();
+    public Optional<ShoppingListItem> findItemById(long id) {
+        return items.stream().filter(item -> item.getId() == id).findAny();
     }
 
-    public Optional<ShoppingListItem> deleteItemById(ObjectId id) {
+    public Optional<ShoppingListItem> deleteItemById(long id) {
         Optional<ShoppingListItem> item = findItemById(id);
         item.ifPresent(items::remove);
         return item;
@@ -86,8 +88,8 @@ public class ShoppingList {
         return copy;
     }
 
-    public void removeUserFromShoppingList(ObjectId userId) {
-        users.removeIf(user -> user.getUserId().equals(userId));
+    public void removeUserFromShoppingList(long userId) {
+        users.removeIf(user -> user.getUserId() == userId);
     }
 
     public boolean moveItem(ShoppingListItem item, int targetIndex) {

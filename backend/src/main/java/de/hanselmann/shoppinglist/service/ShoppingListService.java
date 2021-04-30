@@ -5,10 +5,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.lang.Nullable;
+import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -30,7 +29,7 @@ public class ShoppingListService {
     @Autowired
     public ShoppingListService(ShoppingListRepository shoppingListRepository,
             ShoppingListUserService userService,
-            MongoTransactionManager transactionManager) {
+            JpaTransactionManager transactionManager) {
         this.shoppingListRepository = shoppingListRepository;
         this.userService = userService;
         transactionTemplate = new TransactionTemplate(transactionManager);
@@ -54,7 +53,7 @@ public class ShoppingListService {
         return shoppingList;
     }
 
-    public boolean addUserToShoppingList(ObjectId shoppingListId, ShoppingListUser user) {
+    public boolean addUserToShoppingList(long shoppingListId, ShoppingListUser user) {
         try {
             return transactionTemplate.execute(status -> addUserToShoppingListImpl(shoppingListId, user));
         } catch (TransactionException e) {
@@ -62,11 +61,11 @@ public class ShoppingListService {
         }
     }
 
-    boolean addUserToShoppingListImpl(ObjectId shoppingListId, ShoppingListUser user) {
+    boolean addUserToShoppingListImpl(long shoppingListId, ShoppingListUser user) {
         ShoppingList shoppingList = shoppingListRepository.findById(shoppingListId)
                 .orElseThrow(() -> new IllegalArgumentException("Shopping list does not exist."));
 
-        if (shoppingList.getUsers().stream().anyMatch(listUser -> listUser.getUserId().equals(user.getId()))) {
+        if (shoppingList.getUsers().stream().anyMatch(listUser -> listUser.getUserId() == user.getId())) {
             throw new IllegalArgumentException("Shopping list is alread shared with user.");
         }
 
@@ -94,7 +93,7 @@ public class ShoppingListService {
         return getFirstShoppingListOfUser(userService.getCurrentUser().getId());
     }
 
-    public ShoppingList getFirstShoppingListOfUser(ObjectId userId) {
+    public ShoppingList getFirstShoppingListOfUser(long userId) {
         return getShoppingListsOfUser(userService.getUser(userId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("User has no shopping list."));
@@ -112,11 +111,11 @@ public class ShoppingListService {
         shoppingListRepository.save(list);
     }
 
-    public Optional<ShoppingList> findShoppingList(ObjectId id) {
+    public Optional<ShoppingList> findShoppingList(long id) {
         return shoppingListRepository.findById(id);
     }
 
-    public boolean deleteShoppingList(ObjectId id) {
+    public boolean deleteShoppingList(long id) {
         try {
             transactionTemplate.executeWithoutResult(status -> tryDeleteShoppingList(id));
             return true;
@@ -125,7 +124,7 @@ public class ShoppingListService {
         }
     }
 
-    void tryDeleteShoppingList(ObjectId shoppingListId) {
+    void tryDeleteShoppingList(long shoppingListId) {
         ShoppingList list = findShoppingList(shoppingListId).orElseThrow();
         ShoppingListUser user = userService.getCurrentUser();
         userService.removeShoppingListFromUser(user, shoppingListId);
@@ -144,7 +143,7 @@ public class ShoppingListService {
         shoppingListRepository.deleteById(shoppingListId);
     }
 
-    public void removeUserFromShoppingList(ObjectId shoppingListId, ObjectId userId) {
+    public void removeUserFromShoppingList(long shoppingListId, long userId) {
         shoppingListRepository.findById(shoppingListId).ifPresentOrElse(
                 shoppingList -> {
                     shoppingList.removeUserFromShoppingList(userId);
@@ -240,7 +239,7 @@ public class ShoppingListService {
         return deletedItems;
     }
 
-    public @Nullable List<ShoppingListItem> removeItems(ShoppingList list, List<ObjectId> itemIdsToDelete) {
+    public @Nullable List<ShoppingListItem> removeItems(ShoppingList list, List<Long> itemIdsToDelete) {
         try {
             return transactionTemplate.execute(status -> removeItemsImpl(list, itemIdsToDelete));
         } catch (TransactionException e) {
@@ -248,7 +247,7 @@ public class ShoppingListService {
         }
     }
 
-    List<ShoppingListItem> removeItemsImpl(ShoppingList list, List<ObjectId> itemIdsToDelete) {
+    List<ShoppingListItem> removeItemsImpl(ShoppingList list, List<Long> itemIdsToDelete) {
         List<ShoppingListItem> deletedItems = itemIdsToDelete.stream()
                 .map(id -> list.deleteItemById(id))
                 .filter(Optional::isPresent)
@@ -266,7 +265,7 @@ public class ShoppingListService {
         return false;
     }
 
-    public void renameList(ObjectId shoppingListId, String name) {
+    public void renameList(long shoppingListId, String name) {
         ShoppingList list = findShoppingList(shoppingListId).orElseThrow();
         list.setName(name);
         shoppingListRepository.save(list);

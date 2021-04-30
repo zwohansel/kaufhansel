@@ -1,6 +1,5 @@
 package de.hanselmann.shoppinglist.controller;
 
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,68 +15,48 @@ public class ShoppingListGuard {
         this.userService = userService;
     }
 
-    public boolean canAccessShoppingList(String id) {
-        return ObjectId.isValid(id) && canAccessShoppingList(new ObjectId(id));
-    }
-
-    public boolean canAccessShoppingList(ObjectId id) {
+    public boolean canAccessShoppingList(long id) {
         return userService.findCurrentUser().map(user -> canAccessShoppingList(user, id)).orElse(false);
     }
 
-    private boolean canAccessShoppingList(ShoppingListUser user, ObjectId id) {
-        return user.getShoppingLists().stream().anyMatch(ref -> ref.getShoppingListId().equals(id));
+    private boolean canAccessShoppingList(ShoppingListUser user, long id) {
+        return user.getShoppingLists().stream().anyMatch(ref -> ref.getShoppingListId() == id);
     }
 
-    public boolean canEditItemsInShoppingList(String id) {
-        return ObjectId.isValid(id) && canEditItemsInShoppingList(new ObjectId(id));
-    }
-
-    public boolean canEditItemsInShoppingList(ObjectId id) {
+    public boolean canEditItemsInShoppingList(long id) {
         return userService.findCurrentUser().map(user -> canEditItemsInShoppingList(user, id)).orElse(false);
     }
 
-    private boolean canEditItemsInShoppingList(ShoppingListUser user, ObjectId id) {
+    private boolean canEditItemsInShoppingList(ShoppingListUser user, long id) {
         return user.getShoppingLists().stream()
-                .filter(ref -> ref.getShoppingListId().equals(id))
+                .filter(ref -> ref.getShoppingListId() == id)
                 .anyMatch(ref -> ref.getRole().canEditItems());
     }
 
-    public boolean canCheckItemsInShoppingList(String id) {
-        return ObjectId.isValid(id) && canCheckItemsInShoppingList(new ObjectId(id));
-    }
-
-    public boolean canCheckItemsInShoppingList(ObjectId id) {
+    public boolean canCheckItemsInShoppingList(long id) {
         return userService.findCurrentUser().map(user -> canCheckItemsInShoppingList(user, id)).orElse(false);
     }
 
-    private boolean canCheckItemsInShoppingList(ShoppingListUser user, ObjectId id) {
+    private boolean canCheckItemsInShoppingList(ShoppingListUser user, long id) {
         return user.getShoppingLists().stream()
-                .filter(ref -> ref.getShoppingListId().equals(id))
+                .filter(ref -> ref.getShoppingListId() == id)
                 .anyMatch(ref -> ref.getRole().canCheckItems());
     }
 
-    public boolean canEditShoppingList(String id) {
-        return ObjectId.isValid(id) && canEditShoppingList(new ObjectId(id));
-    }
-
-    public boolean canEditShoppingList(ObjectId id) {
+    public boolean canEditShoppingList(long id) {
         return userService.findCurrentUser().map(user -> canEditShoppingList(user, id)).orElse(false);
     }
 
-    private boolean canEditShoppingList(ShoppingListUser user, ObjectId id) {
+    private boolean canEditShoppingList(ShoppingListUser user, long id) {
         return user.getShoppingLists().stream()
-                .filter(ref -> ref.getShoppingListId().equals(id))
+                .filter(ref -> ref.getShoppingListId() == id)
                 .anyMatch(ref -> ref.getRole().canEditList());
     }
 
-    public boolean canDeleteUser(String userToBeDeletedId) {
-        return ObjectId.isValid(userToBeDeletedId) && canDeleteUser(new ObjectId(userToBeDeletedId));
-    }
-
-    public boolean canDeleteUser(ObjectId userToBeDeletedId) {
+    public boolean canDeleteUser(long userToBeDeletedId) {
         boolean userCanBeDeleted = userService.findUser(userToBeDeletedId)
                 .map(user -> !user.isSuperUser()).orElse(false);
-        boolean currentUserCanDeleteUser = userService.getCurrentUser().getId().equals(userToBeDeletedId)
+        boolean currentUserCanDeleteUser = userService.getCurrentUser().getId() == userToBeDeletedId
                 || userService.getCurrentUser().isSuperUser();
         return userCanBeDeleted && currentUserCanDeleteUser;
     }

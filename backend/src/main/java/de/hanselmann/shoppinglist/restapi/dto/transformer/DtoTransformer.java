@@ -3,7 +3,6 @@ package de.hanselmann.shoppinglist.restapi.dto.transformer;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
 
 import de.hanselmann.shoppinglist.model.InfoMessage;
@@ -31,25 +30,25 @@ public class DtoTransformer {
     }
 
     public ShoppingListItemDto map(ShoppingListItem item) {
-        return new ShoppingListItemDto(item.getId().toString(), item.getName(), item.isChecked(), item.getAssignee());
+        return new ShoppingListItemDto(item.getId(), item.getName(), item.isChecked(), item.getAssignee());
     }
 
-    public ShoppingListUserReferenceDto map(ShoppingListUser user, ObjectId shoppingListId) {
+    public ShoppingListUserReferenceDto map(ShoppingListUser user, long shoppingListId) {
         ShoppingListRole role = user.getShoppingLists().stream()
-                .filter(ref -> ref.getShoppingListId().equals(shoppingListId))
+                .filter(ref -> ref.getShoppingListId() == shoppingListId)
                 .findAny()
                 .map(ShoppingListReference::getRole)
                 .orElseThrow(() -> new IllegalArgumentException("User does not know that list."));
 
         return new ShoppingListUserReferenceDto(
-                user.getId().toString(),
+                user.getId(),
                 user.getUsername(),
                 user.getEmailAddress(),
                 role);
     }
 
     public ShoppingListUserInfoDto map(ShoppingListUser user, String token) {
-        return new ShoppingListUserInfoDto(user.getId().toString(), token, user.getUsername(), user.getEmailAddress());
+        return new ShoppingListUserInfoDto(user.getId(), token, user.getUsername(), user.getEmailAddress());
     }
 
     public ShoppingListPermissionsDto map(ShoppingListRole userRole) {
@@ -60,7 +59,7 @@ public class DtoTransformer {
             ShoppingList list,
             ShoppingListPermissionsDto userPermissions,
             List<ShoppingListUserReferenceDto> otherUsers) {
-        return new ShoppingListInfoDto(list.getId().toString(), list.getName(), userPermissions, otherUsers);
+        return new ShoppingListInfoDto(list.getId(), list.getName(), userPermissions, otherUsers);
     }
 
     public RegistrationProcessTypeDto map(RegistrationProcessType typeOfRegistrationProcess) {
