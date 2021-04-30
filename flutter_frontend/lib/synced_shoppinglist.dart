@@ -172,3 +172,52 @@ class SyncedShoppingListItem extends ChangeNotifier {
     super.dispose();
   }
 }
+
+class SyncedShoppingListInfo extends ChangeNotifier {
+  final ShoppingListInfo _info;
+  final RestClient _client;
+
+  SyncedShoppingListInfo(this._info, this._client) {
+    _info.addListener(_underlyingInfoChanged);
+  }
+
+  void _underlyingInfoChanged() {
+    notifyListeners();
+  }
+
+  Future<bool> addUserToList(String userEmailAddress) async {
+    final userReference = await _client.addUserToShoppingList(_info.id, userEmailAddress);
+    if (userReference.isPresent()) {
+      _info.addUserToShoppingList(userReference.get);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<void> removeUserFromList(ShoppingListUserReference user) async {
+    await _client.removeUserFromShoppingList(_info.id, user.userId);
+    _info.removeUserFromShoppingList(user);
+  }
+
+  Future<void> changeRoleOfListUser(ShoppingListUserReference user, ShoppingListRole newRole) async {
+    if (_info.users.any((listUser) => listUser.userId == user.userId)) {
+      final userReference = await _client.changeShoppingListPermissions(_info.id, user.userId, newRole);
+      _info.updateShoppingListUser(userReference);
+    } else {
+      throw Exception("There is no user ${user.userName} (${user.userId}) in list ${_info.name} (${_info.id}).");
+    }
+  }
+
+  Future<void> changeListName(String newName) async {
+    await _client.changeShoppingListName(_info.id, newName);
+    _info.updateShoppingListName(newName);
+  }
+
+  @override
+  void dispose() {
+    _info.removeListener(_underlyingInfoChanged);
+    _info.dispose();
+    super.dispose();
+  }
+}
