@@ -6,37 +6,34 @@ import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.function.SQLFunctionTemplate;
 import org.hibernate.dialect.function.StandardSQLFunction;
 import org.hibernate.dialect.function.VarArgsSQLFunction;
+import org.hibernate.dialect.identity.IdentityColumnSupport;
+import org.hibernate.dialect.identity.IdentityColumnSupportImpl;
 import org.hibernate.type.StringType;
 
-/**
- * From
- * https://fullstackdeveloper.guru/2020/05/01/how-to-integrate-sqlite-database-with-spring-boot/
- */
 public class SqLiteDialect extends Dialect {
     public SqLiteDialect() {
         registerColumnType(Types.BIT, "integer");
-        registerColumnType(Types.TINYINT, "tinyint");
-        registerColumnType(Types.SMALLINT, "smallint");
+        registerColumnType(Types.TINYINT, "integer");
+        registerColumnType(Types.SMALLINT, "integer");
         registerColumnType(Types.INTEGER, "integer");
-        registerColumnType(Types.BIGINT, "bigint");
-        registerColumnType(Types.FLOAT, "float");
+        registerColumnType(Types.BIGINT, "integer");
+        registerColumnType(Types.FLOAT, "real");
         registerColumnType(Types.REAL, "real");
-        registerColumnType(Types.DOUBLE, "double");
+        registerColumnType(Types.DOUBLE, "real");
         registerColumnType(Types.NUMERIC, "numeric");
-        registerColumnType(Types.DECIMAL, "decimal");
-        registerColumnType(Types.CHAR, "char");
-        registerColumnType(Types.VARCHAR, "varchar");
-        registerColumnType(Types.LONGVARCHAR, "longvarchar");
-        registerColumnType(Types.DATE, "date");
-        registerColumnType(Types.TIME, "time");
-        registerColumnType(Types.TIMESTAMP, "timestamp");
+        registerColumnType(Types.DECIMAL, "numeric");
+        registerColumnType(Types.CHAR, "text");
+        registerColumnType(Types.VARCHAR, "text");
+        registerColumnType(Types.LONGVARCHAR, "text");
+        registerColumnType(Types.DATE, "text");
+        registerColumnType(Types.TIME, "text");
+        registerColumnType(Types.TIMESTAMP, "text");
         registerColumnType(Types.BINARY, "blob");
         registerColumnType(Types.VARBINARY, "blob");
         registerColumnType(Types.LONGVARBINARY, "blob");
-        // registerColumnType(Types.NULL, "null");
         registerColumnType(Types.BLOB, "blob");
         registerColumnType(Types.CLOB, "clob");
-        registerColumnType(Types.BOOLEAN, "integer");
+        registerColumnType(Types.BOOLEAN, "numeric");
 
         registerFunction("concat", new VarArgsSQLFunction(StringType.INSTANCE, "", "||", ""));
         registerFunction("mod", new SQLFunctionTemplate(StringType.INSTANCE, "?1 % ?2"));
@@ -44,98 +41,74 @@ public class SqLiteDialect extends Dialect {
         registerFunction("substring", new StandardSQLFunction("substr", StringType.INSTANCE));
     }
 
-    public boolean supportsIdentityColumns() {
-        return true;
+    public class SQLiteIdentityColumnSupport extends IdentityColumnSupportImpl {
+        @Override
+        public boolean supportsIdentityColumns() {
+            return true;
+        }
+
+        @Override
+        public String getIdentitySelectString(String table, String column, int type) {
+            return "select last_insert_rowid()";
+        }
     }
 
-    public boolean hasDataTypeInIdentityColumn() {
-        return false; // As specify in NHibernate dialect
+    @Override
+    public IdentityColumnSupport getIdentityColumnSupport() {
+        return new SQLiteIdentityColumnSupport();
     }
 
-    public String getIdentityColumnString() {
-        // return "integer primary key autoincrement";
-        return "integer";
-    }
-
-    public String getIdentitySelectString() {
-        return "select last_insert_rowid()";
-    }
-
-    public boolean supportsLimit() {
-        return true;
-    }
-
-    protected String getLimitString(String query, boolean hasOffset) {
-        return new StringBuffer(query.length() + 20).append(query).append(hasOffset ? " limit ? offset ?" : " limit ?")
-                .toString();
-    }
-
-    public boolean supportsTemporaryTables() {
-        return true;
-    }
-
-    public String getCreateTemporaryTableString() {
-        return "create temporary table if not exists";
-    }
-
-    public boolean dropTemporaryTableAfterUse() {
-        return false;
-    }
-
-    public boolean supportsCurrentTimestampSelection() {
-        return true;
-    }
-
-    public boolean isCurrentTimestampSelectStringCallable() {
-        return false;
-    }
-
-    public String getCurrentTimestampSelectString() {
-        return "select current_timestamp";
-    }
-
+    @Override
     public boolean supportsUnionAll() {
         return true;
     }
 
+    @Override
     public boolean hasAlterTable() {
-        return false; // As specify in NHibernate dialect
-    }
-
-    public boolean dropConstraints() {
+        // SQLite does not support altering of tables.
+        // https://www.sqlite.org/lang_altertable.html#why_alter_table_is_such_a_problem_for_sqlite
         return false;
     }
 
+    @Override
     public String getAddColumnString() {
         return "add column";
     }
 
+    @Override
     public String getForUpdateString() {
         return "";
     }
 
+    @Override
     public boolean supportsOuterJoinForUpdate() {
         return false;
     }
 
+    @Override
+    public boolean dropConstraints() {
+        // SQLite does not have a method to drop foreign keys
+        return false;
+    }
+
+    @Override
     public String getDropForeignKeyString() {
         throw new UnsupportedOperationException("No drop foreign key syntax supported by SQLiteDialect");
     }
 
+    @Override
     public String getAddForeignKeyConstraintString(String constraintName, String[] foreignKey, String referencedTable,
             String[] primaryKey, boolean referencesPrimaryKey) {
         throw new UnsupportedOperationException("No add foreign key syntax supported by SQLiteDialect");
     }
 
+    @Override
     public String getAddPrimaryKeyConstraintString(String constraintName) {
         throw new UnsupportedOperationException("No add primary key syntax supported by SQLiteDialect");
     }
 
+    @Override
     public boolean supportsIfExistsBeforeTableName() {
         return true;
-    }
-
-    public boolean supportsCascadeDelete() {
-        return false;
     }
 }
