@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -38,7 +37,7 @@ public class TokenService {
         this.tokenRepository = tokenRepository;
     }
 
-    Optional<ObjectId> getUserIdFromTokenIfValid(String token) {
+    Optional<Long> getUserIdFromTokenIfValid(String token) {
         return tokenRepository.findByValue(token).filter(this::isValid).map(Token::getUserId);
     }
 

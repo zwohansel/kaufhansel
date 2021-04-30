@@ -4,7 +4,7 @@ import java.util.Optional;
 
 public class SendInviteDto {
     private String emailAddress;
-    private Optional<String> shoppingListId;
+    private Optional<Long> shoppingListId;
 
     public String getEmailAddress() {
         return emailAddress;
@@ -14,11 +14,11 @@ public class SendInviteDto {
         this.emailAddress = emailAddress;
     }
 
-    public Optional<String> getShoppingListId() {
+    public Optional<Long> getShoppingListId() {
         return shoppingListId;
     }
 
-    public void setShoppingListId(Optional<String> shoppingListId) {
+    public void setShoppingListId(Optional<Long> shoppingListId) {
         this.shoppingListId = shoppingListId;
     }
 

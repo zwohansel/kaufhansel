@@ -1,14 +1,14 @@
 package de.hanselmann.shoppinglist.restapi.dto;
 
 public class MoveShoppingListItemDto {
-    private String itemId;
+    private long itemId;
     private int targetIndex;
 
-    public String getItemId() {
+    public long getItemId() {
         return itemId;
     }
 
-    public void setItemId(String itemId) {
+    public void setItemId(long itemId) {
         this.itemId = itemId;
     }
 

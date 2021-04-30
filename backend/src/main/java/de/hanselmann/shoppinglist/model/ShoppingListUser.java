@@ -7,18 +7,20 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import org.bson.types.ObjectId;
+import javax.persistence.Entity;
+
 import org.springframework.data.annotation.Id;
 
+@Entity
 public class ShoppingListUser {
     @Id
-    private ObjectId id;
+    private long id;
     private boolean superUser = false;
     private String username;
     private String password;
     private String emailAddress;
     private LocalDateTime registrationDate;
-    private ObjectId invitedBy;
+    private ShoppingListUser invitedBy;
     private List<ShoppingListReference> shoppingLists = new ArrayList<>();
     private String passwordResetCode;
     private LocalDateTime passwordResetRequestedAt;
@@ -39,8 +41,8 @@ public class ShoppingListUser {
     private ShoppingListUser() {
     }
 
-    protected ShoppingListUser(ObjectId id, boolean superUser, String username, String password, String emailAddress,
-            LocalDateTime registrationDate, ObjectId invitedBy, List<ShoppingListReference> shoppingLists,
+    ShoppingListUser(long id, boolean superUser, String username, String password, String emailAddress,
+            LocalDateTime registrationDate, ShoppingListUser invitedBy, List<ShoppingListReference> shoppingLists,
             String passwordResetCode, LocalDateTime passwordResetRequestedAt) {
         this.id = id;
         this.superUser = superUser;
@@ -54,7 +56,7 @@ public class ShoppingListUser {
         this.passwordResetRequestedAt = passwordResetRequestedAt;
     }
 
-    public ObjectId getId() {
+    public long getId() {
         return id;
     }
 
@@ -82,7 +84,7 @@ public class ShoppingListUser {
         return registrationDate;
     }
 
-    public ObjectId getInvitedBy() {
+    public ShoppingListUser getInvitedBy() {
         return invitedBy;
     }
 
@@ -94,8 +96,8 @@ public class ShoppingListUser {
         shoppingLists.add(shoppingListReference);
     }
 
-    public void deleteShoppingList(ObjectId shoppingListId) {
-        if (!shoppingLists.removeIf(ref -> ref.getShoppingListId().equals(shoppingListId))) {
+    public void deleteShoppingList(long shoppingListId) {
+        if (!shoppingLists.removeIf(ref -> ref.getShoppingListId() == shoppingListId)) {
             throw new NoSuchElementException();
         }
     }

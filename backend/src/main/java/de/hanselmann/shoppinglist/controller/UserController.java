@@ -3,7 +3,6 @@ package de.hanselmann.shoppinglist.controller;
 import java.net.URI;
 import java.util.Optional;
 
-import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,13 +131,13 @@ public class UserController implements UserApi {
     public ResponseEntity<Void> sendInvite(SendInviteDto sendInvite) {
         try {
             boolean success = false;
-            final Optional<String> shoppingListId = sendInvite.getShoppingListId();
+            final Optional<Long> shoppingListId = sendInvite.getShoppingListId();
             if (shoppingListId.isPresent()) {
                 if (!guard.canEditShoppingList(shoppingListId.get())) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
                 }
                 success = registrationService.sendInviteForShoppingList(sendInvite.getEmailAddress(),
-                        new ObjectId(shoppingListId.get()));
+                        shoppingListId.get());
             } else {
                 success = registrationService.sendInvite(sendInvite.getEmailAddress());
             }
@@ -184,18 +183,18 @@ public class UserController implements UserApi {
     @PreAuthorize("hasRole('SHOPPER') "
             + "&& @shoppingListGuard.canDeleteUser(#userToBeDeletedId)")
     @Override
-    public ResponseEntity<Void> deleteUser(String userToBeDeletedId) {
-        String currentUser = userService.getCurrentUser().getId().toString();
+    public ResponseEntity<Void> deleteUser(long userToBeDeletedId) {
+        long currentUserId = userService.getCurrentUser().getId();
         try {
-            ShoppingListUser userToBeDeleted = userService.getUser(new ObjectId(userToBeDeletedId));
+            ShoppingListUser userToBeDeleted = userService.getUser(userToBeDeletedId);
             registrationService.deleteInvitesOfUser(userToBeDeleted.getId());
             shoppingListService.deleteOrLeaveShoppingListsOfUser(userToBeDeleted);
             userService.deleteUser(userToBeDeleted.getId());
-            LOGGER.info("User {} was succesfully deleted by {}", userToBeDeletedId, currentUser);
+            LOGGER.info("User {} was succesfully deleted by {}", userToBeDeletedId, currentUserId);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             LOGGER.info(
-                    "User " + userToBeDeletedId + " could not be deleted by " + currentUser, e);
+                    "User " + userToBeDeletedId + " could not be deleted by " + currentUserId, e);
             return ResponseEntity.badRequest().build();
         }
     }

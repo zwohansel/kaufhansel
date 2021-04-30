@@ -1,12 +1,14 @@
 package de.hanselmann.shoppinglist.model;
 
-import org.bson.types.ObjectId;
+import javax.persistence.Entity;
+
 import org.springframework.data.annotation.Id;
 
+@Entity
 public class ShoppingListItem {
 
     @Id
-    private ObjectId id;
+    private long id;
     private String name;
     private Boolean checked;
     private String assignee;
@@ -16,18 +18,13 @@ public class ShoppingListItem {
     }
 
     public ShoppingListItem(String name) {
-        this.id = new ObjectId();
         this.name = name;
         this.checked = false;
         this.assignee = "";
     }
 
-    public ObjectId getId() {
+    public long getId() {
         return id;
-    }
-
-    public void setId(ObjectId id) {
-        this.id = id;
     }
 
     public String getName() {

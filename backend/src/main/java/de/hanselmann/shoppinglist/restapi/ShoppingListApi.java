@@ -38,74 +38,74 @@ public interface ShoppingListApi {
 
     @DeleteMapping("/shoppinglist/{id}")
     ResponseEntity<Void> deleteShoppingList(
-            @PathVariable String id);
+            @PathVariable long id);
 
     @GetMapping("/shoppinglist/{id}")
     ResponseEntity<List<ShoppingListItemDto>> getShoppingListItems(
-            @PathVariable String id);
+            @PathVariable long id);
 
     @PutMapping("/shoppinglist/{id}/uncheckitems")
     ResponseEntity<Void> uncheckShoppingListItems(
-            @PathVariable String id,
+            @PathVariable long id,
             @RequestBody UncheckShoppingListItemsDto uncheckShoppingListItemsDto);
 
     @PutMapping("/shoppinglist/{id}/removecategory")
     ResponseEntity<Void> removeShoppingListCategory(
-            @PathVariable String id,
+            @PathVariable long id,
             @RequestBody RemoveShoppingListCategoryDto removeShoppingListCategoryDto);
 
     @PutMapping("/shoppinglist/{id}/renamecategory")
     ResponseEntity<Void> renameShoppingListCategory(
-            @PathVariable String id,
+            @PathVariable long id,
             @RequestBody RenameShoppingListCategoryDto renameShoppingListCategoryDto);
 
     @PostMapping("/shoppinglist/{id}/clear")
     ResponseEntity<Void> clearShoppingList(
-            @PathVariable String id);
+            @PathVariable long id);
 
     @PutMapping("/shoppinglist/{id}/moveitem")
     ResponseEntity<Void> moveShoppingListItem(
-            @PathVariable String id,
+            @PathVariable long id,
             @RequestBody MoveShoppingListItemDto moveItem);
 
     @PostMapping("/shoppinglist/{id}")
     ResponseEntity<ShoppingListItemDto> addShoppingListItem(
-            @PathVariable String id,
+            @PathVariable long id,
             @RequestBody NewShoppingListItemDto item);
 
     @DeleteMapping("/shoppinglist/{id}/item/{itemId}")
     ResponseEntity<Void> deleteShoppingListItem(
-            @PathVariable String id,
-            @PathVariable String itemId);
+            @PathVariable long id,
+            @PathVariable long itemId);
 
     @DeleteMapping("/shoppinglist/{id}/item")
     ResponseEntity<Void> deleteShoppingListItems(
-            @PathVariable String id,
+            @PathVariable long id,
             @RequestBody DeleteItemDto deleteItemDto);
 
     @PutMapping("/shoppinglist/{id}/item/{itemId}")
     ResponseEntity<Void> updateShoppingListItem(
-            @PathVariable String id,
-            @PathVariable String itemId,
+            @PathVariable long id,
+            @PathVariable long itemId,
             @RequestBody ShoppingListItemUpdateDto updateItem);
 
     @PutMapping("/shoppinglist/{id}/user")
     ResponseEntity<ShoppingListUserReferenceDto> addUserToShoppingList(
-            @PathVariable String id,
+            @PathVariable long id,
             @RequestBody AddUserToShoppingListDto addUserDto);
 
     @DeleteMapping("/shoppinglist/{id}/user/{userId}")
     ResponseEntity<Void> removeUserFromShoppingList(
-            @PathVariable String id,
-            @PathVariable String userId);
+            @PathVariable long id,
+            @PathVariable long userId);
 
     @PutMapping("/shoppinglist/{id}/permissions")
     ResponseEntity<ShoppingListUserReferenceDto> changeShoppingListPermissionsForUser(
-            @PathVariable String id,
+            @PathVariable long id,
             @RequestBody ShoppingListPermissionsUpdateDto permissionsDto);
 
     @PutMapping("/shoppinglist/{id}/name")
     ResponseEntity<Void> changeShoppingListName(
-            @PathVariable String id,
+            @PathVariable long id,
             @RequestBody ShoppingListNameUpdateDto shoppingListNameUpdateDto);
 }

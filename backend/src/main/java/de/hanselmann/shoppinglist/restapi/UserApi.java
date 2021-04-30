@@ -54,5 +54,5 @@ public interface UserApi {
 
     @DeleteMapping("/{userToBeDeletedId}")
     ResponseEntity<Void> deleteUser(
-            @PathVariable String userToBeDeletedId);
+            @PathVariable long userToBeDeletedId);
 }

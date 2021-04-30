@@ -5,39 +5,42 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.bson.types.ObjectId;
+import javax.persistence.Entity;
+
 import org.springframework.data.annotation.Id;
 
+@Entity
 public class Invite {
     @Id
-    private ObjectId id;
+    private long id;
     private String code;
-    private ObjectId generatedByUser;
+    private ShoppingListUser generatedByUser;
     private LocalDateTime generatedAt;
     private String inviteeEmailAddress;
-    private List<ObjectId> invitedToShoppingLists = new ArrayList<>();
+    private List<Long> invitedToShoppingLists = new ArrayList<>(); // TODO: Listen statt Long
 
     public static Invite create(String code, ShoppingListUser invitor) {
         return createForEmailAddress(code, invitor, null);
     }
 
     public static Invite createForEmailAddress(String code, ShoppingListUser invitor, String inviteeEmailAddress) {
-        return new Invite(code, invitor.getId(), LocalDateTime.now(), inviteeEmailAddress);
+        return new Invite(code, invitor, LocalDateTime.now(), inviteeEmailAddress);
     }
 
     public static Invite createForEmailAddressAndList(
             String code,
             ShoppingListUser invitor,
             String inviteeEmailAddress,
-            ObjectId shoppingListId) {
+            long shoppingListId) {
         Invite invite = createForEmailAddress(code, invitor, inviteeEmailAddress);
         invite.invitedToShoppingLists.add(shoppingListId);
         return invite;
     }
 
-    private Invite(String code, ObjectId generatedByUserId, LocalDateTime generatedAt, String inviteeEmailAddress) {
+    private Invite(String code, ShoppingListUser generatedByUser, LocalDateTime generatedAt,
+            String inviteeEmailAddress) {
         this.code = code;
-        this.generatedByUser = generatedByUserId;
+        this.generatedByUser = generatedByUser;
         this.generatedAt = generatedAt;
         this.inviteeEmailAddress = inviteeEmailAddress != null ? inviteeEmailAddress.toLowerCase().strip() : null;
     }
@@ -51,8 +54,8 @@ public class Invite {
         this.invitedToShoppingLists.addAll(invite.invitedToShoppingLists);
     }
 
-    protected Invite(ObjectId id, String code, ObjectId generatedByUser, LocalDateTime generatedAt,
-            String inviteeEmailAddress, List<ObjectId> invitedToShoppingLists) {
+    protected Invite(long id, String code, ShoppingListUser generatedByUser, LocalDateTime generatedAt,
+            String inviteeEmailAddress, List<Long> invitedToShoppingLists) {
         this.id = id;
         this.code = code;
         this.generatedByUser = generatedByUser;
@@ -65,7 +68,7 @@ public class Invite {
         return new Invite(this, emailAddress);
     }
 
-    public ObjectId getId() {
+    public long getId() {
         return id;
     }
 
@@ -73,7 +76,7 @@ public class Invite {
         return code;
     }
 
-    public ObjectId getGeneratedByUser() {
+    public ShoppingListUser getGeneratedByUser() {
         return generatedByUser;
     }
 
@@ -85,7 +88,7 @@ public class Invite {
         return inviteeEmailAddress;
     }
 
-    public List<ObjectId> getInvitedToShoppingLists() {
+    public List<Long> getInvitedToShoppingLists() {
         return Collections.unmodifiableList(invitedToShoppingLists);
     }
 

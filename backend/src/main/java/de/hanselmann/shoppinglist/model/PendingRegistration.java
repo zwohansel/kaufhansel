@@ -5,20 +5,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.bson.types.ObjectId;
+import javax.persistence.Entity;
+
 import org.springframework.data.annotation.Id;
 
+@Entity
 public class PendingRegistration {
     public static final int EXPIRES_IN_WEEKS = 2;
 
     @Id
-    private ObjectId id;
+    private long id;
     private String emailAddress;
     private String userName;
     private String password;
     private String activationCode;
-    private ObjectId invitedBy;
-    private List<ObjectId> invitedToShoppingLists = new ArrayList<>();
+    private ShoppingListUser invitedBy;
+    private List<Long> invitedToShoppingLists = new ArrayList<>(); // TODO: Listen statt Long
     private LocalDateTime creationDate;
 
     public static PendingRegistration create(
@@ -44,8 +46,8 @@ public class PendingRegistration {
     private PendingRegistration() {
     };
 
-    protected PendingRegistration(ObjectId id, String emailAddress, String userName, String password,
-            String activationCode, ObjectId invitedBy, List<ObjectId> invitedToShoppingLists,
+    protected PendingRegistration(long id, String emailAddress, String userName, String password,
+            String activationCode, ShoppingListUser invitedBy, List<Long> invitedToShoppingLists,
             LocalDateTime creationDate) {
         this.id = id;
         this.emailAddress = emailAddress;
@@ -57,7 +59,7 @@ public class PendingRegistration {
         this.creationDate = creationDate;
     }
 
-    public ObjectId getId() {
+    public long getId() {
         return id;
     }
 
@@ -85,11 +87,11 @@ public class PendingRegistration {
         return !isExpired();
     }
 
-    public ObjectId getInvitedBy() {
+    public ShoppingListUser getInvitedBy() {
         return invitedBy;
     }
 
-    public List<ObjectId> getInvitedToShoppingLists() {
+    public List<Long> getInvitedToShoppingLists() {
         return Collections.unmodifiableList(invitedToShoppingLists);
     }
 

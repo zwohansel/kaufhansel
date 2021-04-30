@@ -2,7 +2,6 @@ package de.hanselmann.shoppinglist.service;
 
 import java.util.Optional;
 
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
@@ -40,7 +39,7 @@ public class ShoppingListUserService {
         return findCurrentUser().orElseThrow(() -> new IllegalArgumentException("User is not logged in."));
     }
 
-    public ShoppingListUser getUser(ObjectId userId) {
+    public ShoppingListUser getUser(long userId) {
         return findUser(userId).orElseThrow(() -> new IllegalArgumentException("User does not exist."));
     }
 
@@ -50,10 +49,10 @@ public class ShoppingListUserService {
         if (auth == null) {
             return Optional.empty();
         }
-        return findUser(new ObjectId(auth.getName()));
+        return findUser(Long.valueOf(auth.getName()));
     }
 
-    public Optional<ShoppingListUser> findUser(ObjectId userId) {
+    public Optional<ShoppingListUser> findUser(long userId) {
         return userRepository.findById(userId);
     }
 
@@ -68,19 +67,19 @@ public class ShoppingListUserService {
         return user;
     }
 
-    public void addShoppingListToUser(ShoppingListUser user, ObjectId shoppingListId,
+    public void addShoppingListToUser(ShoppingListUser user, long shoppingListId,
             ShoppingListRole role) {
         ShoppingListReference shoppingListReference = new ShoppingListReference(shoppingListId, role);
         user.addShoppingList(shoppingListReference);
         userRepository.save(user);
     }
 
-    public boolean removeShoppingListFromUser(ObjectId userId, ObjectId shoppingListId) {
+    public boolean removeShoppingListFromUser(long userId, long shoppingListId) {
         return userRepository.findById(userId).map(user -> removeShoppingListFromUser(user, shoppingListId))
                 .orElse(false);
     }
 
-    public boolean removeShoppingListFromUser(ShoppingListUser user, ObjectId shoppingListId) {
+    public boolean removeShoppingListFromUser(ShoppingListUser user, long shoppingListId) {
         user.deleteShoppingList(shoppingListId);
         userRepository.save(user);
         return true;
@@ -94,7 +93,7 @@ public class ShoppingListUserService {
         }
     }
 
-    public @Nullable ShoppingListRole getRoleForUser(ObjectId userId, ObjectId shoppingListId) {
+    public @Nullable ShoppingListRole getRoleForUser(long userId, long shoppingListId) {
         return userRepository.findById(userId).map(user -> getRoleForUser(user, shoppingListId)).orElse(null);
     }
 
@@ -106,17 +105,17 @@ public class ShoppingListUserService {
      * @return the role of the user in the shopping list or {@code null} if the user
      *         does not know the list.
      */
-    public @Nullable ShoppingListRole getRoleForUser(ShoppingListUser user, ObjectId shoppingListId) {
+    public @Nullable ShoppingListRole getRoleForUser(ShoppingListUser user, long shoppingListId) {
         return user.getShoppingLists().stream()
-                .filter(refs -> refs.getShoppingListId().equals(shoppingListId))
+                .filter(refs -> refs.getShoppingListId() == shoppingListId)
                 .findAny().map(ShoppingListReference::getRole)
                 .orElse(null);
     }
 
-    public void changePermission(ShoppingListUser userToBeChanged, ObjectId shopingListId,
+    public void changePermission(ShoppingListUser userToBeChanged, long shopingListId,
             ShoppingListRole role) {
         ShoppingListReference referenceForUserToBeChanged = userToBeChanged.getShoppingLists().stream()
-                .filter(ref -> ref.getShoppingListId().equals(shopingListId))
+                .filter(ref -> ref.getShoppingListId() == shopingListId)
                 .findAny()
                 .orElseThrow();
         referenceForUserToBeChanged.setRole(role);
@@ -163,7 +162,7 @@ public class ShoppingListUserService {
         }).count();
     }
 
-    public boolean deleteUser(ObjectId userId) {
+    public boolean deleteUser(long userId) {
         userRepository.deleteById(userId);
         return true;
     }

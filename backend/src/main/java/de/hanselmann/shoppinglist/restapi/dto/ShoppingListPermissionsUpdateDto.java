@@ -3,14 +3,14 @@ package de.hanselmann.shoppinglist.restapi.dto;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 
 public class ShoppingListPermissionsUpdateDto {
-    String userId;
+    long userId;
     ShoppingListRole role;
 
-    public String getUserId() {
+    public long getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
+    public void setUserId(long userId) {
         this.userId = userId;
     }
 

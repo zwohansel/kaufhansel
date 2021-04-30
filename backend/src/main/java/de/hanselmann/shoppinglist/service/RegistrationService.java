@@ -1,6 +1,5 @@
 package de.hanselmann.shoppinglist.service;
 
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -140,7 +139,7 @@ public class RegistrationService {
         }
         try {
             pendingRegistration.getInvitedToShoppingLists()
-                    .forEach(list -> shoppingListService.addUserToShoppingList(list, user));
+                    .forEach(listId -> shoppingListService.addUserToShoppingList(listId, user));
         } finally {
             emailService.sendWelcomeEmail(user);
         }
@@ -177,7 +176,7 @@ public class RegistrationService {
                 userService.existsUserWithEmailAddress(emailAddress);
     }
 
-    public boolean sendInviteForShoppingList(String emailAddress, ObjectId shoppingListId) {
+    public boolean sendInviteForShoppingList(String emailAddress, long shoppingListId) {
         if (isEmailAddressAlreadyInUse(emailAddress)) {
             return false;
         }
@@ -198,7 +197,7 @@ public class RegistrationService {
         return true;
     }
 
-    public boolean deleteInvitesOfUser(ObjectId userId) {
+    public boolean deleteInvitesOfUser(long userId) {
         inviteRepository.deleteByGeneratedByUser(userId);
         return true;
     }
