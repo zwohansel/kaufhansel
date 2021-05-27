@@ -33,4 +33,7 @@ bin/
 #qt & cmake
 CMakeLists.txt.user*
 
+# sqlite database
+*.db
+
 
