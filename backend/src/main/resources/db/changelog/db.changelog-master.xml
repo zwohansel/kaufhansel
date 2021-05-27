@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
+    <changeSet author="ZwoHansel" id="0">
+        <createTable tableName="CATEGORIES">
+            <column name="ID" type="int">
+                <constraints primaryKey="true" primaryKeyName="PK_CATEGORY_ID"/>
+            </column>
+            <column name="LIST_ID" type="int">
+                <constraints foreignKeyName="FK_LIST_ID" nullable="false" references="LISTS(ID)"/>
+            </column>
+            <column name="NAME" type="text"/>
+        </createTable>
+        <createTable tableName="ITEMS">
+            <column name="ID" type="bigint">
+                <constraints primaryKey="true" primaryKeyName="PK_ITEM_ID"/>
+            </column>
+            <column name="LIST_ID" type="int">
+                <constraints foreignKeyName="FK_LIST_ID" nullable="false" references="LISTS(ID)"/>
+            </column>
+            <column name="NAME" type="text"/>
+            <column name="CATEGORY_ID" type="int">
+                <constraints foreignKeyName="FK_CATEGORY_ID" nullable="false" references="CATEGORIES(ID)"/>
+            </column>
+            <column defaultValueBoolean="false" name="CHECKED" type="boolean"/>
+        </createTable>
+        <createTable tableName="LISTS">
+            <column name="ID" type="int">
+                <constraints primaryKey="true" primaryKeyName="PK_LIST_ID"/>
+            </column>
+            <column name="NAME" type="text"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
