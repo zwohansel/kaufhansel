@@ -3,6 +3,8 @@ package de.hanselmann.shoppinglist.model;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -15,8 +17,13 @@ public class ShoppingListCategory {
     @Column(name = "NAME", nullable = false)
     private String name;
 
-    public ShoppingListCategory(String name) {
+    @ManyToOne
+    @JoinColumn(name = "LIST_ID", nullable = false)
+    private ShoppingList list;
+
+    public ShoppingListCategory(String name, ShoppingList list) {
         this.name = name;
+        this.list = list;
     }
 
     public String getName() {
@@ -25,6 +32,10 @@ public class ShoppingListCategory {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public ShoppingList getList() {
+        return list;
     }
 
 }

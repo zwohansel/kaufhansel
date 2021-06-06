@@ -66,14 +66,11 @@
             </column>
         </createTable>
         <createTable tableName="LIST_PERMISSIONS">
-            <column name="ID" type="int">
-                <constraints primaryKey="true" primaryKeyName="PK_LIST_PERMISSION_ID"/>
-            </column>
             <column name="USER_ID" type="int">
-                <constraints foreignKeyName="FK_USER_ID" references="USERS(ID)" nullable="false" unique="true" uniqueConstraintName="UNIQUE_PERMISSION"/>
+                <constraints foreignKeyName="FK_USER_ID" references="USERS(ID)" nullable="false" unique="true" uniqueConstraintName="UNIQUE_PERMISSION" primaryKeyName="PK_LIST_PERMISSION"/>
             </column>
             <column name="LIST_ID" type="int">
-                <constraints foreignKeyName="FK_LIST_ID" references="LISTS(ID)" nullable="false" unique="true" uniqueConstraintName="UNIQUE_PERMISSION"/>
+                <constraints foreignKeyName="FK_LIST_ID" references="LISTS(ID)" nullable="false" unique="true" uniqueConstraintName="UNIQUE_PERMISSION" primaryKeyName="PK_LIST_PERMISSION"/>
             </column>
             <column name="ROLE" type="text">
                 <constraints nullable="false"/>

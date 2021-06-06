@@ -3,8 +3,11 @@ package de.hanselmann.shoppinglist.model;
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MapsId;
 import javax.persistence.Table;
 
 /**
@@ -14,8 +17,8 @@ import javax.persistence.Table;
 @Table(name = "LIST_PERMISSIONS")
 public class ShoppingListPermissions {
 
-    @Id
-    private long id;
+    @EmbeddedId
+    private ShoppingListPermissionsKey id;
 
     @Column(name = "ROLE", nullable = false)
     private ShoppingListRole role;
@@ -23,32 +26,42 @@ public class ShoppingListPermissions {
     @Column(name = "CREATED_AT", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "USER_ID", nullable = false)
+    @ManyToOne
+    @MapsId("shoppingListUserId")
+    @JoinColumn(name = "USER_ID")
     private ShoppingListUser user;
+
+    @ManyToOne
+    @MapsId("shoppingListId")
+    @JoinColumn(name = "LIST_ID")
+    private ShoppingList list;
 
     public ShoppingListPermissions() {
 
     }
 
-    public ShoppingListPermissions(ShoppingListRole role, LocalDateTime createdAt) {
+    public ShoppingListPermissions(ShoppingListRole role, ShoppingListUser user, ShoppingList list,
+            LocalDateTime createdAt) {
         this.role = role;
         this.createdAt = createdAt;
-    }
-
-    public long getId() {
-        return id;
+        this.user = user;
+        this.list = list;
     }
 
     public ShoppingListRole getRole() {
         return role;
     }
 
+    public void setRole(ShoppingListRole role) {
+        this.role = role;
+    }
+
     public ShoppingListUser getUser() {
         return user;
     }
 
-    public void setRole(ShoppingListRole role) {
-        this.role = role;
+    public ShoppingList getList() {
+        return list;
     }
 
 }
