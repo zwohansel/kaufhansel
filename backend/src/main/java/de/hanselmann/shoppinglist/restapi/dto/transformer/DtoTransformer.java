@@ -9,7 +9,7 @@ import de.hanselmann.shoppinglist.model.InfoMessage;
 import de.hanselmann.shoppinglist.model.InfoMessage.Severity;
 import de.hanselmann.shoppinglist.model.ShoppingList;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
-import de.hanselmann.shoppinglist.model.ShoppingListReference;
+import de.hanselmann.shoppinglist.model.ShoppingListPermissions;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.restapi.dto.InfoDto.InfoMessageDto;
@@ -30,14 +30,14 @@ public class DtoTransformer {
     }
 
     public ShoppingListItemDto map(ShoppingListItem item) {
-        return new ShoppingListItemDto(item.getId(), item.getName(), item.isChecked(), item.getAssignee());
+        return new ShoppingListItemDto(item.getId(), item.getName(), item.isChecked(), item.getCategory());
     }
 
     public ShoppingListUserReferenceDto map(ShoppingListUser user, long shoppingListId) {
         ShoppingListRole role = user.getShoppingLists().stream()
                 .filter(ref -> ref.getShoppingListId() == shoppingListId)
                 .findAny()
-                .map(ShoppingListReference::getRole)
+                .map(ShoppingListPermissions::getRole)
                 .orElseThrow(() -> new IllegalArgumentException("User does not know that list."));
 
         return new ShoppingListUserReferenceDto(
@@ -74,7 +74,7 @@ public class DtoTransformer {
     }
 
     public InfoMessageDto map(InfoMessage message) {
-        return new InfoMessageDto(message.getMessageNumber(), map(message.getSeverity()), message.getMessage(),
+        return new InfoMessageDto(message.getId(), map(message.getSeverity()), message.getMessage(),
                 message.getDismissLabel());
     }
 

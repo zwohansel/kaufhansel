@@ -4,15 +4,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import de.hanselmann.shoppinglist.model.Invite;
+import de.hanselmann.shoppinglist.model.ListInvite;
 import de.hanselmann.shoppinglist.model.PendingRegistration;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
-import de.hanselmann.shoppinglist.repository.InviteRepository;
+import de.hanselmann.shoppinglist.repository.ListInviteRepository;
 import de.hanselmann.shoppinglist.repository.PendingRegistrationRepository;
 
 @Service
 public class RegistrationService {
-    private final InviteRepository inviteRepository;
+    private final ListInviteRepository inviteRepository;
     private final ShoppingListUserService userService;
     private final ShoppingListService shoppingListService;
     private final PendingRegistrationRepository pendingRegistrationRepository;
@@ -21,7 +21,7 @@ public class RegistrationService {
     private final EMailService emailService;
 
     @Autowired
-    public RegistrationService(InviteRepository inviteRepository, ShoppingListUserService userService,
+    public RegistrationService(ListInviteRepository inviteRepository, ShoppingListUserService userService,
             ShoppingListService shoppingListService,
             PendingRegistrationRepository pendingRegistrationRepository,
             PasswordEncoder passwordEncoder, CodeGenerator codeGenerator, EMailService emailService) {
@@ -83,7 +83,7 @@ public class RegistrationService {
                 .orElse(false);
     }
 
-    private boolean registerUser(Invite invite, String userName, String password, boolean requireActivation) {
+    private boolean registerUser(ListInvite invite, String userName, String password, boolean requireActivation) {
         if (invite.getInviteeEmailAddress() == null) {
             return false;
         }
@@ -148,7 +148,7 @@ public class RegistrationService {
 
     public String generateInviteCode() {
         String code = codeGenerator.generateInviteCode();
-        Invite invite = Invite.create(code, userService.getCurrentUser());
+        ListInvite invite = ListInvite.create(code, userService.getCurrentUser());
         inviteRepository.save(invite);
         return code;
     }
@@ -158,7 +158,7 @@ public class RegistrationService {
             return false;
         }
         String code = codeGenerator.generateInviteCode();
-        Invite invite = Invite.createForEmailAddress(code, userService.getCurrentUser(), emailAddress);
+        ListInvite invite = ListInvite.createForEmailAddress(code, userService.getCurrentUser(), emailAddress);
         inviteRepository.save(invite);
 
         try {
@@ -181,7 +181,7 @@ public class RegistrationService {
             return false;
         }
         String code = codeGenerator.generateInviteCode();
-        Invite invite = Invite.createForEmailAddressAndList(
+        ListInvite invite = ListInvite.createForEmailAddressAndList(
                 code,
                 userService.getCurrentUser(),
                 emailAddress,

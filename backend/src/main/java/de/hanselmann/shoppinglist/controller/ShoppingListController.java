@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.hanselmann.shoppinglist.model.ShoppingList;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
-import de.hanselmann.shoppinglist.model.ShoppingListReference;
+import de.hanselmann.shoppinglist.model.ShoppingListPermissions;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.restapi.ShoppingListApi;
@@ -65,7 +65,7 @@ public class ShoppingListController implements ShoppingListApi {
 
         final ShoppingListPermissionsDto userPermissions = user.getShoppingLists().stream()
                 .filter(listRef -> listRef.getShoppingListId() == list.getId()).findAny()
-                .map(ShoppingListReference::getRole).map(dtoTransformer::map)
+                .map(ShoppingListPermissions::getRole).map(dtoTransformer::map)
                 .orElseThrow(() -> new IllegalArgumentException("User does not know that list."));
 
         final List<ShoppingListUserReferenceDto> otherUsers = list.getUsers().stream()
@@ -227,7 +227,7 @@ public class ShoppingListController implements ShoppingListApi {
     }
 
     private void deleteItems(ShoppingList list, @Nullable String ofCategory) {
-        list.deleteItemIf(item -> item.isChecked() && (ofCategory == null || ofCategory.equals(item.getAssignee())));
+        list.deleteItemIf(item -> item.isChecked() && (ofCategory == null || ofCategory.equals(item.getCategory())));
         shoppingListService.saveShoppingList(list);
     }
 
@@ -248,7 +248,7 @@ public class ShoppingListController implements ShoppingListApi {
     private ResponseEntity<Void> updateItem(ShoppingListItem item, ShoppingListItemUpdateDto updateItem,
             ShoppingList list) {
         boolean nameChanged = Objects.equals(updateItem.getName(), item.getName());
-        boolean categoryChanged = Objects.equals(updateItem.getCategory(), item.getAssignee());
+        boolean categoryChanged = Objects.equals(updateItem.getCategory(), item.getCategory());
         boolean checkedStateChanged = Objects.equals(updateItem.isChecked(), item.isChecked());
 
         if ((nameChanged || categoryChanged) && !guard.canEditItemsInShoppingList(list.getId())) {
@@ -260,7 +260,7 @@ public class ShoppingListController implements ShoppingListApi {
 
         item.setName(updateItem.getName());
         item.setChecked(updateItem.isChecked());
-        item.setAssignee(updateItem.getCategory());
+        item.setCategory(updateItem.getCategory());
 
         shoppingListService.saveShoppingList(list);
         return ResponseEntity.noContent().build();

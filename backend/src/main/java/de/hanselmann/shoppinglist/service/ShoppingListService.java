@@ -14,7 +14,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import de.hanselmann.shoppinglist.model.ShoppingList;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
-import de.hanselmann.shoppinglist.model.ShoppingListReference;
+import de.hanselmann.shoppinglist.model.ShoppingListPermissions;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.model.ShoppingListUserReference;
@@ -83,7 +83,7 @@ public class ShoppingListService {
         return getShoppingLists(user.getShoppingLists());
     }
 
-    private Stream<ShoppingList> getShoppingLists(List<ShoppingListReference> references) {
+    private Stream<ShoppingList> getShoppingLists(List<ShoppingListPermissions> references) {
         return references.stream().map(ref -> shoppingListRepository.findById(ref.getShoppingListId()))
                 .filter(Optional::isPresent)
                 .map(Optional::get);
@@ -101,7 +101,7 @@ public class ShoppingListService {
 
     public ShoppingListItem createNewItem(String name, @Nullable String category, ShoppingList list) {
         ShoppingListItem newItem = new ShoppingListItem(name);
-        newItem.setAssignee(category);
+        newItem.setCategory(category);
         list.addItem(newItem);
         saveShoppingList(list);
         return newItem;
@@ -174,7 +174,7 @@ public class ShoppingListService {
     List<ShoppingListItem> uncheckItemsImpl(ShoppingList list, String category) {
         List<ShoppingListItem> itemsToUncheck = list.getItems().stream()
                 .filter(ShoppingListItem::isChecked)
-                .filter(item -> category == null || category.equals(item.getAssignee()))
+                .filter(item -> category == null || category.equals(item.getCategory()))
                 .collect(Collectors.toList());
         itemsToUncheck.forEach(item -> item.setChecked(false));
         shoppingListRepository.save(list);
@@ -200,10 +200,10 @@ public class ShoppingListService {
 
     List<ShoppingListItem> removeCategoryImpl(ShoppingList list, String category) {
         List<ShoppingListItem> itemsToChange = list.getItems().stream()
-                .filter(item -> item.getAssignee() != null && !item.getAssignee().isBlank())
-                .filter(item -> category == null || category.equals(item.getAssignee()))
+                .filter(item -> item.getCategory() != null && !item.getCategory().isBlank())
+                .filter(item -> category == null || category.equals(item.getCategory()))
                 .collect(Collectors.toList());
-        itemsToChange.forEach(item -> item.setAssignee(""));
+        itemsToChange.forEach(item -> item.setCategory(""));
         shoppingListRepository.save(list);
         return itemsToChange;
     }
@@ -218,9 +218,9 @@ public class ShoppingListService {
 
     List<ShoppingListItem> renameCategoryImpl(ShoppingList list, String oldCategory, String newCategory) {
         List<ShoppingListItem> itemsToChange = list.getItems().stream()
-                .filter(item -> item.getAssignee() != null && item.getAssignee().equals(oldCategory))
+                .filter(item -> item.getCategory() != null && item.getCategory().equals(oldCategory))
                 .collect(Collectors.toList());
-        itemsToChange.forEach(item -> item.setAssignee(newCategory));
+        itemsToChange.forEach(item -> item.setCategory(newCategory));
         shoppingListRepository.save(list);
         return itemsToChange;
     }

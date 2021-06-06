@@ -2,25 +2,29 @@ package de.hanselmann.shoppinglist.model;
 
 import java.time.LocalDateTime;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
-
-import org.springframework.data.annotation.Id;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
+@Table(name = "TOKENS")
 public class Token {
     @Id
     private long id;
+
+    @Column(name = "VALUE", nullable = false)
     private String value;
-    private long userId; // TODO: userId oder user?
+
+    @Column(name = "EXPIRES_AT", nullable = false)
     private LocalDateTime expirationDate;
 
     public Token() {
 
     }
 
-    public Token(String value, long userId, LocalDateTime expirationDate) {
+    public Token(String value, LocalDateTime expirationDate) {
         this.value = value;
-        this.userId = userId;
         this.expirationDate = expirationDate;
     }
 
@@ -30,10 +34,6 @@ public class Token {
 
     public String getValue() {
         return value;
-    }
-
-    public long getUserId() {
-        return userId;
     }
 
     public LocalDateTime getExpirationDate() {

@@ -1,62 +1,50 @@
 package de.hanselmann.shoppinglist.model;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
-
-import org.springframework.data.annotation.Id;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
+@Table(name = "PENDING_REGISTRATION")
 public class PendingRegistration {
     public static final int EXPIRES_IN_WEEKS = 2;
 
     @Id
     private long id;
+
+    @Column(name = "EMAIL", nullable = false)
     private String emailAddress;
+
+    @Column(name = "USERNAME", nullable = false)
     private String userName;
+
+    @Column(name = "PASSWORD", nullable = false)
     private String password;
+
+    @Column(name = "ACTIVATION_CODE", nullable = false)
     private String activationCode;
-    private ShoppingListUser invitedBy;
-    private List<Long> invitedToShoppingLists = new ArrayList<>(); // TODO: Listen statt Long
-    private LocalDateTime creationDate;
+
+    @Column(name = "CREATED_AT", nullable = false)
+    private LocalDateTime creationAt;
 
     public static PendingRegistration create(
-            Invite invite,
+            String emailAddress,
             String userName,
             String encryptedPassword,
             String activationCode) {
-        if (invite.getInviteeEmailAddress() == null) {
-            throw new IllegalArgumentException("Invitee EMail address must not be null.");
-        }
-
-        PendingRegistration pendingRegistration = new PendingRegistration();
-        pendingRegistration.emailAddress = invite.getInviteeEmailAddress();
+        var pendingRegistration = new PendingRegistration();
+        pendingRegistration.emailAddress = emailAddress;
         pendingRegistration.userName = userName;
         pendingRegistration.password = encryptedPassword;
         pendingRegistration.activationCode = activationCode;
-        pendingRegistration.invitedBy = invite.getGeneratedByUser();
-        pendingRegistration.creationDate = LocalDateTime.now();
-        pendingRegistration.invitedToShoppingLists.addAll(invite.getInvitedToShoppingLists());
+        pendingRegistration.creationAt = LocalDateTime.now();
         return pendingRegistration;
     }
 
     private PendingRegistration() {
-    };
-
-    protected PendingRegistration(long id, String emailAddress, String userName, String password,
-            String activationCode, ShoppingListUser invitedBy, List<Long> invitedToShoppingLists,
-            LocalDateTime creationDate) {
-        this.id = id;
-        this.emailAddress = emailAddress;
-        this.userName = userName;
-        this.password = password;
-        this.activationCode = activationCode;
-        this.invitedBy = invitedBy;
-        this.invitedToShoppingLists = invitedToShoppingLists;
-        this.creationDate = creationDate;
     }
 
     public long getId() {
@@ -80,19 +68,11 @@ public class PendingRegistration {
     }
 
     public boolean isExpired() {
-        return LocalDateTime.now().isAfter(creationDate.plusWeeks(EXPIRES_IN_WEEKS));
+        return LocalDateTime.now().isAfter(creationAt.plusWeeks(EXPIRES_IN_WEEKS));
     }
 
     public boolean isNotExpired() {
         return !isExpired();
-    }
-
-    public ShoppingListUser getInvitedBy() {
-        return invitedBy;
-    }
-
-    public List<Long> getInvitedToShoppingLists() {
-        return Collections.unmodifiableList(invitedToShoppingLists);
     }
 
 }

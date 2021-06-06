@@ -9,7 +9,7 @@ public class TestShoppingListUser extends ShoppingListUser {
 
     public TestShoppingListUser(ObjectId id, boolean superUser, String username, String password,
             String emailAddress, LocalDateTime registrationDate, ObjectId invitedBy,
-            List<ShoppingListReference> shoppingLists, String passwordResetCode,
+            List<ShoppingListPermissions> shoppingLists, String passwordResetCode,
             LocalDateTime passwordResetRequestedAt) {
         super(id, superUser, username, password, emailAddress, registrationDate, invitedBy, shoppingLists,
                 passwordResetCode,

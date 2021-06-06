@@ -11,7 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import de.hanselmann.shoppinglist.model.PendingRegistration;
-import de.hanselmann.shoppinglist.model.ShoppingListReference;
+import de.hanselmann.shoppinglist.model.ShoppingListPermissions;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
@@ -69,7 +69,7 @@ public class ShoppingListUserService {
 
     public void addShoppingListToUser(ShoppingListUser user, long shoppingListId,
             ShoppingListRole role) {
-        ShoppingListReference shoppingListReference = new ShoppingListReference(shoppingListId, role);
+        ShoppingListPermissions shoppingListReference = new ShoppingListPermissions(shoppingListId, role);
         user.addShoppingList(shoppingListReference);
         userRepository.save(user);
     }
@@ -108,13 +108,13 @@ public class ShoppingListUserService {
     public @Nullable ShoppingListRole getRoleForUser(ShoppingListUser user, long shoppingListId) {
         return user.getShoppingLists().stream()
                 .filter(refs -> refs.getShoppingListId() == shoppingListId)
-                .findAny().map(ShoppingListReference::getRole)
+                .findAny().map(ShoppingListPermissions::getRole)
                 .orElse(null);
     }
 
     public void changePermission(ShoppingListUser userToBeChanged, long shopingListId,
             ShoppingListRole role) {
-        ShoppingListReference referenceForUserToBeChanged = userToBeChanged.getShoppingLists().stream()
+        ShoppingListPermissions referenceForUserToBeChanged = userToBeChanged.getShoppingLists().stream()
                 .filter(ref -> ref.getShoppingListId() == shopingListId)
                 .findAny()
                 .orElseThrow();

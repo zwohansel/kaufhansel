@@ -9,7 +9,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.Transactional;
 
-import de.hanselmann.shoppinglist.repository.InviteRepository;
+import de.hanselmann.shoppinglist.repository.ListInviteRepository;
 
 @SpringBootTest()
 @TestPropertySource(locations = "classpath:application-test.properties")
@@ -20,7 +20,7 @@ import de.hanselmann.shoppinglist.repository.InviteRepository;
 public class WithDbTest {
 
     @Resource
-    InviteRepository inviteRepository;
+    ListInviteRepository inviteRepository;
 
     @Test
     public void test() {

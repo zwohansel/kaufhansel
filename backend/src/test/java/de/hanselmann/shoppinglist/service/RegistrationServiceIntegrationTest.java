@@ -23,9 +23,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 
-import de.hanselmann.shoppinglist.model.Invite;
+import de.hanselmann.shoppinglist.model.ListInvite;
 import de.hanselmann.shoppinglist.model.PendingRegistration;
-import de.hanselmann.shoppinglist.repository.InviteRepository;
+import de.hanselmann.shoppinglist.repository.ListInviteRepository;
 import de.hanselmann.shoppinglist.repository.PendingRegistrationRepository;
 import de.hanselmann.shoppinglist.service.RegistrationService.RegistrationProcessType;
 import de.hanselmann.shoppinglist.testutils.Creator;
@@ -35,7 +35,7 @@ import de.hanselmann.shoppinglist.testutils.Creator;
 public class RegistrationServiceIntegrationTest {
 
     @MockBean
-    private InviteRepository inviteRepository;
+    private ListInviteRepository inviteRepository;
 
     @MockBean
     private ShoppingListUserService userService;
@@ -62,7 +62,7 @@ public class RegistrationServiceIntegrationTest {
     @MethodSource("registrationTypeData")
     public void getTypeOfRegistrationProcess(String code, String inviteeEmailAddress,
             RegistrationProcessType expectedType) {
-        Invite invite = Creator.invite(code, inviteeEmailAddress);
+        ListInvite invite = Creator.invite(code, inviteeEmailAddress);
         when(inviteRepository.findByCode(eq("C0D4"))).thenReturn(Optional.of(invite));
 
         RegistrationProcessType actualType = cut.getTypeOfRegistrationProcess(code);
@@ -79,7 +79,7 @@ public class RegistrationServiceIntegrationTest {
 
     @Test
     public void registerUser() {
-        Invite invite = Creator.invite("C0D4");
+        ListInvite invite = Creator.invite("C0D4");
         when(inviteRepository.findByCode(eq("C0D4"))).thenReturn(Optional.of(invite));
         when(userService.isPasswordValid(any())).thenReturn(true);
 
@@ -95,7 +95,7 @@ public class RegistrationServiceIntegrationTest {
 
     @Test
     public void registerUserWithEMailAddressFromInvite() {
-        Invite invite = Creator.invite("C0D4", "new.hansel@mail.de");
+        ListInvite invite = Creator.invite("C0D4", "new.hansel@mail.de");
         when(inviteRepository.findByCode(eq("C0D4"))).thenReturn(Optional.of(invite));
         when(userService.isPasswordValid(any())).thenReturn(true);
         when(userService.createNewUser(any())).thenReturn(Creator.emptyUser());

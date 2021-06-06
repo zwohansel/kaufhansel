@@ -1,5 +1,6 @@
 package de.hanselmann.shoppinglist.model;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -7,28 +8,43 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
-
-import org.springframework.data.annotation.Id;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
+@Table(name = "LISTS")
 public class ShoppingList {
 
     @Id
     private long id;
+
+    @Column(name = "NAME", nullable = false)
     private String name;
+
+    @Column(name = "CREATED_AT", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "CREATED_BY", nullable = false)
+    private ShoppingListUser createdBy;
+
     private List<ShoppingListItem> items = new ArrayList<>();
-    private List<ShoppingListUserReference> users = new ArrayList<>();
+
+    private List<ShoppingListCategory> categories = new ArrayList<>();
+
+    private List<ShoppingListPermissions> permissions = new ArrayList<>();
 
     public ShoppingList() {
     }
 
-    protected ShoppingList(long id, String name, List<ShoppingListItem> items,
-            List<ShoppingListUserReference> users) {
+    protected ShoppingList(long id, String name, LocalDateTime createdAt, ShoppingListUser createdBy,
+            List<ShoppingListItem> items) {
         this.id = id;
         this.name = name;
+        this.createdAt = createdAt;
+        this.createdBy = createdBy;
         this.items = items;
-        this.users = users;
     }
 
     public long getId() {
@@ -47,16 +63,16 @@ public class ShoppingList {
         return Collections.unmodifiableList(items);
     }
 
-    public List<ShoppingListUserReference> getUsers() {
-        return Collections.unmodifiableList(users);
+    public List<ShoppingListPermissions> getUsers() {
+        return Collections.unmodifiableList(permissions);
     }
 
     public void addItem(ShoppingListItem item) {
         items.add(item);
     }
 
-    public void addUser(ShoppingListUserReference user) {
-        users.add(user);
+    public void addUser(ShoppingListPermissions permission) {
+        permissions.add(permission);
     }
 
     public List<ShoppingListItem> getByChecked(boolean checked) {
@@ -88,8 +104,8 @@ public class ShoppingList {
         return copy;
     }
 
-    public void removeUserFromShoppingList(long userId) {
-        users.removeIf(user -> user.getUserId() == userId);
+    public void removeUserFromShoppingList(ShoppingListPermissions permission) {
+        permissions.remove(permission);
     }
 
     public boolean moveItem(ShoppingListItem item, int targetIndex) {
