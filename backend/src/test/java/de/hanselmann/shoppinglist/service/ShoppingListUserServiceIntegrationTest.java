@@ -76,7 +76,7 @@ public class ShoppingListUserServiceIntegrationTest {
 
         cut.addShoppingListToUser(user, new ObjectId(), ShoppingListRole.CHECK_ONLY);
 
-        assertThat(user.getShoppingLists().size()).isEqualTo(3);
+        assertThat(user.getShoppingListPermissions().size()).isEqualTo(3);
     }
 
     @Test
@@ -86,9 +86,9 @@ public class ShoppingListUserServiceIntegrationTest {
         ShoppingListUser user = Creator.userWithTwoListReferences(userId, shoppingListId);
         when(userRepository.findById(eq(userId))).thenReturn(Optional.of(user));
 
-        assertThat(user.getShoppingLists().size()).isEqualTo(2);
+        assertThat(user.getShoppingListPermissions().size()).isEqualTo(2);
         cut.removeShoppingListFromUser(userId, shoppingListId);
-        assertThat(user.getShoppingLists().size()).isEqualTo(1);
+        assertThat(user.getShoppingListPermissions().size()).isEqualTo(1);
     }
 
     @Test
@@ -111,7 +111,7 @@ public class ShoppingListUserServiceIntegrationTest {
 
         cut.changePermission(user, shoppingListId, ShoppingListRole.READ_ONLY);
 
-        assertThat(user.getShoppingLists().stream().map(l -> l.getRole()))
+        assertThat(user.getShoppingListPermissions().stream().map(l -> l.getRole()))
                 .containsExactlyInAnyOrder(ShoppingListRole.READ_ONLY, ShoppingListRole.CHECK_ONLY);
     }
 

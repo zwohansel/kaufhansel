@@ -20,7 +20,7 @@ public class ShoppingListGuard {
     }
 
     private boolean canAccessShoppingList(ShoppingListUser user, long id) {
-        return user.getShoppingLists().stream().anyMatch(ref -> ref.getShoppingListId() == id);
+        return user.getShoppingListPermissions().stream().anyMatch(ref -> ref.getShoppingListId() == id);
     }
 
     public boolean canEditItemsInShoppingList(long id) {
@@ -28,7 +28,7 @@ public class ShoppingListGuard {
     }
 
     private boolean canEditItemsInShoppingList(ShoppingListUser user, long id) {
-        return user.getShoppingLists().stream()
+        return user.getShoppingListPermissions().stream()
                 .filter(ref -> ref.getShoppingListId() == id)
                 .anyMatch(ref -> ref.getRole().canEditItems());
     }
@@ -38,7 +38,7 @@ public class ShoppingListGuard {
     }
 
     private boolean canCheckItemsInShoppingList(ShoppingListUser user, long id) {
-        return user.getShoppingLists().stream()
+        return user.getShoppingListPermissions().stream()
                 .filter(ref -> ref.getShoppingListId() == id)
                 .anyMatch(ref -> ref.getRole().canCheckItems());
     }
@@ -48,7 +48,7 @@ public class ShoppingListGuard {
     }
 
     private boolean canEditShoppingList(ShoppingListUser user, long id) {
-        return user.getShoppingLists().stream()
+        return user.getShoppingListPermissions().stream()
                 .filter(ref -> ref.getShoppingListId() == id)
                 .anyMatch(ref -> ref.getRole().canEditList());
     }

@@ -11,7 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import de.hanselmann.shoppinglist.model.PendingRegistration;
-import de.hanselmann.shoppinglist.model.ShoppingListPermissions;
+import de.hanselmann.shoppinglist.model.ShoppingListPermission;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
@@ -67,24 +67,6 @@ public class ShoppingListUserService {
         return user;
     }
 
-    public void addShoppingListToUser(ShoppingListUser user, long shoppingListId,
-            ShoppingListRole role) {
-        ShoppingListPermissions shoppingListReference = new ShoppingListPermissions(shoppingListId, role);
-        user.addShoppingList(shoppingListReference);
-        userRepository.save(user);
-    }
-
-    public boolean removeShoppingListFromUser(long userId, long shoppingListId) {
-        return userRepository.findById(userId).map(user -> removeShoppingListFromUser(user, shoppingListId))
-                .orElse(false);
-    }
-
-    public boolean removeShoppingListFromUser(ShoppingListUser user, long shoppingListId) {
-        user.deleteShoppingList(shoppingListId);
-        userRepository.save(user);
-        return true;
-    }
-
     public Optional<ShoppingListUser> findByEmailAddress(String emailAddress) {
         if (emailAddress != null) {
             return userRepository.findUserByEmailAddress(emailAddress.toLowerCase());
@@ -106,15 +88,15 @@ public class ShoppingListUserService {
      *         does not know the list.
      */
     public @Nullable ShoppingListRole getRoleForUser(ShoppingListUser user, long shoppingListId) {
-        return user.getShoppingLists().stream()
+        return user.getShoppingListPermissions().stream()
                 .filter(refs -> refs.getShoppingListId() == shoppingListId)
-                .findAny().map(ShoppingListPermissions::getRole)
+                .findAny().map(ShoppingListPermission::getRole)
                 .orElse(null);
     }
 
     public void changePermission(ShoppingListUser userToBeChanged, long shopingListId,
             ShoppingListRole role) {
-        ShoppingListPermissions referenceForUserToBeChanged = userToBeChanged.getShoppingLists().stream()
+        ShoppingListPermission referenceForUserToBeChanged = userToBeChanged.getShoppingListPermissions().stream()
                 .filter(ref -> ref.getShoppingListId() == shopingListId)
                 .findAny()
                 .orElseThrow();

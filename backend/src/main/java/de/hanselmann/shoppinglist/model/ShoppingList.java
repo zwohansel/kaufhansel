@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -30,16 +31,22 @@ public class ShoppingList {
     @Column(name = "CREATED_BY", nullable = false)
     private ShoppingListUser createdBy;
 
-    @OneToMany(mappedBy = "list")
+    @OneToMany(mappedBy = "list", cascade = CascadeType.REMOVE)
     private List<ShoppingListItem> items = new ArrayList<>();
 
-    @OneToMany(mappedBy = "list")
+    @OneToMany(mappedBy = "list", cascade = CascadeType.REMOVE)
     private List<ShoppingListCategory> categories = new ArrayList<>();
 
-    @OneToMany(mappedBy = "list")
-    private List<ShoppingListPermissions> permissions = new ArrayList<>();
+    @OneToMany(mappedBy = "list", cascade = CascadeType.REMOVE)
+    private List<ShoppingListPermission> permissions = new ArrayList<>();
 
-    public ShoppingList() {
+    protected ShoppingList() {
+    }
+
+    public ShoppingList(String name, ShoppingListUser createdBy, LocalDateTime createdAt) {
+        this.name = name;
+        this.createdBy = createdBy;
+        this.createdAt = createdAt;
     }
 
     protected ShoppingList(long id, String name, LocalDateTime createdAt, ShoppingListUser createdBy,
@@ -67,22 +74,16 @@ public class ShoppingList {
         return Collections.unmodifiableList(items);
     }
 
-    public List<ShoppingListPermissions> getUsers() {
+    public List<ShoppingListPermission> getPermissions() {
         return Collections.unmodifiableList(permissions);
+    }
+
+    public Optional<ShoppingListPermission> getPermissionOfUser(ShoppingListUser user) {
+        return permissions.stream().filter(permission -> permission.getUser().getId() == user.getId()).findAny();
     }
 
     public List<ShoppingListCategory> getCategories() {
         return Collections.unmodifiableList(categories);
-    }
-
-    // TODO: Not the owning side!
-    public void addItem(ShoppingListItem item) {
-        items.add(item);
-    }
-
-    // TODO: Not the owning side!
-    public void addUser(ShoppingListPermissions permission) {
-        permissions.add(permission);
     }
 
     public List<ShoppingListItem> getByChecked(boolean checked) {
@@ -118,7 +119,7 @@ public class ShoppingList {
     }
 
     // TODO: Not the owning side!
-    public void removeUserFromShoppingList(ShoppingListPermissions permission) {
+    public void removeUserFromShoppingList(ShoppingListPermission permission) {
         permissions.remove(permission);
     }
 

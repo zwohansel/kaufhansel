@@ -67,7 +67,7 @@ public class ShoppingListServiceIntegrationTest {
 
         ShoppingList list = cut.createShoppingListForCurrentUserImpl("Neue Liste");
         assertThat(list.getName()).isEqualTo("Neue Liste");
-        assertThat(list.getUsers().size()).isEqualTo(1);
+        assertThat(list.getPermissions().size()).isEqualTo(1);
         assertThat(list.getItems().size()).isEqualTo(0);
         verify(userService).addShoppingListToUser(
                 argThat(arg -> arg.getId().equals(userId)), any(), eq(ShoppingListRole.ADMIN));
@@ -84,8 +84,8 @@ public class ShoppingListServiceIntegrationTest {
 
         boolean success = cut.addUserToShoppingListImpl(shoppingListId, user);
         assertThat(success).isTrue();
-        assertThat(shoppingList.getUsers().size()).isEqualTo(1);
-        assertThat(shoppingList.getUsers().get(0).getUserId()).isEqualTo(userId);
+        assertThat(shoppingList.getPermissions().size()).isEqualTo(1);
+        assertThat(shoppingList.getPermissions().get(0).getUserId()).isEqualTo(userId);
         verify(userService).addShoppingListToUser(argThat(arg -> arg.getId().equals(userId)), eq(shoppingListId),
                 eq(ShoppingListRole.READ_WRITE));
     }
@@ -148,12 +148,12 @@ public class ShoppingListServiceIntegrationTest {
 
         addUserWithRole(shoppingList, ShoppingListRole.ADMIN);
 
-        assertThat(shoppingList.getUsers().size()).isEqualTo(2);
+        assertThat(shoppingList.getPermissions().size()).isEqualTo(2);
 
         cut.tryDeleteShoppingList(shoppingListId);
-        assertThat(shoppingList.getUsers().size()).isEqualTo(1);
+        assertThat(shoppingList.getPermissions().size()).isEqualTo(1);
         verify(shoppingListRepository).save(
-                argThat(arg -> arg.getId().equals(shoppingListId) && arg.getUsers().size() == 1));
+                argThat(arg -> arg.getId().equals(shoppingListId) && arg.getPermissions().size() == 1));
         verify(shoppingListRepository, never()).deleteById(any());
     }
 
@@ -168,7 +168,7 @@ public class ShoppingListServiceIntegrationTest {
 
         addUserWithRole(shoppingList, ShoppingListRole.READ_WRITE);
 
-        assertThat(shoppingList.getUsers().size()).isEqualTo(2);
+        assertThat(shoppingList.getPermissions().size()).isEqualTo(2);
 
         cut.tryDeleteShoppingList(shoppingListId);
         verify(shoppingListRepository, never()).save(any());
@@ -193,9 +193,9 @@ public class ShoppingListServiceIntegrationTest {
         shoppingList.addUser(userRef);
         when(shoppingListRepository.findById(shoppingListId)).thenReturn(Optional.of(shoppingList));
 
-        assertThat(shoppingList.getUsers().size()).isEqualTo(1);
+        assertThat(shoppingList.getPermissions().size()).isEqualTo(1);
         cut.removeUserFromShoppingList(shoppingListId, userId);
-        assertThat(shoppingList.getUsers()).isEmpty();
+        assertThat(shoppingList.getPermissions()).isEmpty();
         verify(shoppingListRepository).save(argThat(arg -> arg.getId().equals(shoppingListId)));
     }
 
@@ -308,6 +308,11 @@ public class ShoppingListServiceIntegrationTest {
 
         // negative index throws exception
         assertThrows(IndexOutOfBoundsException.class, () -> cut.moveShoppingListItem(shoppingList, item2, -1));
+    }
+
+    @Test
+    void itemsAndCategoriesAndPermissionsAreRemovedWhenListIsRemoved() {
+        // TODO: Check that users are not deleted
     }
 
 }
