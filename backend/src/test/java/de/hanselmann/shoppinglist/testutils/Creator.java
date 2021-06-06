@@ -9,11 +9,11 @@ import java.util.stream.Stream;
 
 import org.bson.types.ObjectId;
 
-import de.hanselmann.shoppinglist.model.Invite;
+import de.hanselmann.shoppinglist.model.ListInvite;
 import de.hanselmann.shoppinglist.model.PendingRegistration;
 import de.hanselmann.shoppinglist.model.ShoppingList;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
-import de.hanselmann.shoppinglist.model.ShoppingListReference;
+import de.hanselmann.shoppinglist.model.ShoppingListPermissions;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.model.TestInvite;
@@ -36,24 +36,24 @@ public class Creator {
     }
 
     public static ShoppingListUser userWithOneListReference(ObjectId userId) {
-        List<ShoppingListReference> shoppingLists = new ArrayList<>();
-        shoppingLists.add(new ShoppingListReference(new ObjectId(), ShoppingListRole.ADMIN));
+        List<ShoppingListPermissions> shoppingLists = new ArrayList<>();
+        shoppingLists.add(new ShoppingListPermissions(new ObjectId(), ShoppingListRole.ADMIN));
 
         return new TestShoppingListUser(userId, false, "Testuser", "secret", "test@test.de",
                 null, null, shoppingLists, null, null);
     }
 
     public static ShoppingListUser userWithOneListReference(ObjectId userId, ObjectId shoppingListId) {
-        List<ShoppingListReference> shoppingLists = new ArrayList<>();
-        shoppingLists.add(new ShoppingListReference(shoppingListId, ShoppingListRole.ADMIN));
+        List<ShoppingListPermissions> shoppingLists = new ArrayList<>();
+        shoppingLists.add(new ShoppingListPermissions(shoppingListId, ShoppingListRole.ADMIN));
 
         return new TestShoppingListUser(userId, false, "Testuser", "secret", "test@test.de",
                 null, null, shoppingLists, null, null);
     }
 
     public static ShoppingListUser userWithOneListReference(ObjectId shoppingListId, ShoppingListRole role) {
-        List<ShoppingListReference> shoppingLists = new ArrayList<>();
-        shoppingLists.add(new ShoppingListReference(shoppingListId, role));
+        List<ShoppingListPermissions> shoppingLists = new ArrayList<>();
+        shoppingLists.add(new ShoppingListPermissions(shoppingListId, role));
 
         return new TestShoppingListUser(new ObjectId(), false, "Testuser", "secret", "test@test.de",
                 null, null, shoppingLists, null, null);
@@ -65,17 +65,17 @@ public class Creator {
 
     public static ShoppingListUser userWithCheckOnlyListReferenceAnd(ObjectId userId, ObjectId shoppingListId,
             ShoppingListRole role) {
-        List<ShoppingListReference> shoppingLists = new ArrayList<>();
-        shoppingLists.add(new ShoppingListReference(shoppingListId, role));
-        shoppingLists.add(new ShoppingListReference(new ObjectId(), ShoppingListRole.CHECK_ONLY));
+        List<ShoppingListPermissions> shoppingLists = new ArrayList<>();
+        shoppingLists.add(new ShoppingListPermissions(shoppingListId, role));
+        shoppingLists.add(new ShoppingListPermissions(new ObjectId(), ShoppingListRole.CHECK_ONLY));
 
         return new TestShoppingListUser(userId, false, "Testuser", "secret", "test@test.de",
                 null, null, shoppingLists, null, null);
     }
 
     public static ShoppingListUser superUser(ObjectId userId) {
-        List<ShoppingListReference> shoppingLists = new ArrayList<>();
-        shoppingLists.add(new ShoppingListReference(new ObjectId(), ShoppingListRole.ADMIN));
+        List<ShoppingListPermissions> shoppingLists = new ArrayList<>();
+        shoppingLists.add(new ShoppingListPermissions(new ObjectId(), ShoppingListRole.ADMIN));
 
         return new TestShoppingListUser(userId, true, "Testuser", "secret", "test@test.de",
                 null, null, shoppingLists, null, null);
@@ -96,11 +96,11 @@ public class Creator {
                 "secret", "ACT1V3", new ObjectId(), Arrays.asList(invitedToShoppingListIds), createdAt);
     }
 
-    public static Invite invite(String code) {
+    public static ListInvite invite(String code) {
         return new TestInvite(new ObjectId(), code, null, null, null, new ArrayList<>());
     }
 
-    public static Invite invite(String code, String inviteeEmailAddress) {
+    public static ListInvite invite(String code, String inviteeEmailAddress) {
         return new TestInvite(new ObjectId(), code, null, null, inviteeEmailAddress, new ArrayList<>());
     }
 
@@ -119,7 +119,7 @@ public class Creator {
 
     public static ShoppingListItem item(String name, String category, boolean checked) {
         ShoppingListItem item = new ShoppingListItem(name);
-        item.setAssignee(category);
+        item.setCategory(category);
         item.setChecked(checked);
         return item;
     }

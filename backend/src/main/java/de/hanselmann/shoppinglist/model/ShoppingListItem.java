@@ -1,17 +1,25 @@
 package de.hanselmann.shoppinglist.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
-
-import org.springframework.data.annotation.Id;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
+@Table(name = "ITEMS")
 public class ShoppingListItem {
 
     @Id
     private long id;
+
+    @Column(name = "NAME", nullable = false)
     private String name;
+
+    @Column(name = "CHECKED", nullable = false)
     private Boolean checked;
-    private String assignee;
+
+    @Column(name = "CATEGORY_ID")
+    private ShoppingListCategory category;
 
     public ShoppingListItem() {
         this(null);
@@ -20,7 +28,7 @@ public class ShoppingListItem {
     public ShoppingListItem(String name) {
         this.name = name;
         this.checked = false;
-        this.assignee = "";
+        this.category = null;
     }
 
     public long getId() {
@@ -43,12 +51,12 @@ public class ShoppingListItem {
         this.checked = checked;
     }
 
-    public String getAssignee() {
-        return assignee;
+    public ShoppingListCategory getCategory() {
+        return category;
     }
 
-    public void setAssignee(String assignee) {
-        this.assignee = assignee;
+    public void setCategory(ShoppingListCategory category) {
+        this.category = category;
     }
 
 }

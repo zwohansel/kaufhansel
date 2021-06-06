@@ -7,50 +7,66 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
-
-import org.springframework.data.annotation.Id;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
+@Table(name = "USERS")
 public class ShoppingListUser {
     @Id
     private long id;
+
+    @Column(name = "SUPERUSER", nullable = false)
     private boolean superUser = false;
-    private String username;
-    private String password;
+
+    @Column(name = "EMAIL", nullable = false)
     private String emailAddress;
-    private LocalDateTime registrationDate;
-    private ShoppingListUser invitedBy;
-    private List<ShoppingListReference> shoppingLists = new ArrayList<>();
+
+    @Column(name = "NAME", nullable = false)
+    private String username;
+
+    @Column(name = "PASSWORD", nullable = false)
+    private String password;
+
+    @Column(name = "REGISTERED_AT", nullable = false)
+    private LocalDateTime registeredAt;
+
+    @Column(name = "PASSWORD_RESET_CODE")
     private String passwordResetCode;
+
+    @Column(name = "PASSWORD_RESET_REQUESTED_AT")
     private LocalDateTime passwordResetRequestedAt;
+
+    private List<ShoppingListPermissions> shoppingLists = new ArrayList<>();
+
+    private List<Token> tokens = new ArrayList();
 
     public static ShoppingListUser create(PendingRegistration pendingRegistration) {
         if (pendingRegistration.isExpired()) {
             throw new IllegalArgumentException("Pending registration is expired");
         }
-        ShoppingListUser user = new ShoppingListUser();
+        var user = new ShoppingListUser();
         user.emailAddress = pendingRegistration.getEmailAddress().toLowerCase().strip();
         user.username = pendingRegistration.getUserName();
         user.password = pendingRegistration.getPassword();
-        user.invitedBy = pendingRegistration.getInvitedBy();
-        user.registrationDate = LocalDateTime.now();
+        user.registeredAt = LocalDateTime.now();
         return user;
     }
 
     private ShoppingListUser() {
     }
 
-    ShoppingListUser(long id, boolean superUser, String username, String password, String emailAddress,
-            LocalDateTime registrationDate, ShoppingListUser invitedBy, List<ShoppingListReference> shoppingLists,
+    protected ShoppingListUser(long id, boolean superUser, String username, String password, String emailAddress,
+            LocalDateTime registrationDate, List<ShoppingListPermissions> shoppingLists,
             String passwordResetCode, LocalDateTime passwordResetRequestedAt) {
         this.id = id;
         this.superUser = superUser;
         this.username = username;
         this.password = password;
         this.emailAddress = emailAddress;
-        this.registrationDate = registrationDate;
-        this.invitedBy = invitedBy;
+        this.registeredAt = registrationDate;
         this.shoppingLists = shoppingLists;
         this.passwordResetCode = passwordResetCode;
         this.passwordResetRequestedAt = passwordResetRequestedAt;
@@ -81,23 +97,19 @@ public class ShoppingListUser {
     }
 
     public LocalDateTime getRegistrationDate() {
-        return registrationDate;
+        return registeredAt;
     }
 
-    public ShoppingListUser getInvitedBy() {
-        return invitedBy;
-    }
-
-    public List<ShoppingListReference> getShoppingLists() {
+    public List<ShoppingListPermissions> getShoppingLists() {
         return Collections.unmodifiableList(shoppingLists);
     }
 
-    public void addShoppingList(ShoppingListReference shoppingListReference) {
+    public void addShoppingList(ShoppingListPermissions shoppingListReference) {
         shoppingLists.add(shoppingListReference);
     }
 
-    public void deleteShoppingList(long shoppingListId) {
-        if (!shoppingLists.removeIf(ref -> ref.getShoppingListId() == shoppingListId)) {
+    public void deleteShoppingList(ShoppingListPermissions shoppingListReference) {
+        if (!shoppingLists.remove(shoppingListReference)) {
             throw new NoSuchElementException();
         }
     }

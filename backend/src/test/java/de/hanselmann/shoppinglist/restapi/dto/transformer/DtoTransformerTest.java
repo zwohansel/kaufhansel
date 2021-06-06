@@ -8,7 +8,7 @@ import java.util.List;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 
-import de.hanselmann.shoppinglist.model.ShoppingListReference;
+import de.hanselmann.shoppinglist.model.ShoppingListPermissions;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.model.TestShoppingListUser;
@@ -21,9 +21,9 @@ public class DtoTransformerTest {
     @Test
     public void mapUserToShoppingListUserReference() {
         ObjectId shoppingListId = new ObjectId();
-        List<ShoppingListReference> shoppingLists = Arrays.asList(
-                new ShoppingListReference(shoppingListId, ShoppingListRole.ADMIN),
-                new ShoppingListReference(new ObjectId(), ShoppingListRole.CHECK_ONLY));
+        List<ShoppingListPermissions> shoppingLists = Arrays.asList(
+                new ShoppingListPermissions(shoppingListId, ShoppingListRole.ADMIN),
+                new ShoppingListPermissions(new ObjectId(), ShoppingListRole.CHECK_ONLY));
 
         ObjectId userId = new ObjectId();
         ShoppingListUser user = new TestShoppingListUser(userId, false, "Testuser", "secret", "mail@online.de",

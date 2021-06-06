@@ -119,7 +119,7 @@ public class ShoppingListServiceIntegrationTest {
         ShoppingList shoppingList = Creator.shoppingList();
         ShoppingListItem item = cut.createNewItem("New Item", "Category", shoppingList);
         assertThat(item.getName()).isEqualTo("New Item");
-        assertThat(item.getAssignee()).isEqualTo("Category");
+        assertThat(item.getCategory()).isEqualTo("Category");
         assertThat(shoppingList.getItems()).containsExactly(item);
     }
 
@@ -217,7 +217,7 @@ public class ShoppingListServiceIntegrationTest {
 
         List<ShoppingListItem> changedItems = cut.removeCategoryImpl(shoppingList, "category1");
         assertThat(changedItems.size()).isEqualTo(2);
-        assertThat(changedItems.stream().map(ShoppingListItem::getAssignee)).allMatch(s -> s.equals(""));
+        assertThat(changedItems.stream().map(ShoppingListItem::getCategory)).allMatch(s -> s.equals(""));
         verify(shoppingListRepository).save(argThat(arg -> arg.getId().equals(shoppingListId)));
     }
 
@@ -228,7 +228,7 @@ public class ShoppingListServiceIntegrationTest {
 
         List<ShoppingListItem> changedItems = cut.renameCategoryImpl(shoppingList, "category1", "new name");
         assertThat(changedItems.size()).isEqualTo(2);
-        assertThat(changedItems.stream().map(ShoppingListItem::getAssignee)).allMatch(s -> s.equals("new name"));
+        assertThat(changedItems.stream().map(ShoppingListItem::getCategory)).allMatch(s -> s.equals("new name"));
         verify(shoppingListRepository).save(argThat(arg -> arg.getId().equals(shoppingListId)));
     }
 

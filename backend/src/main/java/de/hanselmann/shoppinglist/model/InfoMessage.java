@@ -2,11 +2,13 @@ package de.hanselmann.shoppinglist.model;
 
 import java.time.LocalDateTime;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
-
-import org.springframework.data.annotation.Id;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
+@Table(name = "INFO_MESSAGES")
 public class InfoMessage {
     public enum Severity {
         CRITICAL,
@@ -14,13 +16,25 @@ public class InfoMessage {
     }
 
     @Id
+    @Column(name = "ID", unique = true, nullable = false)
     private long id;
+
+    @Column(name = "ENABLED", nullable = false)
     private boolean enabled;
-    private int messageNumber;
+
+    @Column(name = "SEVERITY", nullable = false)
     private Severity severity;
+
+    @Column(name = "MESSAGE", nullable = false)
     private String message;
+
+    @Column(name = "DISMISS_LABEL")
     private String dismissLabel;
+
+    @Column(name = "VALID_FROM", nullable = false)
     private LocalDateTime validFrom;
+
+    @Column(name = "VALID_TO", nullable = false)
     private LocalDateTime validTo;
 
     public long getId() {
@@ -29,10 +43,6 @@ public class InfoMessage {
 
     public boolean isEnabled() {
         return enabled;
-    }
-
-    public int getMessageNumber() {
-        return messageNumber;
     }
 
     public Severity getSeverity() {
