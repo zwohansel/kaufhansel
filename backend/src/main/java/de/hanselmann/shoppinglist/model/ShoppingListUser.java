@@ -10,6 +10,7 @@ import java.util.Optional;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
@@ -39,9 +40,8 @@ public class ShoppingListUser {
     @Column(name = "PASSWORD_RESET_REQUESTED_AT")
     private LocalDateTime passwordResetRequestedAt;
 
+    @OneToMany(mappedBy = "user")
     private List<ShoppingListPermissions> shoppingLists = new ArrayList<>();
-
-    private List<Token> tokens = new ArrayList();
 
     public static ShoppingListUser create(PendingRegistration pendingRegistration) {
         if (pendingRegistration.isExpired()) {
@@ -104,10 +104,12 @@ public class ShoppingListUser {
         return Collections.unmodifiableList(shoppingLists);
     }
 
+    // TODO: Not the owning side!
     public void addShoppingList(ShoppingListPermissions shoppingListReference) {
         shoppingLists.add(shoppingListReference);
     }
 
+    // TODO: Not the owning side!
     public void deleteShoppingList(ShoppingListPermissions shoppingListReference) {
         if (!shoppingLists.remove(shoppingListReference)) {
             throw new NoSuchElementException();

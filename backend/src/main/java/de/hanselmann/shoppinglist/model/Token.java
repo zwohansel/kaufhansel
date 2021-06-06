@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -18,6 +20,10 @@ public class Token {
 
     @Column(name = "EXPIRES_AT", nullable = false)
     private LocalDateTime expirationDate;
+
+    @ManyToOne
+    @JoinColumn(name = "USER_ID", nullable = false)
+    private ShoppingListUser user;
 
     public Token() {
 

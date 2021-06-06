@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
@@ -29,10 +30,13 @@ public class ShoppingList {
     @Column(name = "CREATED_BY", nullable = false)
     private ShoppingListUser createdBy;
 
+    @OneToMany(mappedBy = "list")
     private List<ShoppingListItem> items = new ArrayList<>();
 
+    @OneToMany(mappedBy = "list")
     private List<ShoppingListCategory> categories = new ArrayList<>();
 
+    @OneToMany(mappedBy = "list")
     private List<ShoppingListPermissions> permissions = new ArrayList<>();
 
     public ShoppingList() {
@@ -67,10 +71,16 @@ public class ShoppingList {
         return Collections.unmodifiableList(permissions);
     }
 
+    public List<ShoppingListCategory> getCategories() {
+        return Collections.unmodifiableList(categories);
+    }
+
+    // TODO: Not the owning side!
     public void addItem(ShoppingListItem item) {
         items.add(item);
     }
 
+    // TODO: Not the owning side!
     public void addUser(ShoppingListPermissions permission) {
         permissions.add(permission);
     }
@@ -83,12 +93,14 @@ public class ShoppingList {
         return items.stream().filter(item -> item.getId() == id).findAny();
     }
 
+    // TODO: Not the owning side!
     public Optional<ShoppingListItem> deleteItemById(long id) {
         Optional<ShoppingListItem> item = findItemById(id);
         item.ifPresent(items::remove);
         return item;
     }
 
+    // TODO: Not the owning side!
     public void deleteItemIf(Predicate<ShoppingListItem> filter) {
         items.removeIf(filter);
     }
@@ -98,16 +110,19 @@ public class ShoppingList {
      *
      * @return the list of removed items
      */
+    // TODO: Not the owning side!
     public List<ShoppingListItem> clearItems() {
         List<ShoppingListItem> copy = new ArrayList<>(items);
         items.clear();
         return copy;
     }
 
+    // TODO: Not the owning side!
     public void removeUserFromShoppingList(ShoppingListPermissions permission) {
         permissions.remove(permission);
     }
 
+    // TODO: Not the owning side!
     public boolean moveItem(ShoppingListItem item, int targetIndex) {
         if (targetIndex < 0) {
             throw new IndexOutOfBoundsException();
