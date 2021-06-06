@@ -41,7 +41,7 @@ public class ShoppingListUser {
     private LocalDateTime passwordResetRequestedAt;
 
     @OneToMany(mappedBy = "user")
-    private List<ShoppingListPermissions> shoppingLists = new ArrayList<>();
+    private List<ShoppingListPermission> shoppingLists = new ArrayList<>();
 
     public static ShoppingListUser create(PendingRegistration pendingRegistration) {
         if (pendingRegistration.isExpired()) {
@@ -59,7 +59,7 @@ public class ShoppingListUser {
     }
 
     protected ShoppingListUser(long id, boolean superUser, String username, String password, String emailAddress,
-            LocalDateTime registrationDate, List<ShoppingListPermissions> shoppingLists,
+            LocalDateTime registrationDate, List<ShoppingListPermission> shoppingLists,
             String passwordResetCode, LocalDateTime passwordResetRequestedAt) {
         this.id = id;
         this.superUser = superUser;
@@ -100,17 +100,17 @@ public class ShoppingListUser {
         return registeredAt;
     }
 
-    public List<ShoppingListPermissions> getShoppingLists() {
+    public List<ShoppingListPermission> getShoppingListPermissions() {
         return Collections.unmodifiableList(shoppingLists);
     }
 
     // TODO: Not the owning side!
-    public void addShoppingList(ShoppingListPermissions shoppingListReference) {
+    public void addShoppingList(ShoppingListPermission shoppingListReference) {
         shoppingLists.add(shoppingListReference);
     }
 
     // TODO: Not the owning side!
-    public void deleteShoppingList(ShoppingListPermissions shoppingListReference) {
+    public void deleteShoppingList(ShoppingListPermission shoppingListReference) {
         if (!shoppingLists.remove(shoppingListReference)) {
             throw new NoSuchElementException();
         }

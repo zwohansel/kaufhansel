@@ -13,7 +13,7 @@ import de.hanselmann.shoppinglist.model.ListInvite;
 import de.hanselmann.shoppinglist.model.PendingRegistration;
 import de.hanselmann.shoppinglist.model.ShoppingList;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
-import de.hanselmann.shoppinglist.model.ShoppingListPermissions;
+import de.hanselmann.shoppinglist.model.ShoppingListPermission;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.model.TestInvite;
@@ -36,24 +36,24 @@ public class Creator {
     }
 
     public static ShoppingListUser userWithOneListReference(ObjectId userId) {
-        List<ShoppingListPermissions> shoppingLists = new ArrayList<>();
-        shoppingLists.add(new ShoppingListPermissions(new ObjectId(), ShoppingListRole.ADMIN));
+        List<ShoppingListPermission> shoppingLists = new ArrayList<>();
+        shoppingLists.add(new ShoppingListPermission(new ObjectId(), ShoppingListRole.ADMIN));
 
         return new TestShoppingListUser(userId, false, "Testuser", "secret", "test@test.de",
                 null, null, shoppingLists, null, null);
     }
 
     public static ShoppingListUser userWithOneListReference(ObjectId userId, ObjectId shoppingListId) {
-        List<ShoppingListPermissions> shoppingLists = new ArrayList<>();
-        shoppingLists.add(new ShoppingListPermissions(shoppingListId, ShoppingListRole.ADMIN));
+        List<ShoppingListPermission> shoppingLists = new ArrayList<>();
+        shoppingLists.add(new ShoppingListPermission(shoppingListId, ShoppingListRole.ADMIN));
 
         return new TestShoppingListUser(userId, false, "Testuser", "secret", "test@test.de",
                 null, null, shoppingLists, null, null);
     }
 
     public static ShoppingListUser userWithOneListReference(ObjectId shoppingListId, ShoppingListRole role) {
-        List<ShoppingListPermissions> shoppingLists = new ArrayList<>();
-        shoppingLists.add(new ShoppingListPermissions(shoppingListId, role));
+        List<ShoppingListPermission> shoppingLists = new ArrayList<>();
+        shoppingLists.add(new ShoppingListPermission(shoppingListId, role));
 
         return new TestShoppingListUser(new ObjectId(), false, "Testuser", "secret", "test@test.de",
                 null, null, shoppingLists, null, null);
@@ -65,17 +65,17 @@ public class Creator {
 
     public static ShoppingListUser userWithCheckOnlyListReferenceAnd(ObjectId userId, ObjectId shoppingListId,
             ShoppingListRole role) {
-        List<ShoppingListPermissions> shoppingLists = new ArrayList<>();
-        shoppingLists.add(new ShoppingListPermissions(shoppingListId, role));
-        shoppingLists.add(new ShoppingListPermissions(new ObjectId(), ShoppingListRole.CHECK_ONLY));
+        List<ShoppingListPermission> shoppingLists = new ArrayList<>();
+        shoppingLists.add(new ShoppingListPermission(shoppingListId, role));
+        shoppingLists.add(new ShoppingListPermission(new ObjectId(), ShoppingListRole.CHECK_ONLY));
 
         return new TestShoppingListUser(userId, false, "Testuser", "secret", "test@test.de",
                 null, null, shoppingLists, null, null);
     }
 
     public static ShoppingListUser superUser(ObjectId userId) {
-        List<ShoppingListPermissions> shoppingLists = new ArrayList<>();
-        shoppingLists.add(new ShoppingListPermissions(new ObjectId(), ShoppingListRole.ADMIN));
+        List<ShoppingListPermission> shoppingLists = new ArrayList<>();
+        shoppingLists.add(new ShoppingListPermission(new ObjectId(), ShoppingListRole.ADMIN));
 
         return new TestShoppingListUser(userId, true, "Testuser", "secret", "test@test.de",
                 null, null, shoppingLists, null, null);

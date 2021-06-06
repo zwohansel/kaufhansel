@@ -15,10 +15,10 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "LIST_PERMISSIONS")
-public class ShoppingListPermissions {
+public class ShoppingListPermission {
 
     @EmbeddedId
-    private ShoppingListPermissionsKey id;
+    private ShoppingListPermissionKey id;
 
     @Column(name = "ROLE", nullable = false)
     private ShoppingListRole role;
@@ -36,16 +36,20 @@ public class ShoppingListPermissions {
     @JoinColumn(name = "LIST_ID")
     private ShoppingList list;
 
-    public ShoppingListPermissions() {
+    protected ShoppingListPermission() {
 
     }
 
-    public ShoppingListPermissions(ShoppingListRole role, ShoppingListUser user, ShoppingList list,
+    public ShoppingListPermission(ShoppingListRole role, ShoppingListUser user, ShoppingList list,
             LocalDateTime createdAt) {
         this.role = role;
         this.createdAt = createdAt;
         this.user = user;
         this.list = list;
+    }
+
+    public ShoppingListPermissionKey getId() {
+        return id;
     }
 
     public ShoppingListRole getRole() {

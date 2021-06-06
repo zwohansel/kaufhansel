@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.hanselmann.shoppinglist.model.ShoppingList;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
-import de.hanselmann.shoppinglist.model.ShoppingListPermissions;
+import de.hanselmann.shoppinglist.model.ShoppingListPermission;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.restapi.ShoppingListApi;
@@ -63,12 +63,12 @@ public class ShoppingListController implements ShoppingListApi {
     private ShoppingListInfoDto toInfo(ShoppingList list) {
         final ShoppingListUser user = userService.getCurrentUser();
 
-        final ShoppingListPermissionsDto userPermissions = user.getShoppingLists().stream()
-                .filter(listRef -> listRef.getShoppingListId() == list.getId()).findAny()
-                .map(ShoppingListPermissions::getRole).map(dtoTransformer::map)
+        final ShoppingListPermissionsDto userPermissions = user.getShoppingListPermissions().stream()
+                .filter(listRef -> listRef.getList().getId() == list.getId()).findAny()
+                .map(ShoppingListPermission::getRole).map(dtoTransformer::map)
                 .orElseThrow(() -> new IllegalArgumentException("User does not know that list."));
 
-        final List<ShoppingListUserReferenceDto> otherUsers = list.getUsers().stream()
+        final List<ShoppingListUserReferenceDto> otherUsers = list.getPermissions().stream()
                 .filter(userRef -> userRef.getUserId() != user.getId())
                 .map(userRef -> userService.getUser(userRef.getUserId()))
                 .map(otherUser -> dtoTransformer.map(otherUser, list.getId())).collect(Collectors.toList());
@@ -90,8 +90,8 @@ public class ShoppingListController implements ShoppingListApi {
     @PreAuthorize("@shoppingListGuard.canAccessShoppingList(#id)")
     @Override
     public ResponseEntity<Void> deleteShoppingList(long id) {
-        boolean deleted = shoppingListService.deleteShoppingList(id);
-        if (deleted) {
+        boolean removed = shoppingListService.removeUserFromList(id, userService.getCurrentUser());
+        if (removed) {
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.badRequest().build();
@@ -123,10 +123,7 @@ public class ShoppingListController implements ShoppingListApi {
     }
 
     private ResponseEntity<Void> removeCategoriesFromShoppingList(ShoppingList list, @Nullable String category) {
-        List<ShoppingListItem> changedItems = shoppingListService.removeCategory(list, category);
-        if (changedItems == null) {
-            return ResponseEntity.badRequest().build();
-        }
+        shoppingListService.removeCategory(list, category);
         return ResponseEntity.noContent().build();
     }
 
@@ -143,10 +140,7 @@ public class ShoppingListController implements ShoppingListApi {
     }
 
     private ResponseEntity<Void> renameShoppingListCategory(ShoppingList list, String oldCategory, String newCategory) {
-        List<ShoppingListItem> changedItems = shoppingListService.renameCategory(list, oldCategory, newCategory);
-        if (changedItems == null) {
-            return ResponseEntity.badRequest().build();
-        }
+        shoppingListService.renameCategory(list, oldCategory, newCategory);
         return ResponseEntity.noContent().build();
     }
 
@@ -158,10 +152,7 @@ public class ShoppingListController implements ShoppingListApi {
     }
 
     private ResponseEntity<Void> clearShoppingList(ShoppingList list) {
-        List<ShoppingListItem> deletedItems = shoppingListService.removeAllItems(list);
-        if (deletedItems == null) {
-            return ResponseEntity.badRequest().build();
-        }
+        shoppingListService.removeAllItems(list);
         return ResponseEntity.noContent().build();
     }
 

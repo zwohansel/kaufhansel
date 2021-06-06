@@ -9,7 +9,7 @@ import de.hanselmann.shoppinglist.model.InfoMessage;
 import de.hanselmann.shoppinglist.model.InfoMessage.Severity;
 import de.hanselmann.shoppinglist.model.ShoppingList;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
-import de.hanselmann.shoppinglist.model.ShoppingListPermissions;
+import de.hanselmann.shoppinglist.model.ShoppingListPermission;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.restapi.dto.InfoDto.InfoMessageDto;
@@ -34,10 +34,10 @@ public class DtoTransformer {
     }
 
     public ShoppingListUserReferenceDto map(ShoppingListUser user, long shoppingListId) {
-        ShoppingListRole role = user.getShoppingLists().stream()
+        ShoppingListRole role = user.getShoppingListPermissions().stream()
                 .filter(ref -> ref.getShoppingListId() == shoppingListId)
                 .findAny()
-                .map(ShoppingListPermissions::getRole)
+                .map(ShoppingListPermission::getRole)
                 .orElseThrow(() -> new IllegalArgumentException("User does not know that list."));
 
         return new ShoppingListUserReferenceDto(

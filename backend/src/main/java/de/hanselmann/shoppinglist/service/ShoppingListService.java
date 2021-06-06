@@ -1,5 +1,6 @@
 package de.hanselmann.shoppinglist.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -13,25 +14,37 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import de.hanselmann.shoppinglist.model.ShoppingList;
+import de.hanselmann.shoppinglist.model.ShoppingListCategory;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
-import de.hanselmann.shoppinglist.model.ShoppingListPermissions;
+import de.hanselmann.shoppinglist.model.ShoppingListPermission;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
-import de.hanselmann.shoppinglist.model.ShoppingListUserReference;
+import de.hanselmann.shoppinglist.repository.ShoppingListCategoriesRepository;
+import de.hanselmann.shoppinglist.repository.ShoppingListItemsRepository;
+import de.hanselmann.shoppinglist.repository.ShoppingListPermissionsRepository;
 import de.hanselmann.shoppinglist.repository.ShoppingListRepository;
 
 @Service
 public class ShoppingListService {
-    private final ShoppingListRepository shoppingListRepository;
+    private final ShoppingListRepository listsRepository;
+    private final ShoppingListPermissionsRepository permissionsRepository;
+    private final ShoppingListItemsRepository itemsRepository;
+    private final ShoppingListCategoriesRepository categoriesRepository;
     private final ShoppingListUserService userService;
     private TransactionTemplate transactionTemplate;
 
     @Autowired
-    public ShoppingListService(ShoppingListRepository shoppingListRepository,
+    public ShoppingListService(ShoppingListRepository listsRepository,
             ShoppingListUserService userService,
+            ShoppingListPermissionsRepository permissionsRepository,
+            ShoppingListItemsRepository itemsRepository,
+            ShoppingListCategoriesRepository categoriesRepository,
             JpaTransactionManager transactionManager) {
-        this.shoppingListRepository = shoppingListRepository;
+        this.listsRepository = listsRepository;
         this.userService = userService;
+        this.permissionsRepository = permissionsRepository;
+        this.itemsRepository = itemsRepository;
+        this.categoriesRepository = categoriesRepository;
         transactionTemplate = new TransactionTemplate(transactionManager);
     }
 
@@ -44,114 +57,87 @@ public class ShoppingListService {
     }
 
     ShoppingList createShoppingListForCurrentUserImpl(String name) {
-        ShoppingListUser user = userService.getCurrentUser();
-        ShoppingList shoppingList = new ShoppingList();
-        shoppingList.setName(name);
-        shoppingList.addUser(new ShoppingListUserReference(user.getId()));
-        shoppingListRepository.save(shoppingList);
-        userService.addShoppingListToUser(user, shoppingList.getId(), ShoppingListRole.ADMIN);
+        final var currentTime = LocalDateTime.now();
+        final ShoppingListUser user = userService.getCurrentUser();
+        var shoppingList = new ShoppingList(name, user, currentTime);
+        var permission = new ShoppingListPermission(ShoppingListRole.ADMIN, user, shoppingList, currentTime);
+        listsRepository.save(shoppingList);
+        permissionsRepository.save(permission);
+        if (shoppingList.getPermissions().stream().noneMatch(p -> p.getId().equals(permission.getId()))) {
+            // TODO: Remove this block
+            throw new IllegalStateException("Does not work as intended.");
+        }
         return shoppingList;
     }
 
     public boolean addUserToShoppingList(long shoppingListId, ShoppingListUser user) {
-        try {
-            return transactionTemplate.execute(status -> addUserToShoppingListImpl(shoppingListId, user));
-        } catch (TransactionException e) {
+        if (user.getShoppingListPermissions().stream()
+                .anyMatch(permission -> permission.getList().getId() == shoppingListId)) {
             return false;
         }
+
+        return listsRepository.findById(shoppingListId).map(list -> {
+            addUserToShoppingList(list, user);
+            return true;
+        }).orElse(false);
     }
 
-    boolean addUserToShoppingListImpl(long shoppingListId, ShoppingListUser user) {
-        ShoppingList shoppingList = shoppingListRepository.findById(shoppingListId)
-                .orElseThrow(() -> new IllegalArgumentException("Shopping list does not exist."));
-
-        if (shoppingList.getUsers().stream().anyMatch(listUser -> listUser.getUserId() == user.getId())) {
-            throw new IllegalArgumentException("Shopping list is alread shared with user.");
-        }
-
-        shoppingList.addUser(new ShoppingListUserReference(user.getId()));
-        shoppingListRepository.save(shoppingList);
-        userService.addShoppingListToUser(user, shoppingListId, ShoppingListRole.READ_WRITE);
-        return true;
+    private void addUserToShoppingList(ShoppingList list, ShoppingListUser user) {
+        final var permission = new ShoppingListPermission(ShoppingListRole.READ_WRITE, user, list, LocalDateTime.now());
+        permissionsRepository.save(permission);
     }
 
     public Stream<ShoppingList> getShoppingListsOfCurrentUser() {
-        return getShoppingListsOfUser(userService.getCurrentUser());
-    }
-
-    private Stream<ShoppingList> getShoppingListsOfUser(ShoppingListUser user) {
-        return getShoppingLists(user.getShoppingLists());
-    }
-
-    private Stream<ShoppingList> getShoppingLists(List<ShoppingListPermissions> references) {
-        return references.stream().map(ref -> shoppingListRepository.findById(ref.getShoppingListId()))
-                .filter(Optional::isPresent)
-                .map(Optional::get);
-    }
-
-    public ShoppingList getFirstShoppingListOfCurrentUser() {
-        return getFirstShoppingListOfUser(userService.getCurrentUser().getId());
-    }
-
-    public ShoppingList getFirstShoppingListOfUser(long userId) {
-        return getShoppingListsOfUser(userService.getUser(userId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("User has no shopping list."));
+        return userService.getCurrentUser().getShoppingListPermissions().stream().map(ShoppingListPermission::getList);
     }
 
     public ShoppingListItem createNewItem(String name, @Nullable String category, ShoppingList list) {
-        ShoppingListItem newItem = new ShoppingListItem(name);
-        newItem.setCategory(category);
-        list.addItem(newItem);
-        saveShoppingList(list);
+        var newItem = new ShoppingListItem(name, list);
+        newItem.setCategory(getOrCreateCategory(category, list));
+        itemsRepository.save(newItem);
         return newItem;
     }
 
-    public void saveShoppingList(ShoppingList list) {
-        shoppingListRepository.save(list);
+    private ShoppingListCategory getOrCreateCategory(String name, ShoppingList list) {
+        return transactionTemplate.execute(status -> categoriesRepository.findByNameAndList(name, list)
+                .orElseGet(() -> categoriesRepository.save(new ShoppingListCategory(name, list))));
     }
 
     public Optional<ShoppingList> findShoppingList(long id) {
-        return shoppingListRepository.findById(id);
+        return listsRepository.findById(id);
     }
 
-    public boolean deleteShoppingList(long id) {
+    public void deleteOrLeaveShoppingListsOfUser(ShoppingListUser user) {
+        user.getShoppingListPermissions()
+                .forEach(permission -> removeUserFromList(permission.getList().getId(), user));
+    }
+
+    public boolean removeUserFromList(long listId, ShoppingListUser user) {
         try {
-            transactionTemplate.executeWithoutResult(status -> tryDeleteShoppingList(id));
+            transactionTemplate.executeWithoutResult(status -> tryRemoveCurrentUserFromShoppingList(listId, user));
             return true;
         } catch (TransactionException e) {
             return false;
         }
     }
 
-    void tryDeleteShoppingList(long shoppingListId) {
-        ShoppingList list = findShoppingList(shoppingListId).orElseThrow();
-        ShoppingListUser user = userService.getCurrentUser();
-        userService.removeShoppingListFromUser(user, shoppingListId);
-        list.removeUserFromShoppingList(user.getId());
+    void tryRemoveCurrentUserFromShoppingList(long listId, ShoppingListUser user) {
+        ShoppingList list = findShoppingList(listId).orElseThrow();
+        ShoppingListPermission currentUserPermission = list.getPermissionOfUser(user).orElseThrow();
 
-        boolean containsAdmins = list.getUsers().stream()
-                .map(ref -> userService.getRoleForUser(ref.getUserId(), shoppingListId))
-                .anyMatch(role -> role == ShoppingListRole.ADMIN);
-
-        if (containsAdmins) {
-            shoppingListRepository.save(list);
-            return;
+        boolean containsOtherAdmins = list.getPermissions().stream()
+                .filter(permission -> permission != currentUserPermission)
+                .anyMatch(permission -> permission.getRole() == ShoppingListRole.ADMIN);
+        if (containsOtherAdmins) {
+            permissionsRepository.delete(currentUserPermission);
+        } else {
+            // Current user is the last ADMIN of the list => delete the list
+            listsRepository.delete(list);
         }
-
-        list.getUsers().forEach(ref -> userService.removeShoppingListFromUser(ref.getUserId(), shoppingListId));
-        shoppingListRepository.deleteById(shoppingListId);
     }
 
     public void removeUserFromShoppingList(long shoppingListId, long userId) {
-        shoppingListRepository.findById(shoppingListId).ifPresentOrElse(
-                shoppingList -> {
-                    shoppingList.removeUserFromShoppingList(userId);
-                    shoppingListRepository.save(shoppingList);
-                },
-                () -> {
-                    throw new IllegalArgumentException("No such shopping list");
-                });
+        permissionsRepository.deleteByListAndUser(shoppingListId, userId);
     }
 
     /**
@@ -164,20 +150,12 @@ public class ShoppingListService {
      * @return List of processed items. If the transaction fails, null is returned.
      */
     public @Nullable List<ShoppingListItem> uncheckItems(ShoppingList list, @Nullable String category) {
-        try {
-            return transactionTemplate.execute(status -> uncheckItemsImpl(list, category));
-        } catch (TransactionException e) {
-            return null;
-        }
-    }
-
-    List<ShoppingListItem> uncheckItemsImpl(ShoppingList list, String category) {
         List<ShoppingListItem> itemsToUncheck = list.getItems().stream()
                 .filter(ShoppingListItem::isChecked)
-                .filter(item -> category == null || category.equals(item.getCategory()))
+                .filter(item -> category == null || category.equals(item.getCategory().getName()))
                 .collect(Collectors.toList());
         itemsToUncheck.forEach(item -> item.setChecked(false));
-        shoppingListRepository.save(list);
+        itemsRepository.saveAll(itemsToUncheck);
         return itemsToUncheck;
     }
 
@@ -185,94 +163,37 @@ public class ShoppingListService {
      * Remove categories of list.<br>
      * All categories, if category is null, only given category otherwise.
      * 
-     * @param list     ShoppingList
-     * @param category This category will be removed. If null, all categories will
-     *                 be removed.
-     * @return List of processed items. If the transaction fails, null is returned.
+     * @param list         ShoppingList
+     * @param categoryName The category with this name will be removed. If null, all
+     *                     categories will be removed.
      */
-    public @Nullable List<ShoppingListItem> removeCategory(ShoppingList list, @Nullable String category) {
-        try {
-            return transactionTemplate.execute(status -> removeCategoryImpl(list, category));
-        } catch (TransactionException e) {
-            return null;
+    public void removeCategory(ShoppingList list, @Nullable String categoryName) {
+        if (categoryName == null) {
+            categoriesRepository.deleteByList(list);
+        } else {
+            categoriesRepository.deleteByNameAndList(categoryName, list);
         }
     }
 
-    List<ShoppingListItem> removeCategoryImpl(ShoppingList list, String category) {
-        List<ShoppingListItem> itemsToChange = list.getItems().stream()
-                .filter(item -> item.getCategory() != null && !item.getCategory().isBlank())
-                .filter(item -> category == null || category.equals(item.getCategory()))
-                .collect(Collectors.toList());
-        itemsToChange.forEach(item -> item.setCategory(""));
-        shoppingListRepository.save(list);
-        return itemsToChange;
+    public void renameCategory(ShoppingList list, String oldCategory, String newCategory) {
+        categoriesRepository.findByNameAndList(oldCategory, list).ifPresent(category -> {
+            category.setName(newCategory);
+            categoriesRepository.save(category);
+        });
     }
 
-    public List<ShoppingListItem> renameCategory(ShoppingList list, String oldCategory, String newCategory) {
-        try {
-            return transactionTemplate.execute(status -> renameCategoryImpl(list, oldCategory, newCategory));
-        } catch (TransactionException e) {
-            return null;
-        }
-    }
-
-    List<ShoppingListItem> renameCategoryImpl(ShoppingList list, String oldCategory, String newCategory) {
-        List<ShoppingListItem> itemsToChange = list.getItems().stream()
-                .filter(item -> item.getCategory() != null && item.getCategory().equals(oldCategory))
-                .collect(Collectors.toList());
-        itemsToChange.forEach(item -> item.setCategory(newCategory));
-        shoppingListRepository.save(list);
-        return itemsToChange;
-    }
-
-    public @Nullable List<ShoppingListItem> removeAllItems(ShoppingList list) {
-        try {
-            return transactionTemplate.execute(status -> removeAllItemsImpl(list));
-        } catch (TransactionException e) {
-            return null;
-        }
-    }
-
-    List<ShoppingListItem> removeAllItemsImpl(ShoppingList list) {
-        List<ShoppingListItem> deletedItems = list.clearItems();
-        shoppingListRepository.save(list);
-        return deletedItems;
-    }
-
-    public @Nullable List<ShoppingListItem> removeItems(ShoppingList list, List<Long> itemIdsToDelete) {
-        try {
-            return transactionTemplate.execute(status -> removeItemsImpl(list, itemIdsToDelete));
-        } catch (TransactionException e) {
-            return null;
-        }
-    }
-
-    List<ShoppingListItem> removeItemsImpl(ShoppingList list, List<Long> itemIdsToDelete) {
-        List<ShoppingListItem> deletedItems = itemIdsToDelete.stream()
-                .map(id -> list.deleteItemById(id))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList());
-        shoppingListRepository.save(list);
-        return deletedItems;
+    public void removeAllItems(ShoppingList list) {
+        itemsRepository.deleteByList(list);
     }
 
     public boolean moveShoppingListItem(ShoppingList list, ShoppingListItem item, int targetIndex) {
-        if (list.moveItem(item, targetIndex)) {
-            shoppingListRepository.save(list);
-            return true;
-        }
+        // TODO: Implement
         return false;
     }
 
     public void renameList(long shoppingListId, String name) {
         ShoppingList list = findShoppingList(shoppingListId).orElseThrow();
         list.setName(name);
-        shoppingListRepository.save(list);
-    }
-
-    public boolean deleteOrLeaveShoppingListsOfUser(ShoppingListUser user) {
-        return user.getShoppingLists().stream().map(ref -> deleteShoppingList(ref.getShoppingListId()))
-                .allMatch(success -> success);
+        listsRepository.save(list);
     }
 }
