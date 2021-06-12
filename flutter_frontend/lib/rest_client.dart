@@ -168,10 +168,10 @@ class RestClient {
     }
   }
 
-  Future<void> deleteShoppingListItems(String shoppingListId, String ofCategory) async {
+  Future<void> deleteCheckedShoppingListItems(String shoppingListId, String ofCategory) async {
     final body = jsonEncode({'ofCategory': ofCategory});
     var request =
-        await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/item")).timeout(_timeout);
+        await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/checkeditems")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
     _addAuthHeader(request);
     request.write(body);
@@ -311,7 +311,7 @@ class RestClient {
     }
   }
 
-  removeCategory(String shoppingListId, {String category}) async {
+  Future<void> removeCategory(String shoppingListId, {String category}) async {
     final body = jsonEncode({'category': category});
     var request =
         await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/removecategory")).timeout(_timeout);
@@ -328,7 +328,7 @@ class RestClient {
     }
   }
 
-  renameCategory(String shoppingListId, String oldCategoryName, String newCategoryName) async {
+  Future<void> renameCategory(String shoppingListId, String oldCategoryName, String newCategoryName) async {
     final body = jsonEncode({'oldCategory': oldCategoryName, 'newCategory': newCategoryName});
     var request =
         await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/renamecategory")).timeout(_timeout);

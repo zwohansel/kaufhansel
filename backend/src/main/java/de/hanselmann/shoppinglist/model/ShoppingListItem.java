@@ -7,6 +7,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.springframework.lang.Nullable;
+
 @Entity
 @Table(name = "ITEMS")
 public class ShoppingListItem {
@@ -61,6 +63,14 @@ public class ShoppingListItem {
 
     public ShoppingListCategory getCategory() {
         return category;
+    }
+
+    public @Nullable String getCategoryName() {
+        return category == null ? null : category.getName();
+    }
+
+    public ShoppingList getList() {
+        return list;
     }
 
     public void setCategory(ShoppingListCategory category) {

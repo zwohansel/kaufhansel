@@ -7,19 +7,25 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import de.hanselmann.shoppinglist.model.ShoppingListUser;
+
 @SuppressWarnings("serial")
 public class AuthenticatedToken implements Authentication {
     private final String token;
-    private final String userId;
+    private final ShoppingListUser user;
 
-    public AuthenticatedToken(String token, String userId) {
+    public AuthenticatedToken(String token, ShoppingListUser user) {
         this.token = token;
-        this.userId = userId;
+        this.user = user;
+    }
+
+    public ShoppingListUser getUser() {
+        return user;
     }
 
     @Override
     public String getName() {
-        return userId;
+        return String.valueOf(user.getId());
     }
 
     @Override

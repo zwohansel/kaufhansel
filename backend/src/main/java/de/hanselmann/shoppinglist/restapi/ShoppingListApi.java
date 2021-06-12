@@ -78,8 +78,8 @@ public interface ShoppingListApi {
             @PathVariable long id,
             @PathVariable long itemId);
 
-    @DeleteMapping("/shoppinglist/{id}/item")
-    ResponseEntity<Void> deleteShoppingListItems(
+    @DeleteMapping("/shoppinglist/{id}/checkeditems")
+    ResponseEntity<Void> deleteCheckedShoppingListItems(
             @PathVariable long id,
             @RequestBody DeleteItemDto deleteItemDto);
 

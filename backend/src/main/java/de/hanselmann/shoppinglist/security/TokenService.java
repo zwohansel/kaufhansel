@@ -37,8 +37,8 @@ public class TokenService {
         this.tokenRepository = tokenRepository;
     }
 
-    Optional<Long> getUserIdFromTokenIfValid(String token) {
-        return tokenRepository.findByValue(token).filter(this::isValid).map(Token::getUserId);
+    Optional<ShoppingListUser> getUserFromTokenIfValid(String token) {
+        return tokenRepository.findByValue(token).filter(this::isValid).map(Token::getUser);
     }
 
     private boolean isValid(Token token) {
@@ -58,15 +58,14 @@ public class TokenService {
     }
 
     public String generateToken(ShoppingListUser user) {
-        final Date createdDate = new Date();
         final LocalDateTime expirationDate = LocalDateTime.now().plus(DURATION_VALID);
 
         String tokenValue = Jwts.builder().setClaims(new HashMap<>()).setSubject(user.getEmailAddress())
-                .setIssuedAt(createdDate).setIssuer("de.zwohansel.kaufhansel")
+                .setIssuedAt(new Date()).setIssuer("de.zwohansel.kaufhansel")
                 .setExpiration(Date.from(expirationDate.toInstant(ZoneOffset.UTC)))
                 .signWith(SignatureAlgorithm.HS512, secret).compact();
 
-        tokenRepository.save(new Token(tokenValue, user.getId(), expirationDate));
+        tokenRepository.save(new Token(tokenValue, user, expirationDate));
 
         return tokenValue;
     }

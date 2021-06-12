@@ -1,7 +1,6 @@
 package de.hanselmann.shoppinglist.controller;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,8 +68,8 @@ public class ShoppingListController implements ShoppingListApi {
                 .orElseThrow(() -> new IllegalArgumentException("User does not know that list."));
 
         final List<ShoppingListUserReferenceDto> otherUsers = list.getPermissions().stream()
-                .filter(userRef -> userRef.getUserId() != user.getId())
-                .map(userRef -> userService.getUser(userRef.getUserId()))
+                .filter(permission -> permission.getUser().getId() != user.getId())
+                .map(ShoppingListPermission::getUser)
                 .map(otherUser -> dtoTransformer.map(otherUser, list.getId())).collect(Collectors.toList());
 
         return dtoTransformer.map(list, userPermissions, otherUsers);
@@ -152,7 +151,7 @@ public class ShoppingListController implements ShoppingListApi {
     }
 
     private ResponseEntity<Void> clearShoppingList(ShoppingList list) {
-        shoppingListService.removeAllItems(list);
+        shoppingListService.deleteAllItems(list);
         return ResponseEntity.noContent().build();
     }
 
@@ -201,60 +200,28 @@ public class ShoppingListController implements ShoppingListApi {
     @PreAuthorize("@shoppingListGuard.canEditItemsInShoppingList(#id)")
     @Override
     public ResponseEntity<Void> deleteShoppingListItem(long id, long itemId) {
-        shoppingListService.findShoppingList(id).ifPresent(list -> deleteItem(itemId, list));
+        shoppingListService.deleteItemWithId(id, itemId);
         return ResponseEntity.noContent().build();
-    }
-
-    private void deleteItem(long itemId, ShoppingList list) {
-        list.deleteItemById(itemId).ifPresent(deletedItem -> shoppingListService.saveShoppingList(list));
     }
 
     @PreAuthorize("@shoppingListGuard.canEditItemsInShoppingList(#id)")
     @Override
-    public ResponseEntity<Void> deleteShoppingListItems(long id, DeleteItemDto deleteItemDto) {
-        shoppingListService.findShoppingList(id)
-                .ifPresent(list -> deleteItems(list, deleteItemDto.getOfCategory().orElse(null)));
+    public ResponseEntity<Void> deleteCheckedShoppingListItems(long id, DeleteItemDto deleteItemDto) {
+        shoppingListService.deleteCheckedItems(id, deleteItemDto.getOfCategory().orElse(null));
         return ResponseEntity.noContent().build();
     }
 
-    private void deleteItems(ShoppingList list, @Nullable String ofCategory) {
-        list.deleteItemIf(item -> item.isChecked() && (ofCategory == null || ofCategory.equals(item.getCategory())));
-        shoppingListService.saveShoppingList(list);
-    }
-
-    @PreAuthorize("@shoppingListGuard.canAccessShoppingList(#id)")
+    @PreAuthorize("@shoppingListGuard.canAccessShoppingList(#itemId)")
     @Override
     public ResponseEntity<Void> updateShoppingListItem(long id, long itemId, ShoppingListItemUpdateDto updateItem) {
-        return shoppingListService.findShoppingList(id)
-                .map(list -> findAndUpdateItem(itemId, updateItem, list))
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    private ResponseEntity<Void> findAndUpdateItem(long itemId, ShoppingListItemUpdateDto updateItem,
-            ShoppingList list) {
-        return list.findItemById(itemId).map(item -> updateItem(item, updateItem, list))
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    private ResponseEntity<Void> updateItem(ShoppingListItem item, ShoppingListItemUpdateDto updateItem,
-            ShoppingList list) {
-        boolean nameChanged = Objects.equals(updateItem.getName(), item.getName());
-        boolean categoryChanged = Objects.equals(updateItem.getCategory(), item.getCategory());
-        boolean checkedStateChanged = Objects.equals(updateItem.isChecked(), item.isChecked());
-
-        if ((nameChanged || categoryChanged) && !guard.canEditItemsInShoppingList(list.getId())) {
+        // TODO: Make exception handling "global"
+        try {
+            shoppingListService.updateItem(itemId, updateItem.getName(), updateItem.isChecked(),
+                    updateItem.getCategory());
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        if (checkedStateChanged && !guard.canCheckItemsInShoppingList(list.getId())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        item.setName(updateItem.getName());
-        item.setChecked(updateItem.isChecked());
-        item.setCategory(updateItem.getCategory());
-
-        shoppingListService.saveShoppingList(list);
-        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("@shoppingListGuard.canEditShoppingList(#id)")
@@ -276,19 +243,12 @@ public class ShoppingListController implements ShoppingListApi {
     @PreAuthorize("@shoppingListGuard.canEditShoppingList(#id)")
     @Override
     public ResponseEntity<Void> removeUserFromShoppingList(long shoppingListId, long userId) {
-        ShoppingListUser userToBeRemoved = userService.getUser(userId);
-
-        if (userService.getRoleForUser(userToBeRemoved, shoppingListId) == ShoppingListRole.ADMIN) {
+        try {
+            shoppingListService.removeUserFromShoppingList(shoppingListId, userId);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-
-        if (!userService.removeShoppingListFromUser(userToBeRemoved, shoppingListId)) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        shoppingListService.removeUserFromShoppingList(shoppingListId, userToBeRemoved.getId());
-
-        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("@shoppingListGuard.canEditShoppingList(#id)")

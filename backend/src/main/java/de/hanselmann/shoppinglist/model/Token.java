@@ -29,8 +29,9 @@ public class Token {
 
     }
 
-    public Token(String value, LocalDateTime expirationDate) {
+    public Token(String value, ShoppingListUser user, LocalDateTime expirationDate) {
         this.value = value;
+        this.user = user;
         this.expirationDate = expirationDate;
     }
 
@@ -40,6 +41,10 @@ public class Token {
 
     public String getValue() {
         return value;
+    }
+
+    public ShoppingListUser getUser() {
+        return user;
     }
 
     public LocalDateTime getExpirationDate() {

@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 
-import de.hanselmann.shoppinglist.repository.ListInviteRepository;
 import de.hanselmann.shoppinglist.repository.PendingRegistrationRepository;
 
 @Component
@@ -15,13 +14,10 @@ public class CodeGenerator {
             'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
 
     private final PendingRegistrationRepository pendingRegistrationRepository;
-    private final ListInviteRepository inviteRepository;
     private final Random random;
 
-    public CodeGenerator(PendingRegistrationRepository pendingRegistrationRepository,
-            ListInviteRepository inviteRepository) {
+    public CodeGenerator(PendingRegistrationRepository pendingRegistrationRepository) {
         this.pendingRegistrationRepository = pendingRegistrationRepository;
-        this.inviteRepository = inviteRepository;
         random = new Random();
     }
 
@@ -29,14 +25,6 @@ public class CodeGenerator {
         String code = NanoIdUtils.randomNanoId();
         while (pendingRegistrationRepository.existsByActivationCode(code)) {
             code = NanoIdUtils.randomNanoId();
-        }
-        return code;
-    }
-
-    public String generateInviteCode() {
-        String code = NanoIdUtils.randomNanoId(random, alphabet, 6);
-        while (inviteRepository.existsByCode(code)) {
-            code = NanoIdUtils.randomNanoId(random, alphabet, 6);
         }
         return code;
     }

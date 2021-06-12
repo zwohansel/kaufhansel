@@ -23,8 +23,8 @@ public class AuthenticationService implements AuthenticationProvider {
             throw new AuthenticationCredentialsNotFoundException("Token required");
         }
         final String token = authentication.getCredentials().toString();
-        return tokenService.getUserIdFromTokenIfValid(token)
-                .map(userId -> new AuthenticatedToken(token, userId.toString()))
+        return tokenService.getUserFromTokenIfValid(token)
+                .map(user -> new AuthenticatedToken(token, user))
                 .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
     }
 

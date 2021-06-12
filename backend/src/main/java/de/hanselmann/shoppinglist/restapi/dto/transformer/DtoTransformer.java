@@ -30,12 +30,12 @@ public class DtoTransformer {
     }
 
     public ShoppingListItemDto map(ShoppingListItem item) {
-        return new ShoppingListItemDto(item.getId(), item.getName(), item.isChecked(), item.getCategory());
+        return new ShoppingListItemDto(item.getId(), item.getName(), item.isChecked(), item.getCategoryName());
     }
 
     public ShoppingListUserReferenceDto map(ShoppingListUser user, long shoppingListId) {
         ShoppingListRole role = user.getShoppingListPermissions().stream()
-                .filter(ref -> ref.getShoppingListId() == shoppingListId)
+                .filter(permission -> permission.getList().getId() == shoppingListId)
                 .findAny()
                 .map(ShoppingListPermission::getRole)
                 .orElseThrow(() -> new IllegalArgumentException("User does not know that list."));

@@ -37,7 +37,7 @@ class SyncedShoppingList extends ChangeNotifier {
   }
 
   Future<void> deleteCheckedItems({String ofCategory}) async {
-    await _client.deleteShoppingListItems(_list.id, ofCategory);
+    await _client.deleteCheckedShoppingListItems(_list.id, ofCategory);
     _list.removeItemsWhere((item) => item.checked && (ofCategory == null || item.category == ofCategory));
   }
 

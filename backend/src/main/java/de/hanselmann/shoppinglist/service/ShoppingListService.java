@@ -2,6 +2,7 @@ package de.hanselmann.shoppinglist.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -9,6 +10,7 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -137,6 +139,12 @@ public class ShoppingListService {
     }
 
     public void removeUserFromShoppingList(long shoppingListId, long userId) {
+        ShoppingListUser userToBeRemoved = userService.getUser(userId);
+
+        if (userService.getRoleForUser(userToBeRemoved, shoppingListId) == ShoppingListRole.ADMIN) {
+            throw new AccessDeniedException("An admin user can not be removed from the list.");
+        }
+
         permissionsRepository.deleteByListAndUser(shoppingListId, userId);
     }
 
@@ -182,8 +190,24 @@ public class ShoppingListService {
         });
     }
 
-    public void removeAllItems(ShoppingList list) {
+    public void deleteAllItems(ShoppingList list) {
         itemsRepository.deleteByList(list);
+    }
+
+    public void deleteItemWithId(long listId, long itemId) {
+        itemsRepository.deleteByListAndId(listId, itemId);
+    }
+
+    public void deleteCheckedItems(long listId, String ofCategory) {
+        findShoppingList(listId).ifPresent(list -> deleteCheckedItems(list, ofCategory));
+    }
+
+    private void deleteCheckedItems(ShoppingList list, String ofCategory) {
+        if (ofCategory == null) {
+            itemsRepository.deleteByListAndChecked(list, true);
+        } else {
+            itemsRepository.deleteByListAndCheckedAndCategory(list, true, ofCategory);
+        }
     }
 
     public boolean moveShoppingListItem(ShoppingList list, ShoppingListItem item, int targetIndex) {
@@ -195,5 +219,28 @@ public class ShoppingListService {
         ShoppingList list = findShoppingList(shoppingListId).orElseThrow();
         list.setName(name);
         listsRepository.save(list);
+    }
+
+    public void updateItem(long itemId, String name, boolean checked, String category) {
+        itemsRepository.findById(itemId).ifPresent(item -> {
+            boolean nameChanged = Objects.equals(name, item.getName());
+            boolean categoryChanged = Objects.equals(category, item.getCategoryName());
+            boolean checkedStateChanged = Objects.equals(checked, item.isChecked());
+
+            ShoppingListPermission userPermissions = item.getList().getPermissionOfUser(userService.getCurrentUser())
+                    .get();
+
+            if ((nameChanged || categoryChanged) && !userPermissions.getRole().canEditItems()) {
+                throw new AccessDeniedException("User is not allowed to edit the item.");
+            }
+            if (checkedStateChanged && !userPermissions.getRole().canCheckItems()) {
+                throw new AccessDeniedException("User is not allowed to check or uncheck the item.");
+            }
+
+            item.setName(name);
+            item.setChecked(checked);
+            item.setCategory(getOrCreateCategory(category, item.getList()));
+            itemsRepository.save(item);
+        });
     }
 }
