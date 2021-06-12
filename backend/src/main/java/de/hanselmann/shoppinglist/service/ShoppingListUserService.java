@@ -15,6 +15,7 @@ import de.hanselmann.shoppinglist.model.ShoppingListPermission;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
+import de.hanselmann.shoppinglist.security.AuthenticatedToken;
 import de.hanselmann.shoppinglist.utils.TimeSource;
 
 @Service
@@ -46,10 +47,10 @@ public class ShoppingListUserService {
     public Optional<ShoppingListUser> findCurrentUser() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         Authentication auth = securityContext.getAuthentication();
-        if (auth == null) {
-            return Optional.empty();
+        if (auth != null && auth.isAuthenticated()) {
+            return Optional.of(((AuthenticatedToken) auth).getUser());
         }
-        return findUser(Long.valueOf(auth.getName()));
+        return Optional.empty();
     }
 
     public Optional<ShoppingListUser> findUser(long userId) {
@@ -89,15 +90,15 @@ public class ShoppingListUserService {
      */
     public @Nullable ShoppingListRole getRoleForUser(ShoppingListUser user, long shoppingListId) {
         return user.getShoppingListPermissions().stream()
-                .filter(refs -> refs.getShoppingListId() == shoppingListId)
+                .filter(permission -> permission.getList().getId() == shoppingListId)
                 .findAny().map(ShoppingListPermission::getRole)
                 .orElse(null);
     }
 
-    public void changePermission(ShoppingListUser userToBeChanged, long shopingListId,
+    public void changePermission(ShoppingListUser userToBeChanged, long shoppingListId,
             ShoppingListRole role) {
         ShoppingListPermission referenceForUserToBeChanged = userToBeChanged.getShoppingListPermissions().stream()
-                .filter(ref -> ref.getShoppingListId() == shopingListId)
+                .filter(permission -> permission.getList().getId() == shoppingListId)
                 .findAny()
                 .orElseThrow();
         referenceForUserToBeChanged.setRole(role);
