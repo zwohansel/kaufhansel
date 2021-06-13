@@ -40,15 +40,13 @@ import de.hanselmann.shoppinglist.service.ShoppingListUserService;
 public class ShoppingListController implements ShoppingListApi {
     private final ShoppingListService shoppingListService;
     private final ShoppingListUserService userService;
-    private final ShoppingListGuard guard;
     private final DtoTransformer dtoTransformer;
 
     @Autowired
     public ShoppingListController(ShoppingListService shoppingListService, ShoppingListUserService userService,
-            ShoppingListGuard guard, DtoTransformer dtoTransformer) {
+            DtoTransformer dtoTransformer) {
         this.shoppingListService = shoppingListService;
         this.userService = userService;
-        this.guard = guard;
         this.dtoTransformer = dtoTransformer;
     }
 

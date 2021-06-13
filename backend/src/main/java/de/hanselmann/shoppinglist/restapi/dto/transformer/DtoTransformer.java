@@ -14,13 +14,11 @@ import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.restapi.dto.InfoDto.InfoMessageDto;
 import de.hanselmann.shoppinglist.restapi.dto.InfoDto.SeverityDto;
-import de.hanselmann.shoppinglist.restapi.dto.RegistrationProcessTypeDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListPermissionsDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserReferenceDto;
-import de.hanselmann.shoppinglist.service.RegistrationService.RegistrationProcessType;
 
 @Component
 public class DtoTransformer {
@@ -60,17 +58,6 @@ public class DtoTransformer {
             ShoppingListPermissionsDto userPermissions,
             List<ShoppingListUserReferenceDto> otherUsers) {
         return new ShoppingListInfoDto(list.getId(), list.getName(), userPermissions, otherUsers);
-    }
-
-    public RegistrationProcessTypeDto map(RegistrationProcessType typeOfRegistrationProcess) {
-        switch (typeOfRegistrationProcess) {
-        case FULL_REGISTRATION:
-            return RegistrationProcessTypeDto.fullRegistration();
-        case WITHOUT_EMAIL:
-            return RegistrationProcessTypeDto.withoutEmail();
-        default:
-            return RegistrationProcessTypeDto.inviteInvalid();
-        }
     }
 
     public InfoMessageDto map(InfoMessage message) {

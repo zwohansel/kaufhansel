@@ -15,7 +15,7 @@ public class PendingRegistration {
     @Id
     private long id;
 
-    @Column(name = "EMAIL", nullable = false)
+    @Column(name = "EMAIL", nullable = false, unique = true)
     private String emailAddress;
 
     @Column(name = "USERNAME", nullable = false)

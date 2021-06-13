@@ -1,6 +1,7 @@
 package de.hanselmann.shoppinglist.repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -17,4 +18,6 @@ public interface ListInviteRepository extends JpaRepository<ListInvite, Long> {
     }
 
     int deleteByInvitedByUser(ShoppingListUser user);
+
+    List<ListInvite> findByInviteeEmailAddress(String emailAddress);
 }

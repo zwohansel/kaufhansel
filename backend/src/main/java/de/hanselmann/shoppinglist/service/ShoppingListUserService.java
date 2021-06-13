@@ -145,8 +145,8 @@ public class ShoppingListUserService {
         }).count();
     }
 
-    public boolean deleteUser(long userId) {
-        userRepository.deleteById(userId);
+    public boolean deleteUser(ShoppingListUser user) {
+        userRepository.delete(user);
         return true;
     }
 
