@@ -28,7 +28,7 @@ public class PendingRegistration {
     private String activationCode;
 
     @Column(name = "CREATED_AT", nullable = false)
-    private LocalDateTime creationAt;
+    private LocalDateTime createdAt;
 
     public static PendingRegistration create(
             String emailAddress,
@@ -40,7 +40,7 @@ public class PendingRegistration {
         pendingRegistration.userName = userName;
         pendingRegistration.password = encryptedPassword;
         pendingRegistration.activationCode = activationCode;
-        pendingRegistration.creationAt = LocalDateTime.now();
+        pendingRegistration.createdAt = LocalDateTime.now();
         return pendingRegistration;
     }
 
@@ -68,7 +68,7 @@ public class PendingRegistration {
     }
 
     public boolean isExpired() {
-        return LocalDateTime.now().isAfter(creationAt.plusWeeks(EXPIRES_IN_WEEKS));
+        return LocalDateTime.now().isAfter(createdAt.plusWeeks(EXPIRES_IN_WEEKS));
     }
 
     public boolean isNotExpired() {

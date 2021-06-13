@@ -17,7 +17,7 @@ public interface ListInviteRepository extends JpaRepository<ListInvite, Long> {
         return deleteByCreatedAtLessThan(LocalDateTime.now().minusDays(olderThanDays));
     }
 
-    int deleteByInvitedByUser(ShoppingListUser user);
+    int deleteByInvitedBy(ShoppingListUser user);
 
     List<ListInvite> findByInviteeEmailAddress(String emailAddress);
 }

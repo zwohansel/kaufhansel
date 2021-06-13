@@ -14,9 +14,9 @@ public interface PendingRegistrationRepository extends JpaRepository<PendingRegi
 
     boolean existsByActivationCode(String activationCode);
 
-    int deleteByCreationDateLessThan(LocalDateTime date);
+    int deleteByCreatedAtLessThan(LocalDateTime date);
 
     default int deletePendingRegistrationsOlderThanDays(long olderThanDays) {
-        return deleteByCreationDateLessThan(LocalDateTime.now().minusDays(olderThanDays));
+        return deleteByCreatedAtLessThan(LocalDateTime.now().minusDays(olderThanDays));
     }
 }

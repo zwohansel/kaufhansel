@@ -1,8 +1,8 @@
 package de.hanselmann.shoppinglist.repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -15,9 +15,9 @@ public interface ShoppingListUserRepository extends JpaRepository<ShoppingListUs
 
     boolean existsByEmailAddress(String emailAddress);
 
-    Stream<ShoppingListUser> findByPasswordResetRequestedAtLessThan(LocalDateTime date);
+    List<ShoppingListUser> findByPasswordResetRequestedAtLessThan(LocalDateTime date);
 
-    default Stream<ShoppingListUser> findExpiredPasswordResetRequests(long olderThanMinutes) {
+    default List<ShoppingListUser> findExpiredPasswordResetRequests(long olderThanMinutes) {
         return findByPasswordResetRequestedAtLessThan(LocalDateTime.now().minusMinutes(olderThanMinutes));
     }
 }

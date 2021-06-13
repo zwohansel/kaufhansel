@@ -33,6 +33,7 @@ public class InfoController implements InfoApi {
     public ResponseEntity<InfoDto> getInfo() {
         Optional<InfoMessageDto> message = messageRepository
                 .findValidMessages()
+                .stream()
                 .filter(InfoMessage::isEnabled)
                 .findFirst()
                 .map(dtoTransformer::map);
