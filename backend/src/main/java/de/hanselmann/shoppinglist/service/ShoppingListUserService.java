@@ -138,7 +138,7 @@ public class ShoppingListUserService {
     }
 
     public long resetPendingPasswordResetRequestsOlderThanMinutes(long olderThanMinutes) {
-        return userRepository.findExpiredPasswordResetRequests(olderThanMinutes).map(user -> {
+        return userRepository.findExpiredPasswordResetRequests(olderThanMinutes).stream().map(user -> {
             user.clearPasswordResetCode();
             userRepository.save(user);
             return user;

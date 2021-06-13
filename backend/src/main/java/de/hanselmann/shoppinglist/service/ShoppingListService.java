@@ -9,9 +9,9 @@ import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
-import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -41,7 +41,7 @@ public class ShoppingListService {
             ShoppingListPermissionsRepository permissionsRepository,
             ShoppingListItemsRepository itemsRepository,
             ShoppingListCategoriesRepository categoriesRepository,
-            JpaTransactionManager transactionManager) {
+            PlatformTransactionManager transactionManager) {
         this.listsRepository = listsRepository;
         this.userService = userService;
         this.permissionsRepository = permissionsRepository;

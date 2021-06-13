@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -13,7 +15,8 @@ public class ListInvite {
     @Id
     private long id;
 
-    @Column(name = "INVITED_BY", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "INVITED_BY", nullable = false)
     private ShoppingListUser invitedBy;
 
     @Column(name = "CREATED_AT", nullable = false)
@@ -22,7 +25,8 @@ public class ListInvite {
     @Column(name = "INVITEE_EMAIL", nullable = false)
     private String inviteeEmailAddress;
 
-    @Column(name = "INVITED_INTO_LIST", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "INVITED_INTO_LIST", nullable = false)
     private ShoppingList list;
 
     public static ListInvite createForEmailAddressAndList(ShoppingListUser invitedBy, String inviteeEmailAddress,

@@ -71,6 +71,7 @@ public class TokenService {
     }
 
     public int deleteInvalidTokens() {
+        // TODO: Use DB query to find invalid tokens
         List<Token> invalidTokens = tokenRepository.findAll().stream().filter(this::isInvalid)
                 .collect(Collectors.toList());
         tokenRepository.deleteAll(invalidTokens);
