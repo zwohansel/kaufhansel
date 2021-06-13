@@ -158,7 +158,7 @@ public class RegistrationServiceIntegrationTest {
         when(pendingRegistrationRepository.existsByEmailAddress(any())).thenReturn(pendingRegistrationExists);
         when(userService.existsUserWithEmailAddress(any())).thenReturn(userExists);
 
-        boolean success = cut.sendInvite("neuer.hansel@mail.de");
+        boolean success = cut.sendListInvite("neuer.hansel@mail.de");
         assertThat(success).isEqualTo(expectedSuccess);
         if (success) {
             verify(emailService).sendInviteMail(eq("neuer.hansel@mail.de"), eq("1NV1T3"), eq("Testuser"));

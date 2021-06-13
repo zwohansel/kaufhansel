@@ -1,11 +1,8 @@
 package de.hanselmann.shoppinglist.restapi.dto;
 
-import java.util.Optional;
-
 public class RegistrationDataDto {
     private String userName;
-    private String inviteCode;
-    private Optional<String> emailAddress;
+    private String emailAddress;
     private String password;
 
     public String getUserName() {
@@ -16,19 +13,11 @@ public class RegistrationDataDto {
         this.userName = userName;
     }
 
-    public String getInviteCode() {
-        return inviteCode;
-    }
-
-    public void setInviteCode(String inviteCode) {
-        this.inviteCode = inviteCode;
-    }
-
-    public Optional<String> getEmailAddress() {
+    public String getEmailAddress() {
         return emailAddress;
     }
 
-    public void setEmailAddress(Optional<String> emailAddress) {
+    public void setEmailAddress(String emailAddress) {
         this.emailAddress = emailAddress;
     }
 

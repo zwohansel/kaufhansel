@@ -8,13 +8,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import de.hanselmann.shoppinglist.restapi.dto.InviteCodeDto;
 import de.hanselmann.shoppinglist.restapi.dto.LoginDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationDataDto;
-import de.hanselmann.shoppinglist.restapi.dto.RegistrationProcessTypeDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationResultDto;
 import de.hanselmann.shoppinglist.restapi.dto.RequestUserPasswordResetDto;
-import de.hanselmann.shoppinglist.restapi.dto.SendInviteDto;
+import de.hanselmann.shoppinglist.restapi.dto.SendListInviteDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.UserPasswordResetDto;
 
@@ -29,20 +27,13 @@ public interface UserApi {
     ResponseEntity<RegistrationResultDto> register(
             @RequestBody RegistrationDataDto registrationData);
 
-    @GetMapping("/register/type/{inviteCode}")
-    ResponseEntity<RegistrationProcessTypeDto> getRegistrationProcessType(
-            @PathVariable String inviteCode);
-
     @GetMapping("/activate/{activationCode}")
     ResponseEntity<Void> activate(
             @PathVariable String activationCode);
 
-    @GetMapping("/invite")
-    ResponseEntity<InviteCodeDto> generateInvite();
-
     @PostMapping("/invite")
-    ResponseEntity<Void> sendInvite(
-            @RequestBody SendInviteDto sendInvite);
+    ResponseEntity<Void> sendListInvite(
+            @RequestBody SendListInviteDto sendInvite);
 
     @PostMapping("/password/requestreset")
     ResponseEntity<Void> requestUserPasswordResetCode(

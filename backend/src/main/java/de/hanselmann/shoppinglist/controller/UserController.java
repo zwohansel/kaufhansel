@@ -1,7 +1,6 @@
 package de.hanselmann.shoppinglist.controller;
 
 import java.net.URI;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,13 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.restapi.UserApi;
-import de.hanselmann.shoppinglist.restapi.dto.InviteCodeDto;
 import de.hanselmann.shoppinglist.restapi.dto.LoginDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationDataDto;
-import de.hanselmann.shoppinglist.restapi.dto.RegistrationProcessTypeDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationResultDto;
 import de.hanselmann.shoppinglist.restapi.dto.RequestUserPasswordResetDto;
-import de.hanselmann.shoppinglist.restapi.dto.SendInviteDto;
+import de.hanselmann.shoppinglist.restapi.dto.SendListInviteDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.UserPasswordResetDto;
 import de.hanselmann.shoppinglist.restapi.dto.transformer.DtoTransformer;
@@ -73,13 +70,9 @@ public class UserController implements UserApi {
 
     @Override
     public ResponseEntity<RegistrationResultDto> register(RegistrationDataDto registrationData) {
-        if (!registrationService.isInviteCodeValid(registrationData.getInviteCode())) {
-            return ResponseEntity.ok(RegistrationResultDto.inviteCodeInvalid());
-        }
+        String emailAddress = registrationData.getEmailAddress();
 
-        String emailAddress = registrationData.getEmailAddress().orElse(null);
-
-        if (emailAddress != null && !registrationService.isEmailAddressUnused(emailAddress)) {
+        if (!registrationService.isEmailAddressUnused(emailAddress)) {
             return ResponseEntity.ok(RegistrationResultDto.emailInvalid());
         }
 
@@ -87,19 +80,10 @@ public class UserController implements UserApi {
             return ResponseEntity.ok(RegistrationResultDto.passwordInvalid());
         }
 
-        boolean success;
-        if (emailAddress == null) {
-            success = registrationService.registerUserWithEMailAddressFromInvite(
-                    registrationData.getInviteCode(),
-                    registrationData.getUserName(),
-                    registrationData.getPassword());
-        } else {
-            success = registrationService.registerUser(
-                    registrationData.getInviteCode(),
-                    emailAddress,
-                    registrationData.getUserName(),
-                    registrationData.getPassword());
-        }
+        boolean success = registrationService.registerUser(
+                emailAddress,
+                registrationData.getUserName(),
+                registrationData.getPassword());
 
         if (success) {
             return ResponseEntity.ok(RegistrationResultDto.success());
@@ -110,7 +94,7 @@ public class UserController implements UserApi {
 
     @Override
     public ResponseEntity<Void> activate(String activationCode) {
-        HttpHeaders headers = new HttpHeaders();
+        var headers = new HttpHeaders();
         if (registrationService.activate(activationCode)) {
             headers.setLocation(URI.create("/kaufhansel/registration_success.html"));
         } else {
@@ -121,35 +105,14 @@ public class UserController implements UserApi {
 
     @PreAuthorize("hasRole('SHOPPER')")
     @Override
-    public ResponseEntity<InviteCodeDto> generateInvite() {
-        String code = registrationService.generateInviteCode();
-        return ResponseEntity.ok(new InviteCodeDto(code));
-    }
-
-    @PreAuthorize("hasRole('SHOPPER')")
-    @Override
-    public ResponseEntity<Void> sendInvite(SendInviteDto sendInvite) {
+    public ResponseEntity<Void> sendListInvite(SendListInviteDto sendInvite) {
         try {
-            boolean success = false;
-            final Optional<Long> shoppingListId = sendInvite.getShoppingListId();
-            if (shoppingListId.isPresent()) {
-                if (!guard.canEditShoppingList(shoppingListId.get())) {
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-                }
-                success = registrationService.sendInviteForShoppingList(sendInvite.getEmailAddress(),
-                        shoppingListId.get());
-            } else {
-                success = registrationService.sendInvite(sendInvite.getEmailAddress());
-            }
+            boolean success = registrationService.sendInviteForShoppingList(sendInvite.getEmailAddress(),
+                    sendInvite.getShoppingListId());
             return success ? ResponseEntity.noContent().build() : ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
-    }
-
-    @Override
-    public ResponseEntity<RegistrationProcessTypeDto> getRegistrationProcessType(String inviteCode) {
-        return ResponseEntity.ok(dtoTransformer.map(registrationService.getTypeOfRegistrationProcess(inviteCode)));
     }
 
     @Override
@@ -180,21 +143,18 @@ public class UserController implements UserApi {
         }
     }
 
-    @PreAuthorize("hasRole('SHOPPER') "
-            + "&& @shoppingListGuard.canDeleteUser(#userToBeDeletedId)")
+    @PreAuthorize("hasRole('SHOPPER') && @shoppingListGuard.canDeleteUser(#userToBeDeletedId)")
     @Override
     public ResponseEntity<Void> deleteUser(long userToBeDeletedId) {
         long currentUserId = userService.getCurrentUser().getId();
         try {
             ShoppingListUser userToBeDeleted = userService.getUser(userToBeDeletedId);
-            registrationService.deleteInvitesOfUser(userToBeDeleted.getId());
             shoppingListService.deleteOrLeaveShoppingListsOfUser(userToBeDeleted);
-            userService.deleteUser(userToBeDeleted.getId());
+            userService.deleteUser(userToBeDeleted);
             LOGGER.info("User {} was succesfully deleted by {}", userToBeDeletedId, currentUserId);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
-            LOGGER.info(
-                    "User " + userToBeDeletedId + " could not be deleted by " + currentUserId, e);
+            LOGGER.info("User " + userToBeDeletedId + " could not be deleted by " + currentUserId, e);
             return ResponseEntity.badRequest().build();
         }
     }

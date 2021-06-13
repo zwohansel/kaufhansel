@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -22,7 +23,7 @@ public class ShoppingListUser {
     @Column(name = "SUPERUSER", nullable = false)
     private boolean superUser = false;
 
-    @Column(name = "EMAIL", nullable = false)
+    @Column(name = "EMAIL", nullable = false, unique = true)
     private String emailAddress;
 
     @Column(name = "NAME", nullable = false)
@@ -42,6 +43,12 @@ public class ShoppingListUser {
 
     @OneToMany(mappedBy = "user")
     private List<ShoppingListPermission> shoppingLists = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private List<Token> tokens = new ArrayList<>();
+
+    @OneToMany(mappedBy = "invitedBy", cascade = CascadeType.REMOVE)
+    private List<ListInvite> createdInvites = new ArrayList<>();
 
     public static ShoppingListUser create(PendingRegistration pendingRegistration) {
         if (pendingRegistration.isExpired()) {

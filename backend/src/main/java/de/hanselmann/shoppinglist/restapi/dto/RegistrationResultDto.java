@@ -4,7 +4,6 @@ public class RegistrationResultDto {
     private enum Status {
         SUCCESS,
         EMAIL_INVALID,
-        INVITE_CODE_INVALID,
         PASSWORD_INVALID,
         FAILURE
     }
@@ -15,10 +14,6 @@ public class RegistrationResultDto {
 
     public static RegistrationResultDto emailInvalid() {
         return new RegistrationResultDto(Status.EMAIL_INVALID);
-    }
-
-    public static RegistrationResultDto inviteCodeInvalid() {
-        return new RegistrationResultDto(Status.INVITE_CODE_INVALID);
     }
 
     public static RegistrationResultDto passwordInvalid() {

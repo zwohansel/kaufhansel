@@ -1,10 +1,8 @@
 package de.hanselmann.shoppinglist.restapi.dto;
 
-import java.util.Optional;
-
-public class SendInviteDto {
+public class SendListInviteDto {
     private String emailAddress;
-    private Optional<Long> shoppingListId;
+    private Long shoppingListId;
 
     public String getEmailAddress() {
         return emailAddress;
@@ -14,11 +12,11 @@ public class SendInviteDto {
         this.emailAddress = emailAddress;
     }
 
-    public Optional<Long> getShoppingListId() {
+    public Long getShoppingListId() {
         return shoppingListId;
     }
 
-    public void setShoppingListId(Optional<Long> shoppingListId) {
+    public void setShoppingListId(Long shoppingListId) {
         this.shoppingListId = shoppingListId;
     }
 
