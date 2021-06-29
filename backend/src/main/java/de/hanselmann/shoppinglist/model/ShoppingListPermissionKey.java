@@ -11,10 +11,10 @@ public class ShoppingListPermissionKey implements Serializable {
     private static final long serialVersionUID = -1961771194001336087L;
 
     @Column(name = "LIST_ID")
-    private long shoppingListId;
+    private Long shoppingListId;
 
     @Column(name = "USER_ID")
-    private long shoppingListUserId;
+    private Long shoppingListUserId;
 
     @Override
     public boolean equals(Object obj) {

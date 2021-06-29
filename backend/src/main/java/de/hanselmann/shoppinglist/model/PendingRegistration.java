@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -13,7 +15,8 @@ public class PendingRegistration {
     public static final int EXPIRES_IN_WEEKS = 2;
 
     @Id
-    private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "EMAIL", nullable = false, unique = true)
     private String emailAddress;
@@ -47,7 +50,7 @@ public class PendingRegistration {
     private PendingRegistration() {
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 

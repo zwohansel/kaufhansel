@@ -10,6 +10,8 @@ import java.util.Optional;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -18,7 +20,8 @@ import javax.persistence.Table;
 @Table(name = "USERS")
 public class ShoppingListUser {
     @Id
-    private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "SUPERUSER", nullable = false)
     private boolean superUser = false;
@@ -65,21 +68,7 @@ public class ShoppingListUser {
     private ShoppingListUser() {
     }
 
-    protected ShoppingListUser(long id, boolean superUser, String username, String password, String emailAddress,
-            LocalDateTime registrationDate, List<ShoppingListPermission> shoppingLists,
-            String passwordResetCode, LocalDateTime passwordResetRequestedAt) {
-        this.id = id;
-        this.superUser = superUser;
-        this.username = username;
-        this.password = password;
-        this.emailAddress = emailAddress;
-        this.registeredAt = registrationDate;
-        this.shoppingLists = shoppingLists;
-        this.passwordResetCode = passwordResetCode;
-        this.passwordResetRequestedAt = passwordResetRequestedAt;
-    }
-
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
