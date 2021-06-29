@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -22,7 +24,8 @@ import javax.persistence.Table;
 public class ShoppingList {
 
     @Id
-    private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "NAME", nullable = false)
     private String name;
@@ -52,16 +55,7 @@ public class ShoppingList {
         this.createdAt = createdAt;
     }
 
-    protected ShoppingList(long id, String name, LocalDateTime createdAt, ShoppingListUser createdBy,
-            List<ShoppingListItem> items) {
-        this.id = id;
-        this.name = name;
-        this.createdAt = createdAt;
-        this.createdBy = createdBy;
-        this.items = items;
-    }
-
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
