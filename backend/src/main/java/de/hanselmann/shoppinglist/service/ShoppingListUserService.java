@@ -4,9 +4,6 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +12,6 @@ import de.hanselmann.shoppinglist.model.ShoppingListPermission;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
-import de.hanselmann.shoppinglist.security.AuthenticatedToken;
 import de.hanselmann.shoppinglist.utils.TimeSource;
 
 @Service
@@ -25,32 +21,27 @@ public class ShoppingListUserService {
     private final PasswordEncoder passwordEncoder;
     private final EMailService emailService;
     private final TimeSource timeSource;
+    private final AuthenticatedUserService authenticatedUserService;
 
     @Autowired
     public ShoppingListUserService(ShoppingListUserRepository userRepository, CodeGenerator codeGenerator,
-            PasswordEncoder passwordEncoder, EMailService emailService, TimeSource timeSource) {
+            PasswordEncoder passwordEncoder, EMailService emailService, TimeSource timeSource,
+            AuthenticatedUserService authenticatedUserService) {
         this.userRepository = userRepository;
         this.codeGenerator = codeGenerator;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.timeSource = timeSource;
+        this.authenticatedUserService = authenticatedUserService;
     }
 
     public ShoppingListUser getCurrentUser() {
-        return findCurrentUser().orElseThrow(() -> new IllegalArgumentException("User is not logged in."));
+        return authenticatedUserService.findCurrentUser()
+                .orElseThrow(() -> new IllegalArgumentException("User is not logged in."));
     }
 
     public ShoppingListUser getUser(long userId) {
         return findUser(userId).orElseThrow(() -> new IllegalArgumentException("User does not exist."));
-    }
-
-    public Optional<ShoppingListUser> findCurrentUser() {
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        Authentication auth = securityContext.getAuthentication();
-        if (auth != null && auth.isAuthenticated()) {
-            return Optional.of(((AuthenticatedToken) auth).getUser());
-        }
-        return Optional.empty();
     }
 
     public Optional<ShoppingListUser> findUser(long userId) {
