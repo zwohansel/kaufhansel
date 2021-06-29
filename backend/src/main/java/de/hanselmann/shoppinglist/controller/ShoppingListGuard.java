@@ -7,21 +7,25 @@ import org.springframework.stereotype.Component;
 
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.repository.ShoppingListItemsRepository;
+import de.hanselmann.shoppinglist.service.AuthenticatedUserService;
 import de.hanselmann.shoppinglist.service.ShoppingListUserService;
 
 @Component("shoppingListGuard")
 public class ShoppingListGuard {
     private final ShoppingListUserService userService;
     private final ShoppingListItemsRepository itemsRepository;
+    private final AuthenticatedUserService authenticatedUserService;
 
     @Autowired
-    public ShoppingListGuard(ShoppingListUserService userService, ShoppingListItemsRepository itemsRepository) {
+    public ShoppingListGuard(ShoppingListUserService userService, ShoppingListItemsRepository itemsRepository,
+            AuthenticatedUserService authenticatedUserService) {
         this.userService = userService;
         this.itemsRepository = itemsRepository;
+        this.authenticatedUserService = authenticatedUserService;
     }
 
     private boolean checkAccessForCurrentUser(Predicate<ShoppingListUser> predicate) {
-        return userService.findCurrentUser().map(predicate::test).orElse(false);
+        return authenticatedUserService.findCurrentUser().map(predicate::test).orElse(false);
     }
 
     public boolean canAccessShoppingList(long id) {
