@@ -131,7 +131,7 @@
             </column>
         </createTable>
         <createTable tableName="INFO_MESSAGES">
-            <column name="ID" type="int" autoIncrement="true">
+            <column name="ID" type="int">
                 <constraints primaryKey="true" primaryKeyName="PK_INFO_MESSAGE_ID"/>
             </column>
             <column defaultValueBoolean="false" name="ENABLED" type="boolean">

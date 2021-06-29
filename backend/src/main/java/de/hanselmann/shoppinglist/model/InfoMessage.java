@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -16,8 +18,8 @@ public class InfoMessage {
     }
 
     @Id
-    @Column(name = "ID", unique = true, nullable = false)
-    private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "ENABLED", nullable = false)
     private boolean enabled;
@@ -37,7 +39,7 @@ public class InfoMessage {
     @Column(name = "VALID_TO", nullable = false)
     private LocalDateTime validTo;
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
@@ -64,4 +66,35 @@ public class InfoMessage {
     public LocalDateTime getValidTo() {
         return validTo;
     }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public void setSeverity(Severity severity) {
+        this.severity = severity;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public void setDismissLabel(String dismissLabel) {
+        this.dismissLabel = dismissLabel;
+    }
+
+    public void setValidFrom(LocalDateTime validFrom) {
+        this.validFrom = validFrom;
+    }
+
+    public void setValidTo(LocalDateTime validTo) {
+        this.validTo = validTo;
+    }
+
+    @Override
+    public String toString() {
+        return "InfoMessage [id=" + id + ", enabled=" + enabled + ", severity=" + severity + ", message=" + message
+                + ", dismissLabel=" + dismissLabel + ", validFrom=" + validFrom + ", validTo=" + validTo + "]";
+    }
+
 }
