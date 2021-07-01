@@ -58,17 +58,15 @@ public class ShoppingListService {
         }
     }
 
-    ShoppingList createShoppingListForCurrentUserImpl(String name) {
+    private ShoppingList createShoppingListForCurrentUserImpl(String name) {
         final var currentTime = LocalDateTime.now();
         final ShoppingListUser user = userService.getCurrentUser();
         var shoppingList = new ShoppingList(name, user, currentTime);
         var permission = new ShoppingListPermission(ShoppingListRole.ADMIN, user, shoppingList, currentTime);
+        shoppingList.addPermission(permission);
+        user.addPermission(permission);
         listsRepository.save(shoppingList);
         permissionsRepository.save(permission);
-        if (shoppingList.getPermissions().stream().noneMatch(p -> p.getId().equals(permission.getId()))) {
-            // TODO: Remove this block
-            throw new IllegalStateException("Does not work as intended.");
-        }
         return shoppingList;
     }
 

@@ -65,7 +65,17 @@ public class ShoppingListUser {
         return user;
     }
 
-    private ShoppingListUser() {
+    protected ShoppingListUser() {
+
+    }
+
+    public ShoppingListUser(boolean superUser, String emailAddress, String username, String password,
+            LocalDateTime registeredAt) {
+        this.superUser = superUser;
+        this.emailAddress = emailAddress;
+        this.username = username;
+        this.password = password;
+        this.registeredAt = registeredAt;
     }
 
     public Long getId() {
@@ -100,9 +110,12 @@ public class ShoppingListUser {
         return Collections.unmodifiableList(shoppingLists);
     }
 
-    // TODO: Not the owning side!
-    public void addShoppingList(ShoppingListPermission shoppingListReference) {
-        shoppingLists.add(shoppingListReference);
+    public List<Token> getTokens() {
+        return tokens;
+    }
+
+    public void addPermission(ShoppingListPermission permission) {
+        shoppingLists.add(permission);
     }
 
     // TODO: Not the owning side!
