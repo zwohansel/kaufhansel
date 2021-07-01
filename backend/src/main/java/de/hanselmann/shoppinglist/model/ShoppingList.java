@@ -75,6 +75,10 @@ public class ShoppingList {
         return Collections.unmodifiableList(permissions);
     }
 
+    public void addPermission(ShoppingListPermission permission) {
+        permissions.add(permission);
+    }
+
     public Optional<ShoppingListPermission> getPermissionOfUser(ShoppingListUser user) {
         return permissions.stream().filter(permission -> permission.getUser().getId() == user.getId()).findAny();
     }

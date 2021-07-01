@@ -61,12 +61,12 @@ public class ShoppingListController implements ShoppingListApi {
         final ShoppingListUser user = userService.getCurrentUser();
 
         final ShoppingListPermissionsDto userPermissions = user.getShoppingListPermissions().stream()
-                .filter(listRef -> listRef.getList().getId() == list.getId()).findAny()
+                .filter(listRef -> listRef.getList().getId().equals(list.getId())).findAny()
                 .map(ShoppingListPermission::getRole).map(dtoTransformer::map)
                 .orElseThrow(() -> new IllegalArgumentException("User does not know that list."));
 
         final List<ShoppingListUserReferenceDto> otherUsers = list.getPermissions().stream()
-                .filter(permission -> permission.getUser().getId() != user.getId())
+                .filter(permission -> !permission.getUser().getId().equals(user.getId()))
                 .map(ShoppingListPermission::getUser)
                 .map(otherUser -> dtoTransformer.map(otherUser, list.getId())).collect(Collectors.toList());
 

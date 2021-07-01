@@ -16,6 +16,15 @@ public class ShoppingListPermissionKey implements Serializable {
     @Column(name = "USER_ID")
     private Long shoppingListUserId;
 
+    protected ShoppingListPermissionKey() {
+
+    }
+
+    public ShoppingListPermissionKey(Long shoppingListId, Long shoppingListUserId) {
+        this.shoppingListId = shoppingListId;
+        this.shoppingListUserId = shoppingListUserId;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {

@@ -42,6 +42,7 @@ public class ShoppingListPermission {
 
     public ShoppingListPermission(ShoppingListRole role, ShoppingListUser user, ShoppingList list,
             LocalDateTime createdAt) {
+        this.id = new ShoppingListPermissionKey(list.getId(), user.getId());
         this.role = role;
         this.createdAt = createdAt;
         this.user = user;
