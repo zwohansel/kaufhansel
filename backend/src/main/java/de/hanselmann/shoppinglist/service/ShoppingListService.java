@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -51,12 +52,9 @@ public class ShoppingListService {
     }
 
     public @Nullable ShoppingList createShoppingListForCurrentUser(String name) {
-        if (name == null) {
-            return null;
-        }
         try {
             return transactionTemplate.execute(status -> createShoppingListForCurrentUserImpl(name));
-        } catch (TransactionException e) {
+        } catch (TransactionException | DataIntegrityViolationException e) {
             return null;
         }
     }

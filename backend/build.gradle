@@ -66,6 +66,7 @@ dependencies {
     runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jsonWebTokenVersion}"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    testImplementation "org.springframework.boot:spring-boot-starter-webflux:${springBootVersion}"
     testImplementation "org.assertj:assertj-core:3.20.2"
 }
 
