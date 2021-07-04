@@ -5,6 +5,10 @@ import de.hanselmann.shoppinglist.model.ShoppingListRole;
 public class ShoppingListPermissionsDto {
     final ShoppingListRole role;
 
+    ShoppingListPermissionsDto() {
+        this(null);
+    }
+
     public ShoppingListPermissionsDto(ShoppingListRole role) {
         this.role = role;
     }
