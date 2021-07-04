@@ -51,6 +51,9 @@ public class ShoppingListService {
     }
 
     public @Nullable ShoppingList createShoppingListForCurrentUser(String name) {
+        if (name == null) {
+            return null;
+        }
         try {
             return transactionTemplate.execute(status -> createShoppingListForCurrentUserImpl(name));
         } catch (TransactionException e) {

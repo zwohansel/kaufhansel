@@ -1,0 +1,2 @@
+INSERT INTO USERS (NAME, EMAIL, PASSWORD, REGISTERED_AT)
+VALUES ('Test User', 'test@test.test', 'test', '2021-01-01 08:00:00.00');

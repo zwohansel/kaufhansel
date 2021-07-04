@@ -49,21 +49,24 @@ eclipse {
     autoBuildTasks copyBuildPropertiesForEclipse
 }
 
-dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.4.5'
-    implementation 'org.liquibase:liquibase-core:4.3.5'
-    implementation 'org.xerial:sqlite-jdbc:3.34.0'
-    implementation 'org.springframework.boot:spring-boot-starter'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'com.aventrix.jnanoid:jnanoid:2.0.0'
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2','io.jsonwebtoken:jjwt-jackson:0.11.2'
+def springBootVersion = '2.5.2'
+def jsonWebTokenVersion = '0.11.2'
 
-    testImplementation('org.springframework.boot:spring-boot-starter-test') {
-        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-    }
+dependencies {
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}"
+    implementation 'org.liquibase:liquibase-core:4.4.0'
+    implementation 'org.xerial:sqlite-jdbc:3.36.0'
+    implementation "org.springframework.boot:spring-boot-starter:${springBootVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-mail:${springBootVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-security:${springBootVersion}"
+    implementation 'com.aventrix.jnanoid:jnanoid:2.0.0'
+    implementation "io.jsonwebtoken:jjwt-api:${jsonWebTokenVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:${jsonWebTokenVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jsonWebTokenVersion}"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    testImplementation "org.assertj:assertj-core:3.20.2"
 }
 
 test {

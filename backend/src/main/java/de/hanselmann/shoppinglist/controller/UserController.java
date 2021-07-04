@@ -36,7 +36,6 @@ public class UserController implements UserApi {
     private final ShoppingListUserService userService;
     private final ShoppingListService shoppingListService;
     private final TokenService tokenService;
-    private final ShoppingListGuard guard;
     private final PasswordEncoder passwordEncoder;
     private final DtoTransformer dtoTransformer;
 
@@ -45,7 +44,6 @@ public class UserController implements UserApi {
             ShoppingListUserService userService,
             ShoppingListService shoppingListService,
             TokenService tokenService,
-            ShoppingListGuard guard,
             PasswordEncoder passwordEncoder,
             DtoTransformer dtoTransformer,
             ResourceLoader resourceLoader) {
@@ -54,7 +52,6 @@ public class UserController implements UserApi {
         this.shoppingListService = shoppingListService;
         this.tokenService = tokenService;
         this.passwordEncoder = passwordEncoder;
-        this.guard = guard;
         this.dtoTransformer = dtoTransformer;
     }
 
