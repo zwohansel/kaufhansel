@@ -100,6 +100,9 @@ public class ShoppingListService {
     }
 
     private ShoppingListCategory getOrCreateCategory(String name, ShoppingList list) {
+        if (name == null) {
+            return null;
+        }
         return transactionTemplate.execute(status -> categoriesRepository.findByNameAndList(name, list)
                 .orElseGet(() -> categoriesRepository.save(new ShoppingListCategory(name, list))));
     }

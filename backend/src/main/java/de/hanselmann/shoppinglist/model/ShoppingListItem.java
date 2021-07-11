@@ -1,5 +1,7 @@
 package de.hanselmann.shoppinglist.model;
 
+import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -32,6 +34,10 @@ public class ShoppingListItem {
     @ManyToOne
     @JoinColumn(name = "LIST_ID", nullable = false)
     private ShoppingList list;
+
+    protected ShoppingListItem() {
+        this(null);
+    }
 
     public ShoppingListItem(ShoppingList list) {
         this(null, list);
@@ -76,8 +82,8 @@ public class ShoppingListItem {
         return list;
     }
 
-    public void setCategory(ShoppingListCategory category) {
-        if (category.getList().getId() != list.getId()) {
+    public void setCategory(@Nullable ShoppingListCategory category) {
+        if (category != null && !Objects.equals(category.getList().getId(), list.getId())) {
             throw new IllegalArgumentException("Category " + category.getName() + " is from another list.");
         }
         this.category = category;

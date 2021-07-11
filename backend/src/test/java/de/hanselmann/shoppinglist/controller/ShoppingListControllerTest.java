@@ -24,7 +24,10 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListDto;
+import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
+import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
+import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemUpdateDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListPermissionsDto;
 import de.hanselmann.shoppinglist.service.AuthenticatedUserService;
 import de.hanselmann.shoppinglist.testutils.CleanDatabaseExtension;
@@ -97,7 +100,7 @@ public class ShoppingListControllerTest {
     }
 
     @Test
-    public void postToShoppingListEndpointCreatesNewList() {
+    public void createsNewList() {
         final String newListName = "New Shopping List";
         var newListDto = new NewShoppingListDto();
         newListDto.setName(newListName);
@@ -180,6 +183,316 @@ public class ShoppingListControllerTest {
                 .is2xxSuccessful()
                 .expectBodyList(ShoppingListInfoDto.class)
                 .hasSize(0);
+    }
+
+    @Test
+    @Sql("/InsertTestList.sql")
+    public void getShoppingListItemsReturnsEmptyListIfNoItemsArePresent() {
+        ShoppingListInfoDto list = webClient.get()
+                .uri("/api/shoppinglists")
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(ShoppingListInfoDto.class)
+                .hasSize(1)
+                .returnResult()
+                .getResponseBody()
+                .get(0);
+        webClient.get()
+                .uri("/api/shoppinglist/{id}", list.getId())
+                .exchange().expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(ShoppingListItemDto.class)
+                .hasSize(0);
+    }
+
+    @Test
+    @Sql("/InsertTestList.sql")
+    @Sql("/InsertTestItem.sql")
+    public void getExistingShoppingListItem() {
+        ShoppingListInfoDto list = webClient.get()
+                .uri("/api/shoppinglists")
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(ShoppingListInfoDto.class)
+                .hasSize(1)
+                .returnResult()
+                .getResponseBody()
+                .get(0);
+        List<ShoppingListItemDto> items = webClient.get()
+                .uri("/api/shoppinglist/{id}", list.getId())
+                .exchange().expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(ShoppingListItemDto.class)
+                .returnResult()
+                .getResponseBody();
+        assertThat(items).as("/shoppinglist/{id} returns existing item").singleElement();
+        assertThat(items.get(0).getName()).as("Item has expected name.").isEqualTo("Test Item");
+        assertThat(items.get(0).getCategory()).as("Item has no category.").isNull();
+        assertThat(items.get(0).isChecked()).as("Item is not checked").isFalse();
+    }
+
+    @Test
+    @Sql("/InsertTestList.sql")
+    public void createNewShoppingListItemWithoutCategory() {
+        ShoppingListInfoDto list = webClient.get()
+                .uri("/api/shoppinglists")
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(ShoppingListInfoDto.class)
+                .hasSize(1)
+                .returnResult()
+                .getResponseBody()
+                .get(0);
+
+        var newItem = new NewShoppingListItemDto();
+        newItem.setName("New Item");
+
+        ShoppingListItemDto createdItem = webClient.post()
+                .uri("/api/shoppinglist/{id}", list.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(newItem)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBody(ShoppingListItemDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertThat(createdItem.getName()).as("Item has expected name.").isEqualTo(newItem.getName());
+        assertThat(createdItem.getCategory()).as("Item has no category.").isNull();
+        assertThat(createdItem.isChecked()).as("Item is not checked").isFalse();
+
+        List<ShoppingListItemDto> items = webClient.get()
+                .uri("/api/shoppinglist/{id}", list.getId())
+                .exchange().expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(ShoppingListItemDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertThat(items).as("/shoppinglist/{id} returns created item").singleElement();
+        assertThat(items.get(0).getName()).as("Item has expected name.").isEqualTo(newItem.getName());
+        assertThat(items.get(0).getCategory()).as("Item has no category.").isNull();
+        assertThat(items.get(0).isChecked()).as("Item is not checked").isFalse();
+    }
+
+    @Test
+    @Sql("/InsertTestList.sql")
+    public void createNewShoppingListItemWithCategory() {
+        ShoppingListInfoDto list = webClient.get()
+                .uri("/api/shoppinglists")
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(ShoppingListInfoDto.class)
+                .hasSize(1)
+                .returnResult()
+                .getResponseBody()
+                .get(0);
+
+        var newItem = new NewShoppingListItemDto();
+        newItem.setName("New Item");
+        newItem.setCategory("New Category");
+
+        ShoppingListItemDto createdItem = webClient.post()
+                .uri("/api/shoppinglist/{id}", list.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(newItem)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBody(ShoppingListItemDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertThat(createdItem.getName()).as("Item has expected name.").isEqualTo(newItem.getName());
+        assertThat(createdItem.getCategory()).as("Item has expected category.").isEqualTo(newItem.getCategory());
+        assertThat(createdItem.isChecked()).as("Item is not checked").isFalse();
+
+        List<ShoppingListItemDto> items = webClient.get()
+                .uri("/api/shoppinglist/{id}", list.getId())
+                .exchange().expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(ShoppingListItemDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertThat(items).as("/shoppinglist/{id} returns created item").singleElement();
+        assertThat(items.get(0).getName()).as("Item has expected name.").isEqualTo(newItem.getName());
+        assertThat(items.get(0).getCategory()).as("Item has expected category.").isEqualTo(newItem.getCategory());
+        assertThat(items.get(0).isChecked()).as("Item is not checked").isFalse();
+    }
+
+    @Test
+    @Sql("/InsertTestList.sql")
+    public void shoppingListItemsAreReturnedInTheOrderOfCreation() {
+        ShoppingListInfoDto list = webClient.get()
+                .uri("/api/shoppinglists")
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(ShoppingListInfoDto.class)
+                .hasSize(1)
+                .returnResult()
+                .getResponseBody()
+                .get(0);
+
+        var newItem1 = new NewShoppingListItemDto();
+        newItem1.setName("Item 1");
+        newItem1.setCategory("Category I");
+
+        var newItem2 = new NewShoppingListItemDto();
+        newItem2.setName("Item 2");
+        newItem2.setCategory("Category I");
+
+        var newItem3 = new NewShoppingListItemDto();
+        newItem3.setName("Item 3");
+        newItem3.setCategory("Category II");
+
+        webClient.post()
+                .uri("/api/shoppinglist/{id}", list.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(newItem1)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful();
+
+        webClient.post()
+                .uri("/api/shoppinglist/{id}", list.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(newItem2)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful();
+
+        webClient.post()
+                .uri("/api/shoppinglist/{id}", list.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(newItem3)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful();
+
+        List<ShoppingListItemDto> items = webClient.get()
+                .uri("/api/shoppinglist/{id}", list.getId())
+                .exchange().expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(ShoppingListItemDto.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertThat(items).as("/shoppinglist/{id} returns created items").hasSize(3);
+
+        assertThat(items.get(0).getName()).as("Item 1 has expected name.").isEqualTo(newItem1.getName());
+        assertThat(items.get(0).getCategory()).as("Item 1 has expected category.").isEqualTo(newItem1.getCategory());
+        assertThat(items.get(0).isChecked()).as("Item 1 is not checked").isFalse();
+
+        assertThat(items.get(1).getName()).as("Item 2 has expected name.").isEqualTo(newItem2.getName());
+        assertThat(items.get(1).getCategory()).as("Item 2 has expected category.").isEqualTo(newItem2.getCategory());
+        assertThat(items.get(1).isChecked()).as("Item 2 is not checked").isFalse();
+
+        assertThat(items.get(2).getName()).as("Item 3 has expected name.").isEqualTo(newItem3.getName());
+        assertThat(items.get(2).getCategory()).as("Item 3 has expected category.").isEqualTo(newItem3.getCategory());
+        assertThat(items.get(2).isChecked()).as("Item 3 is not checked").isFalse();
+    }
+
+    @Test
+    @Sql("/InsertTestList.sql")
+    @Sql("/InsertTestItem.sql")
+    public void updateNameOfExistingListItem() {
+        ShoppingListInfoDto list = webClient.get()
+                .uri("/api/shoppinglists")
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(ShoppingListInfoDto.class)
+                .hasSize(1)
+                .returnResult()
+                .getResponseBody()
+                .get(0);
+        ShoppingListItemDto item = webClient.get()
+                .uri("/api/shoppinglist/{id}", list.getId())
+                .exchange().expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(ShoppingListItemDto.class)
+                .hasSize(1)
+                .returnResult()
+                .getResponseBody()
+                .get(0);
+
+        var updateItemDto = new ShoppingListItemUpdateDto();
+        updateItemDto.setName("Updated Name");
+        webClient.put()
+                .uri("/api/shoppinglist/{id}/item/{itemId}", list.getId(), item.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(updateItemDto)
+                .exchange().expectStatus()
+                .is2xxSuccessful();
+
+        ShoppingListItemDto updatedItem = webClient.get()
+                .uri("/api/shoppinglist/{id}", list.getId())
+                .exchange().expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(ShoppingListItemDto.class)
+                .hasSize(1)
+                .returnResult()
+                .getResponseBody()
+                .get(0);
+        assertThat(updatedItem.getName()).as("Item has updated name.").isEqualTo(updatedItem.getName());
+        assertThat(updatedItem.getCategory()).as("Item still has no category.").isNull();
+        assertThat(updatedItem.isChecked()).as("Item is still unchecked.").isFalse();
+    }
+
+    @Test
+    @Sql("/InsertTestList.sql")
+    @Sql("/InsertTestItem.sql")
+    public void updateCategoryOfExistingListItemWithoutCategory() {
+        ShoppingListInfoDto list = webClient.get()
+                .uri("/api/shoppinglists")
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(ShoppingListInfoDto.class)
+                .hasSize(1)
+                .returnResult()
+                .getResponseBody()
+                .get(0);
+        ShoppingListItemDto item = webClient.get()
+                .uri("/api/shoppinglist/{id}", list.getId())
+                .exchange().expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(ShoppingListItemDto.class)
+                .hasSize(1)
+                .returnResult()
+                .getResponseBody()
+                .get(0);
+        assertThat(item.getCategory()).as("Item has no category before update.").isNull();
+
+        var updateItemDto = new ShoppingListItemUpdateDto();
+        updateItemDto.setName(item.getName());
+        updateItemDto.setCategory("Test Category");
+        webClient.put()
+                .uri("/api/shoppinglist/{id}/item/{itemId}", list.getId(), item.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(updateItemDto)
+                .exchange().expectStatus()
+                .is2xxSuccessful();
+
+        ShoppingListItemDto updatedItem = webClient.get()
+                .uri("/api/shoppinglist/{id}", list.getId())
+                .exchange().expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(ShoppingListItemDto.class)
+                .hasSize(1)
+                .returnResult()
+                .getResponseBody()
+                .get(0);
+        assertThat(updatedItem.getName()).as("Item still has old name.").isEqualTo(item.getName());
+        assertThat(updatedItem.getCategory()).as("Item now has a category.").isEqualTo(updatedItem.getCategory());
+        assertThat(updatedItem.isChecked()).as("Item is still unchecked.").isFalse();
     }
 
 }
