@@ -24,6 +24,10 @@ public class ShoppingListCategory {
     @JoinColumn(name = "LIST_ID", nullable = false)
     private ShoppingList list;
 
+    protected ShoppingListCategory() {
+
+    }
+
     public ShoppingListCategory(String name, ShoppingList list) {
         this.name = name;
         this.list = list;

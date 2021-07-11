@@ -13,7 +13,7 @@
             </column>
         </createTable>
         <createTable tableName="ITEMS">
-            <column name="ID" type="bigint">
+            <column name="ID" type="int">
                 <constraints primaryKey="true" primaryKeyName="PK_ITEM_ID"/>
             </column>
             <column name="LIST_ID" type="int">

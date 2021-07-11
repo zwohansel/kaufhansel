@@ -6,6 +6,8 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import de.hanselmann.shoppinglist.repository.ShoppingListCategoriesRepository;
+import de.hanselmann.shoppinglist.repository.ShoppingListItemsRepository;
 import de.hanselmann.shoppinglist.repository.ShoppingListPermissionsRepository;
 import de.hanselmann.shoppinglist.repository.ShoppingListRepository;
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
@@ -27,6 +29,8 @@ public class CleanDatabaseExtension implements BeforeAllCallback, AfterTestExecu
 
     private void cleanDataBase(ExtensionContext context) {
         ApplicationContext appContext = SpringExtension.getApplicationContext(context);
+        appContext.getBean(ShoppingListItemsRepository.class).deleteAll();
+        appContext.getBean(ShoppingListCategoriesRepository.class).deleteAll();
         appContext.getBean(ShoppingListPermissionsRepository.class).deleteAll();
         appContext.getBean(ShoppingListRepository.class).deleteAll();
         appContext.getBean(ShoppingListUserRepository.class).deleteAll();
