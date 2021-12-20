@@ -64,9 +64,9 @@ public class RemoveCategoryEndpointTest {
         RemoveShoppingListCategoryDto removeDto = new RemoveShoppingListCategoryDto();
         removeCategory(webClient, list, removeDto);
 
-        assertThat(GetListItemsEndpointTest.getListItems(webClient, list)).isNotEmpty().allSatisfy(item -> {
-            assertThat(item.getCategory()).isNull();
-        });
+        assertThat(GetListItemsEndpointTest.getListItems(webClient, list))
+                .isNotEmpty()
+                .allSatisfy(item -> assertThat(item.getCategory()).isNull());
     }
 
     @Test

@@ -12,6 +12,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionException;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
@@ -28,6 +29,10 @@ public class ShoppingListService {
     private final ShoppingListItemsRepository itemsRepository;
     private final ShoppingListCategoriesRepository categoriesRepository;
     private final ShoppingListUserService userService;
+    /**
+     * The @Transaction annotation only works on public methods that are called by another bean.
+     * In all other locations we need the transaction template.
+     */
     private final TransactionTemplate transactionTemplate;
 
     @Autowired
@@ -170,24 +175,38 @@ public class ShoppingListService {
      * @param categoryName The category with this name will be removed. If null, all
      *                     categories will be removed.
      */
+    @Transactional
     public void removeCategory(ShoppingList list, @Nullable String categoryName) {
-        transactionTemplate.executeWithoutResult(status -> {
-            if (categoryName == null) {
-                itemsRepository.findByList(list).forEach(ShoppingListItem::removeFromCategory);
-                categoriesRepository.deleteByList(list);
-            } else {
-                categoriesRepository.findByNameAndList(categoryName, list).ifPresent(category -> {
-                   itemsRepository.findByListAndCategory(list, category).forEach(ShoppingListItem::removeFromCategory);
-                   categoriesRepository.delete(category);
-                });
-            }
-        });
+        if (categoryName == null) {
+            itemsRepository.findByList(list).forEach(ShoppingListItem::removeFromCategory);
+            categoriesRepository.deleteByList(list);
+        } else {
+            categoriesRepository.findByNameAndList(categoryName, list).ifPresent(category -> {
+                itemsRepository.findByListAndCategory(list, category).forEach(ShoppingListItem::removeFromCategory);
+                categoriesRepository.delete(category);
+            });
+        }
     }
 
     public void renameCategory(ShoppingList list, String oldCategory, String newCategory) {
-        categoriesRepository.findByNameAndList(oldCategory, list).ifPresent(category -> {
-            category.setName(newCategory);
+        categoriesRepository.findByNameAndList(oldCategory, list)
+                .ifPresent(category -> renameCategory(list, category, newCategory));
+    }
+
+    private void renameCategory(ShoppingList list, ShoppingListCategory category, String newName) {
+        ShoppingListCategory newCategory = categoriesRepository.findByNameAndList(newName, list).orElse(null);
+        if (newCategory == null) {
+            // No category with the new name exists in this list... just rename the category
+            category.setName(newName);
             categoriesRepository.save(category);
+            return;
+        }
+
+        // A category with the new name is already present... we can not have two categories with the same name.
+        // Reassign all items of the old category to the already present category and delete the old category.
+        transactionTemplate.executeWithoutResult(action -> {
+            itemsRepository.findByListAndCategory(list, category).forEach(item -> item.setCategory(newCategory));
+            categoriesRepository.delete(category);
         });
     }
 
