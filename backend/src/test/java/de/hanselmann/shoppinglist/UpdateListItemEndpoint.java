@@ -37,6 +37,18 @@ public class UpdateListItemEndpoint {
                 .then(mock -> userRepository.findUserByEmailAddress("test@test.test"));
     }
 
+    public static void updateListItem(WebTestClient webClient,
+                                      ShoppingListInfoDto list,
+                                      ShoppingListItemDto item,
+                                      ShoppingListItemUpdateDto update) {
+        webClient.put()
+                .uri(PATH, list.getId(), item.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(update)
+                .exchange().expectStatus()
+                .is2xxSuccessful();
+    }
+
     @Test
     @Sql("/InsertTestList.sql")
     @Sql("/InsertTestItem.sql")
@@ -46,12 +58,7 @@ public class UpdateListItemEndpoint {
 
         var updateItemDto = new ShoppingListItemUpdateDto();
         updateItemDto.setName("Updated Name");
-        webClient.put()
-                .uri(PATH, list.getId(), item.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(updateItemDto)
-                .exchange().expectStatus()
-                .is2xxSuccessful();
+        updateListItem(webClient, list, item, updateItemDto);
 
         ShoppingListItemDto updatedItem = GetListItemsEndpointTest.getSingleListItem(webClient, list);
         assertThat(updatedItem.getName()).as("Item has updated name.").isEqualTo(updatedItem.getName());
@@ -70,12 +77,7 @@ public class UpdateListItemEndpoint {
         var updateItemDto = new ShoppingListItemUpdateDto();
         updateItemDto.setName(item.getName());
         updateItemDto.setCategory("Test Category");
-        webClient.put()
-                .uri(PATH, list.getId(), item.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(updateItemDto)
-                .exchange().expectStatus()
-                .is2xxSuccessful();
+        updateListItem(webClient, list, item, updateItemDto);
 
         ShoppingListItemDto updatedItem = GetListItemsEndpointTest.getSingleListItem(webClient, list);
         assertThat(updatedItem.getName()).as("Item still has old name.").isEqualTo(item.getName());
@@ -95,23 +97,13 @@ public class UpdateListItemEndpoint {
         var updateItemDto = new ShoppingListItemUpdateDto();
         updateItemDto.setName(item.getName());
         updateItemDto.setChecked(true);
-        webClient.put()
-                .uri(PATH, list.getId(), item.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(updateItemDto)
-                .exchange().expectStatus()
-                .is2xxSuccessful();
+        updateListItem(webClient, list, item, updateItemDto);
 
         ShoppingListItemDto updatedItem = GetListItemsEndpointTest.getSingleListItem(webClient, list);
         assertThat(updatedItem.isChecked()).as("Item is checked after first update.").isTrue();
 
         updateItemDto.setChecked(false);
-        webClient.put()
-                .uri(PATH, list.getId(), item.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(updateItemDto)
-                .exchange().expectStatus()
-                .is2xxSuccessful();
+        updateListItem(webClient, list, item, updateItemDto);
 
         updatedItem = GetListItemsEndpointTest.getSingleListItem(webClient, list);
         assertThat(updatedItem.isChecked()).as("Item is unchecked after second update.").isFalse();

@@ -1,12 +1,10 @@
 package de.hanselmann.shoppinglist.service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import de.hanselmann.shoppinglist.model.*;
+import de.hanselmann.shoppinglist.repository.ShoppingListCategoriesRepository;
+import de.hanselmann.shoppinglist.repository.ShoppingListItemsRepository;
+import de.hanselmann.shoppinglist.repository.ShoppingListPermissionsRepository;
+import de.hanselmann.shoppinglist.repository.ShoppingListRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.lang.Nullable;
@@ -16,16 +14,12 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import de.hanselmann.shoppinglist.model.ShoppingList;
-import de.hanselmann.shoppinglist.model.ShoppingListCategory;
-import de.hanselmann.shoppinglist.model.ShoppingListItem;
-import de.hanselmann.shoppinglist.model.ShoppingListPermission;
-import de.hanselmann.shoppinglist.model.ShoppingListRole;
-import de.hanselmann.shoppinglist.model.ShoppingListUser;
-import de.hanselmann.shoppinglist.repository.ShoppingListCategoriesRepository;
-import de.hanselmann.shoppinglist.repository.ShoppingListItemsRepository;
-import de.hanselmann.shoppinglist.repository.ShoppingListPermissionsRepository;
-import de.hanselmann.shoppinglist.repository.ShoppingListRepository;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class ShoppingListService {
@@ -34,15 +28,15 @@ public class ShoppingListService {
     private final ShoppingListItemsRepository itemsRepository;
     private final ShoppingListCategoriesRepository categoriesRepository;
     private final ShoppingListUserService userService;
-    private TransactionTemplate transactionTemplate;
+    private final TransactionTemplate transactionTemplate;
 
     @Autowired
     public ShoppingListService(ShoppingListRepository listsRepository,
-            ShoppingListUserService userService,
-            ShoppingListPermissionsRepository permissionsRepository,
-            ShoppingListItemsRepository itemsRepository,
-            ShoppingListCategoriesRepository categoriesRepository,
-            PlatformTransactionManager transactionManager) {
+                               ShoppingListUserService userService,
+                               ShoppingListPermissionsRepository permissionsRepository,
+                               ShoppingListItemsRepository itemsRepository,
+                               ShoppingListCategoriesRepository categoriesRepository,
+                               PlatformTransactionManager transactionManager) {
         this.listsRepository = listsRepository;
         this.userService = userService;
         this.permissionsRepository = permissionsRepository;
@@ -51,7 +45,8 @@ public class ShoppingListService {
         transactionTemplate = new TransactionTemplate(transactionManager);
     }
 
-    public @Nullable ShoppingList createShoppingListForCurrentUser(String name) {
+    public @Nullable
+    ShoppingList createShoppingListForCurrentUser(String name) {
         try {
             return transactionTemplate.execute(status -> createShoppingListForCurrentUserImpl(name));
         } catch (TransactionException | DataIntegrityViolationException e) {
@@ -153,36 +148,40 @@ public class ShoppingListService {
     /**
      * Uncheck items of list.<br>
      * All items, if category is null, only items with matching category otherwise.
-     * 
+     *
      * @param list     ShoppingList
      * @param category Items with this category will be unchecked. If null, all
      *                 items will be unchecked.
-     * @return List of processed items. If the transaction fails, null is returned.
      */
-    public @Nullable List<ShoppingListItem> uncheckItems(ShoppingList list, @Nullable String category) {
+    public void uncheckItems(ShoppingList list, @Nullable String category) {
         List<ShoppingListItem> itemsToUncheck = list.getItems().stream()
                 .filter(ShoppingListItem::isChecked)
                 .filter(item -> category == null || category.equals(item.getCategory().getName()))
                 .collect(Collectors.toList());
         itemsToUncheck.forEach(item -> item.setChecked(false));
         itemsRepository.saveAll(itemsToUncheck);
-        return itemsToUncheck;
     }
 
     /**
      * Remove categories of list.<br>
      * All categories, if category is null, only given category otherwise.
-     * 
+     *
      * @param list         ShoppingList
      * @param categoryName The category with this name will be removed. If null, all
      *                     categories will be removed.
      */
     public void removeCategory(ShoppingList list, @Nullable String categoryName) {
-        if (categoryName == null) {
-            categoriesRepository.deleteByList(list);
-        } else {
-            categoriesRepository.deleteByNameAndList(categoryName, list);
-        }
+        transactionTemplate.executeWithoutResult(status -> {
+            if (categoryName == null) {
+                itemsRepository.findByList(list).forEach(ShoppingListItem::removeFromCategory);
+                categoriesRepository.deleteByList(list);
+            } else {
+                categoriesRepository.findByNameAndList(categoryName, list).ifPresent(category -> {
+                   itemsRepository.findByListAndCategory(list, category).forEach(ShoppingListItem::removeFromCategory);
+                   categoriesRepository.delete(category);
+                });
+            }
+        });
     }
 
     public void renameCategory(ShoppingList list, String oldCategory, String newCategory) {
@@ -208,7 +207,9 @@ public class ShoppingListService {
         if (ofCategory == null) {
             itemsRepository.deleteByListAndChecked(list, true);
         } else {
-            itemsRepository.deleteByListAndCheckedAndCategory(list, true, ofCategory);
+            categoriesRepository.findByNameAndList(ofCategory, list).ifPresent(category -> {
+                itemsRepository.deleteByListAndCheckedAndCategory(list, true, category);
+            });
         }
     }
 

@@ -104,10 +104,7 @@ public class ShoppingListController implements ShoppingListApi {
     }
 
     private ResponseEntity<Void> uncheckAllShoppingListItems(ShoppingList list, @Nullable String category) {
-        List<ShoppingListItem> changedItems = shoppingListService.uncheckItems(list, category);
-        if (changedItems == null) {
-            return ResponseEntity.badRequest().build();
-        }
+        shoppingListService.uncheckItems(list, category);
         return ResponseEntity.noContent().build();
     }
 
@@ -115,11 +112,11 @@ public class ShoppingListController implements ShoppingListApi {
     @Override
     public ResponseEntity<Void> removeShoppingListCategory(long id, RemoveShoppingListCategoryDto dto) {
         return shoppingListService.findShoppingList(id)
-                .map(list -> removeCategoriesFromShoppingList(list, dto.getCategory().orElse(null)))
+                .map(list -> removeCategoryFromShoppingList(list, dto.getCategory().orElse(null)))
                 .orElse(ResponseEntity.badRequest().build());
     }
 
-    private ResponseEntity<Void> removeCategoriesFromShoppingList(ShoppingList list, @Nullable String category) {
+    private ResponseEntity<Void> removeCategoryFromShoppingList(ShoppingList list, @Nullable String category) {
         shoppingListService.removeCategory(list, category);
         return ResponseEntity.noContent().build();
     }

@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @WebServerTestWithTestUser
-public class CreateListItemEndpointTest {
+public class AddListItemEndpointTest {
     private static final String PATH = "/api/shoppinglist/{id}";
 
     @Autowired
@@ -32,7 +32,7 @@ public class CreateListItemEndpointTest {
     @MockBean
     private AuthenticatedUserService authenticatedUserService;
 
-    public static ShoppingListItemDto createListItem(WebTestClient webClient, ShoppingListInfoDto list, NewShoppingListItemDto newItem) {
+    public static ShoppingListItemDto addListItem(WebTestClient webClient, ShoppingListInfoDto list, NewShoppingListItemDto newItem) {
         return webClient.post()
                 .uri(PATH, list.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -53,13 +53,13 @@ public class CreateListItemEndpointTest {
 
     @Test
     @Sql("/InsertTestList.sql")
-    public void createNewShoppingListItemWithoutCategory() {
+    public void addNewShoppingListItemWithoutCategory() {
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(webClient);
 
         var newItem = new NewShoppingListItemDto();
         newItem.setName("New Item");
 
-        ShoppingListItemDto createdItem = createListItem(webClient, list, newItem);
+        ShoppingListItemDto createdItem = addListItem(webClient, list, newItem);
 
         assertThat(createdItem.getName()).as("Item has expected name.").isEqualTo(newItem.getName());
         assertThat(createdItem.getCategory()).as("Item has no category.").isNull();
@@ -75,14 +75,14 @@ public class CreateListItemEndpointTest {
 
     @Test
     @Sql("/InsertTestList.sql")
-    public void createNewShoppingListItemWithCategory() {
+    public void addNewShoppingListItemWithCategory() {
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(webClient);
 
         var newItem = new NewShoppingListItemDto();
         newItem.setName("New Item");
         newItem.setCategory("New Category");
 
-        ShoppingListItemDto createdItem = createListItem(webClient, list, newItem);
+        ShoppingListItemDto createdItem = addListItem(webClient, list, newItem);
 
         assertThat(createdItem.getName()).as("Item has expected name.").isEqualTo(newItem.getName());
         assertThat(createdItem.getCategory()).as("Item has expected category.").isEqualTo(newItem.getCategory());
@@ -113,9 +113,9 @@ public class CreateListItemEndpointTest {
         newItem3.setName("Item 3");
         newItem3.setCategory("Category II");
 
-        createListItem(webClient, list, newItem1);
-        createListItem(webClient, list, newItem2);
-        createListItem(webClient, list, newItem3);
+        addListItem(webClient, list, newItem1);
+        addListItem(webClient, list, newItem2);
+        addListItem(webClient, list, newItem3);
 
         List<ShoppingListItemDto> items = GetListItemsEndpointTest.getListItems(webClient, list);
 

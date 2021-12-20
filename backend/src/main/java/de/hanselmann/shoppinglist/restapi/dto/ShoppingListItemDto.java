@@ -29,4 +29,13 @@ public class ShoppingListItemDto {
         return category;
     }
 
+    @Override
+    public String toString() {
+        return "ShoppingListItemDto{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", checked=" + checked +
+                ", category='" + category + '\'' +
+                '}';
+    }
 }

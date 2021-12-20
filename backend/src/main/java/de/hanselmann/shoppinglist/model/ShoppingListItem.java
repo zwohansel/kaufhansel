@@ -1,39 +1,27 @@
 package de.hanselmann.shoppinglist.model;
 
-import java.util.Objects;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
 import org.springframework.lang.Nullable;
+
+import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "ITEMS")
 public class ShoppingListItem {
 
+    @ManyToOne
+    @JoinColumn(name = "LIST_ID", nullable = false)
+    private final ShoppingList list;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Column(name = "NAME", nullable = false)
     private String name;
-
     @Column(name = "CHECKED", nullable = false)
     private Boolean checked;
-
     @ManyToOne
     @JoinColumn(name = "CATEGORY_ID")
     private ShoppingListCategory category;
-
-    @ManyToOne
-    @JoinColumn(name = "LIST_ID", nullable = false)
-    private ShoppingList list;
 
     protected ShoppingListItem() {
         this(null);
@@ -74,7 +62,15 @@ public class ShoppingListItem {
         return category;
     }
 
-    public @Nullable String getCategoryName() {
+    public void setCategory(@Nullable ShoppingListCategory category) {
+        if (category != null && !Objects.equals(category.getList().getId(), list.getId())) {
+            throw new IllegalArgumentException("Category " + category.getName() + " is from another list.");
+        }
+        this.category = category;
+    }
+
+    public @Nullable
+    String getCategoryName() {
         return category == null ? null : category.getName();
     }
 
@@ -82,11 +78,8 @@ public class ShoppingListItem {
         return list;
     }
 
-    public void setCategory(@Nullable ShoppingListCategory category) {
-        if (category != null && !Objects.equals(category.getList().getId(), list.getId())) {
-            throw new IllegalArgumentException("Category " + category.getName() + " is from another list.");
-        }
-        this.category = category;
+    public void removeFromCategory() {
+        this.category = null;
     }
 
 }

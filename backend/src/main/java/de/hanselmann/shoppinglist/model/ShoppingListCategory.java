@@ -1,13 +1,7 @@
 package de.hanselmann.shoppinglist.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "CATEGORIES")
@@ -23,6 +17,9 @@ public class ShoppingListCategory {
     @ManyToOne
     @JoinColumn(name = "LIST_ID", nullable = false)
     private ShoppingList list;
+
+    @OneToMany(mappedBy = "category")
+    private List<ShoppingListItem> items;
 
     protected ShoppingListCategory() {
 
@@ -44,5 +41,4 @@ public class ShoppingListCategory {
     public ShoppingList getList() {
         return list;
     }
-
 }
