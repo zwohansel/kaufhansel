@@ -31,22 +31,28 @@ public class UpdateListItemEndpoint {
     @MockBean
     private AuthenticatedUserService authenticatedUserService;
 
-    @BeforeEach
-    public void loginTestUser() {
-        when(authenticatedUserService.findCurrentUser())
-                .then(mock -> userRepository.findUserByEmailAddress("test@test.test"));
-    }
-
     public static void updateListItem(WebTestClient webClient,
                                       ShoppingListInfoDto list,
                                       ShoppingListItemDto item,
                                       ShoppingListItemUpdateDto update) {
-        webClient.put()
+        requestUpdateListItem(webClient, list, item, update).expectStatus().is2xxSuccessful();
+    }
+
+    public static WebTestClient.ResponseSpec requestUpdateListItem(WebTestClient webClient,
+                                                                   ShoppingListInfoDto list,
+                                                                   ShoppingListItemDto item,
+                                                                   ShoppingListItemUpdateDto update) {
+        return webClient.put()
                 .uri(PATH, list.getId(), item.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(update)
-                .exchange().expectStatus()
-                .is2xxSuccessful();
+                .exchange();
+    }
+
+    @BeforeEach
+    public void loginTestUser() {
+        when(authenticatedUserService.findCurrentUser())
+                .then(mock -> userRepository.findUserByEmailAddress("test@test.test"));
     }
 
     @Test
@@ -88,6 +94,25 @@ public class UpdateListItemEndpoint {
     @Test
     @Sql("/InsertTestList.sql")
     @Sql("/InsertTestItem.sql")
+    public void updateCategoryFailsIfOldCategoryIsNullOrBlank() {
+        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(webClient);
+        ShoppingListItemDto item = GetListItemsEndpointTest.getSingleListItem(webClient, list);
+        assertThat(item.getCategory()).as("Item has no category before update.").isNull();
+
+        var updateItemDto = new ShoppingListItemUpdateDto();
+        updateItemDto.setName(item.getName());
+        updateItemDto.setCategory("Test Category");
+        updateListItem(webClient, list, item, updateItemDto);
+
+        ShoppingListItemDto updatedItem = GetListItemsEndpointTest.getSingleListItem(webClient, list);
+        assertThat(updatedItem.getName()).as("Item still has old name.").isEqualTo(item.getName());
+        assertThat(updatedItem.getCategory()).as("Item now has a category.").isEqualTo(updatedItem.getCategory());
+        assertThat(updatedItem.isChecked()).as("Item is still unchecked.").isFalse();
+    }
+
+    @Test
+    @Sql("/InsertTestList.sql")
+    @Sql("/InsertTestItem.sql")
     public void toggleItemCheckedState() {
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(webClient);
         ShoppingListItemDto item = GetListItemsEndpointTest.getSingleListItem(webClient, list);
@@ -108,4 +133,24 @@ public class UpdateListItemEndpoint {
         updatedItem = GetListItemsEndpointTest.getSingleListItem(webClient, list);
         assertThat(updatedItem.isChecked()).as("Item is unchecked after second update.").isFalse();
     }
+
+    @Test
+    @Sql("/InsertOtherUser.sql")
+    @Sql("/InsertListOfOtherSharedWithTestUserAsReadOnly.sql")
+    @Sql("/InsertTestItemInOtherList.sql")
+    public void updateNameOfExistingListItemFailsIfPermissionIsReadOnly() {
+        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(webClient);
+        ShoppingListItemDto item = GetListItemsEndpointTest.getSingleListItem(webClient, list);
+
+        var updateItemDto = new ShoppingListItemUpdateDto();
+        updateItemDto.setName("Updated Name");
+        requestUpdateListItem(webClient, list, item, updateItemDto).expectStatus().is4xxClientError();
+
+        ShoppingListItemDto updatedItem = GetListItemsEndpointTest.getSingleListItem(webClient, list);
+        assertThat(updatedItem.getName()).as("Item name is unchanged.").isEqualTo(item.getName());
+        assertThat(updatedItem.getCategory()).as("Item still has no category.").isNull();
+        assertThat(updatedItem.isChecked()).as("Item is still unchecked.").isFalse();
+    }
+
+
 }

@@ -120,7 +120,7 @@ public class ShoppingListService {
         try {
             transactionTemplate.executeWithoutResult(status -> tryRemoveCurrentUserFromShoppingList(listId, user));
             return true;
-        } catch (TransactionException e) {
+        } catch (Exception e) {
             return false;
         }
     }

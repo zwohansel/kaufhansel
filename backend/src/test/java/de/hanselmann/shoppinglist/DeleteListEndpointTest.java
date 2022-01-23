@@ -49,4 +49,13 @@ public class DeleteListEndpointTest {
 
         assertThat(GetListsEndpointTest.getLists(webClient)).isEmpty();
     }
+
+    @Test
+    public void deleteShoppingListFailsIfListDoesNotExist() {
+        webClient.delete()
+                .uri(PATH, 1234)
+                .exchange()
+                .expectStatus()
+                .is4xxClientError();
+    }
 }
