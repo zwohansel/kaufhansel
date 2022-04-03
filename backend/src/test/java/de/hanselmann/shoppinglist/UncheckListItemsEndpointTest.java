@@ -2,7 +2,6 @@ package de.hanselmann.shoppinglist;
 
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
 import de.hanselmann.shoppinglist.restapi.dto.*;
-import de.hanselmann.shoppinglist.service.AuthenticatedUserService;
 import de.hanselmann.shoppinglist.testutils.ListItemBuilder;
 import de.hanselmann.shoppinglist.testutils.WebServerTestWithTestUser;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,12 +25,6 @@ public class UncheckListItemsEndpointTest {
     @Autowired
     private WebTestClient webClient;
 
-    @Autowired
-    private ShoppingListUserRepository userRepository;
-
-    @MockBean
-    private AuthenticatedUserService authenticatedUserService;
-
     public static void uncheckAllItems(WebTestClient webClient,
                                        ShoppingListInfoDto list,
                                        UncheckShoppingListItemsDto uncheckDto) {
@@ -44,28 +37,23 @@ public class UncheckListItemsEndpointTest {
                 .is2xxSuccessful();
     }
 
-    @BeforeEach
-    public void loginTestUser() {
-        when(authenticatedUserService.findCurrentUser())
-                .then(mock -> userRepository.findUserByEmailAddress("test@test.test"));
-    }
-
     @Test
     @Sql("/InsertTestList.sql")
     public void allItemsAreUncheckedIfNotCategoryIsSpecified() {
-        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(webClient);
+        WebTestClient client = LoginTest.loggedInClient(webClient);
+        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         // Create checked items, each with a different category
-        ListItemBuilder.forList(webClient, list)
+        ListItemBuilder.forList(client, list)
                 .itemWithName("Item 1").andCheckedState(true).add()
                 .itemWithName("Item 2").andCategory("Category 1").andCheckedState(true).add()
                 .itemWithName("Item 3").andCategory("Category 1").andCheckedState(true).add()
                 .itemWithName("Item 4").andCategory("Category 1").andCheckedState(true).add();
 
         UncheckShoppingListItemsDto uncheckDto = new UncheckShoppingListItemsDto();
-        uncheckAllItems(webClient, list, uncheckDto);
+        uncheckAllItems(client, list, uncheckDto);
 
-        List<ShoppingListItemDto> items = GetListItemsEndpointTest.getListItems(webClient, list);
+        List<ShoppingListItemDto> items = GetListItemsEndpointTest.getListItems(client, list);
         assertThat(items).isNotEmpty().allSatisfy(item -> {
             assertThat(item.isChecked()).isFalse();
         });
@@ -74,13 +62,14 @@ public class UncheckListItemsEndpointTest {
     @Test
     @Sql("/InsertTestList.sql")
     public void onlyItemsOfTheSpecifiedCategoryAreUnchecked() {
-        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(webClient);
+        WebTestClient client = LoginTest.loggedInClient(webClient);
+        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         final String categoryOne = "Category 1";
         final String categoryTwo = "Category 2";
 
         // Create checked items for both categories
-        ListItemBuilder.forList(webClient, list)
+        ListItemBuilder.forList(client, list)
                 .itemWithName("Item 1").andCategory(categoryOne).andCheckedState(true).add()
                 .itemWithName("Item 2").andCategory(categoryOne).andCheckedState(true).add()
                 .itemWithName("Item 3").andCategory(categoryTwo).andCheckedState(true).add()
@@ -89,9 +78,9 @@ public class UncheckListItemsEndpointTest {
         // Uncheck only items of the second category
         UncheckShoppingListItemsDto uncheckDto = new UncheckShoppingListItemsDto();
         uncheckDto.setCategory(categoryTwo);
-        uncheckAllItems(webClient, list, uncheckDto);
+        uncheckAllItems(client, list, uncheckDto);
 
-        List<ShoppingListItemDto> items = GetListItemsEndpointTest.getListItems(webClient, list);
+        List<ShoppingListItemDto> items = GetListItemsEndpointTest.getListItems(client, list);
         // Assert that all items of the first category are still checked
         assertThat(items).filteredOn(ShoppingListItemDto::getCategory, categoryOne).isNotEmpty().allSatisfy(item -> {
             assertThat(item.isChecked()).isTrue();

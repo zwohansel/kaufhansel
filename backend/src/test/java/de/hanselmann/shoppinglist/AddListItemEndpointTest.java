@@ -4,7 +4,6 @@ import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
-import de.hanselmann.shoppinglist.service.AuthenticatedUserService;
 import de.hanselmann.shoppinglist.testutils.WebServerTestWithTestUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,12 +25,6 @@ public class AddListItemEndpointTest {
     @Autowired
     private WebTestClient webClient;
 
-    @Autowired
-    private ShoppingListUserRepository userRepository;
-
-    @MockBean
-    private AuthenticatedUserService authenticatedUserService;
-
     public static ShoppingListItemDto addListItem(WebTestClient webClient, ShoppingListInfoDto list, NewShoppingListItemDto newItem) {
         return webClient.post()
                 .uri(PATH, list.getId())
@@ -45,27 +38,22 @@ public class AddListItemEndpointTest {
                 .getResponseBody();
     }
 
-    @BeforeEach
-    public void loginTestUser() {
-        when(authenticatedUserService.findCurrentUser())
-                .then(mock -> userRepository.findUserByEmailAddress("test@test.test"));
-    }
-
     @Test
     @Sql("/InsertTestList.sql")
     public void addNewShoppingListItemWithoutCategory() {
-        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(webClient);
+        WebTestClient client = LoginTest.loggedInClient(webClient);
+        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         var newItem = new NewShoppingListItemDto();
         newItem.setName("New Item");
 
-        ShoppingListItemDto createdItem = addListItem(webClient, list, newItem);
+        ShoppingListItemDto createdItem = addListItem(client, list, newItem);
 
         assertThat(createdItem.getName()).as("Item has expected name.").isEqualTo(newItem.getName());
         assertThat(createdItem.getCategory()).as("Item has no category.").isNull();
         assertThat(createdItem.isChecked()).as("Item is not checked").isFalse();
 
-        List<ShoppingListItemDto> items = GetListItemsEndpointTest.getListItems(webClient, list);
+        List<ShoppingListItemDto> items = GetListItemsEndpointTest.getListItems(client, list);
 
         assertThat(items).as(PATH + " returns created item").singleElement();
         assertThat(items.get(0).getName()).as("Item has expected name.").isEqualTo(newItem.getName());
@@ -76,19 +64,20 @@ public class AddListItemEndpointTest {
     @Test
     @Sql("/InsertTestList.sql")
     public void addNewShoppingListItemWithCategory() {
-        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(webClient);
+        WebTestClient client = LoginTest.loggedInClient(webClient);
+        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         var newItem = new NewShoppingListItemDto();
         newItem.setName("New Item");
         newItem.setCategory("New Category");
 
-        ShoppingListItemDto createdItem = addListItem(webClient, list, newItem);
+        ShoppingListItemDto createdItem = addListItem(client, list, newItem);
 
         assertThat(createdItem.getName()).as("Item has expected name.").isEqualTo(newItem.getName());
         assertThat(createdItem.getCategory()).as("Item has expected category.").isEqualTo(newItem.getCategory());
         assertThat(createdItem.isChecked()).as("Item is not checked").isFalse();
 
-        List<ShoppingListItemDto> items = GetListItemsEndpointTest.getListItems(webClient, list);
+        List<ShoppingListItemDto> items = GetListItemsEndpointTest.getListItems(client, list);
 
         assertThat(items).as("/shoppinglist/{id} returns created item").singleElement();
         assertThat(items.get(0).getName()).as("Item has expected name.").isEqualTo(newItem.getName());
@@ -99,7 +88,8 @@ public class AddListItemEndpointTest {
     @Test
     @Sql("/InsertTestList.sql")
     public void shoppingListItemsAreReturnedInTheOrderOfCreation() {
-        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(webClient);
+        WebTestClient client = LoginTest.loggedInClient(webClient);
+        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         var newItem1 = new NewShoppingListItemDto();
         newItem1.setName("Item 1");
@@ -113,11 +103,11 @@ public class AddListItemEndpointTest {
         newItem3.setName("Item 3");
         newItem3.setCategory("Category II");
 
-        addListItem(webClient, list, newItem1);
-        addListItem(webClient, list, newItem2);
-        addListItem(webClient, list, newItem3);
+        addListItem(client, list, newItem1);
+        addListItem(client, list, newItem2);
+        addListItem(client, list, newItem3);
 
-        List<ShoppingListItemDto> items = GetListItemsEndpointTest.getListItems(webClient, list);
+        List<ShoppingListItemDto> items = GetListItemsEndpointTest.getListItems(client, list);
 
         assertThat(items).as("/shoppinglist/{id} returns created items").hasSize(3);
 

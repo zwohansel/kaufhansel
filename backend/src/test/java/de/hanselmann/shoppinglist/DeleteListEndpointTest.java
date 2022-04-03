@@ -2,7 +2,6 @@ package de.hanselmann.shoppinglist;
 
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
-import de.hanselmann.shoppinglist.service.AuthenticatedUserService;
 import de.hanselmann.shoppinglist.testutils.WebServerTestWithTestUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,36 +22,26 @@ public class DeleteListEndpointTest {
     @Autowired
     private WebTestClient webClient;
 
-    @Autowired
-    private ShoppingListUserRepository userRepository;
-
-    @MockBean
-    private AuthenticatedUserService authenticatedUserService;
-
-    @BeforeEach
-    public void loginTestUser() {
-        when(authenticatedUserService.findCurrentUser())
-                .then(mock -> userRepository.findUserByEmailAddress("test@test.test"));
-    }
-
 
     @Test
     @Sql("/InsertTestList.sql")
     public void deleteShoppingListDeletesExistingList() {
-        List<ShoppingListInfoDto> lists = GetListsEndpointTest.getLists(webClient);
+        WebTestClient client = LoginTest.loggedInClient(webClient);
+        List<ShoppingListInfoDto> lists = GetListsEndpointTest.getLists(client);
 
-        webClient.delete()
+        client.delete()
                 .uri(PATH, lists.get(0).getId())
                 .exchange()
                 .expectStatus()
                 .is2xxSuccessful();
 
-        assertThat(GetListsEndpointTest.getLists(webClient)).isEmpty();
+        assertThat(GetListsEndpointTest.getLists(client)).isEmpty();
     }
 
     @Test
     public void deleteShoppingListFailsIfListDoesNotExist() {
-        webClient.delete()
+        WebTestClient client = LoginTest.loggedInClient(webClient);
+        client.delete()
                 .uri(PATH, 1234)
                 .exchange()
                 .expectStatus()

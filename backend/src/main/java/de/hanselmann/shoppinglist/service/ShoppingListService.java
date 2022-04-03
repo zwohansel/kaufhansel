@@ -211,7 +211,7 @@ public class ShoppingListService {
     }
 
     public void deleteAllItems(ShoppingList list) {
-        itemsRepository.deleteByList(list);
+        transactionTemplate.executeWithoutResult(action -> itemsRepository.deleteByList(list));
     }
 
     public void deleteItemWithId(long listId, long itemId) {
@@ -249,8 +249,7 @@ public class ShoppingListService {
             boolean categoryChanged = Objects.equals(category, item.getCategoryName());
             boolean checkedStateChanged = Objects.equals(checked, item.isChecked());
 
-            ShoppingListPermission userPermissions = item.getList().getPermissionOfUser(userService.getCurrentUser())
-                    .get();
+            ShoppingListPermission userPermissions = item.getList().getPermissionOfUser(userService.getCurrentUser()).get();
 
             if ((nameChanged || categoryChanged) && !userPermissions.getRole().canEditItems()) {
                 throw new AccessDeniedException("User is not allowed to edit the item.");

@@ -3,7 +3,6 @@ package de.hanselmann.shoppinglist;
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
 import de.hanselmann.shoppinglist.restapi.dto.RenameShoppingListCategoryDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
-import de.hanselmann.shoppinglist.service.AuthenticatedUserService;
 import de.hanselmann.shoppinglist.testutils.ListItemBuilder;
 import de.hanselmann.shoppinglist.testutils.WebServerTestWithTestUser;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,12 +23,6 @@ public class RenameCategoryEndpointTest {
     @Autowired
     private WebTestClient webClient;
 
-    @Autowired
-    private ShoppingListUserRepository userRepository;
-
-    @MockBean
-    private AuthenticatedUserService authenticatedUserService;
-
     public static void renameCategory(WebTestClient webClient, ShoppingListInfoDto list, RenameShoppingListCategoryDto renameDto) {
         webClient.put()
                 .uri(PATH, list.getId())
@@ -40,59 +33,55 @@ public class RenameCategoryEndpointTest {
                 .is2xxSuccessful();
     }
 
-    @BeforeEach
-    public void loginTestUser() {
-        when(authenticatedUserService.findCurrentUser())
-                .then(mock -> userRepository.findUserByEmailAddress("test@test.test"));
-    }
-
     @Test
     @Sql("/InsertTestList.sql")
     public void renamesCategoryIfNewCategoryNameIsNotPresent() {
-        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(webClient);
+        WebTestClient client = LoginTest.loggedInClient(webClient);
+        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         final String oldCategoryName = "OldName";
         final String newCategoryName = "NewName";
 
-        ListItemBuilder.forList(webClient, list)
+        ListItemBuilder.forList(client, list)
                 .itemWithName("Item").andCategory(oldCategoryName).add();
 
         RenameShoppingListCategoryDto renameDto = new RenameShoppingListCategoryDto();
         renameDto.setOldCategory(oldCategoryName);
         renameDto.setNewCategory(newCategoryName);
-        renameCategory(webClient, list, renameDto);
+        renameCategory(client, list, renameDto);
 
-        assertThat(GetListItemsEndpointTest.getSingleListItem(webClient, list).getCategory()).isEqualTo(newCategoryName);
+        assertThat(GetListItemsEndpointTest.getSingleListItem(client, list).getCategory()).isEqualTo(newCategoryName);
     }
 
     @Test
     @Sql("/InsertTestList.sql")
     public void mergeCategoryIfNewCategoryNameIsAlreadyPresent() {
-        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(webClient);
+        WebTestClient client = LoginTest.loggedInClient(webClient);
+        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         final String oldCategoryName = "OldName";
         final String newCategoryName = "NewName";
         final String finalCategoryName = "Foo";
 
-        ListItemBuilder.forList(webClient, list)
+        ListItemBuilder.forList(client, list)
                 .itemWithName("Item 1").andCategory(oldCategoryName).add()
                 .itemWithName("Item 2").andCategory(newCategoryName).add();
 
         RenameShoppingListCategoryDto renameDto = new RenameShoppingListCategoryDto();
         renameDto.setOldCategory(oldCategoryName);
         renameDto.setNewCategory(newCategoryName);
-        renameCategory(webClient, list, renameDto);
+        renameCategory(client, list, renameDto);
 
-        assertThat(GetListItemsEndpointTest.getListItems(webClient, list))
+        assertThat(GetListItemsEndpointTest.getListItems(client, list))
                 .isNotEmpty()
                 .allSatisfy(item -> assertThat(item.getCategory()).isEqualTo(newCategoryName));
 
         // If we rename again all items should belong to the final category
         renameDto.setOldCategory(newCategoryName);
         renameDto.setNewCategory(finalCategoryName);
-        renameCategory(webClient, list, renameDto);
+        renameCategory(client, list, renameDto);
 
-        assertThat(GetListItemsEndpointTest.getListItems(webClient, list))
+        assertThat(GetListItemsEndpointTest.getListItems(client, list))
                 .isNotEmpty()
                 .allSatisfy(item -> assertThat(item.getCategory()).isEqualTo(finalCategoryName));
     }

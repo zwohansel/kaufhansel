@@ -1,7 +1,7 @@
 package de.hanselmann.shoppinglist.testutils;
 
 import de.hanselmann.shoppinglist.AddListItemEndpointTest;
-import de.hanselmann.shoppinglist.UpdateListItemEndpoint;
+import de.hanselmann.shoppinglist.UpdateListItemEndpointTest;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
@@ -58,7 +58,7 @@ public class ListItemBuilder {
                 updateItem.setName(name);
                 updateItem.setCategory(category);
                 updateItem.setChecked(true);
-                UpdateListItemEndpoint.updateListItem(webClient, list, item, updateItem);
+                UpdateListItemEndpointTest.updateListItem(webClient, list, item, updateItem);
             }
             return ListItemBuilder.this;
         }

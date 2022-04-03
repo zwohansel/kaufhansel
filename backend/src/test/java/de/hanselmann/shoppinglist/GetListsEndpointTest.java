@@ -4,7 +4,6 @@ import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListPermissionsDto;
-import de.hanselmann.shoppinglist.service.AuthenticatedUserService;
 import de.hanselmann.shoppinglist.testutils.WebServerTestWithTestUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,12 +25,6 @@ public class GetListsEndpointTest {
     @Autowired
     private WebTestClient webClient;
 
-    @Autowired
-    private ShoppingListUserRepository userRepository;
-
-    @MockBean
-    private AuthenticatedUserService authenticatedUserService;
-
     public static List<ShoppingListInfoDto> getLists(WebTestClient webClient) {
         return requestLists(webClient).returnResult().getResponseBody();
     }
@@ -49,25 +42,19 @@ public class GetListsEndpointTest {
         return requestLists(webClient).hasSize(1).returnResult().getResponseBody().get(0);
     }
 
-    @BeforeEach
-    public void loginTestUser() {
-        when(authenticatedUserService.findCurrentUser())
-                .then(mock -> userRepository.findUserByEmailAddress("test@test.test"));
-    }
-
     @Test
     public void shoppingListEndpointFailsIfUserNotAuthenticated() {
-        when(authenticatedUserService.findCurrentUser()).thenReturn(Optional.empty());
         webClient.get()
                 .uri(PATH)
                 .exchange()
                 .expectStatus()
-                .is5xxServerError();
+                .is4xxClientError();
     }
 
     @Test
     public void shoppingListEndpointReturnsEmptyListIfUserHasNoLists() {
-        webClient.get()
+        WebTestClient client = LoginTest.loggedInClient(webClient);
+        client.get()
                 .uri(PATH)
                 .exchange().expectStatus()
                 .is2xxSuccessful()
@@ -78,7 +65,8 @@ public class GetListsEndpointTest {
     @Test
     @Sql("/InsertTestList.sql")
     public void shoppingListEndpointReturnsExistingList() {
-        List<ShoppingListInfoDto> lists = getLists(webClient);
+        WebTestClient client = LoginTest.loggedInClient(webClient);
+        List<ShoppingListInfoDto> lists = getLists(client);
 
         assertThat(lists).as("Response body contains single list info object").singleElement();
         ShoppingListInfoDto listInfo = lists.get(0);

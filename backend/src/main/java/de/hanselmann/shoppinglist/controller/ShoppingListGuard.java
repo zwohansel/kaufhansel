@@ -7,29 +7,25 @@ import org.springframework.stereotype.Component;
 
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.repository.ShoppingListItemsRepository;
-import de.hanselmann.shoppinglist.service.AuthenticatedUserService;
 import de.hanselmann.shoppinglist.service.ShoppingListUserService;
 
 @Component("shoppingListGuard")
 public class ShoppingListGuard {
     private final ShoppingListUserService userService;
     private final ShoppingListItemsRepository itemsRepository;
-    private final AuthenticatedUserService authenticatedUserService;
 
     @Autowired
-    public ShoppingListGuard(ShoppingListUserService userService, ShoppingListItemsRepository itemsRepository,
-            AuthenticatedUserService authenticatedUserService) {
+    public ShoppingListGuard(ShoppingListUserService userService, ShoppingListItemsRepository itemsRepository) {
         this.userService = userService;
         this.itemsRepository = itemsRepository;
-        this.authenticatedUserService = authenticatedUserService;
     }
 
     private boolean checkAccessForCurrentUser(Predicate<ShoppingListUser> predicate) {
-        return authenticatedUserService.findCurrentUser().map(predicate::test).orElse(false);
+        return userService.findCurrentUser().map(predicate::test).orElse(false);
     }
 
-    public boolean canAccessShoppingList(long id) {
-        return checkAccessForCurrentUser(user -> canAccessShoppingList(user, id));
+    public boolean canAccessShoppingList(long listId) {
+        return checkAccessForCurrentUser(user -> canAccessShoppingList(user, listId));
     }
 
     public boolean canAccessShoppingListItem(long itemId) {
@@ -42,8 +38,8 @@ public class ShoppingListGuard {
                 .orElse(false);
     }
 
-    private boolean canAccessShoppingList(ShoppingListUser user, long id) {
-        return user.getShoppingListPermissions().stream().anyMatch(permission -> permission.getList().getId() == id);
+    private boolean canAccessShoppingList(ShoppingListUser user, long listId) {
+        return user.getShoppingListPermissions().stream().anyMatch(permission -> permission.getList().getId() == listId);
     }
 
     public boolean canEditItemsInShoppingList(long id) {

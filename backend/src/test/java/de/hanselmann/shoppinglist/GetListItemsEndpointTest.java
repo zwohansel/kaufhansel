@@ -3,7 +3,6 @@ package de.hanselmann.shoppinglist;
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
-import de.hanselmann.shoppinglist.service.AuthenticatedUserService;
 import de.hanselmann.shoppinglist.testutils.WebServerTestWithTestUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,12 +23,6 @@ public class GetListItemsEndpointTest {
     @Autowired
     private WebTestClient webClient;
 
-    @Autowired
-    private ShoppingListUserRepository userRepository;
-
-    @MockBean
-    private AuthenticatedUserService authenticatedUserService;
-
     public static List<ShoppingListItemDto> getListItems(WebTestClient webClient, ShoppingListInfoDto list) {
         return requestListItems(webClient, list).returnResult().getResponseBody();
     }
@@ -47,17 +40,12 @@ public class GetListItemsEndpointTest {
         return requestListItems(webClient, list).hasSize(1).returnResult().getResponseBody().get(0);
     }
 
-    @BeforeEach
-    public void loginTestUser() {
-        when(authenticatedUserService.findCurrentUser())
-                .then(mock -> userRepository.findUserByEmailAddress("test@test.test"));
-    }
-
     @Test
     @Sql("/InsertTestList.sql")
     public void getShoppingListItemsReturnsEmptyListIfNoItemsArePresent() {
-        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(webClient);
-        webClient.get()
+        WebTestClient client = LoginTest.loggedInClient(webClient);
+        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
+        client.get()
                 .uri(PATH, list.getId())
                 .exchange().expectStatus()
                 .is2xxSuccessful()
@@ -69,8 +57,9 @@ public class GetListItemsEndpointTest {
     @Sql("/InsertTestList.sql")
     @Sql("/InsertTestItem.sql")
     public void getExistingShoppingListItem() {
-        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(webClient);
-        List<ShoppingListItemDto> items = getListItems(webClient, list);
+        WebTestClient client = LoginTest.loggedInClient(webClient);
+        ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
+        List<ShoppingListItemDto> items = getListItems(client, list);
         assertThat(items).as(PATH + " returns existing item").singleElement();
         assertThat(items.get(0).getName()).as("Item has expected name.").isEqualTo("Test Item");
         assertThat(items.get(0).getCategory()).as("Item has no category.").isNull();

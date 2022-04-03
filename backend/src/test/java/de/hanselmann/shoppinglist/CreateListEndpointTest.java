@@ -5,7 +5,6 @@ import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListPermissionsDto;
-import de.hanselmann.shoppinglist.service.AuthenticatedUserService;
 import de.hanselmann.shoppinglist.testutils.WebServerTestWithTestUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,25 +25,14 @@ public class CreateListEndpointTest {
     @Autowired
     private WebTestClient webClient;
 
-    @Autowired
-    private ShoppingListUserRepository userRepository;
-
-    @MockBean
-    private AuthenticatedUserService authenticatedUserService;
-
-    @BeforeEach
-    public void loginTestUser() {
-        when(authenticatedUserService.findCurrentUser())
-                .then(mock -> userRepository.findUserByEmailAddress("test@test.test"));
-    }
-
     @Test
     public void createsNewList() {
+        WebTestClient client = LoginTest.loggedInClient(webClient);
         final String newListName = "New Shopping List";
         var newListDto = new NewShoppingListDto();
         newListDto.setName(newListName);
 
-        ShoppingListInfoDto createdList = webClient.post()
+        ShoppingListInfoDto createdList = client.post()
                 .uri(PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(newListDto)
@@ -64,7 +52,7 @@ public class CreateListEndpointTest {
         assertThat(permissions.isCanEditItems()).as("Creator has the permission to edit items").isTrue();
         assertThat(permissions.isCanEditList()).as("Creator has the permission to edit the list").isTrue();
 
-        List<ShoppingListInfoDto> lists = GetListsEndpointTest.getLists(webClient);
+        List<ShoppingListInfoDto> lists = GetListsEndpointTest.getLists(client);
 
         assertThat(lists).as("/shoppinglist returns created list").singleElement();
         assertThat(lists.get(0).getId()).as("id of list returned by /shoppinglist matches id of created list")
@@ -73,7 +61,8 @@ public class CreateListEndpointTest {
 
     @Test
     public void returnsBadRequestIfNoNameIsGiven() {
-        webClient.post()
+        WebTestClient client = LoginTest.loggedInClient(webClient);
+        client.post()
                 .uri(PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(new NewShoppingListDto())
@@ -82,6 +71,6 @@ public class CreateListEndpointTest {
                 .isBadRequest();
 
         // Check that no list has been created
-        assertThat(GetListsEndpointTest.getLists(webClient)).isEmpty();
+        assertThat(GetListsEndpointTest.getLists(client)).isEmpty();
     }
 }

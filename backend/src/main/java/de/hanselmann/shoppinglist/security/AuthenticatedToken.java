@@ -12,20 +12,20 @@ import de.hanselmann.shoppinglist.model.ShoppingListUser;
 @SuppressWarnings("serial")
 public class AuthenticatedToken implements Authentication {
     private final String token;
-    private final ShoppingListUser user;
+    private final Long userId;
 
-    public AuthenticatedToken(String token, ShoppingListUser user) {
+    public AuthenticatedToken(String token, Long userId) {
         this.token = token;
-        this.user = user;
+        this.userId = userId;
     }
 
-    public ShoppingListUser getUser() {
-        return user;
+    public Long getUserId() {
+        return userId;
     }
 
     @Override
     public String getName() {
-        return String.valueOf(user.getId());
+        return String.valueOf(userId);
     }
 
     @Override

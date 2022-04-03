@@ -1,7 +1,8 @@
 package de.hanselmann.shoppinglist.configuration;
 
+import de.hanselmann.shoppinglist.security.AuthenticationService;
+import de.hanselmann.shoppinglist.security.AuthenticationTokenFilter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -11,10 +12,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import de.hanselmann.shoppinglist.security.AuthenticationService;
-import de.hanselmann.shoppinglist.security.AuthenticationTokenFilter;
-
-@Profile("!test")
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {

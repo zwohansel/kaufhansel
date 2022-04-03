@@ -2,8 +2,12 @@ package de.hanselmann.shoppinglist.service;
 
 import java.util.Optional;
 
+import de.hanselmann.shoppinglist.security.AuthenticatedToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,23 +25,29 @@ public class ShoppingListUserService {
     private final PasswordEncoder passwordEncoder;
     private final EMailService emailService;
     private final TimeSource timeSource;
-    private final AuthenticatedUserService authenticatedUserService;
 
     @Autowired
     public ShoppingListUserService(ShoppingListUserRepository userRepository, CodeGenerator codeGenerator,
-            PasswordEncoder passwordEncoder, EMailService emailService, TimeSource timeSource,
-            AuthenticatedUserService authenticatedUserService) {
+            PasswordEncoder passwordEncoder, EMailService emailService, TimeSource timeSource) {
         this.userRepository = userRepository;
         this.codeGenerator = codeGenerator;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.timeSource = timeSource;
-        this.authenticatedUserService = authenticatedUserService;
     }
 
     public ShoppingListUser getCurrentUser() {
-        return authenticatedUserService.findCurrentUser()
-                .orElseThrow(() -> new IllegalArgumentException("User is not logged in."));
+        return findCurrentUser().orElseThrow(() -> new IllegalArgumentException("User is not logged in."));
+    }
+
+    public Optional<ShoppingListUser> findCurrentUser() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        Authentication auth = securityContext.getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+            Long userId = ((AuthenticatedToken) auth).getUserId();
+            return findUser(userId);
+        }
+        return Optional.empty();
     }
 
     public ShoppingListUser getUser(long userId) {
