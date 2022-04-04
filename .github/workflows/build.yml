@@ -180,6 +180,7 @@ jobs:
           releaseFiles: bundle/release/app-release.aab
           track: internal
           inAppUpdatePriority: 2
+          status: completed
           #userFraction: 0.33
           #whatsNewDirectory: distribution/whatsnew
           mappingFile: mapping/release/mapping.txt
