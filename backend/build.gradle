@@ -50,12 +50,12 @@ eclipse {
     autoBuildTasks copyBuildPropertiesForEclipse
 }
 
-def springBootVersion = '2.5.2'
+def springBootVersion = '2.6.5'
 def jsonWebTokenVersion = '0.11.2'
 
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}"
-    implementation 'org.liquibase:liquibase-core:4.4.0'
+    implementation 'org.liquibase:liquibase-core:4.9.1'
     implementation 'org.xerial:sqlite-jdbc:3.36.0'
     implementation "org.springframework.boot:spring-boot-starter:${springBootVersion}"
     implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
@@ -68,7 +68,7 @@ dependencies {
 
     testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
     testImplementation "org.springframework.boot:spring-boot-starter-webflux:${springBootVersion}"
-    testImplementation "org.assertj:assertj-core:3.20.2"
+    testImplementation "org.assertj:assertj-core:3.22.0"
 }
 
 test {
