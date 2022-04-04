@@ -1,10 +1,12 @@
 package de.hanselmann.shoppinglist.service;
 
-import de.hanselmann.shoppinglist.model.*;
-import de.hanselmann.shoppinglist.repository.ShoppingListCategoriesRepository;
-import de.hanselmann.shoppinglist.repository.ShoppingListItemsRepository;
-import de.hanselmann.shoppinglist.repository.ShoppingListPermissionsRepository;
-import de.hanselmann.shoppinglist.repository.ShoppingListRepository;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.lang.Nullable;
@@ -15,12 +17,16 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import de.hanselmann.shoppinglist.model.ShoppingList;
+import de.hanselmann.shoppinglist.model.ShoppingListCategory;
+import de.hanselmann.shoppinglist.model.ShoppingListItem;
+import de.hanselmann.shoppinglist.model.ShoppingListPermission;
+import de.hanselmann.shoppinglist.model.ShoppingListRole;
+import de.hanselmann.shoppinglist.model.ShoppingListUser;
+import de.hanselmann.shoppinglist.repository.ShoppingListCategoriesRepository;
+import de.hanselmann.shoppinglist.repository.ShoppingListItemsRepository;
+import de.hanselmann.shoppinglist.repository.ShoppingListPermissionsRepository;
+import de.hanselmann.shoppinglist.repository.ShoppingListRepository;
 
 @Service
 public class ShoppingListService {
@@ -30,18 +36,18 @@ public class ShoppingListService {
     private final ShoppingListCategoriesRepository categoriesRepository;
     private final ShoppingListUserService userService;
     /**
-     * The @Transaction annotation only works on public methods that are called by another bean.
-     * In all other locations we need the transaction template.
+     * The @Transaction annotation only works on public methods that are called by
+     * another bean. In all other locations we need the transaction template.
      */
     private final TransactionTemplate transactionTemplate;
 
     @Autowired
     public ShoppingListService(ShoppingListRepository listsRepository,
-                               ShoppingListUserService userService,
-                               ShoppingListPermissionsRepository permissionsRepository,
-                               ShoppingListItemsRepository itemsRepository,
-                               ShoppingListCategoriesRepository categoriesRepository,
-                               PlatformTransactionManager transactionManager) {
+            ShoppingListUserService userService,
+            ShoppingListPermissionsRepository permissionsRepository,
+            ShoppingListItemsRepository itemsRepository,
+            ShoppingListCategoriesRepository categoriesRepository,
+            PlatformTransactionManager transactionManager) {
         this.listsRepository = listsRepository;
         this.userService = userService;
         this.permissionsRepository = permissionsRepository;
@@ -50,8 +56,7 @@ public class ShoppingListService {
         transactionTemplate = new TransactionTemplate(transactionManager);
     }
 
-    public @Nullable
-    ShoppingList createShoppingListForCurrentUser(String name) {
+    public @Nullable ShoppingList createShoppingListForCurrentUser(String name) {
         try {
             return transactionTemplate.execute(status -> createShoppingListForCurrentUserImpl(name));
         } catch (TransactionException | DataIntegrityViolationException e) {
@@ -95,6 +100,7 @@ public class ShoppingListService {
     public ShoppingListItem createNewItem(String name, @Nullable String category, ShoppingList list) {
         var newItem = new ShoppingListItem(name, list);
         newItem.setCategory(getOrCreateCategory(category, list));
+        newItem.setPosition(list.getItems().size());
         itemsRepository.save(newItem);
         return newItem;
     }
@@ -202,8 +208,10 @@ public class ShoppingListService {
             return;
         }
 
-        // A category with the new name is already present... we can not have two categories with the same name.
-        // Reassign all items of the old category to the already present category and delete the old category.
+        // A category with the new name is already present... we can not have two
+        // categories with the same name.
+        // Reassign all items of the old category to the already present category and
+        // delete the old category.
         transactionTemplate.executeWithoutResult(action -> {
             itemsRepository.findByListAndCategory(list, category).forEach(item -> item.setCategory(newCategory));
             categoriesRepository.delete(category);
@@ -233,8 +241,42 @@ public class ShoppingListService {
     }
 
     public boolean moveShoppingListItem(ShoppingList list, ShoppingListItem item, int targetIndex) {
-        // TODO: Implement
-        return false;
+        if (targetIndex < 0) {
+            return false;
+        }
+        transactionTemplate.executeWithoutResult(action -> {
+            final int oldPosition = item.getPosition();
+            final int newPosition = Math.min(targetIndex, list.getItems().size() - 1);
+            list.getItems().forEach(current -> {
+                if (current.getId().equals(item.getId())) {
+                    // current item is the item that we want to move
+                    item.setPosition(newPosition);
+                } else if (oldPosition > newPosition
+                        && current.getPosition() < oldPosition
+                        && current.getPosition() >= newPosition) {
+                    // The item is moved towards the start of the list.
+                    // Increase the position of all items that are
+                    // between the moved items new (inclusive) and old position (exclusive).
+                    // 0| 1| 2| 3| 4
+                    // a| b| c| d| e : move(d, 1)
+                    // a| b| c| e| _ : remove(d)
+                    // a| d| b| c| e : insert(d, 1)
+                    current.setPosition(current.getPosition() + 1);
+                } else if (oldPosition < newPosition
+                        && current.getPosition() > oldPosition
+                        && current.getPosition() <= newPosition) {
+                    // The item is moved towards the start of the list.
+                    // Increase the position of all items that are
+                    // between the moved items old (exclusive) and new position (inclusive).
+                    // 0| 1| 2| 3| 4
+                    // a| b| c| d| e : move(b, 3)
+                    // a| c| d| e| _ : remove(b)
+                    // a| c| d| b| e : insert(b, 3)
+                    current.setPosition(current.getPosition() - 1);
+                }
+            });
+        });
+        return true;
     }
 
     public void renameList(long shoppingListId, String name) {
@@ -249,7 +291,8 @@ public class ShoppingListService {
             boolean categoryChanged = Objects.equals(category, item.getCategoryName());
             boolean checkedStateChanged = Objects.equals(checked, item.isChecked());
 
-            ShoppingListPermission userPermissions = item.getList().getPermissionOfUser(userService.getCurrentUser()).get();
+            ShoppingListPermission userPermissions = item.getList().getPermissionOfUser(userService.getCurrentUser())
+                    .get();
 
             if ((nameChanged || categoryChanged) && !userPermissions.getRole().canEditItems()) {
                 throw new AccessDeniedException("User is not allowed to edit the item.");
@@ -261,6 +304,7 @@ public class ShoppingListService {
             item.setName(name);
             item.setChecked(checked);
             item.setCategory(getOrCreateCategory(category, item.getList()));
+            item.setPosition(item.getPosition());
             itemsRepository.save(item);
         });
     }

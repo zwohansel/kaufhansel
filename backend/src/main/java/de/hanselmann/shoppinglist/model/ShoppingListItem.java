@@ -1,9 +1,17 @@
 package de.hanselmann.shoppinglist.model;
 
-import org.springframework.lang.Nullable;
-
-import javax.persistence.*;
 import java.util.Objects;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.springframework.lang.Nullable;
 
 @Entity
 @Table(name = "ITEMS")
@@ -22,6 +30,8 @@ public class ShoppingListItem {
     @ManyToOne
     @JoinColumn(name = "CATEGORY_ID")
     private ShoppingListCategory category;
+    @Column(name = "POSITION", nullable = false)
+    private int position;
 
     protected ShoppingListItem() {
         this(null);
@@ -69,8 +79,11 @@ public class ShoppingListItem {
         this.category = category;
     }
 
-    public @Nullable
-    String getCategoryName() {
+    public void removeFromCategory() {
+        this.category = null;
+    }
+
+    public @Nullable String getCategoryName() {
         return category == null ? null : category.getName();
     }
 
@@ -78,8 +91,12 @@ public class ShoppingListItem {
         return list;
     }
 
-    public void removeFromCategory() {
-        this.category = null;
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int order) {
+        this.position = order;
     }
 
 }

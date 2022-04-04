@@ -28,6 +28,9 @@
             <column name="CHECKED" defaultValueBoolean="false" type="boolean">
                 <constraints nullable="false"/>
             </column>
+            <column name="POSITION" type="int">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
         <createTable tableName="LISTS">
             <column name="ID" type="int">

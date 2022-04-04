@@ -17,6 +17,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 
 @Entity
@@ -38,6 +39,7 @@ public class ShoppingList {
     private ShoppingListUser createdBy;
 
     @OneToMany(mappedBy = "list", cascade = CascadeType.REMOVE)
+    @OrderBy("position")
     private List<ShoppingListItem> items = new ArrayList<>();
 
     @OneToMany(mappedBy = "list", cascade = CascadeType.REMOVE)
