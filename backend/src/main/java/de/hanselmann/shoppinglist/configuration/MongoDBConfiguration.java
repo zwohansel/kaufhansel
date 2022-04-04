@@ -1,17 +1,16 @@
 package de.hanselmann.shoppinglist.configuration;
 
+import com.mongodb.ConnectionString;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.MongoDbFactory;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
-
-import com.mongodb.ConnectionString;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 
 @Configuration
 @EnableMongoRepositories(basePackages = "de.hanselmann.shoppinglist.repository")
@@ -25,7 +24,7 @@ public class MongoDBConfiguration extends AbstractMongoClientConfiguration {
     }
 
     @Bean
-    public MongoTransactionManager transactionManager(MongoDbFactory dbFactory) {
+    public MongoTransactionManager transactionManager(MongoDatabaseFactory dbFactory) {
         return new MongoTransactionManager(dbFactory);
     }
 
