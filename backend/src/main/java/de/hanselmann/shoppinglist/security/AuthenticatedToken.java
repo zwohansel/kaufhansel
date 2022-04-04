@@ -7,8 +7,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import de.hanselmann.shoppinglist.model.ShoppingListUser;
-
 @SuppressWarnings("serial")
 public class AuthenticatedToken implements Authentication {
     private final String token;

@@ -1,21 +1,20 @@
 package de.hanselmann.shoppinglist;
 
-import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
-import de.hanselmann.shoppinglist.restapi.dto.*;
-import de.hanselmann.shoppinglist.testutils.ListItemBuilder;
-import de.hanselmann.shoppinglist.testutils.WebServerTestWithTestUser;
-import org.junit.jupiter.api.BeforeEach;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
+import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
+import de.hanselmann.shoppinglist.restapi.dto.UncheckShoppingListItemsDto;
+import de.hanselmann.shoppinglist.testutils.ListItemBuilder;
+import de.hanselmann.shoppinglist.testutils.WebServerTestWithTestUser;
 
 @WebServerTestWithTestUser
 public class UncheckListItemsEndpointTest {
@@ -26,8 +25,8 @@ public class UncheckListItemsEndpointTest {
     private WebTestClient webClient;
 
     public static void uncheckAllItems(WebTestClient webClient,
-                                       ShoppingListInfoDto list,
-                                       UncheckShoppingListItemsDto uncheckDto) {
+            ShoppingListInfoDto list,
+            UncheckShoppingListItemsDto uncheckDto) {
         webClient.put()
                 .uri(PATH, list.getId())
                 .contentType(MediaType.APPLICATION_JSON)

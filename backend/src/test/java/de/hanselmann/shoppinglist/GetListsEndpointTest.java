@@ -1,22 +1,18 @@
 package de.hanselmann.shoppinglist;
 
-import de.hanselmann.shoppinglist.model.ShoppingListRole;
-import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
-import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
-import de.hanselmann.shoppinglist.restapi.dto.ShoppingListPermissionsDto;
-import de.hanselmann.shoppinglist.testutils.WebServerTestWithTestUser;
-import org.junit.jupiter.api.BeforeEach;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import de.hanselmann.shoppinglist.model.ShoppingListRole;
+import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
+import de.hanselmann.shoppinglist.restapi.dto.ShoppingListPermissionsDto;
+import de.hanselmann.shoppinglist.testutils.WebServerTestWithTestUser;
 
 @WebServerTestWithTestUser
 public class GetListsEndpointTest {
@@ -80,6 +76,5 @@ public class GetListsEndpointTest {
         assertThat(permissions.isCanEditItems()).as("User has the permission to edit items").isTrue();
         assertThat(permissions.isCanEditList()).as("User has the permission to edit the list").isTrue();
     }
-
 
 }

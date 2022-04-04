@@ -1,14 +1,12 @@
 package de.hanselmann.shoppinglist.repository;
 
-import de.hanselmann.shoppinglist.model.ShoppingListCategory;
+import java.util.stream.Stream;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import de.hanselmann.shoppinglist.model.ShoppingList;
+import de.hanselmann.shoppinglist.model.ShoppingListCategory;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
-import org.springframework.data.jpa.repository.Query;
-
-import java.util.List;
-import java.util.stream.Stream;
 
 public interface ShoppingListItemsRepository extends JpaRepository<ShoppingListItem, Long> {
 
