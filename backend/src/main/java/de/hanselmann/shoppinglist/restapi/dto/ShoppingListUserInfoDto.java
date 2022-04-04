@@ -6,6 +6,13 @@ public class ShoppingListUserInfoDto {
     private final String username;
     private final String emailAddress;
 
+    /**
+     * Required to run the test in eclipse
+     */
+    protected ShoppingListUserInfoDto() {
+        this(0, null, null, null);
+    }
+
     public ShoppingListUserInfoDto(long id, String token, String username, String emailAddress) {
         this.id = id;
         this.token = token;

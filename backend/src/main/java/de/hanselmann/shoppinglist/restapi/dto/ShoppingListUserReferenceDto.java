@@ -8,6 +8,13 @@ public class ShoppingListUserReferenceDto {
     final String userEmailAddress;
     final ShoppingListRole userRole;
 
+    /**
+     * Required to run the test in eclipse
+     */
+    protected ShoppingListUserReferenceDto() {
+        this(0, null, null, null);
+    }
+
     public ShoppingListUserReferenceDto(long userId, String userName, String userEmailAddress,
             ShoppingListRole userRole) {
         this.userId = userId;

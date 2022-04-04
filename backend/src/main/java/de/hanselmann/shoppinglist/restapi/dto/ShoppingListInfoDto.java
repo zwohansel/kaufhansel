@@ -8,6 +8,13 @@ public class ShoppingListInfoDto {
     private final ShoppingListPermissionsDto permissions;
     private final List<ShoppingListUserReferenceDto> otherUsers;
 
+    /**
+     * Required to run the test in eclipse
+     */
+    protected ShoppingListInfoDto() {
+        this(0, null, null, null);
+    }
+
     public ShoppingListInfoDto(
             long id,
             String name,

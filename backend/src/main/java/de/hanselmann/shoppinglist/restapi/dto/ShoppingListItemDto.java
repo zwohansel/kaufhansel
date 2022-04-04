@@ -6,6 +6,13 @@ public class ShoppingListItemDto {
     private final boolean checked;
     private final String category;
 
+    /**
+     * Required to run the test in eclipse
+     */
+    protected ShoppingListItemDto() {
+        this(0, null, false, null);
+    }
+
     public ShoppingListItemDto(long id, String name, boolean checked, String category) {
         this.id = id;
         this.name = name;
