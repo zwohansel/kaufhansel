@@ -22,22 +22,30 @@ public class CreateListEndpointTest {
     @Autowired
     private WebTestClient webClient;
 
-    @Test
-    public void createsNewList() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
-        final String newListName = "New Shopping List";
-        var newListDto = new NewShoppingListDto();
-        newListDto.setName(newListName);
-
-        ShoppingListInfoDto createdList = client.post()
-                .uri(PATH)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(newListDto)
-                .exchange()
+    public static ShoppingListInfoDto createList(WebTestClient client, String name) {
+        return requestCreateList(client, name)
                 .expectStatus()
                 .is2xxSuccessful()
                 .expectBody(ShoppingListInfoDto.class)
                 .returnResult().getResponseBody();
+    }
+
+    public static WebTestClient.ResponseSpec requestCreateList(WebTestClient client, String name) {
+        NewShoppingListDto newListDto = new NewShoppingListDto();
+        newListDto.setName(name);
+        return client.post()
+                .uri(PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(newListDto)
+                .exchange();
+    }
+
+    @Test
+    public void createsNewList() {
+        WebTestClient client = LoginTest.loggedInClient(webClient);
+
+        final String newListName = "New Shopping List";
+        ShoppingListInfoDto createdList = createList(client, newListName);
 
         assertThat(createdList.getName()).isEqualTo(newListName);
         assertThat(createdList.getOtherUsers()).as("No other user can access the created list").isEmpty();
@@ -59,13 +67,25 @@ public class CreateListEndpointTest {
     @Test
     public void returnsBadRequestIfNoNameIsGiven() {
         WebTestClient client = LoginTest.loggedInClient(webClient);
-        client.post()
-                .uri(PATH)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(new NewShoppingListDto())
-                .exchange()
-                .expectStatus()
-                .isBadRequest();
+        requestCreateList(client, null).expectStatus().isBadRequest();
+
+        // Check that no list has been created
+        assertThat(GetListsEndpointTest.getLists(client)).isEmpty();
+    }
+
+    @Test
+    public void returnsBadRequestIfEmptyNameIsGiven() {
+        WebTestClient client = LoginTest.loggedInClient(webClient);
+        requestCreateList(client, "").expectStatus().isBadRequest();
+
+        // Check that no list has been created
+        assertThat(GetListsEndpointTest.getLists(client)).isEmpty();
+    }
+
+    @Test
+    public void returnsBadRequestIfBlankNameIsGiven() {
+        WebTestClient client = LoginTest.loggedInClient(webClient);
+        requestCreateList(client, " \t\n ").expectStatus().isBadRequest();
 
         // Check that no list has been created
         assertThat(GetListsEndpointTest.getLists(client)).isEmpty();

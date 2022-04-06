@@ -57,6 +57,9 @@ public class ShoppingListService {
     }
 
     public @Nullable ShoppingList createShoppingListForCurrentUser(String name) {
+        if (name == null || name.isBlank()) {
+            return null;
+        }
         try {
             return transactionTemplate.execute(status -> createShoppingListForCurrentUserImpl(name));
         } catch (TransactionException | DataIntegrityViolationException e) {
@@ -236,13 +239,14 @@ public class ShoppingListService {
     }
 
     private void deleteCheckedItems(ShoppingList list, String ofCategory) {
-        if (ofCategory == null) {
-            itemsRepository.deleteByListAndChecked(list, true);
-        } else {
-            categoriesRepository.findByNameAndList(ofCategory, list).ifPresent(category -> {
-                itemsRepository.deleteByListAndCheckedAndCategory(list, true, category);
-            });
-        }
+        transactionTemplate.executeWithoutResult(action -> {
+            if (ofCategory == null) {
+                itemsRepository.deleteByListAndChecked(list, true);
+            } else {
+                categoriesRepository.findByNameAndList(ofCategory, list)
+                        .ifPresent(category -> itemsRepository.deleteByListAndCheckedAndCategory(list, true, category));
+            }
+        });
     }
 
     public boolean moveShoppingListItem(ShoppingList list, ShoppingListItem item, int targetIndex) {
