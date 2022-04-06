@@ -20,7 +20,4 @@ public interface ShoppingListItemsRepository extends JpaRepository<ShoppingListI
 
     Stream<ShoppingListItem> findByList(ShoppingList list);
 
-    // TODO: If this works do not take ShoppingList parameter in other methods
-    void deleteByListAndId(long listId, long itemId);
-
 }

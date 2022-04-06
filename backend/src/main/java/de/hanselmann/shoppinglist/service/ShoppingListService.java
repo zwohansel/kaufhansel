@@ -222,8 +222,13 @@ public class ShoppingListService {
         transactionTemplate.executeWithoutResult(action -> itemsRepository.deleteByList(list));
     }
 
-    public void deleteItemWithId(long listId, long itemId) {
-        itemsRepository.deleteByListAndId(listId, itemId);
+    public void deleteItemWithId(long itemId) {
+        transactionTemplate.executeWithoutResult(action -> {
+            // deleteById throws an exception if the item is not present.
+            if (itemsRepository.existsById(itemId)) {
+                itemsRepository.deleteById(itemId);
+            }
+        });
     }
 
     public void deleteCheckedItems(long listId, String ofCategory) {

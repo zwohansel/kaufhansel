@@ -192,7 +192,7 @@ public class ShoppingListController implements ShoppingListApi {
     @PreAuthorize("@shoppingListGuard.canEditItemsInShoppingList(#id)")
     @Override
     public ResponseEntity<Void> deleteShoppingListItem(long id, long itemId) {
-        shoppingListService.deleteItemWithId(id, itemId);
+        shoppingListService.deleteItemWithId(itemId);
         return ResponseEntity.noContent().build();
     }
 
