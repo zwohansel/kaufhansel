@@ -136,19 +136,7 @@ public class ShoppingListController implements ShoppingListApi {
     @PreAuthorize("@shoppingListGuard.canEditItemsInShoppingList(#id)")
     @Override
     public ResponseEntity<Void> moveShoppingListItem(long id, MoveShoppingListItemDto moveItem) {
-        return shoppingListService.findShoppingList(id)
-                .map(list -> moveShoppingListItem(list, moveItem.getItemId(), moveItem.getTargetIndex()))
-                .orElse(ResponseEntity.badRequest().build());
-    }
-
-    private ResponseEntity<Void> moveShoppingListItem(ShoppingList list, long itemId, int targetIndex) {
-        return list.findItemById(itemId)
-                .map(item -> moveShoppingListItem(list, item, targetIndex))
-                .orElse(ResponseEntity.badRequest().build());
-    }
-
-    private ResponseEntity<Void> moveShoppingListItem(ShoppingList list, ShoppingListItem item, int targetIndex) {
-        if (shoppingListService.moveShoppingListItem(list, item, targetIndex)) {
+        if (shoppingListService.moveShoppingListItem(id, moveItem.getItemId(), moveItem.getTargetIndex())) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.badRequest().build();
@@ -175,7 +163,7 @@ public class ShoppingListController implements ShoppingListApi {
     @PreAuthorize("@shoppingListGuard.canEditItemsInShoppingList(#id)")
     @Override
     public ResponseEntity<Void> deleteShoppingListItem(long id, long itemId) {
-        shoppingListService.deleteItemWithId(itemId);
+        shoppingListService.deleteItemWithId(id, itemId);
         return ResponseEntity.noContent().build();
     }
 

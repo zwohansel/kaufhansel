@@ -221,65 +221,70 @@ public class ShoppingListService {
         });
     }
 
+    @Transactional
     public void deleteAllItems(long listId) {
-        transactionTemplate.executeWithoutResult(action -> itemsRepository.deleteByListId(listId));
+        itemsRepository.deleteByListId(listId);
     }
 
-    public void deleteItemWithId(long itemId) {
-        transactionTemplate.executeWithoutResult(action -> {
-            // deleteById throws an exception if the item is not present.
-            if (itemsRepository.existsById(itemId)) {
-                itemsRepository.deleteById(itemId);
-            }
-        });
+    @Transactional
+    public void deleteItemWithId(long listId, long itemId) {
+        // the list id must be part of the query otherwise a user
+        // can delete items in lists to which he has no access
+        itemsRepository.deleteByIdAndListId(itemId, listId);
     }
 
+    @Transactional
     public void deleteCheckedItems(long listId, String ofCategory) {
-        transactionTemplate.executeWithoutResult(action -> {
-            if (ofCategory == null) {
-                itemsRepository.deleteByListIdAndChecked(listId, true);
-            } else {
-                categoriesRepository.findByNameAndListId(ofCategory, listId).ifPresent(
-                        category -> itemsRepository.deleteByListIdAndCheckedAndCategory(listId, true, category));
-            }
-        });
+        if (ofCategory == null) {
+            itemsRepository.deleteByListIdAndChecked(listId, true);
+        } else {
+            categoriesRepository.findByNameAndListId(ofCategory, listId).ifPresent(
+                    category -> itemsRepository.deleteByListIdAndCheckedAndCategory(listId, true, category));
+        }
     }
 
-    public boolean moveShoppingListItem(ShoppingList list, ShoppingListItem item, int targetIndex) {
+    @Transactional
+    public boolean moveShoppingListItem(long listId, long itemId, int targetIndex) {
         if (targetIndex < 0) {
             return false;
         }
-        transactionTemplate.executeWithoutResult(action -> {
-            final int oldPosition = item.getPosition();
-            final int newPosition = Math.min(targetIndex, list.getItems().size() - 1);
-            list.getItems().forEach(current -> {
-                if (current.getId().equals(item.getId())) {
-                    // current item is the item that we want to move
-                    item.setPosition(newPosition);
-                } else if (oldPosition > newPosition
-                        && current.getPosition() < oldPosition
-                        && current.getPosition() >= newPosition) {
-                    // The item is moved towards the start of the list.
-                    // Increase the position of all items that are
-                    // between the moved items new (inclusive) and old position (exclusive).
-                    // 0| 1| 2| 3| 4
-                    // a| b| c| d| e : move(d, 1)
-                    // a| b| c| e| _ : remove(d)
-                    // a| d| b| c| e : insert(d, 1)
-                    current.setPosition(current.getPosition() + 1);
-                } else if (oldPosition < newPosition
-                        && current.getPosition() > oldPosition
-                        && current.getPosition() <= newPosition) {
-                    // The item is moved towards the start of the list.
-                    // Increase the position of all items that are
-                    // between the moved items old (exclusive) and new position (inclusive).
-                    // 0| 1| 2| 3| 4
-                    // a| b| c| d| e : move(b, 3)
-                    // a| c| d| e| _ : remove(b)
-                    // a| c| d| b| e : insert(b, 3)
-                    current.setPosition(current.getPosition() - 1);
-                }
-            });
+        // the list id must be part of the query otherwise a user
+        // can move items in lists to which he has no access
+        ShoppingListItem item = itemsRepository.findByIdAndListId(itemId, listId).orElse(null);
+        if (item == null) {
+            return false;
+        }
+        ShoppingList list = item.getList();
+
+        final int oldPosition = item.getPosition();
+        final int newPosition = Math.min(targetIndex, list.getItems().size() - 1);
+        list.getItems().forEach(current -> {
+            if (current.getId().equals(item.getId())) {
+                // current item is the item that we want to move
+                item.setPosition(newPosition);
+            } else if (oldPosition > newPosition
+                    && current.getPosition() < oldPosition
+                    && current.getPosition() >= newPosition) {
+                // The item is moved towards the start of the list.
+                // Increase the position of all items that are
+                // between the moved items new (inclusive) and old position (exclusive).
+                // 0| 1| 2| 3| 4
+                // a| b| c| d| e : move(d, 1)
+                // a| b| c| e| _ : remove(d)
+                // a| d| b| c| e : insert(d, 1)
+                current.setPosition(current.getPosition() + 1);
+            } else if (oldPosition < newPosition
+                    && current.getPosition() > oldPosition
+                    && current.getPosition() <= newPosition) {
+                // The item is moved towards the start of the list.
+                // Increase the position of all items that are
+                // between the moved items old (exclusive) and new position (inclusive).
+                // 0| 1| 2| 3| 4
+                // a| b| c| d| e : move(b, 3)
+                // a| c| d| e| _ : remove(b)
+                // a| c| d| b| e : insert(b, 3)
+                current.setPosition(current.getPosition() - 1);
+            }
         });
         return true;
     }
