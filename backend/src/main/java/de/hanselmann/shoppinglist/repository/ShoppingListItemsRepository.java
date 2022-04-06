@@ -4,20 +4,19 @@ import java.util.stream.Stream;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import de.hanselmann.shoppinglist.model.ShoppingList;
 import de.hanselmann.shoppinglist.model.ShoppingListCategory;
 import de.hanselmann.shoppinglist.model.ShoppingListItem;
 
 public interface ShoppingListItemsRepository extends JpaRepository<ShoppingListItem, Long> {
 
-    void deleteByList(ShoppingList list);
+    void deleteByListId(long listId);
 
-    void deleteByListAndChecked(ShoppingList list, boolean checked);
+    void deleteByListIdAndChecked(long listId, boolean checked);
 
-    void deleteByListAndCheckedAndCategory(ShoppingList list, boolean checked, ShoppingListCategory ofCategory);
+    void deleteByListIdAndCheckedAndCategory(long listId, boolean checked, ShoppingListCategory ofCategory);
 
-    Stream<ShoppingListItem> findByListAndCategory(ShoppingList list, ShoppingListCategory ofCategory);
+    Stream<ShoppingListItem> findByListIdAndCategory(long listId, ShoppingListCategory ofCategory);
 
-    Stream<ShoppingListItem> findByList(ShoppingList list);
+    Stream<ShoppingListItem> findByListId(long listId);
 
 }

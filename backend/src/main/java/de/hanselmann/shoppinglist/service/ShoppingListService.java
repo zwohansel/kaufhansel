@@ -185,25 +185,25 @@ public class ShoppingListService {
      *                     categories will be removed.
      */
     @Transactional
-    public void removeCategory(ShoppingList list, @Nullable String categoryName) {
+    public void removeCategory(long listId, @Nullable String categoryName) {
         if (categoryName == null) {
-            itemsRepository.findByList(list).forEach(ShoppingListItem::removeFromCategory);
-            categoriesRepository.deleteByList(list);
+            itemsRepository.findByListId(listId).forEach(ShoppingListItem::removeFromCategory);
+            categoriesRepository.deleteByListId(listId);
         } else {
-            categoriesRepository.findByNameAndList(categoryName, list).ifPresent(category -> {
-                itemsRepository.findByListAndCategory(list, category).forEach(ShoppingListItem::removeFromCategory);
+            categoriesRepository.findByNameAndListId(categoryName, listId).ifPresent(category -> {
+                itemsRepository.findByListIdAndCategory(listId, category).forEach(ShoppingListItem::removeFromCategory);
                 categoriesRepository.delete(category);
             });
         }
     }
 
-    public void renameCategory(ShoppingList list, String oldCategory, String newCategory) {
-        categoriesRepository.findByNameAndList(oldCategory, list)
-                .ifPresent(category -> renameCategory(list, category, newCategory));
+    public void renameCategory(long listId, String oldCategory, String newCategory) {
+        categoriesRepository.findByNameAndListId(oldCategory, listId)
+                .ifPresent(category -> renameCategory(listId, category, newCategory));
     }
 
-    private void renameCategory(ShoppingList list, ShoppingListCategory category, String newName) {
-        ShoppingListCategory newCategory = categoriesRepository.findByNameAndList(newName, list).orElse(null);
+    private void renameCategory(long listId, ShoppingListCategory category, String newName) {
+        ShoppingListCategory newCategory = categoriesRepository.findByNameAndListId(newName, listId).orElse(null);
         if (newCategory == null) {
             // No category with the new name exists in this list... just rename the category
             category.setName(newName);
@@ -216,13 +216,13 @@ public class ShoppingListService {
         // Reassign all items of the old category to the already present category and
         // delete the old category.
         transactionTemplate.executeWithoutResult(action -> {
-            itemsRepository.findByListAndCategory(list, category).forEach(item -> item.setCategory(newCategory));
+            itemsRepository.findByListIdAndCategory(listId, category).forEach(item -> item.setCategory(newCategory));
             categoriesRepository.delete(category);
         });
     }
 
-    public void deleteAllItems(ShoppingList list) {
-        transactionTemplate.executeWithoutResult(action -> itemsRepository.deleteByList(list));
+    public void deleteAllItems(long listId) {
+        transactionTemplate.executeWithoutResult(action -> itemsRepository.deleteByListId(listId));
     }
 
     public void deleteItemWithId(long itemId) {
@@ -235,16 +235,12 @@ public class ShoppingListService {
     }
 
     public void deleteCheckedItems(long listId, String ofCategory) {
-        findShoppingList(listId).ifPresent(list -> deleteCheckedItems(list, ofCategory));
-    }
-
-    private void deleteCheckedItems(ShoppingList list, String ofCategory) {
         transactionTemplate.executeWithoutResult(action -> {
             if (ofCategory == null) {
-                itemsRepository.deleteByListAndChecked(list, true);
+                itemsRepository.deleteByListIdAndChecked(listId, true);
             } else {
-                categoriesRepository.findByNameAndList(ofCategory, list)
-                        .ifPresent(category -> itemsRepository.deleteByListAndCheckedAndCategory(list, true, category));
+                categoriesRepository.findByNameAndListId(ofCategory, listId).ifPresent(
+                        category -> itemsRepository.deleteByListIdAndCheckedAndCategory(listId, true, category));
             }
         });
     }

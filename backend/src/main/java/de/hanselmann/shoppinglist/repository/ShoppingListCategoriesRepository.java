@@ -9,10 +9,10 @@ import de.hanselmann.shoppinglist.model.ShoppingListCategory;
 
 public interface ShoppingListCategoriesRepository extends JpaRepository<ShoppingListCategory, Long> {
 
+    Optional<ShoppingListCategory> findByNameAndListId(String name, long listId);
+
     Optional<ShoppingListCategory> findByNameAndList(String name, ShoppingList list);
 
-    void deleteByList(ShoppingList list);
-
-    void deleteByNameAndList(String categoryName, ShoppingList list);
+    void deleteByListId(long listId);
 
 }

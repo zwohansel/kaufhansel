@@ -109,42 +109,27 @@ public class ShoppingListController implements ShoppingListApi {
     @PreAuthorize("@shoppingListGuard.canEditItemsInShoppingList(#id)")
     @Override
     public ResponseEntity<Void> removeShoppingListCategory(long id, RemoveShoppingListCategoryDto dto) {
-        return shoppingListService.findShoppingList(id)
-                .map(list -> removeCategoryFromShoppingList(list, dto.getCategory().orElse(null)))
-                .orElse(ResponseEntity.badRequest().build());
-    }
-
-    private ResponseEntity<Void> removeCategoryFromShoppingList(ShoppingList list, @Nullable String category) {
-        shoppingListService.removeCategory(list, category);
+        shoppingListService.removeCategory(id, dto.getCategory().orElse(null));
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("@shoppingListGuard.canEditItemsInShoppingList(#id)")
     @Override
     public ResponseEntity<Void> renameShoppingListCategory(long id, RenameShoppingListCategoryDto dto) {
-        if ((dto.getOldCategory() == null || dto.getOldCategory().isBlank())
-                || (dto.getNewCategory() == null || dto.getNewCategory().isBlank())) {
+        if (dto.getOldCategory() == null || dto.getOldCategory().isBlank()) {
             return ResponseEntity.badRequest().build();
         }
-        return shoppingListService.findShoppingList(id)
-                .map(list -> renameShoppingListCategory(list, dto.getOldCategory(), dto.getNewCategory()))
-                .orElse(ResponseEntity.badRequest().build());
-    }
-
-    private ResponseEntity<Void> renameShoppingListCategory(ShoppingList list, String oldCategory, String newCategory) {
-        shoppingListService.renameCategory(list, oldCategory, newCategory);
+        if (dto.getNewCategory() == null || dto.getNewCategory().isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        shoppingListService.renameCategory(id, dto.getOldCategory(), dto.getNewCategory());
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("@shoppingListGuard.canEditItemsInShoppingList(#id)")
     @Override
     public ResponseEntity<Void> clearShoppingList(long id) {
-        return shoppingListService.findShoppingList(id).map(this::clearShoppingList)
-                .orElse(ResponseEntity.badRequest().build());
-    }
-
-    private ResponseEntity<Void> clearShoppingList(ShoppingList list) {
-        shoppingListService.deleteAllItems(list);
+        shoppingListService.deleteAllItems(id);
         return ResponseEntity.noContent().build();
     }
 
