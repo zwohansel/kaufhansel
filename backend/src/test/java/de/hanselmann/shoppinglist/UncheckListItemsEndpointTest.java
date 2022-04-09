@@ -37,9 +37,9 @@ public class UncheckListItemsEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void allItemsAreUncheckedIfNotCategoryIsSpecified() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         // Create checked items, each with a different category
@@ -59,9 +59,9 @@ public class UncheckListItemsEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void onlyItemsOfTheSpecifiedCategoryAreUnchecked() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         final String categoryOne = "Category 1";

@@ -32,9 +32,9 @@ public class RenameCategoryEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void renamesCategoryIfNewCategoryNameIsNotPresent() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         final String oldCategoryName = "OldName";
@@ -52,9 +52,9 @@ public class RenameCategoryEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void mergeCategoryIfNewCategoryNameIsAlreadyPresent() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         final String oldCategoryName = "OldName";

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
 
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
@@ -21,26 +22,34 @@ public class GetListItemsEndpointTest {
     private WebTestClient webClient;
 
     public static List<ShoppingListItemDto> getListItems(WebTestClient webClient, ShoppingListInfoDto list) {
-        return requestListItems(webClient, list).returnResult().getResponseBody();
+        return requestListItems(webClient, list).expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(ShoppingListItemDto.class)
+                .returnResult()
+                .getResponseBody();
     }
 
-    private static WebTestClient.ListBodySpec<ShoppingListItemDto> requestListItems(WebTestClient webClient,
+    public static ResponseSpec requestListItems(WebTestClient webClient,
             ShoppingListInfoDto list) {
         return webClient.get()
                 .uri(PATH, list.getId())
-                .exchange().expectStatus()
-                .is2xxSuccessful()
-                .expectBodyList(ShoppingListItemDto.class);
+                .exchange();
     }
 
     public static ShoppingListItemDto getSingleListItem(WebTestClient webClient, ShoppingListInfoDto list) {
-        return requestListItems(webClient, list).hasSize(1).returnResult().getResponseBody().get(0);
+        return requestListItems(webClient, list).expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(ShoppingListItemDto.class)
+                .hasSize(1)
+                .returnResult()
+                .getResponseBody()
+                .get(0);
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void getShoppingListItemsReturnsEmptyListIfNoItemsArePresent() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         client.get()
                 .uri(PATH, list.getId())
@@ -51,10 +60,10 @@ public class GetListItemsEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
-    @Sql("/InsertTestItem.sql")
+    @Sql("/InsertAliceList.sql")
+    @Sql("/InsertTestItemIntoAliceList.sql")
     public void getExistingShoppingListItem() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         List<ShoppingListItemDto> items = getListItems(client, list);
         assertThat(items).as(PATH + " returns existing item").singleElement();

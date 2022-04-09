@@ -35,7 +35,7 @@ public class ShoppingListUserReferenceDto {
         return userEmailAddress;
     }
 
-    public ShoppingListRole getuserRole() {
+    public ShoppingListRole getUserRole() {
         return userRole;
     }
 

@@ -26,10 +26,10 @@ public class ClearShoppingListEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
-    @Sql("/InsertTestItem.sql")
+    @Sql("/InsertAliceList.sql")
+    @Sql("/InsertTestItemIntoAliceList.sql")
     public void clearNonEmptyList() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         assertThat(GetListItemsEndpointTest.getListItems(client, list)).isNotEmpty();
         clearList(client, list).expectStatus().is2xxSuccessful();
@@ -37,20 +37,20 @@ public class ClearShoppingListEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void clearEmptyList() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         clearList(client, list).expectStatus().is2xxSuccessful();
         assertThat(GetListItemsEndpointTest.getListItems(client, list)).isEmpty();
     }
 
     @Test
-    @Sql("/InsertOtherUser.sql")
-    @Sql("/InsertListOfOtherSharedWithTestUserAsReadOnly.sql")
-    @Sql("/InsertTestItemInOtherList.sql")
+    @Sql("/InsertBob.sql")
+    @Sql("/InsertListOfBobSharedWithAliceAsReadOnly.sql")
+    @Sql("/InsertTestItemIntoBobsList.sql")
     public void clearListFailsIfPermissionIsReadOnly() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         assertThat(GetListItemsEndpointTest.getListItems(client, list)).isNotEmpty();
         clearList(client, list).expectStatus().is4xxClientError();

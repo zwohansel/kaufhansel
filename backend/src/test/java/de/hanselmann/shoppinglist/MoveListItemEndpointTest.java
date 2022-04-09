@@ -41,9 +41,9 @@ public class MoveListItemEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void moveFirstToLast() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         ListItemBuilder.forList(client, list)
@@ -66,9 +66,9 @@ public class MoveListItemEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void moveLastToFirst() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         ListItemBuilder.forList(client, list)
@@ -91,9 +91,9 @@ public class MoveListItemEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void moveSecondLastToSecondFirst() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         ListItemBuilder.forList(client, list)
@@ -116,9 +116,9 @@ public class MoveListItemEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void moveSecondFirstToSecondLast() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         ListItemBuilder.forList(client, list)
@@ -141,9 +141,9 @@ public class MoveListItemEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void swapFirstAndSecond() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         ListItemBuilder.forList(client, list)
@@ -166,9 +166,9 @@ public class MoveListItemEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void swapSecondAndFirst() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         ListItemBuilder.forList(client, list)
@@ -191,9 +191,9 @@ public class MoveListItemEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void swapSecondAndThird() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         ListItemBuilder.forList(client, list)
@@ -216,9 +216,9 @@ public class MoveListItemEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void swapThirdAndSecond() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         ListItemBuilder.forList(client, list)
@@ -241,9 +241,9 @@ public class MoveListItemEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void movingElementBehindTheEndOfTheListMovesItToLastPosition() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         ListItemBuilder.forList(client, list)
@@ -266,9 +266,9 @@ public class MoveListItemEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void movingLastElementBehindTheEndOfTheListChangesNothing() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         ListItemBuilder.forList(client, list)
@@ -291,9 +291,9 @@ public class MoveListItemEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void movingElementToNegativIndexFails() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         ListItemBuilder.forList(client, list)

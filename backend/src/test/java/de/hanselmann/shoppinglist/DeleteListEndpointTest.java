@@ -20,9 +20,9 @@ public class DeleteListEndpointTest {
     private WebTestClient webClient;
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void deleteShoppingListDeletesExistingList() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         List<ShoppingListInfoDto> lists = GetListsEndpointTest.getLists(client);
 
         client.delete()
@@ -36,7 +36,7 @@ public class DeleteListEndpointTest {
 
     @Test
     public void deleteShoppingListFailsIfListDoesNotExist() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         client.delete()
                 .uri(PATH, 1234)
                 .exchange()

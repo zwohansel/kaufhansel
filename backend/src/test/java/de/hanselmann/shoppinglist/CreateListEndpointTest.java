@@ -42,7 +42,7 @@ public class CreateListEndpointTest {
 
     @Test
     public void createsNewList() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
 
         final String newListName = "New Shopping List";
         ShoppingListInfoDto createdList = createList(client, newListName);
@@ -66,7 +66,7 @@ public class CreateListEndpointTest {
 
     @Test
     public void returnsBadRequestIfNoNameIsGiven() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         requestCreateList(client, null).expectStatus().isBadRequest();
 
         // Check that no list has been created
@@ -75,7 +75,7 @@ public class CreateListEndpointTest {
 
     @Test
     public void returnsBadRequestIfEmptyNameIsGiven() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         requestCreateList(client, "").expectStatus().isBadRequest();
 
         // Check that no list has been created
@@ -84,7 +84,7 @@ public class CreateListEndpointTest {
 
     @Test
     public void returnsBadRequestIfBlankNameIsGiven() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         requestCreateList(client, " \t\n ").expectStatus().isBadRequest();
 
         // Check that no list has been created

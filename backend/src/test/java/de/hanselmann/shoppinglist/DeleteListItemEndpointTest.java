@@ -33,10 +33,10 @@ public class DeleteListItemEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
-    @Sql("/InsertTestItem.sql")
+    @Sql("/InsertAliceList.sql")
+    @Sql("/InsertTestItemIntoAliceList.sql")
     public void deleteExistingListItem() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         ShoppingListItemDto item = GetListItemsEndpointTest.getSingleListItem(client, list);
 
@@ -46,19 +46,19 @@ public class DeleteListItemEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void deleteItemItemThatIsNotPresentInList() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         requestDeleteListItem(client, list.getId(), 0).expectStatus().is2xxSuccessful();
     }
 
     @Test
-    @Sql("/InsertOtherUser.sql")
-    @Sql("/InsertListOfOtherSharedWithTestUserAsReadOnly.sql")
-    @Sql("/InsertTestItemInOtherList.sql")
+    @Sql("/InsertBob.sql")
+    @Sql("/InsertListOfBobSharedWithAliceAsReadOnly.sql")
+    @Sql("/InsertTestItemIntoBobsList.sql")
     public void deleteItemFailsIfPermissionIsReadOnly() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         ShoppingListItemDto item = GetListItemsEndpointTest.getSingleListItem(client, list);
 

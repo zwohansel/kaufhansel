@@ -39,10 +39,10 @@ public class UpdateListItemEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
-    @Sql("/InsertTestItem.sql")
+    @Sql("/InsertAliceList.sql")
+    @Sql("/InsertTestItemIntoAliceList.sql")
     public void updateNameOfExistingListItem() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         ShoppingListItemDto item = GetListItemsEndpointTest.getSingleListItem(client, list);
 
@@ -57,10 +57,10 @@ public class UpdateListItemEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
-    @Sql("/InsertTestItem.sql")
+    @Sql("/InsertAliceList.sql")
+    @Sql("/InsertTestItemIntoAliceList.sql")
     public void updateCategoryOfExistingListItemWithoutCategory() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         ShoppingListItemDto item = GetListItemsEndpointTest.getSingleListItem(client, list);
         assertThat(item.getCategory()).as("Item has no category before update.").isNull();
@@ -77,10 +77,10 @@ public class UpdateListItemEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
-    @Sql("/InsertTestItem.sql")
+    @Sql("/InsertAliceList.sql")
+    @Sql("/InsertTestItemIntoAliceList.sql")
     public void updateCategoryFailsIfOldCategoryIsNullOrBlank() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         ShoppingListItemDto item = GetListItemsEndpointTest.getSingleListItem(client, list);
         assertThat(item.getCategory()).as("Item has no category before update.").isNull();
@@ -97,10 +97,10 @@ public class UpdateListItemEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
-    @Sql("/InsertTestItem.sql")
+    @Sql("/InsertAliceList.sql")
+    @Sql("/InsertTestItemIntoAliceList.sql")
     public void toggleItemCheckedState() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         ShoppingListItemDto item = GetListItemsEndpointTest.getSingleListItem(client, list);
         assertThat(item.isChecked()).as("Item is not checked before update.").isFalse();
@@ -122,11 +122,11 @@ public class UpdateListItemEndpointTest {
     }
 
     @Test
-    @Sql("/InsertOtherUser.sql")
-    @Sql("/InsertListOfOtherSharedWithTestUserAsReadOnly.sql")
-    @Sql("/InsertTestItemInOtherList.sql")
+    @Sql("/InsertBob.sql")
+    @Sql("/InsertListOfBobSharedWithAliceAsReadOnly.sql")
+    @Sql("/InsertTestItemIntoBobsList.sql")
     public void updateNameOfExistingListItemFailsIfPermissionIsReadOnly() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         ShoppingListItemDto item = GetListItemsEndpointTest.getSingleListItem(client, list);
 

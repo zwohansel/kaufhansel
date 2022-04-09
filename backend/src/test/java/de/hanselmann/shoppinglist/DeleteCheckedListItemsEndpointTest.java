@@ -54,9 +54,9 @@ public class DeleteCheckedListItemsEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void deleteAllItemsIfAllAreChecked() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         ListItemBuilder.forList(client, list)
@@ -70,9 +70,9 @@ public class DeleteCheckedListItemsEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void deleteNoItemsIfNoneAreChecked() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         ListItemBuilder.forList(client, list)
@@ -87,9 +87,9 @@ public class DeleteCheckedListItemsEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void deleteOnlyCheckedItemsIfSomeAreCheckedAndOthersNot() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         ListItemBuilder.forList(client, list)
@@ -106,11 +106,11 @@ public class DeleteCheckedListItemsEndpointTest {
     }
 
     @Test
-    @Sql("/InsertOtherUser.sql")
-    @Sql("/InsertListOfOtherSharedWithTestUserAsReadOnly.sql")
-    @Sql("/InsertCheckedTestItemInOtherList.sql")
+    @Sql("/InsertBob.sql")
+    @Sql("/InsertListOfBobSharedWithAliceAsReadOnly.sql")
+    @Sql("/InsertCheckedTestItemIntoBobsList.sql")
     public void failsIfPermissionIsReadOnly() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         requestDeleteCheckedItems(client, list.getId()).expectStatus().is4xxClientError();
@@ -120,7 +120,7 @@ public class DeleteCheckedListItemsEndpointTest {
 
     @Test
     public void onlyRemovesCheckedItemsFromSpecifiedList() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list1 = CreateListEndpointTest.createList(client, "list1");
         ShoppingListInfoDto list2 = CreateListEndpointTest.createList(client, "list2");
 
@@ -135,9 +135,9 @@ public class DeleteCheckedListItemsEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void deleteOnlyCheckedItemsOfSpecifiedCategory() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         ListItemBuilder.forList(client, list)
@@ -155,7 +155,7 @@ public class DeleteCheckedListItemsEndpointTest {
 
     @Test
     public void onlyRemovesCheckedItemsOfSpecifiedCategoryFromSpecifiedList() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list1 = CreateListEndpointTest.createList(client, "list1");
         ShoppingListInfoDto list2 = CreateListEndpointTest.createList(client, "list2");
 

@@ -92,8 +92,9 @@ public class ShoppingListService {
     }
 
     public void addUserToShoppingList(ShoppingList list, ShoppingListUser user) {
-        final var permission = new ShoppingListPermission(ShoppingListRole.READ_WRITE, user, list, LocalDateTime.now());
-        permissionsRepository.save(permission);
+        var permission = new ShoppingListPermission(ShoppingListRole.READ_WRITE, user, list, LocalDateTime.now());
+        permission = permissionsRepository.save(permission);
+        user.addPermission(permission);
     }
 
     public Stream<ShoppingList> getShoppingListsOfCurrentUser() {

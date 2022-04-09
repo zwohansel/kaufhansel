@@ -49,7 +49,7 @@ public class GetListsEndpointTest {
 
     @Test
     public void shoppingListEndpointReturnsEmptyListIfUserHasNoLists() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         client.get()
                 .uri(PATH)
                 .exchange().expectStatus()
@@ -59,14 +59,14 @@ public class GetListsEndpointTest {
     }
 
     @Test
-    @Sql("/InsertTestList.sql")
+    @Sql("/InsertAliceList.sql")
     public void shoppingListEndpointReturnsExistingList() {
-        WebTestClient client = LoginTest.loggedInClient(webClient);
+        WebTestClient client = LoginTest.loginAsAlice(webClient);
         List<ShoppingListInfoDto> lists = getLists(client);
 
         assertThat(lists).as("Response body contains single list info object").singleElement();
         ShoppingListInfoDto listInfo = lists.get(0);
-        assertThat(listInfo.getName()).isEqualTo("Test List");
+        assertThat(listInfo.getName()).isEqualTo("Alice List");
         assertThat(listInfo.getOtherUsers()).as("No other user can access the created list").isEmpty();
 
         ShoppingListPermissionsDto permissions = listInfo.getPermissions();
