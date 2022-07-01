@@ -122,42 +122,49 @@ public class ShoppingListService {
     }
 
     public void deleteOrLeaveShoppingListsOfUser(ShoppingListUser user) {
-        user.getShoppingListPermissions()
-                .forEach(permission -> removeUserFromList(permission.getList().getId(), user));
+        user.getShoppingListPermissions().forEach(this::removeShoppingListPermission);
     }
 
-    public boolean removeUserFromList(long listId, ShoppingListUser user) {
-        try {
-            transactionTemplate.executeWithoutResult(status -> tryRemoveCurrentUserFromShoppingList(listId, user));
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+    public void removeUserFromShoppingList(Long shoppingListId, Long userId) {
+        findShoppingList(shoppingListId).ifPresent(list -> removeUserFromShoppingList(list, userId));
     }
 
-    void tryRemoveCurrentUserFromShoppingList(long listId, ShoppingListUser user) {
-        ShoppingList list = findShoppingList(listId).orElseThrow();
-        ShoppingListPermission currentUserPermission = list.getPermissionOfUser(user).orElseThrow();
-
-        boolean containsOtherAdmins = list.getPermissions().stream()
-                .filter(permission -> permission != currentUserPermission)
-                .anyMatch(permission -> permission.getRole() == ShoppingListRole.ADMIN);
-        if (containsOtherAdmins) {
-            permissionsRepository.delete(currentUserPermission);
-        } else {
-            // Current user is the last ADMIN of the list => delete the list
-            listsRepository.delete(list);
-        }
+    private void removeUserFromShoppingList(ShoppingList list, Long userId) {
+        list.getPermissionOfUser(userId).ifPresent(this::removeShoppingListPermission);
     }
 
-    public void removeUserFromShoppingList(long shoppingListId, long userId) {
-        ShoppingListUser userToBeRemoved = userService.getUser(userId);
-
-        if (userService.getRoleForUser(userToBeRemoved, shoppingListId) == ShoppingListRole.ADMIN) {
-            throw new AccessDeniedException("An admin user can not be removed from the list.");
+    private void removeShoppingListPermission(ShoppingListPermission permission) {
+        if (!isCurrentUserAllowedToRemovePermission(permission)) {
+            throw new AccessDeniedException("Current user is not allowed to delete the user from the list.");
         }
 
-        permissionsRepository.deleteByListAndUser(shoppingListId, userId);
+        boolean containsOtherAdmins = permission.getList().getPermissions().stream()
+                .filter(p -> p != permission)
+                .anyMatch(p -> p.getRole() == ShoppingListRole.ADMIN);
+
+        transactionTemplate.executeWithoutResult(status -> {
+            permissionsRepository.delete(permission);
+            if (!containsOtherAdmins) {
+                // deleted user was the last ADMIN of the list => delete the list
+                listsRepository.delete(permission.getList());
+            }
+        });
+    }
+
+    private boolean isCurrentUserAllowedToRemovePermission(ShoppingListPermission permission) {
+        ShoppingListUser currentUser = userService.getCurrentUser();
+        if (Objects.equals(permission.getUser().getId(), currentUser.getId())) {
+            return true; // you can always remove yourself from a list
+        }
+        if (currentUser.isSuperUser() && !permission.getUser().isSuperUser()) {
+            return true; // a user can remove another non-super user from a list
+        }
+        if (permission.getRole() == ShoppingListRole.ADMIN) {
+            return false; // admins can only remove them self or be removed by an admin user
+        }
+        return permission.getList().getPermissionOfUser(currentUser)
+                .filter(p -> p.getRole().canDeleteUsers())
+                .isPresent();
     }
 
     /**

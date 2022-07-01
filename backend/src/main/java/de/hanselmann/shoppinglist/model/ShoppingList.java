@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -82,7 +83,12 @@ public class ShoppingList {
     }
 
     public Optional<ShoppingListPermission> getPermissionOfUser(ShoppingListUser user) {
-        return permissions.stream().filter(permission -> permission.getUser().getId() == user.getId()).findAny();
+        return getPermissionOfUser(user.getId());
+    }
+
+    public Optional<ShoppingListPermission> getPermissionOfUser(Long userId) {
+        return permissions.stream().filter(permission -> Objects.equals(userId, permission.getUser().getId()))
+                .findAny();
     }
 
     public List<ShoppingListCategory> getCategories() {

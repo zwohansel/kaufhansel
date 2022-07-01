@@ -13,6 +13,4 @@ public interface ShoppingListPermissionsRepository
 
     Optional<ShoppingListPermission> findByList(ShoppingList list);
 
-    void deleteByListAndUser(long shoppingListId, long userId);
-
 }

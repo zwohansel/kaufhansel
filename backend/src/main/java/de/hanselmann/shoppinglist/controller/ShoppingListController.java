@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -85,12 +86,8 @@ public class ShoppingListController implements ShoppingListApi {
     @PreAuthorize("@shoppingListGuard.canAccessShoppingList(#id)")
     @Override
     public ResponseEntity<Void> deleteShoppingList(long id) {
-        boolean removed = shoppingListService.removeUserFromList(id, userService.getCurrentUser());
-        if (removed) {
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.badRequest().build();
-        }
+        shoppingListService.removeUserFromShoppingList(id, userService.getCurrentUser().getId());
+        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("@shoppingListGuard.canCheckItemsInShoppingList(#id)")
@@ -182,7 +179,7 @@ public class ShoppingListController implements ShoppingListApi {
             shoppingListService.updateItem(itemId, updateItem.getName(), updateItem.isChecked(),
                     updateItem.getCategory());
             return ResponseEntity.noContent().build();
-        } catch (Exception e) {
+        } catch (AccessDeniedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
@@ -205,11 +202,11 @@ public class ShoppingListController implements ShoppingListApi {
 
     @PreAuthorize("@shoppingListGuard.canEditShoppingList(#id)")
     @Override
-    public ResponseEntity<Void> removeUserFromShoppingList(long shoppingListId, long userId) {
+    public ResponseEntity<Void> removeUserFromShoppingList(long id, long userId) {
         try {
-            shoppingListService.removeUserFromShoppingList(shoppingListId, userId);
+            shoppingListService.removeUserFromShoppingList(id, userId);
             return ResponseEntity.noContent().build();
-        } catch (Exception e) {
+        } catch (AccessDeniedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }

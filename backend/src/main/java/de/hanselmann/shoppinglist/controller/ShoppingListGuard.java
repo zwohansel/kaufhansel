@@ -39,7 +39,8 @@ public class ShoppingListGuard {
     }
 
     private boolean canAccessShoppingList(ShoppingListUser user, long listId) {
-        return user.getShoppingListPermissions().stream().anyMatch(permission -> permission.getList().getId() == listId);
+        return user.getShoppingListPermissions().stream()
+                .anyMatch(permission -> permission.getList().getId() == listId);
     }
 
     public boolean canEditItemsInShoppingList(long id) {
@@ -70,16 +71,6 @@ public class ShoppingListGuard {
         return user.getShoppingListPermissions().stream()
                 .filter(permission -> permission.getList().getId() == id)
                 .anyMatch(permission -> permission.getRole().canEditList());
-    }
-
-    public boolean canDeleteUser(long userToBeDeletedId) {
-        return checkAccessForCurrentUser(currentUser -> {
-            boolean userCanBeDeleted = userService.findUser(userToBeDeletedId)
-                    .map(user -> !user.isSuperUser()).orElse(false);
-            boolean currentUserCanDeleteUser = currentUser.getId() == userToBeDeletedId
-                    || currentUser.isSuperUser();
-            return userCanBeDeleted && currentUserCanDeleteUser;
-        });
     }
 
 }
