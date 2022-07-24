@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
 
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
@@ -24,16 +25,26 @@ public class UncheckListItemsEndpointTest {
     @Autowired
     private WebTestClient webClient;
 
-    public static void uncheckAllItems(WebTestClient webClient,
+    public static void uncheckItems(WebTestClient webClient,
             ShoppingListInfoDto list,
             UncheckShoppingListItemsDto uncheckDto) {
-        webClient.put()
+        requestUncheckItems(webClient, list, uncheckDto)
+                .expectStatus()
+                .is2xxSuccessful();
+    }
+
+    public static ResponseSpec requestUncheckItems(WebTestClient webClient,
+            ShoppingListInfoDto list,
+            UncheckShoppingListItemsDto uncheckDto) {
+        return webClient.put()
                 .uri(PATH, list.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(uncheckDto)
-                .exchange()
-                .expectStatus()
-                .is2xxSuccessful();
+                .exchange();
+    }
+
+    public static ResponseSpec requestUncheckAllItems(WebTestClient webClient, ShoppingListInfoDto list) {
+        return requestUncheckItems(webClient, list, new UncheckShoppingListItemsDto());
     }
 
     @Test
@@ -50,7 +61,7 @@ public class UncheckListItemsEndpointTest {
                 .itemWithName("Item 4").andCategory("Category 1").andCheckedState(true).add();
 
         UncheckShoppingListItemsDto uncheckDto = new UncheckShoppingListItemsDto();
-        uncheckAllItems(client, list, uncheckDto);
+        uncheckItems(client, list, uncheckDto);
 
         List<ShoppingListItemDto> items = GetListItemsEndpointTest.getListItems(client, list);
         assertThat(items).isNotEmpty().allSatisfy(item -> {
@@ -77,7 +88,7 @@ public class UncheckListItemsEndpointTest {
         // Uncheck only items of the second category
         UncheckShoppingListItemsDto uncheckDto = new UncheckShoppingListItemsDto();
         uncheckDto.setCategory(categoryTwo);
-        uncheckAllItems(client, list, uncheckDto);
+        uncheckItems(client, list, uncheckDto);
 
         List<ShoppingListItemDto> items = GetListItemsEndpointTest.getListItems(client, list);
         // Assert that all items of the first category are still checked

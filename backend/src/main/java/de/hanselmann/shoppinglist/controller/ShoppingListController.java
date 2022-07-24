@@ -213,15 +213,15 @@ public class ShoppingListController implements ShoppingListApi {
 
     @PreAuthorize("@shoppingListGuard.canEditShoppingList(#id)")
     @Override
-    public ResponseEntity<ShoppingListUserReferenceDto> changeShoppingListPermissionsForUser(long shopingListId,
+    public ResponseEntity<ShoppingListUserReferenceDto> changeShoppingListPermissionsForUser(long id,
             ShoppingListPermissionsUpdateDto permissionsDto) {
         ShoppingListUser userToBeChanged = userService.getUser(permissionsDto.getUserId());
-        if (userService.getRoleForUser(userToBeChanged, shopingListId) == ShoppingListRole.ADMIN) {
+        if (userService.getRoleForUser(userToBeChanged, id) == ShoppingListRole.ADMIN) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        userService.changePermission(userToBeChanged, shopingListId, permissionsDto.getRole());
-        return ResponseEntity.ok(dtoTransformer.map(userToBeChanged, shopingListId));
+        userService.changePermission(userToBeChanged, id, permissionsDto.getRole());
+        return ResponseEntity.ok(dtoTransformer.map(userToBeChanged, id));
     }
 
     @PreAuthorize("@shoppingListGuard.canEditShoppingList(#id)")
