@@ -7,20 +7,20 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import de.hanselmann.shoppinglist.repository.ListInviteRepository;
-import de.hanselmann.shoppinglist.repository.PendingRegistrationRepository;
+import de.hanselmann.shoppinglist.repository.PendingRegistrationsRepository;
 import de.hanselmann.shoppinglist.security.TokenService;
 
 @Component
 public class SchedulingService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SchedulingService.class);
     private final ListInviteRepository inviteRepository;
-    private final PendingRegistrationRepository pendingRegistrationRepository;
+    private final PendingRegistrationsRepository pendingRegistrationRepository;
     private final ShoppingListUserService userService;
     private final TokenService tokenService;
 
     @Autowired
     public SchedulingService(ListInviteRepository inviteRepository,
-            PendingRegistrationRepository pendingRegistrationRepository, ShoppingListUserService userService,
+            PendingRegistrationsRepository pendingRegistrationRepository, ShoppingListUserService userService,
             TokenService tokenService) {
         this.inviteRepository = inviteRepository;
         this.pendingRegistrationRepository = pendingRegistrationRepository;

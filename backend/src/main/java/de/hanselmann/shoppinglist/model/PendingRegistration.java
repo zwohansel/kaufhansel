@@ -10,7 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "PENDING_REGISTRATION")
+@Table(name = "PENDING_REGISTRATIONS")
 public class PendingRegistration {
     public static final int EXPIRES_IN_WEEKS = 2;
 

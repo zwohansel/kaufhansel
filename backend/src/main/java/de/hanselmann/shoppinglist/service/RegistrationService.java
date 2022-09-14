@@ -2,6 +2,8 @@ package de.hanselmann.shoppinglist.service;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -11,14 +13,15 @@ import de.hanselmann.shoppinglist.model.PendingRegistration;
 import de.hanselmann.shoppinglist.model.ShoppingList;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.repository.ListInviteRepository;
-import de.hanselmann.shoppinglist.repository.PendingRegistrationRepository;
+import de.hanselmann.shoppinglist.repository.PendingRegistrationsRepository;
 
 @Service
 public class RegistrationService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RegistrationService.class);
     private final ListInviteRepository inviteRepository;
     private final ShoppingListUserService userService;
     private final ShoppingListService shoppingListService;
-    private final PendingRegistrationRepository pendingRegistrationRepository;
+    private final PendingRegistrationsRepository pendingRegistrationRepository;
     private final PasswordEncoder passwordEncoder;
     private final CodeGenerator codeGenerator;
     private final EMailService emailService;
@@ -26,7 +29,7 @@ public class RegistrationService {
     @Autowired
     public RegistrationService(ListInviteRepository inviteRepository, ShoppingListUserService userService,
             ShoppingListService shoppingListService,
-            PendingRegistrationRepository pendingRegistrationRepository,
+            PendingRegistrationsRepository pendingRegistrationRepository,
             PasswordEncoder passwordEncoder, CodeGenerator codeGenerator, EMailService emailService) {
         this.inviteRepository = inviteRepository;
         this.userService = userService;
@@ -66,7 +69,8 @@ public class RegistrationService {
             emailService.sendRegistrationActivationMail(pendingRegistration);
         } catch (Exception e) {
             pendingRegistrationRepository.delete(pendingRegistration);
-            throw e;
+            LOGGER.error("Clould not send activation mail", e);
+            return false;
         }
 
         return true;

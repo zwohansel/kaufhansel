@@ -40,7 +40,7 @@ public class LoginTest {
         return webClient.mutate().defaultHeader("AUTHORIZATION", "Bearer " + token).build();
     }
 
-    private static ShoppingListUserInfoDto login(WebTestClient webClient, String userEmail, String userPassword) {
+    public static ShoppingListUserInfoDto login(WebTestClient webClient, String userEmail, String userPassword) {
         LoginDto loginDto = new LoginDto();
         loginDto.setEmailAddress(userEmail);
         loginDto.setPassword(userPassword);
