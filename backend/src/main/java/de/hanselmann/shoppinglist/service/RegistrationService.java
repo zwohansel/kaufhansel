@@ -1,5 +1,6 @@
 package de.hanselmann.shoppinglist.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -25,12 +26,17 @@ public class RegistrationService {
     private final PasswordEncoder passwordEncoder;
     private final CodeGenerator codeGenerator;
     private final EMailService emailService;
+    private final TimeService timeService;
 
     @Autowired
-    public RegistrationService(ListInviteRepository inviteRepository, ShoppingListUserService userService,
+    public RegistrationService(ListInviteRepository inviteRepository,
+            ShoppingListUserService userService,
             ShoppingListService shoppingListService,
             PendingRegistrationsRepository pendingRegistrationRepository,
-            PasswordEncoder passwordEncoder, CodeGenerator codeGenerator, EMailService emailService) {
+            PasswordEncoder passwordEncoder,
+            CodeGenerator codeGenerator,
+            EMailService emailService,
+            TimeService timeService) {
         this.inviteRepository = inviteRepository;
         this.userService = userService;
         this.shoppingListService = shoppingListService;
@@ -38,6 +44,7 @@ public class RegistrationService {
         this.passwordEncoder = passwordEncoder;
         this.codeGenerator = codeGenerator;
         this.emailService = emailService;
+        this.timeService = timeService;
     }
 
     public boolean isEmailAddressUnused(String emailAddress) {
@@ -58,7 +65,8 @@ public class RegistrationService {
                 emailAddress.trim().toLowerCase(),
                 userName,
                 passwordEncoder.encode(password),
-                codeGenerator.generateRegistrationActivationCode());
+                codeGenerator.generateRegistrationActivationCode(),
+                timeService.now());
 
         if (!isEmailAddressUnused(pendingRegistration.getEmailAddress())) {
             return false;
@@ -77,8 +85,9 @@ public class RegistrationService {
     }
 
     public boolean activate(String activationCode) {
+        LocalDateTime now = timeService.now();
         return pendingRegistrationRepository.findByActivationCode(activationCode)
-                .filter(PendingRegistration::isNotExpired)
+                .filter(pendingRegistration -> pendingRegistration.isNotExpired(now))
                 .map(pendingRegistration -> {
                     try {
                         return createUser(pendingRegistration);

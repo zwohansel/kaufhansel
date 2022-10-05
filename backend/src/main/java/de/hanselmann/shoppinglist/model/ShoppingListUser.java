@@ -53,8 +53,8 @@ public class ShoppingListUser {
     @OneToMany(mappedBy = "invitedBy", cascade = CascadeType.REMOVE)
     private List<ListInvite> createdInvites = new ArrayList<>();
 
-    public static ShoppingListUser create(PendingRegistration pendingRegistration) {
-        if (pendingRegistration.isExpired()) {
+    public static ShoppingListUser create(PendingRegistration pendingRegistration, LocalDateTime now) {
+        if (pendingRegistration.isExpired(now)) {
             throw new IllegalArgumentException("Pending registration is expired");
         }
         var user = new ShoppingListUser();

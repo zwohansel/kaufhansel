@@ -37,13 +37,14 @@ public class PendingRegistration {
             String emailAddress,
             String userName,
             String encryptedPassword,
-            String activationCode) {
+            String activationCode,
+            LocalDateTime now) {
         var pendingRegistration = new PendingRegistration();
         pendingRegistration.emailAddress = emailAddress;
         pendingRegistration.userName = userName;
         pendingRegistration.password = encryptedPassword;
         pendingRegistration.activationCode = activationCode;
-        pendingRegistration.createdAt = LocalDateTime.now();
+        pendingRegistration.createdAt = now;
         return pendingRegistration;
     }
 
@@ -70,12 +71,12 @@ public class PendingRegistration {
         return activationCode;
     }
 
-    public boolean isExpired() {
-        return LocalDateTime.now().isAfter(createdAt.plusWeeks(EXPIRES_IN_WEEKS));
+    public boolean isExpired(LocalDateTime now) {
+        return now.isAfter(createdAt.plusWeeks(EXPIRES_IN_WEEKS));
     }
 
-    public boolean isNotExpired() {
-        return !isExpired();
+    public boolean isNotExpired(LocalDateTime now) {
+        return !isExpired(now);
     }
 
 }

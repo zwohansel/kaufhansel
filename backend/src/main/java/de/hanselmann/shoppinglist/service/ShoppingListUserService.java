@@ -1,8 +1,8 @@
 package de.hanselmann.shoppinglist.service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
-import de.hanselmann.shoppinglist.security.AuthenticatedToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
@@ -16,7 +16,7 @@ import de.hanselmann.shoppinglist.model.ShoppingListPermission;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
-import de.hanselmann.shoppinglist.utils.TimeSource;
+import de.hanselmann.shoppinglist.security.AuthenticatedToken;
 
 @Service
 public class ShoppingListUserService {
@@ -24,16 +24,16 @@ public class ShoppingListUserService {
     private final CodeGenerator codeGenerator;
     private final PasswordEncoder passwordEncoder;
     private final EMailService emailService;
-    private final TimeSource timeSource;
+    private final TimeService timeService;
 
     @Autowired
     public ShoppingListUserService(ShoppingListUserRepository userRepository, CodeGenerator codeGenerator,
-            PasswordEncoder passwordEncoder, EMailService emailService, TimeSource timeSource) {
+            PasswordEncoder passwordEncoder, EMailService emailService, TimeService timeService) {
         this.userRepository = userRepository;
         this.codeGenerator = codeGenerator;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
-        this.timeSource = timeSource;
+        this.timeService = timeService;
     }
 
     public ShoppingListUser getCurrentUser() {
@@ -59,7 +59,7 @@ public class ShoppingListUserService {
     }
 
     public ShoppingListUser createNewUser(PendingRegistration pendingRegistration) {
-        ShoppingListUser user = ShoppingListUser.create(pendingRegistration);
+        ShoppingListUser user = ShoppingListUser.create(pendingRegistration, timeService.now());
         synchronized (this) {
             if (userRepository.existsByEmailAddress(pendingRegistration.getEmailAddress())) {
                 return null;
@@ -112,17 +112,18 @@ public class ShoppingListUserService {
 
     public void requestPasswordReset(ShoppingListUser user) {
         String resetCode = codeGenerator.generatePasswordResetCode();
-        user.setPasswordResetCode(resetCode, timeSource.dateTimeNow());
+        user.setPasswordResetCode(resetCode, timeService.now());
         userRepository.save(user);
         emailService.sendPasswortResetCodeMail(user, resetCode);
     }
 
     public boolean resetPassword(ShoppingListUser user, String resetCode, String password) {
+        LocalDateTime now = timeService.now();
         boolean isResetCodeValid = user.getPasswordResetCode()
                 .map(code -> code.equals(resetCode.strip()))
                 .orElse(false);
         boolean isResetCodeNotExpired = user.getPasswordResetRequestedAt()
-                .map(at -> timeSource.dateTimeNow().isBefore(at.plusHours(1)))
+                .map(at -> now.isBefore(at.plusHours(1)))
                 .orElse(false);
         if (isResetCodeValid && isResetCodeNotExpired && isPasswordValid(password)) {
             user.setPassword(passwordEncoder.encode(password));
