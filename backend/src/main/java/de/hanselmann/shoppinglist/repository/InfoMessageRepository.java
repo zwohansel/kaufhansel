@@ -1,17 +1,16 @@
 package de.hanselmann.shoppinglist.repository;
 
 import java.time.LocalDateTime;
-import java.util.stream.Stream;
+import java.util.List;
 
-import org.bson.types.ObjectId;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import de.hanselmann.shoppinglist.model.InfoMessage;
 
-public interface InfoMessageRepository extends MongoRepository<InfoMessage, ObjectId> {
-    Stream<InfoMessage> findByValidFromLessThanAndValidToGreaterThan(LocalDateTime dateA, LocalDateTime dateB);
+public interface InfoMessageRepository extends JpaRepository<InfoMessage, Long> {
+    List<InfoMessage> findByValidFromLessThanAndValidToGreaterThan(LocalDateTime dateA, LocalDateTime dateB);
 
-    default Stream<InfoMessage> findValidMessages() {
+    default List<InfoMessage> findValidMessages() {
         return findByValidFromLessThanAndValidToGreaterThan(LocalDateTime.now(), LocalDateTime.now());
     }
 }

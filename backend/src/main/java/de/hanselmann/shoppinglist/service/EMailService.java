@@ -38,26 +38,25 @@ public class EMailService {
         emailSender.send(message);
     }
 
-    public void sendInviteMail(String toAddress, String activationCode, String from) {
-        SimpleMailMessage message = new SimpleMailMessage();
+    public void sendInviteMail(String toAddress, String from) {
+        var message = new SimpleMailMessage();
         message.setFrom(SENDER_EMAIL_ADDRESS);
         message.setTo(toAddress);
-        message.setSubject(MessageFormat.format("{0} lädt dich zum Kaufhansel ein", from));
+        message.setSubject(MessageFormat.format("{0} möchte eine Einkaufsliste mit dir teilen", from));
         message.setText(MessageFormat.format("Hi,"
-                + "\n\n{0} lädt dich zum Kaufhansel ein."
+                + "\n\n{0} möchte eine Einkaufsliste im Kaufhansel mit dir teilen."
                 + "\nMit dem Kaufhansel kannst du ganz einfach Einkaufslisten erstellen und sie mit deinen Freunden teilen."
                 + "\nGehe auf https://www.zwohansel.de/kaufhansel/download und lade dir die App für dein "
-                + "Telefon oder für deinen PC herunter."
+                + "Telefon oder für deinen PC herunter.\n"
+                + "Registriere dich mit deiner Email Adresse {1} um Zugriff auf die Einkaufsliste von {0} zu erhalten."
                 // + "\nWenn du den Kaufhansel lieber im Web nutzen willst gehe auf
                 // https://www.zwohansel.de/kaufhansel."
-                + "\nNutze den folgenden Code um dich zu registrieren:"
-                + "\n\n{1}\n"
-                + EMAIL_FOOTER, from, activationCode));
+                + EMAIL_FOOTER, from, toAddress));
         emailSender.send(message);
     }
 
     public void sendWelcomeEmail(ShoppingListUser user) {
-        SimpleMailMessage message = new SimpleMailMessage();
+        var message = new SimpleMailMessage();
         message.setFrom(SENDER_EMAIL_ADDRESS);
         message.setTo(user.getEmailAddress());
         message.setSubject(MessageFormat.format("Willkommen beim Kaufhansel {0}", user.getUsername()));

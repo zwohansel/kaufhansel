@@ -1,85 +1,76 @@
 package de.hanselmann.shoppinglist.controller;
 
-import org.bson.types.ObjectId;
+import java.util.function.Predicate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
+import de.hanselmann.shoppinglist.repository.ShoppingListItemsRepository;
 import de.hanselmann.shoppinglist.service.ShoppingListUserService;
 
 @Component("shoppingListGuard")
 public class ShoppingListGuard {
     private final ShoppingListUserService userService;
+    private final ShoppingListItemsRepository itemsRepository;
 
     @Autowired
-    public ShoppingListGuard(ShoppingListUserService userService) {
+    public ShoppingListGuard(ShoppingListUserService userService, ShoppingListItemsRepository itemsRepository) {
         this.userService = userService;
+        this.itemsRepository = itemsRepository;
     }
 
-    public boolean canAccessShoppingList(String id) {
-        return ObjectId.isValid(id) && canAccessShoppingList(new ObjectId(id));
+    private boolean checkAccessForCurrentUser(Predicate<ShoppingListUser> predicate) {
+        return userService.findCurrentUser().map(predicate::test).orElse(false);
     }
 
-    public boolean canAccessShoppingList(ObjectId id) {
-        return userService.findCurrentUser().map(user -> canAccessShoppingList(user, id)).orElse(false);
+    public boolean canAccessShoppingList(long listId) {
+        return checkAccessForCurrentUser(user -> canAccessShoppingList(user, listId));
     }
 
-    private boolean canAccessShoppingList(ShoppingListUser user, ObjectId id) {
-        return user.getShoppingLists().stream().anyMatch(ref -> ref.getShoppingListId().equals(id));
+    public boolean canAccessShoppingListItem(long itemId) {
+        return checkAccessForCurrentUser(user -> canUserAccessShoppingListItem(user, itemId));
     }
 
-    public boolean canEditItemsInShoppingList(String id) {
-        return ObjectId.isValid(id) && canEditItemsInShoppingList(new ObjectId(id));
+    private boolean canUserAccessShoppingListItem(ShoppingListUser currentUser, long itemId) {
+        return itemsRepository.findById(itemId)
+                .map(item -> item.getList().getPermissionOfUser(currentUser).isPresent())
+                .orElse(false);
     }
 
-    public boolean canEditItemsInShoppingList(ObjectId id) {
-        return userService.findCurrentUser().map(user -> canEditItemsInShoppingList(user, id)).orElse(false);
+    private boolean canAccessShoppingList(ShoppingListUser user, long listId) {
+        return user.getShoppingListPermissions().stream()
+                .anyMatch(permission -> permission.getList().getId() == listId);
     }
 
-    private boolean canEditItemsInShoppingList(ShoppingListUser user, ObjectId id) {
-        return user.getShoppingLists().stream()
-                .filter(ref -> ref.getShoppingListId().equals(id))
-                .anyMatch(ref -> ref.getRole().canEditItems());
+    public boolean canEditItemsInShoppingList(long id) {
+        return checkAccessForCurrentUser(user -> canEditItemsInShoppingList(user, id));
     }
 
-    public boolean canCheckItemsInShoppingList(String id) {
-        return ObjectId.isValid(id) && canCheckItemsInShoppingList(new ObjectId(id));
+    private boolean canEditItemsInShoppingList(ShoppingListUser user, long id) {
+        return user.getShoppingListPermissions().stream()
+                .filter(permission -> permission.getList().getId() == id)
+                .anyMatch(permission -> permission.getRole().canEditItems());
     }
 
-    public boolean canCheckItemsInShoppingList(ObjectId id) {
-        return userService.findCurrentUser().map(user -> canCheckItemsInShoppingList(user, id)).orElse(false);
+    public boolean canCheckItemsInShoppingList(long id) {
+        return checkAccessForCurrentUser(user -> canCheckItemsInShoppingList(user, id));
     }
 
-    private boolean canCheckItemsInShoppingList(ShoppingListUser user, ObjectId id) {
-        return user.getShoppingLists().stream()
-                .filter(ref -> ref.getShoppingListId().equals(id))
-                .anyMatch(ref -> ref.getRole().canCheckItems());
+    private boolean canCheckItemsInShoppingList(ShoppingListUser user, long id) {
+        return user.getShoppingListPermissions().stream()
+                .filter(permission -> permission.getList().getId() == id)
+                .anyMatch(permission -> permission.getRole().canCheckItems());
     }
 
-    public boolean canEditShoppingList(String id) {
-        return ObjectId.isValid(id) && canEditShoppingList(new ObjectId(id));
+    public boolean canEditShoppingList(long id) {
+        return checkAccessForCurrentUser(user -> canEditShoppingList(user, id));
     }
 
-    public boolean canEditShoppingList(ObjectId id) {
-        return userService.findCurrentUser().map(user -> canEditShoppingList(user, id)).orElse(false);
-    }
-
-    private boolean canEditShoppingList(ShoppingListUser user, ObjectId id) {
-        return user.getShoppingLists().stream()
-                .filter(ref -> ref.getShoppingListId().equals(id))
-                .anyMatch(ref -> ref.getRole().canEditList());
-    }
-
-    public boolean canDeleteUser(String userToBeDeletedId) {
-        return ObjectId.isValid(userToBeDeletedId) && canDeleteUser(new ObjectId(userToBeDeletedId));
-    }
-
-    public boolean canDeleteUser(ObjectId userToBeDeletedId) {
-        boolean userCanBeDeleted = userService.findUser(userToBeDeletedId)
-                .map(user -> !user.isSuperUser()).orElse(false);
-        boolean currentUserCanDeleteUser = userService.getCurrentUser().getId().equals(userToBeDeletedId)
-                || userService.getCurrentUser().isSuperUser();
-        return userCanBeDeleted && currentUserCanDeleteUser;
+    private boolean canEditShoppingList(ShoppingListUser user, long id) {
+        return user.getShoppingListPermissions().stream()
+                .filter(permission -> permission.getList().getId() == id)
+                .anyMatch(permission -> permission.getRole().canEditList());
     }
 
 }

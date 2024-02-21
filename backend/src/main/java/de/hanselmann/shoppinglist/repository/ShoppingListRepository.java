@@ -2,12 +2,11 @@ package de.hanselmann.shoppinglist.repository;
 
 import java.util.Optional;
 
-import org.bson.types.ObjectId;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import de.hanselmann.shoppinglist.model.ShoppingList;
 
-public interface ShoppingListRepository extends MongoRepository<ShoppingList, ObjectId> {
+public interface ShoppingListRepository extends JpaRepository<ShoppingList, Long> {
     @Override
-    public Optional<ShoppingList> findById(ObjectId id);
+    public Optional<ShoppingList> findById(Long id);
 }

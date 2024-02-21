@@ -7,54 +7,78 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
+@Entity
+@Table(name = "USERS")
 public class ShoppingListUser {
     @Id
-    private ObjectId id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "SUPERUSER", nullable = false)
     private boolean superUser = false;
-    private String username;
-    private String password;
+
+    @Column(name = "EMAIL", nullable = false, unique = true)
     private String emailAddress;
-    private LocalDateTime registrationDate;
-    private ObjectId invitedBy;
-    private List<ShoppingListReference> shoppingLists = new ArrayList<>();
+
+    @Column(name = "NAME", nullable = false)
+    private String username;
+
+    @Column(name = "PASSWORD", nullable = false)
+    private String password;
+
+    @Column(name = "REGISTERED_AT", nullable = false)
+    private LocalDateTime registeredAt;
+
+    @Column(name = "PASSWORD_RESET_CODE")
     private String passwordResetCode;
+
+    @Column(name = "PASSWORD_RESET_REQUESTED_AT")
     private LocalDateTime passwordResetRequestedAt;
 
-    public static ShoppingListUser create(PendingRegistration pendingRegistration) {
-        if (pendingRegistration.isExpired()) {
+    @OneToMany(mappedBy = "user")
+    private List<ShoppingListPermission> shoppingLists = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private List<Token> tokens = new ArrayList<>();
+
+    @OneToMany(mappedBy = "invitedBy", cascade = CascadeType.REMOVE)
+    private List<ListInvite> createdInvites = new ArrayList<>();
+
+    public static ShoppingListUser create(PendingRegistration pendingRegistration, LocalDateTime now) {
+        if (pendingRegistration.isExpired(now)) {
             throw new IllegalArgumentException("Pending registration is expired");
         }
-        ShoppingListUser user = new ShoppingListUser();
+        var user = new ShoppingListUser();
         user.emailAddress = pendingRegistration.getEmailAddress().toLowerCase().strip();
         user.username = pendingRegistration.getUserName();
         user.password = pendingRegistration.getPassword();
-        user.invitedBy = pendingRegistration.getInvitedBy();
-        user.registrationDate = LocalDateTime.now();
+        user.registeredAt = LocalDateTime.now();
         return user;
     }
 
-    private ShoppingListUser() {
+    protected ShoppingListUser() {
+
     }
 
-    protected ShoppingListUser(ObjectId id, boolean superUser, String username, String password, String emailAddress,
-            LocalDateTime registrationDate, ObjectId invitedBy, List<ShoppingListReference> shoppingLists,
-            String passwordResetCode, LocalDateTime passwordResetRequestedAt) {
-        this.id = id;
+    public ShoppingListUser(boolean superUser, String emailAddress, String username, String password,
+            LocalDateTime registeredAt) {
         this.superUser = superUser;
+        this.emailAddress = emailAddress;
         this.username = username;
         this.password = password;
-        this.emailAddress = emailAddress;
-        this.registrationDate = registrationDate;
-        this.invitedBy = invitedBy;
-        this.shoppingLists = shoppingLists;
-        this.passwordResetCode = passwordResetCode;
-        this.passwordResetRequestedAt = passwordResetRequestedAt;
+        this.registeredAt = registeredAt;
     }
 
-    public ObjectId getId() {
+    public Long getId() {
         return id;
     }
 
@@ -79,23 +103,24 @@ public class ShoppingListUser {
     }
 
     public LocalDateTime getRegistrationDate() {
-        return registrationDate;
+        return registeredAt;
     }
 
-    public ObjectId getInvitedBy() {
-        return invitedBy;
-    }
-
-    public List<ShoppingListReference> getShoppingLists() {
+    public List<ShoppingListPermission> getShoppingListPermissions() {
         return Collections.unmodifiableList(shoppingLists);
     }
 
-    public void addShoppingList(ShoppingListReference shoppingListReference) {
-        shoppingLists.add(shoppingListReference);
+    public List<Token> getTokens() {
+        return tokens;
     }
 
-    public void deleteShoppingList(ObjectId shoppingListId) {
-        if (!shoppingLists.removeIf(ref -> ref.getShoppingListId().equals(shoppingListId))) {
+    public void addPermission(ShoppingListPermission permission) {
+        shoppingLists.add(permission);
+    }
+
+    // TODO: Not the owning side!
+    public void deleteShoppingList(ShoppingListPermission shoppingListReference) {
+        if (!shoppingLists.remove(shoppingListReference)) {
             throw new NoSuchElementException();
         }
     }

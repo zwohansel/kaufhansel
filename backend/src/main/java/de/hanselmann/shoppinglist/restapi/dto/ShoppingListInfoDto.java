@@ -3,13 +3,20 @@ package de.hanselmann.shoppinglist.restapi.dto;
 import java.util.List;
 
 public class ShoppingListInfoDto {
-    private final String id;
+    private final long id;
     private final String name;
     private final ShoppingListPermissionsDto permissions;
     private final List<ShoppingListUserReferenceDto> otherUsers;
 
+    /**
+     * Required to run the test in eclipse
+     */
+    protected ShoppingListInfoDto() {
+        this(0, null, null, null);
+    }
+
     public ShoppingListInfoDto(
-            String id,
+            long id,
             String name,
             ShoppingListPermissionsDto permissions,
             List<ShoppingListUserReferenceDto> otherUsers) {
@@ -22,7 +29,7 @@ public class ShoppingListInfoDto {
     /**
      * Id of the list
      */
-    public String getId() {
+    public long getId() {
         return id;
     }
 

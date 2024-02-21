@@ -1,33 +1,55 @@
 package de.hanselmann.shoppinglist.model;
 
-import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
+import java.util.Objects;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.springframework.lang.Nullable;
+
+@Entity
+@Table(name = "ITEMS")
 public class ShoppingListItem {
 
+    @ManyToOne
+    @JoinColumn(name = "LIST_ID", nullable = false)
+    private final ShoppingList list;
     @Id
-    private ObjectId id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "NAME", nullable = false)
     private String name;
+    @Column(name = "CHECKED", nullable = false)
     private Boolean checked;
-    private String assignee;
+    @ManyToOne
+    @JoinColumn(name = "CATEGORY_ID")
+    private ShoppingListCategory category;
+    @Column(name = "POSITION", nullable = false)
+    private int position;
 
-    public ShoppingListItem() {
+    protected ShoppingListItem() {
         this(null);
     }
 
-    public ShoppingListItem(String name) {
-        this.id = new ObjectId();
+    public ShoppingListItem(ShoppingList list) {
+        this(null, list);
+    }
+
+    public ShoppingListItem(String name, ShoppingList list) {
         this.name = name;
         this.checked = false;
-        this.assignee = "";
+        this.list = list;
+        this.category = null;
     }
 
-    public ObjectId getId() {
+    public Long getId() {
         return id;
-    }
-
-    public void setId(ObjectId id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -46,12 +68,35 @@ public class ShoppingListItem {
         this.checked = checked;
     }
 
-    public String getAssignee() {
-        return assignee;
+    public ShoppingListCategory getCategory() {
+        return category;
     }
 
-    public void setAssignee(String assignee) {
-        this.assignee = assignee;
+    public void setCategory(@Nullable ShoppingListCategory category) {
+        if (category != null && !Objects.equals(category.getList().getId(), list.getId())) {
+            throw new IllegalArgumentException("Category " + category.getName() + " is from another list.");
+        }
+        this.category = category;
+    }
+
+    public void removeFromCategory() {
+        this.category = null;
+    }
+
+    public @Nullable String getCategoryName() {
+        return category == null ? null : category.getName();
+    }
+
+    public ShoppingList getList() {
+        return list;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int order) {
+        this.position = order;
     }
 
 }

@@ -18,4 +18,8 @@ public enum ShoppingListRole {
     public boolean canCheckItems() {
         return this == ADMIN || this == READ_WRITE || this == CHECK_ONLY;
     }
+
+    public boolean canDeleteUsers() {
+        return this == ADMIN;
+    }
 }

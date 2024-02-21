@@ -158,7 +158,7 @@ class RestClientStub implements RestClient {
   }
 
   @override
-  Future<void> deleteShoppingListItems(String shoppingListId, String ofCategory) {
+  Future<void> deleteCheckedShoppingListItems(String shoppingListId, String ofCategory) {
     throw UnimplementedError();
   }
 

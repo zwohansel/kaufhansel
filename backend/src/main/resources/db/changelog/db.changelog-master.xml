@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
+    <changeSet author="ZwoHansel" id="0">
+        <createTable tableName="CATEGORIES">
+            <column name="ID" type="int">
+                <constraints primaryKey="true" primaryKeyName="PK_CATEGORY_ID"/>
+            </column>
+            <column name="LIST_ID" type="int">
+                <constraints foreignKeyName="FK_LIST_ID" nullable="false" references="LISTS(ID)"/>
+            </column>
+            <column name="NAME" type="text">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="ITEMS">
+            <column name="ID" type="int">
+                <constraints primaryKey="true" primaryKeyName="PK_ITEM_ID"/>
+            </column>
+            <column name="LIST_ID" type="int">
+                <constraints foreignKeyName="FK_LIST_ID" nullable="false" references="LISTS(ID)"/>
+            </column>
+            <column name="NAME" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CATEGORY_ID" type="int">
+                <constraints foreignKeyName="FK_CATEGORY_ID" references="CATEGORIES(ID)"/>
+            </column>
+            <column name="CHECKED" defaultValueBoolean="false" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="POSITION" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="LISTS">
+            <column name="ID" type="int">
+                <constraints primaryKey="true" primaryKeyName="PK_LIST_ID"/>
+            </column>
+            <column name="NAME" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_AT" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_BY" type="int">
+                <constraints foreignKeyName="FK_USER_ID" references="USERS(ID)" nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="USERS">
+            <column name="ID" type="int">
+                <constraints primaryKey="true" primaryKeyName="PK_USER_ID"/>
+            </column>
+            <column name="NAME" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="EMAIL" type="text">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="PASSWORD" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PASSWORD_RESET_CODE" type="text"/>
+            <column defaultValueBoolean="false" name="SUPERUSER" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PASSWORD_RESET_REQUESTED_AT" type="date"/>
+            <column name="REGISTERED_AT" type="date">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="LIST_PERMISSIONS">
+            <column name="USER_ID" type="int">
+                <constraints foreignKeyName="FK_USER_ID" references="USERS(ID)" nullable="false" unique="true" uniqueConstraintName="UNIQUE_PERMISSION" primaryKeyName="PK_LIST_PERMISSION"/>
+            </column>
+            <column name="LIST_ID" type="int">
+                <constraints foreignKeyName="FK_LIST_ID" references="LISTS(ID)" nullable="false" unique="true" uniqueConstraintName="UNIQUE_PERMISSION" primaryKeyName="PK_LIST_PERMISSION"/>
+            </column>
+            <column name="ROLE" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_AT" type="date">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="TOKENS">
+            <column name="ID" type="int">
+                <constraints primaryKey="true" primaryKeyName="PK_TOKEN_ID"/>
+            </column>
+            <column name="VALUE" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="EXPIRES_AT" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="USER_ID" type="int">
+                <constraints foreignKeyName="FK_USER_ID" references="USERS(ID)" nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="LIST_INVITES">
+            <column name="ID" type="int">
+                <constraints primaryKey="true" primaryKeyName="PK_LIST_INVITE_ID"/>
+            </column>
+            <column name="INVITEE_EMAIL" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_AT" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="INVITED_INTO_LIST" type="int">
+                <constraints foreignKeyName="FK_LIST_ID" nullable="false" references="LISTS(ID)"/>
+            </column>
+            <column name="INVITED_BY" type="int">
+                <constraints foreignKeyName="FK_USER_ID" references="USERS(ID)" nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="PENDING_REGISTRATIONS">
+            <column name="ID" type="int">
+                <constraints primaryKey="true" primaryKeyName="PK_PENDING_REGISTRATION_ID"/>
+            </column>
+            <column name="EMAIL" type="text">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="USERNAME" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PASSWORD" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ACTIVATION_CODE" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_AT" type="date">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="INFO_MESSAGES">
+            <column name="ID" type="int">
+                <constraints primaryKey="true" primaryKeyName="PK_INFO_MESSAGE_ID"/>
+            </column>
+            <column defaultValueBoolean="false" name="ENABLED" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SEVERITY" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="MESSAGE" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DISMISS_LABEL" type="text"/>
+            <column name="VALID_FROM" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VALID_TO" type="date">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

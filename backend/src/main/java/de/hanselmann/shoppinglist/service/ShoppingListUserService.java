@@ -1,8 +1,8 @@
 package de.hanselmann.shoppinglist.service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
@@ -12,11 +12,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import de.hanselmann.shoppinglist.model.PendingRegistration;
-import de.hanselmann.shoppinglist.model.ShoppingListReference;
+import de.hanselmann.shoppinglist.model.ShoppingListPermission;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
-import de.hanselmann.shoppinglist.utils.TimeSource;
+import de.hanselmann.shoppinglist.security.AuthenticatedToken;
 
 @Service
 public class ShoppingListUserService {
@@ -24,41 +24,42 @@ public class ShoppingListUserService {
     private final CodeGenerator codeGenerator;
     private final PasswordEncoder passwordEncoder;
     private final EMailService emailService;
-    private final TimeSource timeSource;
+    private final TimeService timeService;
 
     @Autowired
     public ShoppingListUserService(ShoppingListUserRepository userRepository, CodeGenerator codeGenerator,
-            PasswordEncoder passwordEncoder, EMailService emailService, TimeSource timeSource) {
+            PasswordEncoder passwordEncoder, EMailService emailService, TimeService timeService) {
         this.userRepository = userRepository;
         this.codeGenerator = codeGenerator;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
-        this.timeSource = timeSource;
+        this.timeService = timeService;
     }
 
     public ShoppingListUser getCurrentUser() {
         return findCurrentUser().orElseThrow(() -> new IllegalArgumentException("User is not logged in."));
     }
 
-    public ShoppingListUser getUser(ObjectId userId) {
-        return findUser(userId).orElseThrow(() -> new IllegalArgumentException("User does not exist."));
-    }
-
     public Optional<ShoppingListUser> findCurrentUser() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         Authentication auth = securityContext.getAuthentication();
-        if (auth == null) {
-            return Optional.empty();
+        if (auth != null && auth.isAuthenticated()) {
+            Long userId = ((AuthenticatedToken) auth).getUserId();
+            return findUser(userId);
         }
-        return findUser(new ObjectId(auth.getName()));
+        return Optional.empty();
     }
 
-    public Optional<ShoppingListUser> findUser(ObjectId userId) {
+    public ShoppingListUser getUser(long userId) {
+        return findUser(userId).orElseThrow(() -> new IllegalArgumentException("User does not exist."));
+    }
+
+    public Optional<ShoppingListUser> findUser(long userId) {
         return userRepository.findById(userId);
     }
 
     public ShoppingListUser createNewUser(PendingRegistration pendingRegistration) {
-        ShoppingListUser user = ShoppingListUser.create(pendingRegistration);
+        ShoppingListUser user = ShoppingListUser.create(pendingRegistration, timeService.now());
         synchronized (this) {
             if (userRepository.existsByEmailAddress(pendingRegistration.getEmailAddress())) {
                 return null;
@@ -66,24 +67,6 @@ public class ShoppingListUserService {
             userRepository.save(user);
         }
         return user;
-    }
-
-    public void addShoppingListToUser(ShoppingListUser user, ObjectId shoppingListId,
-            ShoppingListRole role) {
-        ShoppingListReference shoppingListReference = new ShoppingListReference(shoppingListId, role);
-        user.addShoppingList(shoppingListReference);
-        userRepository.save(user);
-    }
-
-    public boolean removeShoppingListFromUser(ObjectId userId, ObjectId shoppingListId) {
-        return userRepository.findById(userId).map(user -> removeShoppingListFromUser(user, shoppingListId))
-                .orElse(false);
-    }
-
-    public boolean removeShoppingListFromUser(ShoppingListUser user, ObjectId shoppingListId) {
-        user.deleteShoppingList(shoppingListId);
-        userRepository.save(user);
-        return true;
     }
 
     public Optional<ShoppingListUser> findByEmailAddress(String emailAddress) {
@@ -94,7 +77,7 @@ public class ShoppingListUserService {
         }
     }
 
-    public @Nullable ShoppingListRole getRoleForUser(ObjectId userId, ObjectId shoppingListId) {
+    public @Nullable ShoppingListRole getRoleForUser(long userId, long shoppingListId) {
         return userRepository.findById(userId).map(user -> getRoleForUser(user, shoppingListId)).orElse(null);
     }
 
@@ -106,17 +89,17 @@ public class ShoppingListUserService {
      * @return the role of the user in the shopping list or {@code null} if the user
      *         does not know the list.
      */
-    public @Nullable ShoppingListRole getRoleForUser(ShoppingListUser user, ObjectId shoppingListId) {
-        return user.getShoppingLists().stream()
-                .filter(refs -> refs.getShoppingListId().equals(shoppingListId))
-                .findAny().map(ShoppingListReference::getRole)
+    public @Nullable ShoppingListRole getRoleForUser(ShoppingListUser user, long shoppingListId) {
+        return user.getShoppingListPermissions().stream()
+                .filter(permission -> permission.getList().getId() == shoppingListId)
+                .findAny().map(ShoppingListPermission::getRole)
                 .orElse(null);
     }
 
-    public void changePermission(ShoppingListUser userToBeChanged, ObjectId shopingListId,
+    public void changePermission(ShoppingListUser userToBeChanged, long shoppingListId,
             ShoppingListRole role) {
-        ShoppingListReference referenceForUserToBeChanged = userToBeChanged.getShoppingLists().stream()
-                .filter(ref -> ref.getShoppingListId().equals(shopingListId))
+        ShoppingListPermission referenceForUserToBeChanged = userToBeChanged.getShoppingListPermissions().stream()
+                .filter(permission -> permission.getList().getId() == shoppingListId)
                 .findAny()
                 .orElseThrow();
         referenceForUserToBeChanged.setRole(role);
@@ -129,17 +112,18 @@ public class ShoppingListUserService {
 
     public void requestPasswordReset(ShoppingListUser user) {
         String resetCode = codeGenerator.generatePasswordResetCode();
-        user.setPasswordResetCode(resetCode, timeSource.dateTimeNow());
+        user.setPasswordResetCode(resetCode, timeService.now());
         userRepository.save(user);
         emailService.sendPasswortResetCodeMail(user, resetCode);
     }
 
     public boolean resetPassword(ShoppingListUser user, String resetCode, String password) {
+        LocalDateTime now = timeService.now();
         boolean isResetCodeValid = user.getPasswordResetCode()
                 .map(code -> code.equals(resetCode.strip()))
                 .orElse(false);
         boolean isResetCodeNotExpired = user.getPasswordResetRequestedAt()
-                .map(at -> timeSource.dateTimeNow().isBefore(at.plusHours(1)))
+                .map(at -> now.isBefore(at.plusHours(1)))
                 .orElse(false);
         if (isResetCodeValid && isResetCodeNotExpired && isPasswordValid(password)) {
             user.setPassword(passwordEncoder.encode(password));
@@ -156,15 +140,15 @@ public class ShoppingListUserService {
     }
 
     public long resetPendingPasswordResetRequestsOlderThanMinutes(long olderThanMinutes) {
-        return userRepository.findExpiredPasswordResetRequests(olderThanMinutes).map(user -> {
+        return userRepository.findExpiredPasswordResetRequests(olderThanMinutes).stream().map(user -> {
             user.clearPasswordResetCode();
             userRepository.save(user);
             return user;
         }).count();
     }
 
-    public boolean deleteUser(ObjectId userId) {
-        userRepository.deleteById(userId);
+    public boolean deleteUser(ShoppingListUser user) {
+        userRepository.delete(user);
         return true;
     }
 

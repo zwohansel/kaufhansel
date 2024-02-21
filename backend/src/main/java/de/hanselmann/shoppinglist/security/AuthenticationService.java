@@ -23,8 +23,16 @@ public class AuthenticationService implements AuthenticationProvider {
             throw new AuthenticationCredentialsNotFoundException("Token required");
         }
         final String token = authentication.getCredentials().toString();
-        return tokenService.getUserIdFromTokenIfValid(token)
-                .map(userId -> new AuthenticatedToken(token, userId.toString()))
+        return tokenService.getUserFromTokenIfValid(token)
+                // Do not store the user object in AuthenticatedToken!
+                // The current hibernate session is closed when this method returns (or maybe a bit later).
+                // The actual request handler will get a new hibernate session.
+                // When we try to access any lazy-loaded properties of the user object
+                // like shoppingLists we will get the exception
+                // "LazyInitializationException: could not initialize proxy - no Session".
+                // This is because the proxy objects that are attached to the user object
+                // are associated with the already closed hibernate session.
+                .map(user -> new AuthenticatedToken(token, user.getId()))
                 .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
     }
 

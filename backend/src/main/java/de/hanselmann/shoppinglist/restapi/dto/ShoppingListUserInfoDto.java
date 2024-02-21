@@ -1,19 +1,26 @@
 package de.hanselmann.shoppinglist.restapi.dto;
 
 public class ShoppingListUserInfoDto {
-    private final String id;
+    private final long id;
     private final String token;
     private final String username;
     private final String emailAddress;
 
-    public ShoppingListUserInfoDto(String id, String token, String username, String emailAddress) {
+    /**
+     * Required to run the test in eclipse
+     */
+    protected ShoppingListUserInfoDto() {
+        this(0, null, null, null);
+    }
+
+    public ShoppingListUserInfoDto(long id, String token, String username, String emailAddress) {
         this.id = id;
         this.token = token;
         this.username = username;
         this.emailAddress = emailAddress;
     }
 
-    public String getId() {
+    public long getId() {
         return id;
     }
 

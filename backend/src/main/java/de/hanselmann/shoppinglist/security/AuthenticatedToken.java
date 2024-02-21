@@ -10,16 +10,20 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 @SuppressWarnings("serial")
 public class AuthenticatedToken implements Authentication {
     private final String token;
-    private final String userId;
+    private final Long userId;
 
-    public AuthenticatedToken(String token, String userId) {
+    public AuthenticatedToken(String token, Long userId) {
         this.token = token;
         this.userId = userId;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
     @Override
     public String getName() {
-        return userId;
+        return String.valueOf(userId);
     }
 
     @Override

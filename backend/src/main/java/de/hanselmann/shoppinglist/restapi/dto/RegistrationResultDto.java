@@ -1,10 +1,9 @@
 package de.hanselmann.shoppinglist.restapi.dto;
 
 public class RegistrationResultDto {
-    private enum Status {
+    public enum Status {
         SUCCESS,
         EMAIL_INVALID,
-        INVITE_CODE_INVALID,
         PASSWORD_INVALID,
         FAILURE
     }
@@ -17,10 +16,6 @@ public class RegistrationResultDto {
         return new RegistrationResultDto(Status.EMAIL_INVALID);
     }
 
-    public static RegistrationResultDto inviteCodeInvalid() {
-        return new RegistrationResultDto(Status.INVITE_CODE_INVALID);
-    }
-
     public static RegistrationResultDto passwordInvalid() {
         return new RegistrationResultDto(Status.PASSWORD_INVALID);
     }
@@ -30,6 +25,10 @@ public class RegistrationResultDto {
     }
 
     private final Status status;
+
+    protected RegistrationResultDto() {
+        this(null);
+    }
 
     private RegistrationResultDto(Status status) {
         this.status = status;

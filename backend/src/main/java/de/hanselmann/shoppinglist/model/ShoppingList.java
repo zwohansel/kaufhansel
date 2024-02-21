@@ -1,35 +1,64 @@
 package de.hanselmann.shoppinglist.model;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
+import javax.persistence.Table;
 
+@Entity
+@Table(name = "LISTS")
 public class ShoppingList {
 
     @Id
-    private ObjectId id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "NAME", nullable = false)
     private String name;
+
+    @Column(name = "CREATED_AT", nullable = false)
+    private LocalDateTime createdAt;
+
+    @ManyToOne
+    @JoinColumn(name = "CREATED_BY", nullable = false)
+    private ShoppingListUser createdBy;
+
+    @OneToMany(mappedBy = "list", cascade = CascadeType.REMOVE)
+    @OrderBy("position")
     private List<ShoppingListItem> items = new ArrayList<>();
-    private List<ShoppingListUserReference> users = new ArrayList<>();
 
-    public ShoppingList() {
+    @OneToMany(mappedBy = "list", cascade = CascadeType.REMOVE)
+    private List<ShoppingListCategory> categories = new ArrayList<>();
+
+    @OneToMany(mappedBy = "list", cascade = CascadeType.REMOVE)
+    private List<ShoppingListPermission> permissions = new ArrayList<>();
+
+    protected ShoppingList() {
     }
 
-    protected ShoppingList(ObjectId id, String name, List<ShoppingListItem> items,
-            List<ShoppingListUserReference> users) {
-        this.id = id;
+    public ShoppingList(String name, ShoppingListUser createdBy, LocalDateTime createdAt) {
         this.name = name;
-        this.items = items;
-        this.users = users;
+        this.createdBy = createdBy;
+        this.createdAt = createdAt;
     }
 
-    public ObjectId getId() {
+    public Long getId() {
         return id;
     }
 
@@ -45,32 +74,43 @@ public class ShoppingList {
         return Collections.unmodifiableList(items);
     }
 
-    public List<ShoppingListUserReference> getUsers() {
-        return Collections.unmodifiableList(users);
+    public List<ShoppingListPermission> getPermissions() {
+        return Collections.unmodifiableList(permissions);
     }
 
-    public void addItem(ShoppingListItem item) {
-        items.add(item);
+    public void addPermission(ShoppingListPermission permission) {
+        permissions.add(permission);
     }
 
-    public void addUser(ShoppingListUserReference user) {
-        users.add(user);
+    public Optional<ShoppingListPermission> getPermissionOfUser(ShoppingListUser user) {
+        return getPermissionOfUser(user.getId());
+    }
+
+    public Optional<ShoppingListPermission> getPermissionOfUser(Long userId) {
+        return permissions.stream().filter(permission -> Objects.equals(userId, permission.getUser().getId()))
+                .findAny();
+    }
+
+    public List<ShoppingListCategory> getCategories() {
+        return Collections.unmodifiableList(categories);
     }
 
     public List<ShoppingListItem> getByChecked(boolean checked) {
         return items.stream().filter(item -> item.isChecked() == checked).collect(Collectors.toList());
     }
 
-    public Optional<ShoppingListItem> findItemById(ObjectId id) {
-        return items.stream().filter(item -> item.getId().equals(id)).findAny();
+    public Optional<ShoppingListItem> findItemById(long id) {
+        return items.stream().filter(item -> item.getId() == id).findAny();
     }
 
-    public Optional<ShoppingListItem> deleteItemById(ObjectId id) {
+    // TODO: Not the owning side!
+    public Optional<ShoppingListItem> deleteItemById(long id) {
         Optional<ShoppingListItem> item = findItemById(id);
         item.ifPresent(items::remove);
         return item;
     }
 
+    // TODO: Not the owning side!
     public void deleteItemIf(Predicate<ShoppingListItem> filter) {
         items.removeIf(filter);
     }
@@ -80,16 +120,19 @@ public class ShoppingList {
      *
      * @return the list of removed items
      */
+    // TODO: Not the owning side!
     public List<ShoppingListItem> clearItems() {
         List<ShoppingListItem> copy = new ArrayList<>(items);
         items.clear();
         return copy;
     }
 
-    public void removeUserFromShoppingList(ObjectId userId) {
-        users.removeIf(user -> user.getUserId().equals(userId));
+    // TODO: Not the owning side!
+    public void removeUserFromShoppingList(ShoppingListPermission permission) {
+        permissions.remove(permission);
     }
 
+    // TODO: Not the owning side!
     public boolean moveItem(ShoppingListItem item, int targetIndex) {
         if (targetIndex < 0) {
             throw new IndexOutOfBoundsException();
