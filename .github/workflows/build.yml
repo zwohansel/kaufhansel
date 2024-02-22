@@ -114,7 +114,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [build_backend] #needs: [build_frontend, build_backend]
+    needs: [build_frontend, build_backend]
     #if: github.event_name == 'push' && contains(github.ref, 'refs/tags/v')
 
     steps:
@@ -140,16 +140,16 @@ jobs:
         with:
           name: backend
 
-      #- name: Download android frontend
-      #  uses: actions/download-artifact@v4
-      #  with:
-      #    name: frontend-android
+      - name: Download android frontend
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-android
 
-      #- name: Download linux frontend
-      #  uses: actions/download-artifact@v4
-      #  with:
-      #    name: frontend-linux
-      #    path: frontend-linux/
+      - name: Download linux frontend
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-linux
+          path: frontend-linux/
 
       - name: Deploy
         run: |
