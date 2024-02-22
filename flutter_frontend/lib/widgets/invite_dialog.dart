@@ -19,7 +19,7 @@ class InviteDialog extends StatefulWidget {
 
 class _InviteDialogState extends State<InviteDialog> {
   bool _loading = true;
-  String _code;
+  String? _code;
 
   @override
   void initState() {
@@ -42,7 +42,7 @@ class _InviteDialogState extends State<InviteDialog> {
     if (!_loading && (Platform.isAndroid || Platform.isIOS || Platform.isFuchsia)) {
       children.add(IconButton(
           icon: Icon(Icons.share),
-          onPressed: () => Share.share(_code,
+          onPressed: () => Share.share(_code ?? "",
               subject: AppLocalizations.of(context).invitationCodeShareMessage))); //TODO: do not embed link in message
     }
 
@@ -76,7 +76,7 @@ class _InviteDialogState extends State<InviteDialog> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Center(
-          child: SelectableText(_code, style: Theme.of(context).textTheme.headline3),
+          child: SelectableText(_code ?? "", style: Theme.of(context).textTheme.displaySmall),
         ),
         SizedBox(height: 20),
         Flexible(child: Text(AppLocalizations.of(context).invitationCodeRequestDistributionMessage)),

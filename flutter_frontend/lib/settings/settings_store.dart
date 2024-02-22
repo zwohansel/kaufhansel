@@ -14,15 +14,15 @@ class SettingsStore {
     _storage.clear();
   }
 
-  Future<Optional<ShoppingListUserInfo>> getUserInfo() async {
+  Future<ShoppingListUserInfo?> getUserInfo() async {
     if (!await _storage.ready) {
-      return Optional.empty();
+      return null;
     }
     final userInfoJson = _storage.getItem(_userInfoStorageKey);
     if (userInfoJson == null) {
-      return Optional.empty();
+      return null;
     }
-    return Optional(ShoppingListUserInfo.fromJson(userInfoJson));
+    return ShoppingListUserInfo.fromJson(userInfoJson);
   }
 
   Future<void> saveUserInfo(ShoppingListUserInfo info) async {
@@ -52,7 +52,7 @@ class SettingsStore {
     if (!await _storage.ready) {
       return false;
     }
-    final int confirmedMessageNumber = _storage.getItem(_infoMessageConfirmedStorageKey);
+    final confirmedMessageNumber = _storage.getItem(_infoMessageConfirmedStorageKey);
     if (confirmedMessageNumber == null) {
       return false;
     }
@@ -74,14 +74,14 @@ class SettingsStore {
     await _storage.deleteItem(_lastActiveShoppingListKey);
   }
 
-  Future<Optional<ShoppingListInfo>> getActiveShoppingList() async {
+  Future<ShoppingListInfo?> getActiveShoppingList() async {
     if (!await _storage.ready) {
-      return Optional.empty();
+      return null;
     }
     final lastActiveShoppingList = _storage.getItem(_lastActiveShoppingListKey);
     if (lastActiveShoppingList == null) {
-      return Optional.empty();
+      return null;
     }
-    return Optional(ShoppingListInfo.fromJson(lastActiveShoppingList));
+    return ShoppingListInfo.fromJson(lastActiveShoppingList);
   }
 }

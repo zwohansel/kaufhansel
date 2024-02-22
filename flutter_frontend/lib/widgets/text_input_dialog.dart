@@ -3,13 +3,13 @@ import 'package:kaufhansel_client/generated/l10n.dart';
 
 import 'error_dialog.dart';
 
-Future<String> showTextInputDialog(BuildContext context,
-    {@required String title,
-    String initialValue,
-    String hintText,
-    String confirmBtnLabel,
-    String cancelBtnLabel,
-    Future<void> Function(String value) onConfirm}) {
+Future<String?> showTextInputDialog(BuildContext context,
+    {required String title,
+    String? initialValue,
+    String? hintText,
+    String? confirmBtnLabel,
+    String? cancelBtnLabel,
+    Future<void> Function(String value)? onConfirm}) {
   final displayConfirmBtnLabel = confirmBtnLabel ?? AppLocalizations.of(context).ok;
   final displayCancelBtnLabel = cancelBtnLabel ?? AppLocalizations.of(context).cancel;
   return showDialog<String>(
@@ -22,11 +22,11 @@ Future<String> showTextInputDialog(BuildContext context,
 
 class _TextInputDialog extends StatefulWidget {
   final String title;
-  final String initialValue;
-  final String hintText;
+  final String? initialValue;
+  final String? hintText;
   final String confirmBtnLabel;
   final String cancelBtnLabel;
-  final Future<void> Function(String value) onConfirm;
+  final Future<void> Function(String value)? onConfirm;
 
   const _TextInputDialog(
       this.title, this.initialValue, this.hintText, this.confirmBtnLabel, this.cancelBtnLabel, this.onConfirm);
@@ -45,7 +45,7 @@ class _CreateTextInputDialogState extends State<_TextInputDialog> {
   void initState() {
     super.initState();
     if (widget.initialValue != null) {
-      _textController.text = widget.initialValue;
+      _textController.text = widget.initialValue ?? "";
       _textController.selection = TextSelection(baseOffset: 0, extentOffset: _textController.text.length);
       setState(() => _isInputValid = _textController.text.trim().isNotEmpty);
     }
@@ -107,8 +107,9 @@ class _CreateTextInputDialogState extends State<_TextInputDialog> {
   Future<void> _onConfirm() async {
     setState(() => _loading = true);
     try {
-      if (widget.onConfirm != null) {
-        await widget.onConfirm(_textController.text.trim());
+      final onConfirm = widget.onConfirm;
+      if (onConfirm != null) {
+        await onConfirm(_textController.text.trim());
       }
       Navigator.pop(context, _textController.text);
     } catch (e) {

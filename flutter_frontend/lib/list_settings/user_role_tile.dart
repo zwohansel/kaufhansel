@@ -4,15 +4,15 @@ import 'package:kaufhansel_client/model.dart';
 class UserRoleTile extends StatelessWidget {
   final ShoppingListRole _userRole;
   final Widget _title;
-  final Widget _subTitle;
-  final VoidCallback _onChangePermissionPressed;
-  final VoidCallback _onRemoveUserFromListPressed;
+  final Widget? _subTitle;
+  final VoidCallback? _onChangePermissionPressed;
+  final VoidCallback? _onRemoveUserFromListPressed;
   final bool _enabled;
 
   UserRoleTile(this._userRole, this._title,
-      {Widget subTitle,
-      VoidCallback onChangePermissionPressed,
-      VoidCallback onRemoveUserFromListPressed,
+      {Widget? subTitle,
+      VoidCallback? onChangePermissionPressed,
+      VoidCallback? onRemoveUserFromListPressed,
       bool enabled = true})
       : _subTitle = subTitle,
         _onChangePermissionPressed = onChangePermissionPressed,

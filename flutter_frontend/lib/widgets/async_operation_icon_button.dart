@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 class AsyncOperationIconButton extends StatelessWidget {
   final Icon _icon;
   final bool _loading;
-  final VoidCallback _onPressed;
+  final VoidCallback? _onPressed;
 
-  const AsyncOperationIconButton({@required Icon icon, @required bool loading, @required VoidCallback onPressed})
+  const AsyncOperationIconButton({required Icon icon, required bool loading, VoidCallback? onPressed})
       : _icon = icon,
         _loading = loading,
         _onPressed = onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final iconSize = _icon.size != null ? _icon.size : 24.0;
+    final iconSize = _icon.size ?? 24.0;
     return SizedBox(child: _buildButton(iconSize), width: iconSize * 2, height: iconSize * 2);
   }
 

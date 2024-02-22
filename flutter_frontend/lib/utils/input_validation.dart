@@ -1,4 +1,4 @@
-bool isValidEMailAddress(String address) {
+bool isValidEMailAddress(String? address) {
   if (address == null) {
     return false;
   }

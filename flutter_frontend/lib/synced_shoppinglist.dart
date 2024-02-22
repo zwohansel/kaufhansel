@@ -29,14 +29,14 @@ class SyncedShoppingList extends ChangeNotifier {
     return _list.getUserCategories();
   }
 
-  Future<void> uncheckItems({String ofCategory}) async {
+  Future<void> uncheckItems({String? ofCategory}) async {
     await _client.uncheckItems(_list.id, ofCategory: ofCategory);
     _list.items
         .where((item) => ofCategory == null || item.category == ofCategory)
         .forEach((item) => item.checked = false);
   }
 
-  Future<void> deleteCheckedItems({String ofCategory}) async {
+  Future<void> deleteCheckedItems({String? ofCategory}) async {
     await _client.deleteCheckedShoppingListItems(_list.id, ofCategory);
     _list.removeItemsWhere((item) => item.checked && (ofCategory == null || item.category == ofCategory));
   }
@@ -46,7 +46,7 @@ class SyncedShoppingList extends ChangeNotifier {
     _list.items.where((item) => item.category == oldCategoryName).forEach((item) => item.category = newCategoryName);
   }
 
-  Future<void> removeCategory(String category) async {
+  Future<void> removeCategory(String? category) async {
     await _client.removeCategory(_list.id, category: category);
     _list.items.where((item) => item.category == category).forEach((item) => item.category = null);
   }
@@ -61,7 +61,7 @@ class SyncedShoppingList extends ChangeNotifier {
     _list.removeAllItems();
   }
 
-  Future<void> addNewItem(String name, String category) async {
+  Future<void> addNewItem(String name, String? category) async {
     // category CATEGORY_ALL is virtual, do not add it to items
     final actualCategory = category == CATEGORY_ALL ? null : category;
     final shoppingListItem = await _client.createShoppingListItem(_list.id, name, actualCategory);
@@ -113,7 +113,7 @@ class SyncedShoppingListItem extends ChangeNotifier {
     notifyListeners();
   }
 
-  String get id => _item.id;
+  String? get id => _item.id;
 
   bool get checked => _item.checked;
   Future<void> setChecked(bool value) async {
@@ -126,7 +126,7 @@ class SyncedShoppingListItem extends ChangeNotifier {
 
   bool hasUserCategory() => _item.hasUserCategory();
 
-  bool isInCategory(String category) => _item.isInCategory(category);
+  bool isInCategory(String? category) => _item.isInCategory(category);
 
   String get name => _item.name;
   Future<void> setName(String name) async {
@@ -142,9 +142,9 @@ class SyncedShoppingListItem extends ChangeNotifier {
     _item.name = name;
   }
 
-  String get category => _item.category;
+  String? get category => _item.category;
 
-  Future<void> setCategory(String category) async {
+  Future<void> setCategory(String? category) async {
     if (category == _item.category) {
       return;
     }

@@ -12,7 +12,7 @@ import 'utils.dart';
 
 void main() {
   const testLocale = Locale("de");
-  AppLocalizations localizations;
+  late AppLocalizations localizations;
 
   setUp(() async {
     localizations = await AppLocalizations.load(testLocale);
@@ -25,7 +25,7 @@ void main() {
     final user = new User(new ShoppingListUserInfo("12345", "TestUser", "test@test.de", "token"), "testpassword");
     client.addUser(user);
 
-    ShoppingListUserInfo loggedInUserInfo;
+    ShoppingListUserInfo? loggedInUserInfo;
     final LoginPage loginPage = new LoginPage(loggedIn: (info) => loggedInUserInfo = info, update: Update.none());
 
     await tester.pumpWidget(await makeTestableWidget(loginPage, restClient: client, locale: testLocale));
@@ -48,7 +48,7 @@ void main() {
 
     // Do not create a user -> any login will fail
 
-    ShoppingListUserInfo loggedInUserInfo;
+    ShoppingListUserInfo? loggedInUserInfo;
     final LoginPage loginPage = new LoginPage(loggedIn: (info) => loggedInUserInfo = info, update: Update.none());
 
     await tester.pumpWidget(await makeTestableWidget(loginPage, restClient: client, locale: testLocale));
@@ -74,9 +74,9 @@ void main() {
     final expectedUser = "NewUser";
     final expectedPassword = "12345678";
 
-    String actualUserName;
-    String actualPassword;
-    String actualEmail;
+    String? actualUserName;
+    String? actualPassword;
+    String? actualEmail;
     final RestClientStub client = new RestClientStub(onRegister: (userName, password, {emailAddress}) {
       actualUserName = userName;
       actualPassword = password;
@@ -133,8 +133,8 @@ void main() {
     final expectedUser = "NewUser";
     final expectedPassword = "12345678";
 
-    String actualUserName;
-    String actualPassword;
+    String? actualUserName;
+    String? actualPassword;
     final RestClientStub client = new RestClientStub(onRegister: (userName, password, {emailAddress}) {
       actualUserName = userName;
       actualPassword = password;
@@ -542,7 +542,7 @@ void main() {
     final expectedPassword = "newpassword";
 
     bool resetCodeRequested = false;
-    String newPassword;
+    String? newPassword;
     final RestClientStub client = new RestClientStub(
       onPasswordResetRequest: (emailAddress) {
         resetCodeRequested = expectedEmail == emailAddress;
@@ -601,7 +601,7 @@ void main() {
     final expectedPassword = "newpassword";
 
     bool resetCodeRequested = false;
-    String newPassword;
+    String? newPassword;
     final RestClientStub client = new RestClientStub(
       onPasswordResetRequest: (emailAddress) {
         resetCodeRequested = expectedEmail == emailAddress;

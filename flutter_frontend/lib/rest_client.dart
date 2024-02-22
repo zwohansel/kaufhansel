@@ -25,10 +25,14 @@ class HttpResponseException implements Exception {
 class RestClientWidget extends InheritedWidget {
   final RestClient _client;
 
-  RestClientWidget(this._client, {@required Widget child}) : super(child: child);
+  RestClientWidget(this._client, {required Widget child}) : super(child: child);
 
   static RestClient of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<RestClientWidget>()._client;
+    final client = context.dependOnInheritedWidgetOfExactType<RestClientWidget>()?._client;
+    if (client == null) {
+      throw Exception("RestClientWidget not found");
+    }
+    return client;
   }
 
   @override
@@ -36,14 +40,15 @@ class RestClientWidget extends InheritedWidget {
 }
 
 class RestClient {
-  HttpClient _httpClient;
-  String _token;
+  late HttpClient _httpClient;
+  String? _token;
   VoidCallback _onUnauthenticated = () {};
   final Uri _serverUrl;
   final Duration _timeout = Duration(seconds: 10);
 
   /// Creates a new rest client that sends its request to the given [_serverUrl].
   RestClient(this._serverUrl) {
+    _httpClient = HttpClient();
     _init();
   }
 
@@ -67,7 +72,7 @@ class RestClient {
     _init();
   }
 
-  Future<ShoppingListUserInfo> login(String userEmail, String password) async {
+  Future<ShoppingListUserInfo?> login(String userEmail, String password) async {
     final body = jsonEncode({'emailAddress': userEmail, 'password': password});
 
     final request = await _httpClient.postUrl(_serverUrl.resolve("user/login"));
@@ -101,7 +106,7 @@ class RestClient {
   }
 
   void _invokeCallbackIfUnauthenticated(HttpClientResponse response) {
-    if (response.statusCode == 401 && _onUnauthenticated != null) {
+    if (response.statusCode == 401) {
       _onUnauthenticated();
     }
   }
@@ -131,7 +136,7 @@ class RestClient {
     }
   }
 
-  Future<ShoppingListItem> createShoppingListItem(String shoppingListId, String name, String category) async {
+  Future<ShoppingListItem> createShoppingListItem(String shoppingListId, String name, String? category) async {
     final body = jsonEncode({'name': name, 'category': category});
 
     var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId")).timeout(_timeout);
@@ -168,7 +173,7 @@ class RestClient {
     }
   }
 
-  Future<void> deleteCheckedShoppingListItems(String shoppingListId, String ofCategory) async {
+  Future<void> deleteCheckedShoppingListItems(String shoppingListId, String? ofCategory) async {
     final body = jsonEncode({'ofCategory': ofCategory});
     var request =
         await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/checkeditems")).timeout(_timeout);
@@ -255,7 +260,7 @@ class RestClient {
     }
   }
 
-  Future<Optional<ShoppingListUserReference>> addUserToShoppingList(
+  Future<ShoppingListUserReference?> addUserToShoppingList(
       String shoppingListId, String userEmailAddress) async {
     final body = jsonEncode({'emailAddress': userEmailAddress});
     var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/user")).timeout(_timeout);
@@ -266,9 +271,9 @@ class RestClient {
 
     if (response.statusCode == 200) {
       final String decoded = await response.transform(utf8.decoder).join();
-      return Optional(ShoppingListUserReference.fromJson(jsonDecode(decoded)));
+      return ShoppingListUserReference.fromJson(jsonDecode(decoded));
     } else if (response.statusCode == 404) {
-      return Optional.empty();
+      return null;
     } else {
       _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(
@@ -293,7 +298,7 @@ class RestClient {
     }
   }
 
-  Future<void> uncheckItems(String shoppingListId, {String ofCategory}) async {
+  Future<void> uncheckItems(String shoppingListId, {String? ofCategory}) async {
     final body = jsonEncode({'category': ofCategory});
     var request =
         await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/uncheckitems")).timeout(_timeout);
@@ -311,7 +316,7 @@ class RestClient {
     }
   }
 
-  Future<void> removeCategory(String shoppingListId, {String category}) async {
+  Future<void> removeCategory(String shoppingListId, {String? category}) async {
     final body = jsonEncode({'category': category});
     var request =
         await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/removecategory")).timeout(_timeout);
@@ -409,8 +414,8 @@ class RestClient {
     }
   }
 
-  Future<RegistrationResult> register(String userName, String password, String inviteCode,
-      {String emailAddress}) async {
+  Future<RegistrationResult> register(String userName, String password, String? inviteCode,
+      {String? emailAddress}) async {
     final body = jsonEncode(
         {'userName': userName, 'emailAddress': emailAddress, 'password': password, 'inviteCode': inviteCode});
 
@@ -443,7 +448,7 @@ class RestClient {
     }
   }
 
-  Future<void> sendInvite(String emailAddress, {String shoppingListId}) async {
+  Future<void> sendInvite(String emailAddress, {String? shoppingListId}) async {
     final body = jsonEncode({'emailAddress': emailAddress, 'shoppingListId': shoppingListId});
 
     var request = await _httpClient.postUrl(_serverUrl.resolve("user/invite")).timeout(_timeout);

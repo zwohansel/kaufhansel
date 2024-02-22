@@ -4,13 +4,13 @@ import 'package:kaufhansel_client/utils/input_validation.dart';
 
 class EMailPasswordForm extends StatefulWidget {
   final void Function(String email, String password) onLogin;
-  final void Function(String email) onEmailChanged;
-  final String initialEmail;
+  final void Function(String email)? onEmailChanged;
+  final String? initialEmail;
   final bool enabled;
-  final List<Widget> extraFormChildren;
+  final List<Widget>? extraFormChildren;
 
   const EMailPasswordForm(
-      {@required this.onLogin, this.onEmailChanged, this.initialEmail, this.enabled = true, this.extraFormChildren});
+      {required this.onLogin, this.onEmailChanged, this.initialEmail, this.enabled = true, this.extraFormChildren});
 
   @override
   _EMailPasswordFormState createState() => _EMailPasswordFormState();
@@ -18,8 +18,8 @@ class EMailPasswordForm extends StatefulWidget {
 
 class _EMailPasswordFormState extends State<EMailPasswordForm> {
   final _formKey = GlobalKey<FormState>();
-  TextEditingController _userEmailAddressController;
-  TextEditingController _passwordController;
+  late TextEditingController _userEmailAddressController;
+  late TextEditingController _passwordController;
   bool _emailAddressInvalid = false;
   bool _obscurePassword = true;
 
@@ -29,7 +29,10 @@ class _EMailPasswordFormState extends State<EMailPasswordForm> {
 
     _userEmailAddressController = TextEditingController(text: widget.initialEmail);
     _userEmailAddressController.addListener(() {
-      widget?.onEmailChanged(_userEmailAddressController.text);
+      final onEmailChanged = widget.onEmailChanged;
+      if (onEmailChanged != null) {
+        onEmailChanged(_userEmailAddressController.text);
+      }
       if (_emailAddressInvalid) {
         setState(() => _emailAddressInvalid = false);
         _formKey.currentState?.validate();
@@ -62,7 +65,7 @@ class _EMailPasswordFormState extends State<EMailPasswordForm> {
               child: Text(AppLocalizations.of(context).buttonLogin),
               onPressed: widget.enabled ? _login : null,
             ),
-            if (widget.extraFormChildren != null) ...widget.extraFormChildren,
+            if (widget.extraFormChildren != null) ...(widget.extraFormChildren ?? []),
           ],
         ),
       ),
@@ -100,7 +103,7 @@ class _EMailPasswordFormState extends State<EMailPasswordForm> {
       ),
       obscureText: _obscurePassword,
       validator: (password) {
-        if (password.isEmpty) {
+        if (password == null || password.isEmpty) {
           return AppLocalizations.of(context).passwordEmpty;
         }
         return null;
@@ -110,7 +113,7 @@ class _EMailPasswordFormState extends State<EMailPasswordForm> {
   }
 
   void _login() {
-    if (_formKey.currentState.validate()) {
+    if (_formKey.currentState?.validate() ?? false) {
       widget.onLogin(_userEmailAddressController.text, _passwordController.text);
     }
   }

@@ -1,8 +1,8 @@
 import 'dart:developer';
 
+import 'package:animated_list_plus/animated_list_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/shopping_list_item_edit_dialog.dart';
 import 'package:kaufhansel_client/shopping_list_mode.dart';
@@ -22,8 +22,8 @@ class ShoppingListItemTile extends StatefulWidget {
       {bool showUserCategory = false,
       ShoppingListModeOption mode = ShoppingListModeOption.DEFAULT,
       bool enabled = true,
-      @required bool canEditItems,
-      @required bool canCheckItems})
+      required bool canEditItems,
+      required bool canCheckItems})
       : _showUserCategory = showUserCategory,
         _mode = mode,
         _enabled = enabled,
@@ -53,8 +53,8 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
 
       if (widget._showUserCategory && item.hasUserCategory()) {
         titleElements.add(Container(
-          child: Text(item.category,
-              style: Theme.of(context).textTheme.subtitle2.apply(fontSizeDelta: -1, color: Colors.white70)),
+          child: Text(item.category ?? "",
+              style: Theme.of(context).textTheme.titleSmall?.apply(fontSizeDelta: -1, color: Colors.white70)),
           padding: EdgeInsets.all(3.0),
           decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.all(Radius.circular(3))),
           //color: Colors.green,
@@ -84,7 +84,7 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
       controlAffinity: ListTileControlAffinity.leading,
       secondary: _buildActionButton(item),
       value: item.checked,
-      onChanged: _allowInput() ? (checked) => _checkItem(item, checked) : null,
+      onChanged: _allowInput() ? (checked) => _checkItem(item, checked ?? false) : null,
     );
   }
 
@@ -100,7 +100,7 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
     return widget._enabled && !_loading;
   }
 
-  Widget _buildActionButton(SyncedShoppingListItem item) {
+  Widget? _buildActionButton(SyncedShoppingListItem item) {
     if (!widget._canEditItems) {
       return null;
     }

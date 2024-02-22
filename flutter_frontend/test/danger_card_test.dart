@@ -10,7 +10,7 @@ import 'utils.dart';
 
 void main() {
   const testLocale = Locale("de");
-  AppLocalizations localizations;
+  late AppLocalizations localizations;
 
   setUp(() async {
     localizations = await AppLocalizations.load(testLocale);

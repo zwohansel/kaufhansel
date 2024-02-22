@@ -13,19 +13,19 @@ import 'model.dart';
 
 class ShoppingListDrawer extends StatelessWidget {
   const ShoppingListDrawer({
-    @required this.shoppingListInfos,
-    @required this.userInfo,
-    @required this.onRefreshPressed,
-    @required this.onShoppingListSelected,
-    @required this.onCreateShoppingList,
-    @required this.onDeleteShoppingList,
-    @required this.onAddUserToShoppingListIfPresent,
-    @required this.onRemoveUserFromShoppingList,
-    @required this.onChangeShoppingListPermissions,
-    @required this.onChangeShoppingListName,
-    @required this.onLogOut,
-    @required this.onDeleteUserAccount,
-  }) : assert(shoppingListInfos != null);
+    required this.shoppingListInfos,
+    required this.userInfo,
+    required this.onRefreshPressed,
+    required this.onShoppingListSelected,
+    required this.onCreateShoppingList,
+    required this.onDeleteShoppingList,
+    required this.onAddUserToShoppingListIfPresent,
+    required this.onRemoveUserFromShoppingList,
+    required this.onChangeShoppingListPermissions,
+    required this.onChangeShoppingListName,
+    required this.onLogOut,
+    required this.onDeleteUserAccount,
+  });
 
   final List<ShoppingListInfo> shoppingListInfos;
   final ShoppingListUserInfo userInfo;
@@ -43,7 +43,7 @@ class ShoppingListDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SyncedShoppingList>(
+    return Consumer<SyncedShoppingList?>(
       builder: (context, selectedList, child) => Drawer(
         child: ListView(
           children: [
@@ -110,7 +110,7 @@ class ShoppingListDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerHeader(BuildContext context, SyncedShoppingList currentList) {
+  Widget _buildDrawerHeader(BuildContext context, SyncedShoppingList? currentList) {
     return Padding(
       padding: EdgeInsets.only(left: 15, top: 10, right: 15, bottom: 10),
       child: Row(
@@ -118,19 +118,19 @@ class ShoppingListDrawer extends StatelessWidget {
         children: [
           Flexible(
             child: currentList == null
-                ? Text(AppLocalizations.of(context).general, style: Theme.of(context).primaryTextTheme.bodyText1)
+                ? Text(AppLocalizations.of(context).general, style: Theme.of(context).primaryTextTheme.bodyLarge)
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(currentList.info.name, style: Theme.of(context).primaryTextTheme.headline6),
+                      Text(currentList.info.name, style: Theme.of(context).primaryTextTheme.titleLarge),
                       SizedBox(height: 5),
                       Text(currentList.info.permissions.role.toDisplayString(context),
-                          style: Theme.of(context).primaryTextTheme.bodyText1)
+                          style: Theme.of(context).primaryTextTheme.bodyLarge)
                     ],
                   ),
           ),
-          Icon(currentList?.info?.permissions?.role?.toIcon(),
-              color: Theme.of(context).primaryTextTheme.bodyText1.color)
+          Icon(currentList?.info.permissions.role.toIcon(),
+              color: Theme.of(context).primaryTextTheme.bodyLarge?.color)
         ],
       ),
     );
@@ -141,13 +141,13 @@ class ShoppingListDrawer extends StatelessWidget {
       color: Theme.of(context).primaryColor,
       child: Padding(
         padding: EdgeInsets.only(left: 15, top: 10, right: 15, bottom: 10),
-        child: Text(text, style: Theme.of(context).primaryTextTheme.bodyText1),
+        child: Text(text, style: Theme.of(context).primaryTextTheme.bodyLarge),
       ),
     );
   }
 
-  Iterable<Widget> _buildInfoTiles(BuildContext context, SyncedShoppingList selectedList) {
-    return shoppingListInfos.where((info) => info.id != selectedList?.info?.id)?.map(
+  Iterable<Widget> _buildInfoTiles(BuildContext context, SyncedShoppingList? selectedList) {
+    return shoppingListInfos.where((info) => info.id != selectedList?.info.id).map(
           (info) => ChangeNotifierProvider.value(
             value: info,
             builder: (context, child) => ListTile(
@@ -161,7 +161,7 @@ class ShoppingListDrawer extends StatelessWidget {
         );
   }
 
-  StatelessWidget _buildListSettingsMenuItem(BuildContext context, SyncedShoppingList currentList) {
+  StatelessWidget _buildListSettingsMenuItem(BuildContext context, SyncedShoppingList? currentList) {
     if (currentList == null) {
       return Container();
     }
@@ -196,7 +196,7 @@ class ShoppingListDrawer extends StatelessWidget {
     );
   }
 
-  StatelessWidget _buildManageCategoriesMenuItem(BuildContext context, SyncedShoppingList currentList) {
+  StatelessWidget _buildManageCategoriesMenuItem(BuildContext context, SyncedShoppingList? currentList) {
     if (currentList == null ||
         (!currentList.info.permissions.canEditItems && !currentList.info.permissions.canCheckItems)) {
       return Container();

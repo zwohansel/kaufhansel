@@ -4,12 +4,12 @@ import 'package:kaufhansel_client/utils/input_validation.dart';
 
 class RequestPasswordResetForm extends StatefulWidget {
   final void Function(String email) onRequestPasswordReset;
-  final String initialEmail;
+  final String? initialEmail;
   final bool enabled;
-  final List<Widget> extraFormChildren;
+  final List<Widget>? extraFormChildren;
 
   const RequestPasswordResetForm({
-    @required this.onRequestPasswordReset,
+    required this.onRequestPasswordReset,
     this.initialEmail,
     this.enabled = true,
     this.extraFormChildren,
@@ -21,7 +21,7 @@ class RequestPasswordResetForm extends StatefulWidget {
 
 class _RequestPasswordResetFormState extends State<RequestPasswordResetForm> {
   final _formKey = GlobalKey<FormState>();
-  TextEditingController _userEmailAddressController;
+  late TextEditingController _userEmailAddressController;
 
   @override
   void initState() {
@@ -49,7 +49,7 @@ class _RequestPasswordResetFormState extends State<RequestPasswordResetForm> {
             child: Text(AppLocalizations.of(context).buttonPasswordReset),
             onPressed: widget.enabled ? _requestPasswordReset : null,
           ),
-          if (widget.extraFormChildren != null) ...widget.extraFormChildren,
+          if (widget.extraFormChildren != null) ...(widget.extraFormChildren ?? []),
         ],
       ),
     );
@@ -72,7 +72,7 @@ class _RequestPasswordResetFormState extends State<RequestPasswordResetForm> {
   }
 
   void _requestPasswordReset() {
-    if (_formKey.currentState.validate()) {
+    if ((_formKey.currentState?.validate() ?? false)) {
       widget.onRequestPasswordReset(_userEmailAddressController.text);
     }
   }

@@ -16,9 +16,9 @@ class AppSettings extends StatefulWidget {
   final Future<void> Function() _onDeleteAccount;
 
   AppSettings(
-      {@required ShoppingListUserInfo userInfo,
-      @required Future<void> Function() onLogOut,
-      @required Future<void> Function() onDeleteAccount})
+      {required ShoppingListUserInfo userInfo,
+      required Future<void> Function() onLogOut,
+      required Future<void> Function() onDeleteAccount})
       : _userInfo = userInfo,
         _onLogOut = onLogOut,
         _onDeleteAccount = onDeleteAccount;
@@ -29,7 +29,7 @@ class AppSettings extends StatefulWidget {
 
 class _AppSettingsState extends State<AppSettings> {
   final ScrollController _scrollController = ScrollController();
-  String _version;
+  String? _version;
   bool _loading = false;
 
   @override
@@ -41,7 +41,7 @@ class _AppSettingsState extends State<AppSettings> {
   void _setVersion() async {
     final version = await getCurrentVersion();
     setState(() {
-      _version = version?.toString() ?? "?.?.?";
+      _version = version.toString();
     });
   }
 
@@ -96,19 +96,19 @@ class _AppSettingsState extends State<AppSettings> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(AppLocalizations.of(context).appSettingsTitle(widget._userInfo.username),
-                  style: Theme.of(context).textTheme.headline5.apply(fontFamilyFallback: ['NotoColorEmoji'])),
+                  style: Theme.of(context).textTheme.headline5?.apply(fontFamilyFallback: ['NotoColorEmoji'])),
               SizedBox(height: 12),
               Text(AppLocalizations.of(context).appSettingsYourEmail(widget._userInfo.emailAddress)),
               SizedBox(height: 24),
               OutlinedButton(
                 child: Text(AppLocalizations.of(context).appSettingsLogOut),
-                style: OutlinedButton.styleFrom(primary: Colors.red),
+                style: OutlinedButton.styleFrom(backgroundColor: Colors.red),
                 onPressed: _loading ? null : _onLogOut,
               ),
               SizedBox(height: 12),
               OutlinedButton(
                   child: Text(AppLocalizations.of(context).appSettingsDeleteAccount),
-                  style: OutlinedButton.styleFrom(primary: Colors.red),
+                  style: OutlinedButton.styleFrom(backgroundColor: Colors.red),
                   onPressed: _loading ? null : () => _onDeleteAccount()),
             ],
           )),
@@ -124,7 +124,7 @@ class _AppSettingsState extends State<AppSettings> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(AppLocalizations.of(context).appSettingsAboutTitle,
-                  style: Theme.of(context).textTheme.headline5.apply(fontFamilyFallback: ['NotoColorEmoji'])),
+                  style: Theme.of(context).textTheme.headline5?.apply(fontFamilyFallback: ['NotoColorEmoji'])),
               SizedBox(height: 12),
               Builder(
                 builder: (context) => _buildVersion(context),
@@ -168,7 +168,7 @@ class _AppSettingsState extends State<AppSettings> {
           title: AppLocalizations.of(context).appSettingsDeleteAccountConfirmationTextTitle(widget._userInfo.username),
           confirmBtnLabel: AppLocalizations.of(context).appSettingsDeleteAccountYes,
           cancelBtnLabel: AppLocalizations.of(context).appSettingsDeleteAccountNo);
-      if (deleteAccount) {
+      if (deleteAccount ?? false) {
         await widget._onDeleteAccount();
         await showCustomErrorDialog(
             context,
@@ -194,8 +194,9 @@ class _AppSettingsState extends State<AppSettings> {
   }
 
   Widget _buildVersion(BuildContext context) {
-    if (_version != null) {
-      return Text(_version);
+    final version = _version;
+    if (version != null) {
+      return Text(version);
     }
 
     final textStyle = DefaultTextStyle.of(context);

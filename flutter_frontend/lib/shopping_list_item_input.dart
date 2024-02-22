@@ -11,13 +11,13 @@ import 'package:provider/provider.dart';
 
 class ShoppingListItemInput extends StatefulWidget {
   final ScrollController shoppingListScrollController;
-  final String category;
+  final String? category;
   final bool enabled;
   final void Function(String) onChange;
 
   ShoppingListItemInput({
-    @required this.shoppingListScrollController,
-    @required this.onChange,
+    required this.shoppingListScrollController,
+    required this.onChange,
     this.category,
     this.enabled = true,
   });
@@ -119,7 +119,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
     );
   }
 
-  IconButton _buildClearButton() {
+  IconButton? _buildClearButton() {
     if (_focus.hasFocus || _focus.hasPrimaryFocus) {
       return IconButton(
         icon: Icon(Icons.clear, color: Colors.black, size: 20),

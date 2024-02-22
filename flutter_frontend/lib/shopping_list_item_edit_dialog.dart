@@ -12,8 +12,8 @@ class EditShoppingListItemDialog extends StatefulWidget {
   final List<String> _categories;
 
   const EditShoppingListItemDialog({
-    @required SyncedShoppingListItem item,
-    @required List<String> categories,
+    required SyncedShoppingListItem item,
+    required List<String> categories,
   })  : _item = item,
         _categories = categories;
 
@@ -54,24 +54,24 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
 
     final title = MoreOptionsEditableTextLabel(
       text: widget._item.name,
-      textStyle: theme.textTheme.headline6.apply(fontFamilyFallback: ['NotoColorEmoji']),
+      textStyle: theme.textTheme.titleLarge?.apply(fontFamilyFallback: ['NotoColorEmoji']),
       onEditItemName: (text) => submitNewItemName(text),
       onDelete: onDelete,
       enabled: !_loading,
     );
 
-    final subTitle = Text(AppLocalizations.of(context).categoryChooseOne, style: theme.textTheme.subtitle2);
+    final subTitle = Text(AppLocalizations.of(context).categoryChooseOne, style: theme.textTheme.titleSmall);
 
     final categoryButtons = widget._categories.map((category) {
       final currentItemCategory = widget._item.category == category;
-      final color = currentItemCategory ? Theme.of(context).accentColor : Theme.of(context).unselectedWidgetColor;
+      final color = currentItemCategory ? Theme.of(context).colorScheme.secondary : Theme.of(context).unselectedWidgetColor;
       return Padding(
         child: OutlinedButton(
             onPressed: !_loading ? () => setItemCategory(category) : null,
             child: Text(category),
             style: OutlinedButton.styleFrom(
                 textStyle: TextStyle(color: color),
-                primary: color,
+                backgroundColor: color,
                 side: BorderSide(color: color, width: currentItemCategory ? 2.0 : 1.0))),
         padding: EdgeInsets.only(bottom: bottomMargin),
       );
@@ -101,7 +101,7 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
           child: OutlinedButton(
             onPressed: !_loading ? () => setItemCategory(null) : null,
             child: Text(AppLocalizations.of(context).categoryNone),
-            style: OutlinedButton.styleFrom(primary: Colors.orange, side: BorderSide(color: Colors.orange)),
+            style: OutlinedButton.styleFrom(backgroundColor: Colors.orange, side: BorderSide(color: Colors.orange)),
           ),
         ),
         Padding(
@@ -148,7 +148,7 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
     }
   }
 
-  Future<void> setItemCategory(String category) async {
+  Future<void> setItemCategory(String? category) async {
     if (category == widget._item.category) {
       Navigator.pop(context);
       return;
@@ -196,11 +196,11 @@ class MoreOptionsEditableTextLabel extends StatefulWidget {
   final onDelete;
 
   const MoreOptionsEditableTextLabel(
-      {@required this.text,
-      @required this.textStyle,
-      @required this.enabled,
-      @required this.onEditItemName,
-      @required this.onDelete});
+      {required this.text,
+      required this.textStyle,
+      required this.enabled,
+      required this.onEditItemName,
+      required this.onDelete});
 
   @override
   _MoreOptionsEditableTextLabelState createState() => _MoreOptionsEditableTextLabelState(text);

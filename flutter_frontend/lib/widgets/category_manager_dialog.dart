@@ -9,23 +9,24 @@ import '../model.dart';
 import 'error_dialog.dart';
 
 class CategoryManager extends StatefulWidget {
-  final String initialSelected;
+  final String? initialSelected;
   final SyncedShoppingList list;
-  final VoidCallback onClose;
+  final VoidCallback? onClose;
 
   const CategoryManager({
     this.initialSelected,
-    @required this.list,
+    required this.list,
     this.onClose,
   });
+
   @override
   _CategoryManagerState createState() => _CategoryManagerState();
 }
 
 class _CategoryManagerState extends State<CategoryManager> {
   bool _loading = false;
-  String _selectedCategory;
-  List<String> _categories;
+  String? _selectedCategory;
+  List<String> _categories = [];
 
   @override
   void initState() {
@@ -44,8 +45,9 @@ class _CategoryManagerState extends State<CategoryManager> {
   }
 
   void updateCategories() {
-    _categories = widget.list.getAllCategories();
-    _selectedCategory = _categories.contains(_selectedCategory) ? _selectedCategory : null;
+    final categories = widget.list.getAllCategories();
+    _categories = categories;
+    _selectedCategory = categories.contains(_selectedCategory) ? _selectedCategory : null;
   }
 
   @override
@@ -63,6 +65,7 @@ class _CategoryManagerState extends State<CategoryManager> {
 
   @override
   Widget build(BuildContext context) {
+    final onClose = widget.onClose ?? () => null;
     return SimpleDialog(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -72,7 +75,7 @@ class _CategoryManagerState extends State<CategoryManager> {
             IconButton(
               icon: Icon(Icons.close),
               splashRadius: 24,
-              onPressed: _loading ? null : () => widget?.onClose(),
+              onPressed: _loading ? null : () => onClose(),
             )
           ],
         ),
@@ -84,7 +87,8 @@ class _CategoryManagerState extends State<CategoryManager> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(AppLocalizations.of(context).manageCategoriesCategory, style: Theme.of(context).textTheme.caption),
+                Text(AppLocalizations.of(context).manageCategoriesCategory,
+                    style: Theme.of(context).textTheme.bodySmall),
                 _buildDropdownMenu(context),
                 SizedBox(height: 18),
                 ..._buildOptions()
@@ -99,7 +103,7 @@ class _CategoryManagerState extends State<CategoryManager> {
       return [];
     } else {
       return [
-        Text(AppLocalizations.of(context).manageCategoriesAction, style: Theme.of(context).textTheme.caption),
+        Text(AppLocalizations.of(context).manageCategoriesAction, style: Theme.of(context).textTheme.bodySmall),
         SizedBox(height: 10),
         _buildUncheck(context),
         _buildRemoveChecked(context),
@@ -110,7 +114,7 @@ class _CategoryManagerState extends State<CategoryManager> {
   }
 
   Widget _buildRemoveChecked(BuildContext context) {
-    if (!widget.list.info.permissions.canEditItems) {
+    if (widget.list.info.permissions.canEditItems) {
       return Container();
     } else if (_selectedCategory == CATEGORY_ALL) {
       return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesRemoveChecked,
@@ -118,7 +122,7 @@ class _CategoryManagerState extends State<CategoryManager> {
     } else {
       return _buildDialogOption(
           context,
-          AppLocalizations.of(context).manageCategoriesRemoveCheckedFromCategory(_selectedCategory),
+          AppLocalizations.of(context).manageCategoriesRemoveCheckedFromCategory(_selectedCategory ?? ""),
           Icons.delete_outlined,
           () => widget.list.deleteCheckedItems(ofCategory: _selectedCategory));
     }
@@ -128,13 +132,20 @@ class _CategoryManagerState extends State<CategoryManager> {
     if (_selectedCategory == CATEGORY_ALL || !widget.list.info.permissions.canEditItems) {
       return Container();
     } else {
-      return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesRenameCategory(_selectedCategory),
-          Icons.drive_file_rename_outline, () => _renameSelectedCategory());
+      return _buildDialogOption(
+          context,
+          AppLocalizations.of(context).manageCategoriesRenameCategory(_selectedCategory ?? ""),
+          Icons.drive_file_rename_outline,
+          () => _renameSelectedCategory());
     }
   }
 
   Future<void> _renameSelectedCategory() async {
-    String newCategoryName = await showTextInputDialog(context,
+    final selectedCategory = _selectedCategory;
+    if (selectedCategory == null) {
+      return;
+    }
+    String? newCategoryName = await showTextInputDialog(context,
         title: AppLocalizations.of(context).manageCategoriesRenameCategoryDialogTitle,
         initialValue: _selectedCategory,
         hintText: AppLocalizations.of(context).shoppingListCreateNewEnterNameHint);
@@ -143,7 +154,7 @@ class _CategoryManagerState extends State<CategoryManager> {
       return;
     }
 
-    await widget.list.renameCategory(_selectedCategory, newCategoryName);
+    await widget.list.renameCategory(selectedCategory, newCategoryName);
   }
 
   Widget _buildRemoveCategory(BuildContext context) {
@@ -153,13 +164,16 @@ class _CategoryManagerState extends State<CategoryManager> {
       return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesRemoveCategories,
           Icons.more_outlined, () => widget.list.removeAllCategories());
     } else {
-      return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesRemoveCategory(_selectedCategory),
-          Icons.more_outlined, () => widget.list.removeCategory(_selectedCategory));
+      return _buildDialogOption(
+          context,
+          AppLocalizations.of(context).manageCategoriesRemoveCategory(_selectedCategory ?? ""),
+          Icons.more_outlined,
+          () => widget.list.removeCategory(_selectedCategory));
     }
   }
 
   Widget _buildUncheck(BuildContext context) {
-    if (!widget.list.info.permissions.canCheckItems) {
+    if (widget.list.info.permissions.canCheckItems) {
       return Container();
     } else if (_selectedCategory == CATEGORY_ALL) {
       return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesUncheckAll,
@@ -167,7 +181,7 @@ class _CategoryManagerState extends State<CategoryManager> {
     } else {
       return _buildDialogOption(
           context,
-          AppLocalizations.of(context).manageCategoriesUncheckCategory(_selectedCategory),
+          AppLocalizations.of(context).manageCategoriesUncheckCategory(_selectedCategory ?? ""),
           Icons.browser_not_supported_outlined,
           () => widget.list.uncheckItems(ofCategory: _selectedCategory));
     }
@@ -218,7 +232,10 @@ class _CategoryManagerState extends State<CategoryManager> {
     setState(() => _loading = true);
     try {
       await optionHandler();
-      widget?.onClose();
+      final onClose = widget.onClose;
+      if (onClose != null) {
+        onClose();
+      }
     } on Exception catch (e) {
       log("Could not execute option for category $_selectedCategory", error: e);
       await showErrorDialogForException(context, e,

@@ -7,7 +7,7 @@ class ScrollControllerStub implements ScrollController {
   void addListener(VoidCallback listener) {}
 
   @override
-  Future<void> animateTo(double offset, {Duration duration, Curve curve}) async {
+  Future<void> animateTo(double offset, {Duration? duration, Curve? curve}) async {
     return;
   }
 
@@ -15,7 +15,7 @@ class ScrollControllerStub implements ScrollController {
   void attach(ScrollPosition position) {}
 
   @override
-  ScrollPosition createScrollPosition(ScrollPhysics physics, ScrollContext context, ScrollPosition oldPosition) {
+  ScrollPosition createScrollPosition(ScrollPhysics physics, ScrollContext context, ScrollPosition? oldPosition) {
     throw UnimplementedError();
   }
 
@@ -60,6 +60,14 @@ class ScrollControllerStub implements ScrollController {
 
   @override
   void removeListener(VoidCallback listener) {}
+
+  @override
+  // TODO: implement onAttach
+  ScrollControllerCallback? get onAttach => throw UnimplementedError();
+
+  @override
+  // TODO: implement onDetach
+  ScrollControllerCallback? get onDetach => throw UnimplementedError();
 }
 
 class ScrollPositionStub implements ScrollPosition {
@@ -76,7 +84,7 @@ class ScrollPositionStub implements ScrollPosition {
   bool get allowImplicitScrolling => throw UnimplementedError();
 
   @override
-  Future<void> animateTo(double to, {Duration duration, Curve curve}) {
+  Future<void> animateTo(double to, {Duration? duration, Curve? curve}) {
     throw UnimplementedError();
   }
 
@@ -108,18 +116,19 @@ class ScrollPositionStub implements ScrollPosition {
   AxisDirection get axisDirection => throw UnimplementedError();
 
   @override
-  void beginActivity(ScrollActivity newActivity) {}
+  void beginActivity(ScrollActivity? newActivity) {}
 
   @override
   ScrollContext get context => throw UnimplementedError();
 
   @override
   ScrollMetrics copyWith(
-      {double minScrollExtent,
-      double maxScrollExtent,
-      double pixels,
-      double viewportDimension,
-      AxisDirection axisDirection}) {
+      {double? minScrollExtent,
+      double? maxScrollExtent,
+      double? pixels,
+      double? viewportDimension,
+      AxisDirection? axisDirection,
+      double? devicePixelRatio}) {
     throw UnimplementedError();
   }
 
@@ -169,7 +178,7 @@ class ScrollPositionStub implements ScrollPosition {
       Duration duration = Duration.zero,
       Curve curve = Curves.ease,
       ScrollPositionAlignmentPolicy alignmentPolicy = ScrollPositionAlignmentPolicy.explicit,
-      RenderObject targetRenderObject}) {
+      RenderObject? targetRenderObject}) {
     throw UnimplementedError();
   }
 
@@ -224,7 +233,7 @@ class ScrollPositionStub implements ScrollPosition {
   double get minScrollExtent => throw UnimplementedError();
 
   @override
-  Future<void> moveTo(double to, {Duration duration, Curve curve, bool clamp = true}) {
+  Future<void> moveTo(double to, {Duration? duration, Curve? curve, bool? clamp = true}) {
     throw UnimplementedError();
   }
 
@@ -273,4 +282,17 @@ class ScrollPositionStub implements ScrollPosition {
 
   @override
   double get viewportDimension => throw UnimplementedError();
+
+  @override
+  // TODO: implement devicePixelRatio
+  double get devicePixelRatio => throw UnimplementedError();
+
+  @override
+  void didUpdateScrollMetrics() {
+    // TODO: implement didUpdateScrollMetrics
+  }
+
+  @override
+  // TODO: implement extentTotal
+  double get extentTotal => throw UnimplementedError();
 }

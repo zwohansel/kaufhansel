@@ -5,23 +5,24 @@ import 'package:kaufhansel_client/widgets/title_widget.dart';
 import 'package:provider/provider.dart';
 
 class ShoppingListTitle extends StatelessWidget {
-  final String _currentCategory;
+  final String? _currentCategory;
 
   const ShoppingListTitle(this._currentCategory);
 
   @override
   Widget build(BuildContext context) {
-    return Selector<SyncedShoppingList, _ShoppingListTitleInfo>(
+    return Selector<SyncedShoppingList?, _ShoppingListTitleInfo?>(
       selector: (_, shoppingList) {
         if (shoppingList == null) {
           return null;
         }
 
-        if (_currentCategory == null) {
+        final currentCategory = _currentCategory;
+        if (currentCategory == null) {
           return null;
         }
 
-        final itemsInCategory = shoppingList.items.where((item) => item.isInCategory(_currentCategory));
+        final itemsInCategory = shoppingList.items.where((item) => item.isInCategory(currentCategory));
         final checkedItemsInCategory = itemsInCategory.where((item) => item.checked);
         return _ShoppingListTitleInfo(shoppingList.info.name, itemsInCategory.length, checkedItemsInCategory.length);
       },
@@ -32,7 +33,7 @@ class ShoppingListTitle extends StatelessWidget {
     );
   }
 
-  String _buildShoppingListSubtitle(BuildContext context, _ShoppingListTitleInfo titleInfo) {
+  String _buildShoppingListSubtitle(BuildContext context, _ShoppingListTitleInfo? titleInfo) {
     if (titleInfo != null) {
       return "${titleInfo.shoppingListName}: ${titleInfo.numChecked}/${titleInfo.numTotal}";
     }

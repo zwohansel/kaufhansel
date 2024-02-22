@@ -8,46 +8,27 @@ import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 
 const CATEGORY_ALL = "Alle"; //TODO: i18n
 
-class Optional<T> {
-  final T _t;
-
-  factory Optional.empty() => Optional(null);
-  Optional(T t) : this._t = t;
-
-  T get get => _t;
-  bool isPresent() => _t != null;
-  void ifPresent(void Function(T) then) {
-    if (isPresent()) {
-      then(_t);
-    }
-  }
-
-  T orElse(T other) {
-    return _t ?? other;
-  }
-}
-
 extension JsonParseExtension<K, V> on Map<K, V> {
   V get(K key) {
-    V value = this[key];
+    V? value = this[key];
     if (value == null) {
       throw Exception("No element with key $key in map. Available keys: ${this.keys}");
     }
     return value;
   }
 
-  V getOpt(K key) {
+  V? getOpt(K key) {
     return this[key];
   }
 }
 
 class ShoppingListItem extends ChangeNotifier {
-  String _id;
+  String? _id;
   String _name;
   bool _checked = false;
-  String _category;
-  VoidCallback _notifyCategoryChanged;
-  VoidCallback _notifyCheckedChanged;
+  String? _category;
+  VoidCallback? _notifyCategoryChanged;
+  VoidCallback? _notifyCheckedChanged;
 
   ShoppingListItem.create(this._name);
 
@@ -61,7 +42,7 @@ class ShoppingListItem extends ChangeNotifier {
     return ShoppingListItem(_id, _name, _checked, _category);
   }
 
-  String get id => _id;
+  String? get id => _id;
 
   set name(String value) {
     if (value != _name) {
@@ -82,11 +63,11 @@ class ShoppingListItem extends ChangeNotifier {
 
   bool get checked => _checked;
 
-  set categoryChangedCallback(VoidCallback callback) => _notifyCategoryChanged = callback;
+  set categoryChangedCallback(VoidCallback? callback) => _notifyCategoryChanged = callback;
 
-  set checkedChangedCallback(VoidCallback callback) => _notifyCheckedChanged = callback;
+  set checkedChangedCallback(VoidCallback? callback) => _notifyCheckedChanged = callback;
 
-  set category(String category) {
+  set category(String? category) {
     if (category != _category) {
       _category = category;
       notifyListeners();
@@ -94,13 +75,13 @@ class ShoppingListItem extends ChangeNotifier {
     }
   }
 
-  String get category => _category;
+  String? get category => _category;
 
   bool hasUserCategory() {
-    return category != null && category.trim().isNotEmpty;
+    return category?.trim().isNotEmpty ?? false;
   }
 
-  bool isInCategory(String category) {
+  bool isInCategory(String? category) {
     return category == CATEGORY_ALL || category == _category;
   }
 
@@ -184,7 +165,7 @@ class ShoppingList extends ChangeNotifier {
   List<String> getUserCategories() {
     final categories = _items
         .map((item) => item.category)
-        .where((category) => category != null)
+        .whereType<String>()
         .where((category) => category.trim().isNotEmpty)
         .toSet()
         .toList();
@@ -233,7 +214,7 @@ extension ShoppingListRoles on ShoppingListRole {
   }
 
   String toRoleString() {
-    final roleStr = _strToRole.entries.firstWhere((entry) => entry.value == this)?.key;
+    final roleStr = _strToRole.entries.where((entry) => entry.value == this ).firstOrNull?.key;
     if (roleStr == null) {
       throw Exception("No role string for $this");
     }
@@ -513,11 +494,11 @@ class InfoMessage {
   final int _messageNumber;
   final InfoMessageSeverity _severity;
   final String _message;
-  final String _dismissLabel;
+  final String? _dismissLabel;
 
   InfoMessage(this._messageNumber, this._severity, this._message, this._dismissLabel);
 
-  factory InfoMessage.fromJson(Map<String, dynamic> json) {
+  static InfoMessage? fromJson(Map<String, dynamic>? json) {
     if (json == null) {
       return null;
     }
@@ -528,12 +509,12 @@ class InfoMessage {
   int get messageNumber => _messageNumber;
   InfoMessageSeverity get severity => _severity;
   String get message => _message;
-  String get dismissLabel => _dismissLabel;
+  String? get dismissLabel => _dismissLabel;
 }
 
 class BackendInfo {
   final Version _version;
-  final InfoMessage _message;
+  final InfoMessage? _message;
 
   BackendInfo(this._version, this._message);
 
@@ -541,6 +522,6 @@ class BackendInfo {
     return new BackendInfo(Version.fromString(json.get("apiVersion")), InfoMessage.fromJson(json.getOpt("message")));
   }
 
-  InfoMessage get message => _message;
+  InfoMessage? get message => _message;
   Version get version => _version;
 }

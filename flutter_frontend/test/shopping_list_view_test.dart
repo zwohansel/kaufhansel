@@ -14,7 +14,7 @@ import 'utils.dart';
 
 void main() {
   const testLocale = Locale("de");
-  ScrollController scrollController;
+  late ScrollController scrollController;
 
   setUp(() async {
     scrollController = ScrollController();
@@ -38,7 +38,7 @@ void main() {
     final view = ShoppingListView(
       filter: ShoppingListFilterOption.ALL,
       scrollController: scrollController,
-      onRefresh: () => null,
+      onRefresh: () async => null,
       onItemMoved: (items, oldIndex, newIndex) {},
     );
     final provider = ChangeNotifierProvider.value(

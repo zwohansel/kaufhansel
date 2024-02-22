@@ -1,7 +1,7 @@
+import 'package:animated_list_plus/animated_list_plus.dart';
+import 'package:animated_list_plus/transitions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
-import 'package:implicitly_animated_reorderable_list/transitions.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_item_tile.dart';
 import 'package:kaufhansel_client/shopping_list_mode.dart';
@@ -13,24 +13,24 @@ import 'model.dart';
 
 class ShoppingListView extends StatelessWidget {
   ShoppingListView(
-      {@required this.filter,
-      @required this.scrollController,
-      @required this.onRefresh,
-      @required this.onItemMoved,
+      {required this.filter,
+      required this.scrollController,
+      required this.onRefresh,
+      required this.onItemMoved,
       this.category,
       this.mode = ShoppingListModeOption.DEFAULT,
       this.enabled = true,
-      String filterText})
-      : filterText = filterText?.trim()?.toLowerCase();
+      String? filterText})
+      : filterText = filterText?.trim().toLowerCase();
 
   final ShoppingListFilterOption filter;
   final ScrollController scrollController;
   final Future<void> Function() onRefresh;
   final void Function(List<SyncedShoppingListItem> items, int oldIndex, int newIndex) onItemMoved;
-  final String category;
+  final String? category;
   final ShoppingListModeOption mode;
   final bool enabled;
-  final String filterText;
+  final String? filterText;
 
   @override
   Widget build(BuildContext context) {
@@ -40,12 +40,10 @@ class ShoppingListView extends StatelessWidget {
             shoppingList.info.permissions),
         builder: (context, tuple, child) {
           return Scrollbar(
-            isAlwaysShown:
-                false, // Setting this value to true causes an assertion error when the first category is created
             controller: scrollController,
             child: RefreshIndicator(
               onRefresh: onRefresh,
-              child: _buildListView(context, tuple.item1, tuple.item2.canEditItems),
+              child: _buildListView(context, tuple.item1.toList(), tuple.item2.canEditItems),
             ),
           );
         });
@@ -58,7 +56,7 @@ class ShoppingListView extends StatelessWidget {
         bottom: Divider.createBorderSide(context),
       ),
     );
-    final itemBuilder = (BuildContext context, Animation animation, SyncedShoppingListItem item, int i) {
+    final itemBuilder = (BuildContext context, Animation<double> animation, SyncedShoppingListItem item, int i) {
       final tile = _createListTileForItem(item);
       return SizeFadeTransition(
         animation: animation,
@@ -129,10 +127,11 @@ class ShoppingListView extends StatelessWidget {
   }
 
   bool _matchesFilterString(SyncedShoppingListItem item) {
-    if (filterText == null || filterText.isEmpty) {
+    final text = filterText;
+    if (text == null || text.isEmpty) {
       return true;
     }
-    return item.name.toLowerCase().contains(filterText);
+    return item.name.toLowerCase().contains(text);
   }
 
   Widget _createListTileForItem(SyncedShoppingListItem item) {

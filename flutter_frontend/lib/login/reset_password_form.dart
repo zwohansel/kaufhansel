@@ -4,12 +4,12 @@ import 'package:kaufhansel_client/utils/input_validation.dart';
 
 class ChangePasswordForm extends StatefulWidget {
   final void Function(String email, String changePasswordCode, String newPassword) onResetPassword;
-  final String initialEmail;
+  final String? initialEmail;
   final bool enabled;
-  final List<Widget> extraFormChildren;
+  final List<Widget>? extraFormChildren;
 
   const ChangePasswordForm({
-    @required this.onResetPassword,
+    required this.onResetPassword,
     this.initialEmail,
     this.enabled = true,
     this.extraFormChildren,
@@ -21,10 +21,10 @@ class ChangePasswordForm extends StatefulWidget {
 
 class _ResetPasswordFormState extends State<ChangePasswordForm> {
   final _formKey = GlobalKey<FormState>();
-  TextEditingController _userEmailAddressController;
-  TextEditingController _resetPasswordCodeController;
-  TextEditingController _passwordController;
-  TextEditingController _passwordConfirmController;
+  late TextEditingController _userEmailAddressController;
+  late TextEditingController _resetPasswordCodeController;
+  late TextEditingController _passwordController;
+  late TextEditingController _passwordConfirmController;
   bool _obscurePassword = true;
 
   @override
@@ -64,7 +64,7 @@ class _ResetPasswordFormState extends State<ChangePasswordForm> {
             child: Text(AppLocalizations.of(context).buttonPasswordChange),
             onPressed: widget.enabled ? _resetPassword : null,
           ),
-          if (widget.extraFormChildren != null) ...widget.extraFormChildren,
+          if (widget.extraFormChildren != null) ...(widget.extraFormChildren ?? []),
         ],
       ),
     );
@@ -92,7 +92,7 @@ class _ResetPasswordFormState extends State<ChangePasswordForm> {
       enabled: widget.enabled,
       decoration: InputDecoration(hintText: AppLocalizations.of(context).passwordResetCodeHint),
       validator: (code) {
-        if (code.isEmpty) {
+        if (code == null || code.isEmpty) {
           return AppLocalizations.of(context).passwordResetCodeInvalid;
         }
         return null;
@@ -113,7 +113,7 @@ class _ResetPasswordFormState extends State<ChangePasswordForm> {
       ),
       obscureText: _obscurePassword,
       validator: (password) {
-        if (password.length < 8) {
+        if (password == null || password.length < 8) {
           return AppLocalizations.of(context).passwordToShort;
         }
         return null;
@@ -130,7 +130,7 @@ class _ResetPasswordFormState extends State<ChangePasswordForm> {
       ),
       obscureText: _obscurePassword,
       validator: (password) {
-        if (password.isEmpty || password != _passwordController.text) {
+        if (password == null || password.isEmpty || password != _passwordController.text) {
           return AppLocalizations.of(context).passwordNewConfirmationInvalid;
         }
         return null;
@@ -140,7 +140,7 @@ class _ResetPasswordFormState extends State<ChangePasswordForm> {
   }
 
   void _resetPassword() {
-    if (_formKey.currentState.validate()) {
+    if (_formKey.currentState?.validate() ?? false) {
       widget.onResetPassword(
           _userEmailAddressController.text, _resetPasswordCodeController.text, _passwordController.text);
     }

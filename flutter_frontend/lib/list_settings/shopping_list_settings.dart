@@ -9,12 +9,12 @@ import 'package:provider/provider.dart';
 
 class ShoppingListSettings extends StatefulWidget {
   const ShoppingListSettings(
-      {@required Future<void> Function() onDeleteShoppingList,
-      @required Future<void> Function() onRemoveAllItems,
-      @required Future<bool> Function(String) onAddUserToShoppingListIfPresent,
-      @required Future<void> Function(String, ShoppingListRole) onChangeShoppingListPermissions,
-      @required Future<void> Function(ShoppingListUserReference) onRemoveUserFromShoppingList,
-      @required Future<void> Function(String) onChangeShoppingListName})
+      {required Future<void> Function() onDeleteShoppingList,
+      required Future<void> Function() onRemoveAllItems,
+      required Future<bool> Function(String) onAddUserToShoppingListIfPresent,
+      required Future<void> Function(String, ShoppingListRole) onChangeShoppingListPermissions,
+      required Future<void> Function(ShoppingListUserReference) onRemoveUserFromShoppingList,
+      required Future<void> Function(String) onChangeShoppingListName})
       : _onDeleteShoppingList = onDeleteShoppingList,
         _onRemoveAllItems = onRemoveAllItems,
         _onAddUserToShoppingListIfPresent = onAddUserToShoppingListIfPresent,
