@@ -17,7 +17,6 @@ on:
 
 jobs:  
   build_frontend:
-    if: false
     runs-on: ubuntu-latest
 
     defaults:
