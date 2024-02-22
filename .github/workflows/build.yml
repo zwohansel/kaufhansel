@@ -155,12 +155,12 @@ jobs:
         run: |
           rsync kaufhansel_backend.jar deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/kaufhansel_backend.jar
 
-          #ssh deploy "mkdir -p /home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads"
-          #rsync flutter-apk/app-release.apk deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads/kaufhansel.apk
+          ssh deploy "mkdir -p /home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads"
+          rsync flutter-apk/app-release.apk deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads/kaufhansel.apk
 
-          #mv frontend-linux kaufhansel-linux
-          #zip -r kaufhansel-linux.zip kaufhansel-linux/
-          #rsync kaufhansel-linux.zip deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads/kaufhansel-linux.zip
+          mv frontend-linux kaufhansel-linux
+          zip -r kaufhansel-linux.zip kaufhansel-linux/
+          rsync kaufhansel-linux.zip deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads/kaufhansel-linux.zip
 
           ssh deploy "docker stop kaufhansel || true"
           ssh deploy "docker run --detach --rm --name kaufhansel --log-driver=journald --network $KAUFHANSEL_DOCKER_NETWORK -e KAUFHANSEL_MAIL_SERVER_HOST=$KAUFHANSEL_MAIL_SERVER_HOST -e KAUFHANSEL_MAIL_SERVER_PORT=$KAUFHANSEL_MAIL_SERVER_PORT -e KAUFHANSEL_MAIL_USERNAME=$KAUFHANSEL_MAIL_USERNAME -e KAUFHANSEL_MAIL_PASSWORD=$KAUFHANSEL_MAIL_PASSWORD -e KAUFHANSEL_TOKEN_SECRET=$KAUFHANSEL_TOKEN_SECRET --volume /home/$KAUFHANSEL_DEPLOY_USER/kaufhansel:/kaufhansel eclipse-temurin:17 java -jar /kaufhansel/kaufhansel_backend.jar"
