@@ -140,24 +140,24 @@ jobs:
           KAUFHANSEL_DEPLOY_USER: ${{ secrets.KAUFHANSEL_DEPLOY_USER }}
 
       - name: Download backend
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: backend
 
       - name: Download android frontend
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: frontend-android
 
       - name: Download linux frontend
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: frontend-linux
           path: frontend-linux/
 
       - name: Deploy
         run: |
-          rsync build/libs/kaufhansel_backend.jar deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/kaufhansel_backend.jar
+          rsync backend/kaufhansel_backend.jar deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/kaufhansel_backend.jar
 
           ssh deploy 'mkdir -p /home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads'
           rsync flutter-apk/app-release.apk deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads/kaufhansel.apk
@@ -181,7 +181,7 @@ jobs:
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_KEY_JSON }}
           packageName: de.zwohansel.kaufhansel.kaufhansel_client
-          releaseFiles: bundle/release/app-release.aab
+          releaseFiles: frontend-android/bundle/release/app-release.aab
           track: internal
           inAppUpdatePriority: 2
           status: completed
