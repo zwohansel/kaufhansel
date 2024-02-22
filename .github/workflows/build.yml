@@ -119,7 +119,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: [build_frontend, build_backend]
-    if: github.event_name == 'push' # && contains(github.ref, 'refs/tags/v')
+    #if: github.event_name == 'push' && contains(github.ref, 'refs/tags/v')
 
     steps:
       - name: Setup SSH key
@@ -167,7 +167,7 @@ jobs:
           rsync kaufhansel-linux.zip deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads/kaufhansel-linux.zip
 
           ssh deploy 'docker stop kaufhansel || true'
-          ssh deploy 'docker run --detach --rm --name kaufhansel --log-driver=journald --network $KAUFHANSEL_DOCKER_NETWORK -e KAUFHANSEL_MAIL_SERVER_HOST=$KAUFHANSEL_MAIL_SERVER_HOST -e KAUFHANSEL_MAIL_SERVER_PORT=$KAUFHANSEL_MAIL_SERVER_PORT -e KAUFHANSEL_MAIL_USERNAME=$KAUFHANSEL_MAIL_USERNAME -e KAUFHANSEL_MAIL_PASSWORD=$KAUFHANSEL_MAIL_PASSWORD -e KAUFHANSEL_TOKEN_SECRET=$KAUFHANSEL_TOKEN_SECRET --volume "/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel:/kaufhansel" eclipse-temurin:11 java -jar /kaufhansel/kaufhansel_backend.jar'
+          ssh deploy 'docker run --detach --rm --name kaufhansel --log-driver=journald --network $KAUFHANSEL_DOCKER_NETWORK -e KAUFHANSEL_MAIL_SERVER_HOST=$KAUFHANSEL_MAIL_SERVER_HOST -e KAUFHANSEL_MAIL_SERVER_PORT=$KAUFHANSEL_MAIL_SERVER_PORT -e KAUFHANSEL_MAIL_USERNAME=$KAUFHANSEL_MAIL_USERNAME -e KAUFHANSEL_MAIL_PASSWORD=$KAUFHANSEL_MAIL_PASSWORD -e KAUFHANSEL_TOKEN_SECRET=$KAUFHANSEL_TOKEN_SECRET --volume "/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel:/kaufhansel" eclipse-temurin:12 java -jar /kaufhansel/kaufhansel_backend.jar'
         env:
           KAUFHANSEL_MAIL_USERNAME: ${{ secrets.KAUFHANSEL_MAIL_USERNAME }}
           KAUFHANSEL_MAIL_PASSWORD: ${{ secrets.KAUFHANSEL_MAIL_PASSWORD }}
