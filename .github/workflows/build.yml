@@ -34,7 +34,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '12'
+          java-version: '17'
 
       - name: Install Build Tools
         run: sudo apt-get update && sudo apt-get install ninja-build pkg-config libgtk-3-dev libblkid-dev liblzma-dev lcov
@@ -99,7 +99,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '12'
+          java-version: '17'
 
       - name: Build Backend
         run: ./gradlew -PbackendVersion=${{env.kaufhansel_version}} bundle
@@ -162,7 +162,7 @@ jobs:
           rsync kaufhansel-linux.zip deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads/kaufhansel-linux.zip
 
           ssh deploy 'docker stop kaufhansel || true'
-          ssh deploy 'docker run --detach --rm --name kaufhansel --log-driver=journald --network $KAUFHANSEL_DOCKER_NETWORK -e KAUFHANSEL_MAIL_SERVER_HOST=$KAUFHANSEL_MAIL_SERVER_HOST -e KAUFHANSEL_MAIL_SERVER_PORT=$KAUFHANSEL_MAIL_SERVER_PORT -e KAUFHANSEL_MAIL_USERNAME=$KAUFHANSEL_MAIL_USERNAME -e KAUFHANSEL_MAIL_PASSWORD=$KAUFHANSEL_MAIL_PASSWORD -e KAUFHANSEL_TOKEN_SECRET=$KAUFHANSEL_TOKEN_SECRET --volume "/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel:/kaufhansel" eclipse-temurin:12 java -jar /kaufhansel/kaufhansel_backend.jar'
+          ssh deploy 'docker run --detach --rm --name kaufhansel --log-driver=journald --network $KAUFHANSEL_DOCKER_NETWORK -e KAUFHANSEL_MAIL_SERVER_HOST=$KAUFHANSEL_MAIL_SERVER_HOST -e KAUFHANSEL_MAIL_SERVER_PORT=$KAUFHANSEL_MAIL_SERVER_PORT -e KAUFHANSEL_MAIL_USERNAME=$KAUFHANSEL_MAIL_USERNAME -e KAUFHANSEL_MAIL_PASSWORD=$KAUFHANSEL_MAIL_PASSWORD -e KAUFHANSEL_TOKEN_SECRET=$KAUFHANSEL_TOKEN_SECRET --volume "/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel:/kaufhansel" eclipse-temurin:17 java -jar /kaufhansel/kaufhansel_backend.jar'
         env:
           KAUFHANSEL_MAIL_USERNAME: ${{ secrets.KAUFHANSEL_MAIL_USERNAME }}
           KAUFHANSEL_MAIL_PASSWORD: ${{ secrets.KAUFHANSEL_MAIL_PASSWORD }}
