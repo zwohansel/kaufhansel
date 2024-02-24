@@ -164,7 +164,7 @@ jobs:
           #rsync kaufhansel-linux.zip deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads/kaufhansel-linux.zip
 
           ssh deploy "docker stop kaufhansel || true"
-          ssh deploy "docker run --detach --rm --name kaufhansel --log-driver=journald --network $KAUFHANSEL_DOCKER_NETWORK -e KAUFHANSEL_MAIL_SERVER_HOST=$KAUFHANSEL_MAIL_SERVER_HOST -e KAUFHANSEL_MAIL_SERVER_PORT=$KAUFHANSEL_MAIL_SERVER_PORT -e KAUFHANSEL_MAIL_USERNAME=$KAUFHANSEL_MAIL_USERNAME -e KAUFHANSEL_MAIL_PASSWORD=$KAUFHANSEL_MAIL_PASSWORD -e KAUFHANSEL_TOKEN_SECRET=$KAUFHANSEL_TOKEN_SECRET --volume /home/$KAUFHANSEL_DEPLOY_USER/kaufhansel:/kaufhansel --workdir /kaufhansel eclipse-temurin:17 java -jar kaufhansel_backend.jar"
+          ssh deploy "docker run --detach --rm --name kaufhansel --restart unless-stopped --log-driver=journald --network $KAUFHANSEL_DOCKER_NETWORK -e KAUFHANSEL_MAIL_SERVER_HOST=$KAUFHANSEL_MAIL_SERVER_HOST -e KAUFHANSEL_MAIL_SERVER_PORT=$KAUFHANSEL_MAIL_SERVER_PORT -e KAUFHANSEL_MAIL_USERNAME=$KAUFHANSEL_MAIL_USERNAME -e KAUFHANSEL_MAIL_PASSWORD=$KAUFHANSEL_MAIL_PASSWORD -e KAUFHANSEL_TOKEN_SECRET=$KAUFHANSEL_TOKEN_SECRET --volume /home/$KAUFHANSEL_DEPLOY_USER/kaufhansel:/kaufhansel --workdir /kaufhansel eclipse-temurin:17 java -jar kaufhansel_backend.jar"
         env:
           KAUFHANSEL_MAIL_USERNAME: ${{ secrets.KAUFHANSEL_MAIL_USERNAME }}
           KAUFHANSEL_MAIL_PASSWORD: ${{ secrets.KAUFHANSEL_MAIL_PASSWORD }}
