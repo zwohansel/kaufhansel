@@ -133,7 +133,8 @@ public class ShoppingListController implements ShoppingListApi {
     @PreAuthorize("@shoppingListGuard.canEditItemsInShoppingList(#id)")
     @Override
     public ResponseEntity<Void> moveShoppingListItem(long id, MoveShoppingListItemDto moveItem) {
-        if (shoppingListService.moveShoppingListItem(id, moveItem.getItemId(), moveItem.getTargetIndex())) {
+        if (shoppingListService.moveShoppingListItem(id, Long.valueOf(moveItem.getItemId()),
+                moveItem.getTargetIndex())) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.badRequest().build();

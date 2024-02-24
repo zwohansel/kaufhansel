@@ -12,19 +12,19 @@ public class ShoppingListUserReferenceDto {
      * Required to run the test in eclipse
      */
     protected ShoppingListUserReferenceDto() {
-        this(0, null, null, null);
+        this("", null, null, null);
     }
 
-    public ShoppingListUserReferenceDto(long userId, String userName, String userEmailAddress,
+    public ShoppingListUserReferenceDto(String userId, String userName, String userEmailAddress,
             ShoppingListRole userRole) {
-        this.userId = Long.toString(userId);
+        this.userId = userId;
         this.userName = userName;
         this.userEmailAddress = userEmailAddress;
         this.userRole = userRole;
     }
 
-    public long getUserId() {
-        return Long.valueOf(userId);
+    public String getUserId() {
+        return userId;
     }
 
     public String getUserName() {

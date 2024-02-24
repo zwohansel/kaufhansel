@@ -26,14 +26,15 @@ public class DeleteCheckedListItemsEndpointTest {
     private WebTestClient webClient;
 
     public static void deleteCheckedItems(WebTestClient webClient, ShoppingListInfoDto list) {
-        requestDeleteCheckedItems(webClient, list.getId()).expectStatus().is2xxSuccessful();
+        requestDeleteCheckedItems(webClient, Long.valueOf(list.getId())).expectStatus().is2xxSuccessful();
     }
 
     public static void deleteCheckedItemsOfCategory(
             WebTestClient webClient,
             ShoppingListInfoDto list,
             String category) {
-        requestDeleteCheckedItemsOfCategory(webClient, list.getId(), category).expectStatus().is2xxSuccessful();
+        requestDeleteCheckedItemsOfCategory(webClient, Long.valueOf(list.getId()), category).expectStatus()
+                .is2xxSuccessful();
     }
 
     public static WebTestClient.ResponseSpec requestDeleteCheckedItems(WebTestClient webClient, long listId) {
@@ -113,7 +114,7 @@ public class DeleteCheckedListItemsEndpointTest {
         WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
-        requestDeleteCheckedItems(client, list.getId()).expectStatus().is4xxClientError();
+        requestDeleteCheckedItems(client, Long.valueOf(list.getId())).expectStatus().is4xxClientError();
 
         assertThat(GetListItemsEndpointTest.getSingleListItem(client, list).isChecked()).isTrue();
     }

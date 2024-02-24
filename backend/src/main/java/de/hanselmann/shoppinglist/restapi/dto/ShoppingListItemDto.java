@@ -10,18 +10,18 @@ public class ShoppingListItemDto {
      * Required to run the test in eclipse
      */
     protected ShoppingListItemDto() {
-        this(0, null, false, null);
+        this("", null, false, null);
     }
 
-    public ShoppingListItemDto(long id, String name, boolean checked, String category) {
-        this.id = Long.toString(id);
+    public ShoppingListItemDto(String id, String name, boolean checked, String category) {
+        this.id = id;
         this.name = name;
         this.checked = checked;
         this.category = category;
     }
 
-    public long getId() {
-        return Long.valueOf(id);
+    public String getId() {
+        return id;
     }
 
     public String getName() {

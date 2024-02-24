@@ -12,16 +12,16 @@ public class ShoppingListInfoDto {
      * Required to run the test in eclipse
      */
     protected ShoppingListInfoDto() {
-        this(0, null, null, null);
+        this("", null, null, null);
     }
 
     public ShoppingListInfoDto(
-            long id,
+            String id,
             String name,
             ShoppingListPermissionsDto permissions,
             List<ShoppingListUserReferenceDto> otherUsers) {
         this.name = name;
-        this.id = Long.toString(id);
+        this.id = id;
         this.permissions = permissions;
         this.otherUsers = otherUsers;
     }
@@ -29,8 +29,8 @@ public class ShoppingListInfoDto {
     /**
      * Id of the list
      */
-    public long getId() {
-        return Long.valueOf(id);
+    public String getId() {
+        return id;
     }
 
     /**

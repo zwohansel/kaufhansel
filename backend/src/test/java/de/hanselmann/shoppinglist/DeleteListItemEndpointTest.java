@@ -23,7 +23,8 @@ public class DeleteListItemEndpointTest {
     public static void deleteListItem(WebTestClient webClient,
             ShoppingListInfoDto list,
             ShoppingListItemDto item) {
-        requestDeleteListItem(webClient, list.getId(), item.getId()).expectStatus().is2xxSuccessful();
+        requestDeleteListItem(webClient, Long.valueOf(list.getId()), Long.valueOf(item.getId())).expectStatus()
+                .is2xxSuccessful();
     }
 
     public static WebTestClient.ResponseSpec requestDeleteListItem(WebTestClient webClient,
@@ -50,7 +51,7 @@ public class DeleteListItemEndpointTest {
     public void deleteItemItemThatIsNotPresentInList() {
         WebTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
-        requestDeleteListItem(client, list.getId(), 0).expectStatus().is2xxSuccessful();
+        requestDeleteListItem(client, Long.valueOf(list.getId()), 0).expectStatus().is2xxSuccessful();
     }
 
     @Test
@@ -64,7 +65,8 @@ public class DeleteListItemEndpointTest {
 
         var updateItemDto = new ShoppingListItemUpdateDto();
         updateItemDto.setName("Updated Name");
-        requestDeleteListItem(client, list.getId(), item.getId()).expectStatus().is4xxClientError();
+        requestDeleteListItem(client, Long.valueOf(list.getId()), Long.valueOf(item.getId())).expectStatus()
+                .is4xxClientError();
 
         ShoppingListItemDto updatedItem = GetListItemsEndpointTest.getSingleListItem(client, list);
         assertThat(updatedItem.getName()).as("Item name is unchanged.").isEqualTo(item.getName());

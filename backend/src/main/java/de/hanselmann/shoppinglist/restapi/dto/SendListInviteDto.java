@@ -12,8 +12,8 @@ public class SendListInviteDto {
         this.emailAddress = emailAddress;
     }
 
-    public Long getShoppingListId() {
-        return Long.valueOf(shoppingListId);
+    public String getShoppingListId() {
+        return shoppingListId;
     }
 
     public void setShoppingListId(Long shoppingListId) {

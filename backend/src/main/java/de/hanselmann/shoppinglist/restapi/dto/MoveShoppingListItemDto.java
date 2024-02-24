@@ -4,12 +4,12 @@ public class MoveShoppingListItemDto {
     private String itemId;
     private int targetIndex;
 
-    public long getItemId() {
-        return Long.valueOf(itemId);
+    public String getItemId() {
+        return itemId;
     }
 
-    public void setItemId(long itemId) {
-        this.itemId = Long.toString(itemId);
+    public void setItemId(String itemId) {
+        this.itemId = itemId;
     }
 
     public int getTargetIndex() {

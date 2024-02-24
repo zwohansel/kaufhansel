@@ -10,18 +10,18 @@ public class ShoppingListUserInfoDto {
      * Required to run the test in eclipse
      */
     protected ShoppingListUserInfoDto() {
-        this(0, null, null, null);
+        this("", null, null, null);
     }
 
-    public ShoppingListUserInfoDto(long id, String token, String username, String emailAddress) {
-        this.id = Long.toString(id);
+    public ShoppingListUserInfoDto(String id, String token, String username, String emailAddress) {
+        this.id = id;
         this.token = token;
         this.username = username;
         this.emailAddress = emailAddress;
     }
 
-    public long getId() {
-        return Long.valueOf(id);
+    public String getId() {
+        return id;
     }
 
     public String getToken() {

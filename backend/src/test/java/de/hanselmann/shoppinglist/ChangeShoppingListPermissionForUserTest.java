@@ -54,11 +54,11 @@ public class ChangeShoppingListPermissionForUserTest {
         assertThat(bobListInfo.getId()).isEqualTo(aliceListInfo.getId());
         assertThat(bobListInfo.getOtherUsers()).hasSize(1);
         assertThat(bobListInfo.getOtherUsers().get(0).getUserEmailAddress()).isEqualTo(LoginTest.ALICE_EMAIL);
-        long aliceId = bobListInfo.getOtherUsers().get(0).getUserId();
+        long aliceId = Long.valueOf(bobListInfo.getOtherUsers().get(0).getUserId());
 
         // Change alice permission from read-only to check-only
         ShoppingListPermissionsUpdateDto permissionDto = new ShoppingListPermissionsUpdateDto();
-        permissionDto.setUserId(aliceId);
+        permissionDto.setUserId(Long.toString(aliceId));
         permissionDto.setRole(ShoppingListRole.CHECK_ONLY);
         changeUserPermission(bobClient, bobListInfo, permissionDto);
 
@@ -78,11 +78,11 @@ public class ChangeShoppingListPermissionForUserTest {
 
         assertThat(bobListInfo.getOtherUsers()).hasSize(1);
         assertThat(bobListInfo.getOtherUsers().get(0).getUserEmailAddress()).isEqualTo(LoginTest.ALICE_EMAIL);
-        long aliceId = bobListInfo.getOtherUsers().get(0).getUserId();
+        long aliceId = Long.valueOf(bobListInfo.getOtherUsers().get(0).getUserId());
 
         // Change alice permission from read-only to admin
         ShoppingListPermissionsUpdateDto permissionDto = new ShoppingListPermissionsUpdateDto();
-        permissionDto.setUserId(aliceId);
+        permissionDto.setUserId(Long.toString(aliceId));
         permissionDto.setRole(ShoppingListRole.ADMIN);
         changeUserPermission(bobClient, bobListInfo, permissionDto);
 

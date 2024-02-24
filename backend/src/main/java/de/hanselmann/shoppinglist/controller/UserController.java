@@ -105,7 +105,7 @@ public class UserController implements UserApi {
     public ResponseEntity<Void> sendListInvite(SendListInviteDto sendInvite) {
         try {
             boolean success = registrationService.sendInviteForShoppingList(sendInvite.getEmailAddress(),
-                    sendInvite.getShoppingListId());
+                    Long.valueOf(sendInvite.getShoppingListId()));
             return success ? ResponseEntity.noContent().build() : ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();

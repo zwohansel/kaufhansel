@@ -10,8 +10,8 @@ public class ShoppingListPermissionsUpdateDto {
         return Long.valueOf(userId);
     }
 
-    public void setUserId(long userId) {
-        this.userId = Long.toString(userId);
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public ShoppingListRole getRole() {
