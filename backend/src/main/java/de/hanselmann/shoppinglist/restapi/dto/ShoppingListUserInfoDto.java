@@ -1,7 +1,7 @@
 package de.hanselmann.shoppinglist.restapi.dto;
 
 public class ShoppingListUserInfoDto {
-    private final long id;
+    private final String id;
     private final String token;
     private final String username;
     private final String emailAddress;
@@ -14,14 +14,14 @@ public class ShoppingListUserInfoDto {
     }
 
     public ShoppingListUserInfoDto(long id, String token, String username, String emailAddress) {
-        this.id = id;
+        this.id = Long.toString(id);
         this.token = token;
         this.username = username;
         this.emailAddress = emailAddress;
     }
 
     public long getId() {
-        return id;
+        return Long.valueOf(id);
     }
 
     public String getToken() {

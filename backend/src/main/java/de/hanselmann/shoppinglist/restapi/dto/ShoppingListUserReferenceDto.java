@@ -3,7 +3,7 @@ package de.hanselmann.shoppinglist.restapi.dto;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 
 public class ShoppingListUserReferenceDto {
-    final long userId;
+    final String userId;
     final String userName;
     final String userEmailAddress;
     final ShoppingListRole userRole;
@@ -17,14 +17,14 @@ public class ShoppingListUserReferenceDto {
 
     public ShoppingListUserReferenceDto(long userId, String userName, String userEmailAddress,
             ShoppingListRole userRole) {
-        this.userId = userId;
+        this.userId = Long.toString(userId);
         this.userName = userName;
         this.userEmailAddress = userEmailAddress;
         this.userRole = userRole;
     }
 
     public long getUserId() {
-        return userId;
+        return Long.valueOf(userId);
     }
 
     public String getUserName() {
