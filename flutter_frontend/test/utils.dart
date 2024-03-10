@@ -14,12 +14,7 @@ Future<Widget> makeBasicTestableWidget(Widget child, {Locale? locale}) async {
   return MediaQuery(
     data: MediaQueryData(),
     child: MaterialApp(
-      localizationsDelegates: [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        DefaultWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+      localizationsDelegates: [AppLocalizations.delegate, ...GlobalMaterialLocalizations.delegates],
       supportedLocales: [supportedLocale],
       locale: supportedLocale,
       home: child,

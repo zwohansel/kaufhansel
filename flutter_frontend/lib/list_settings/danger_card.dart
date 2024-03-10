@@ -35,7 +35,10 @@ class DangerCard extends StatelessWidget {
               child: Text(_willDeleteList()
                   ? AppLocalizations.of(context).listSettingsDeleteList
                   : AppLocalizations.of(context).listSettingsLeaveList),
-              style: OutlinedButton.styleFrom(backgroundColor: Colors.red),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red,
+                side: BorderSide(color: Colors.red),
+              ),
               onPressed: () => _loading ? null : _onDeleteShoppingList(context),
             ),
             _buildDeleteLeaveBtnExplanation(context),

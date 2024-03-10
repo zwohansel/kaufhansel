@@ -34,17 +34,16 @@ class ShoppingListSettings extends StatefulWidget {
 }
 
 class _ShoppingListSettingsState extends State<ShoppingListSettings> {
-  final ScrollController _scrollController = ScrollController();
-
   bool _loading = false;
+
   void _setLoading(bool value) {
     setState(() => _loading = value);
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => !_loading,
+    return PopScope(
+      canPop: !_loading,
       child: Scaffold(
         appBar: AppBar(
           title: TitleWidget(AppLocalizations.of(context).appTitle),
@@ -57,15 +56,15 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
               child: Center(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minWidth: 0, maxWidth: 600),
-                  child: Scrollbar(
-                    controller: _scrollController,
-                    child: ListView(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.all(5),
-                          child: Consumer<ShoppingListInfo>(
-                            builder: (context, info, child) {
-                              return Column(
+                  child: ListView(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(5),
+                        child: Consumer<ShoppingListInfo>(
+                          builder: (context, info, child) {
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   InfoCard(
@@ -90,12 +89,12 @@ class _ShoppingListSettingsState extends State<ShoppingListSettings> {
                                     shoppingListInfo: info,
                                   )
                                 ],
-                              );
-                            },
-                          ),
-                        )
-                      ],
-                    ),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    ],
                   ),
                 ),
               ),

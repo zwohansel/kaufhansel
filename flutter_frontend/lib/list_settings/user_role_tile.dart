@@ -38,7 +38,6 @@ class UserRoleTile extends StatelessWidget {
         enabled: _enabled,
         leading: Icon(_userRole.toIcon()),
         title: Padding(child: _title, padding: EdgeInsets.only(bottom: 5)),
-        horizontalTitleGap: 0,
         contentPadding: EdgeInsets.zero,
         subtitle: Column(
           mainAxisSize: MainAxisSize.min,

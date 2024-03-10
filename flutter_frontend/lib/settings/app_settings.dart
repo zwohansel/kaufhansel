@@ -47,8 +47,8 @@ class _AppSettingsState extends State<AppSettings> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => !_loading,
+    return PopScope(
+      canPop: !_loading,
       child: Scaffold(
         appBar: AppBar(
           title: TitleWidget(AppLocalizations.of(context).appTitle),
@@ -96,19 +96,25 @@ class _AppSettingsState extends State<AppSettings> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(AppLocalizations.of(context).appSettingsTitle(widget._userInfo.username),
-                  style: Theme.of(context).textTheme.headline5?.apply(fontFamilyFallback: ['NotoColorEmoji'])),
+                  style: Theme.of(context).textTheme.headlineSmall?.apply(fontFamilyFallback: ['NotoColorEmoji'])),
               SizedBox(height: 12),
               Text(AppLocalizations.of(context).appSettingsYourEmail(widget._userInfo.emailAddress)),
               SizedBox(height: 24),
               OutlinedButton(
                 child: Text(AppLocalizations.of(context).appSettingsLogOut),
-                style: OutlinedButton.styleFrom(backgroundColor: Colors.red),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  side: BorderSide(color: Colors.red),
+                ),
                 onPressed: _loading ? null : _onLogOut,
               ),
               SizedBox(height: 12),
               OutlinedButton(
                   child: Text(AppLocalizations.of(context).appSettingsDeleteAccount),
-                  style: OutlinedButton.styleFrom(backgroundColor: Colors.red),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red,
+                    side: BorderSide(color: Colors.red),
+                  ),
                   onPressed: _loading ? null : () => _onDeleteAccount()),
             ],
           )),
@@ -124,7 +130,7 @@ class _AppSettingsState extends State<AppSettings> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(AppLocalizations.of(context).appSettingsAboutTitle,
-                  style: Theme.of(context).textTheme.headline5?.apply(fontFamilyFallback: ['NotoColorEmoji'])),
+                  style: Theme.of(context).textTheme.headlineSmall?.apply(fontFamilyFallback: ['NotoColorEmoji'])),
               SizedBox(height: 12),
               Builder(
                 builder: (context) => _buildVersion(context),

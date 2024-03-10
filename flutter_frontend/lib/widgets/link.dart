@@ -1,7 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class Link extends StatelessWidget {
@@ -34,7 +31,7 @@ class Link extends StatelessWidget {
     return InkWell(
         mouseCursor: _selectable ? SystemMouseCursors.text : SystemMouseCursors.click,
         child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: children),
-        onTap: () => _selectable ? null : launch(_url));
+        onTap: () => _selectable ? null : launchUrlString(_url));
   }
 
   Widget _buildText(TextStyle? displayStyle) {

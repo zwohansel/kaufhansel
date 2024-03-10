@@ -154,12 +154,12 @@ jobs:
         run: |
           rsync kaufhansel_backend.jar deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/kaufhansel_backend.jar
 
-          #ssh deploy "mkdir -p /home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads"
-          #rsync flutter-apk/app-release.apk deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads/kaufhansel.apk
+          ssh deploy "mkdir -p /home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads"
+          rsync flutter-apk/app-release.apk deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads/kaufhansel.apk
 
-          #mv frontend-linux kaufhansel-linux
-          #zip -r kaufhansel-linux.zip kaufhansel-linux/
-          #rsync kaufhansel-linux.zip deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads/kaufhansel-linux.zip
+          mv frontend-linux kaufhansel-linux
+          zip -r kaufhansel-linux.zip kaufhansel-linux/
+          rsync kaufhansel-linux.zip deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads/kaufhansel-linux.zip
 
           ssh deploy "docker stop kaufhansel || true"
           ssh deploy "docker rm kaufhansel || true"

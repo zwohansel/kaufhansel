@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
@@ -624,8 +622,10 @@ void main() {
   });
 
   testWidgets("Remove all categories", (WidgetTester tester) async {
-    final item0 = ShoppingListItem("1", "A", true, "Category1");
-    final item1 = ShoppingListItem("2", "B", false, "Category2");
+    final item0Category = "Category1";
+    final item1Category = "Category2";
+    final item0 = ShoppingListItem("1", "A", true, item0Category);
+    final item1 = ShoppingListItem("2", "B", false, item1Category);
     final item2 = ShoppingListItem("3", "C", true, null);
     List<ShoppingListItem> backendItems = [item0, item1, item2];
 
@@ -649,8 +649,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // check that we find an item for each category
-    expect(find.widgetWithText(CheckboxListTile, item0.category!), findsOneWidget);
-    expect(find.widgetWithText(CheckboxListTile, item1.category!), findsOneWidget);
+    expect(find.widgetWithText(CheckboxListTile, item0Category), findsOneWidget);
+    expect(find.widgetWithText(CheckboxListTile, item1Category), findsOneWidget);
 
     // open drawer
     final drawerIcon = find.widgetWithIcon(IconButton, Icons.menu);
@@ -689,8 +689,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // check that we no longer find the categories
-    expect(find.widgetWithText(CheckboxListTile, item0.category!), findsNothing);
-    expect(find.widgetWithText(CheckboxListTile, item1.category!), findsNothing);
+    expect(find.widgetWithText(CheckboxListTile, item0Category), findsNothing);
+    expect(find.widgetWithText(CheckboxListTile, item1Category), findsNothing);
 
     // but we still find the items (not obscured by a dialog or the drawer)
     expect(find.widgetWithText(CheckboxListTile, item0.name).hitTestable(), findsOneWidget);

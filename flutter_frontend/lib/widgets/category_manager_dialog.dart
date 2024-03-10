@@ -114,7 +114,7 @@ class _CategoryManagerState extends State<CategoryManager> {
   }
 
   Widget _buildRemoveChecked(BuildContext context) {
-    if (widget.list.info.permissions.canEditItems) {
+    if (!widget.list.info.permissions.canEditItems) {
       return Container();
     } else if (_selectedCategory == CATEGORY_ALL) {
       return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesRemoveChecked,
@@ -173,7 +173,7 @@ class _CategoryManagerState extends State<CategoryManager> {
   }
 
   Widget _buildUncheck(BuildContext context) {
-    if (widget.list.info.permissions.canCheckItems) {
+    if (!widget.list.info.permissions.canCheckItems) {
       return Container();
     } else if (_selectedCategory == CATEGORY_ALL) {
       return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesUncheckAll,

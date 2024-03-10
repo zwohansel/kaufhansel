@@ -157,7 +157,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
     }
 
     return Container(
-      color: widget.update.isCritical() ? Colors.redAccent.shade400 : Theme.of(context).primaryColorDark,
+      color: widget.update.isCritical() ? Colors.blueAccent : Theme.of(context).primaryColorDark,
       child: Padding(
         padding: EdgeInsets.only(left: 10, top: 5, right: 10, bottom: 5),
         child: Column(
@@ -231,7 +231,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
                 child: Link(
                   AppLocalizations.of(context).downloadLink,
                   text: AppLocalizations.of(context).newerVersionAvailable(widget.update.latestVersion.toString()),
-                  style: TextStyle(color: Colors.white, decoration: TextDecoration.underline),
+                  style: TextStyle(color: Colors.white),
                 ),
               ),
               ...obligatoryUpdateInfo,
@@ -249,7 +249,9 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
       alignment: Alignment.bottomRight,
       child: OutlinedButton(
         style: TextButton.styleFrom(
-            visualDensity: VisualDensity.compact, backgroundColor: Colors.white, side: BorderSide(color: Colors.white30)),
+            visualDensity: VisualDensity.compact,
+            backgroundColor: Colors.white,
+            side: BorderSide(color: Colors.white30)),
         onPressed: () => setState(() {
           widget.update.confirmMessage();
           _showInfoBox = false;
@@ -282,7 +284,12 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
       },
       child: SizedBox(
         width: double.infinity,
-        child: Tab(text: category),
+        child: Tab(
+          child: Text(
+            category,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white),
+          ),
+        ),
       ),
     );
   }

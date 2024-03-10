@@ -38,7 +38,7 @@ class _InfoCardState extends State<InfoCard> {
             children: [
               EditableTextLabel(
                   text: widget._shoppingListInfo.name,
-                  textStyle: Theme.of(context).textTheme.headline5?.apply(fontFamilyFallback: ['NotoColorEmoji']),
+                  textStyle: Theme.of(context).textTheme.headlineSmall?.apply(fontFamilyFallback: ['NotoColorEmoji']),
                   enabled: widget._shoppingListInfo.permissions.canEditList,
                   onSubmit: (text) => _submitNewShoppingListName(text)),
               SizedBox(height: 12),

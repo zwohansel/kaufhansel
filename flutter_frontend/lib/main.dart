@@ -2,7 +2,6 @@ import 'dart:developer' as developer;
 import 'dart:math';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -32,20 +31,44 @@ void main() {
 }
 
 class App extends StatelessWidget {
-  static const _serverUrl = kDebugMode ? "https://localhost:8080/api/" : "https://zwohansel.de/kaufhansel/api/";
+  static const _serverUrl = "https://zwohansel.de/kaufhansel/api/";
   static final _restClient = RestClient(Uri.parse(_serverUrl));
   static final _settingsStore = SettingsStore();
 
   @override
   Widget build(BuildContext context) {
+    var colorScheme = ColorScheme.fromSeed(seedColor: Colors.green, brightness: Brightness.light);
+    var textTheme = TextTheme();
     return MaterialApp(
         // locale can be set here:
         // locale: Locale("de"),
-        localizationsDelegates: [AppLocalizations.delegate, GlobalMaterialLocalizations.delegate],
+        localizationsDelegates: [AppLocalizations.delegate, ...GlobalMaterialLocalizations.delegates],
         supportedLocales: [const Locale('de', '')],
         debugShowCheckedModeBanner: false,
         onGenerateTitle: (BuildContext context) => AppLocalizations.of(context).appTitle,
-        theme: ThemeData(primarySwatch: Colors.green, fontFamily: 'Roboto'),
+        theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: colorScheme,
+            appBarTheme: AppBarTheme(
+                color: colorScheme.primary,
+                actionsIconTheme: IconThemeData(color: Colors.white),
+                iconTheme: IconThemeData(color: Colors.white)),
+            textTheme: textTheme,
+            outlinedButtonTheme: OutlinedButtonThemeData(
+              style: ButtonStyle(
+                shape: MaterialStateProperty.all(
+                  const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
+                ),
+              ),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ButtonStyle(
+                shape: MaterialStateProperty.all(
+                  const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
+                ),
+              ),
+            ),
+            cardTheme: CardTheme(color: Colors.white)),
         home: ShoppingListApp(
           client: _restClient,
           settingsStore: _settingsStore,
@@ -98,7 +121,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       if (update != null) {
         setState(() => _update = update);
       }
-      if (update == null || update.isBreakingChange()) {
+      if (update == null || !update.isBreakingChange()) {
         await _loadUserInfo();
       }
     } finally {
@@ -234,7 +257,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       setState(() {
         _shoppingListInfos = lists;
         _currentShoppingListInfo =
-            activeShoppingList ?? lists.firstWhere((list) => list.id == oldShoppingList?.info.id);
+            activeShoppingList ?? lists.where((list) => list.id == oldShoppingList?.info.id).firstOrNull;
         if (_currentShoppingListInfo == null) {
           _currentShoppingListInfo = lists.firstOrNull;
         }
@@ -451,7 +474,8 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
                 child: Text(
                   AppLocalizations.of(context).shoppingListEmpty,
                   style: TextStyle(
-                      fontFamilyFallback: ["NotoColorEmoji"], fontSize: Theme.of(context).textTheme.displayMedium?.fontSize),
+                      fontFamilyFallback: ["NotoColorEmoji"],
+                      fontSize: Theme.of(context).textTheme.displayMedium?.fontSize),
                   textAlign: TextAlign.center,
                 ),
               ),

@@ -3,8 +3,6 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/login/check_invite_code_form.dart';
 import 'package:kaufhansel_client/login/email_password_form.dart';
@@ -71,11 +69,11 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       Icon(
                         Icons.shopping_cart_outlined,
-                        size: Theme.of(context).textTheme.headline3?.fontSize,
+                        size: Theme.of(context).textTheme.displaySmall?.fontSize,
                       ),
                       Text(
                         AppLocalizations.of(context).appTitle,
-                        style: Theme.of(context).textTheme.headline3,
+                        style: Theme.of(context).textTheme.displaySmall,
                       ),
                     ],
                   ),
@@ -192,9 +190,9 @@ class _LoginPageState extends State<LoginPage> {
 
   TextStyle? _getInfoMessageTextStyle() {
     if (widget._update.isCritical()) {
-      return Theme.of(context).textTheme.bodyText1?.apply(color: Colors.white);
+      return Theme.of(context).textTheme.bodyLarge?.apply(color: Colors.white);
     }
-    return Theme.of(context).textTheme.bodyText1;
+    return Theme.of(context).textTheme.bodyLarge;
   }
 
   Color _getInfoMessageBtnColor() {

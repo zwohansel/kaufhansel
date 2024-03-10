@@ -26,8 +26,9 @@ class TitleWidget extends StatelessWidget {
           Icon(
             Icons.shopping_cart_outlined,
             size: Theme.of(context).primaryTextTheme.titleLarge?.fontSize,
+            color: Colors.white,
           ),
-          Flexible(child: Text(_title)),
+          Flexible(child: Text(_title, style: TextStyle(color: Colors.white),)),
         ]),
         ...children
       ],

@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/list_settings/card_style.dart';
 import 'package:kaufhansel_client/list_settings/user_role_tile.dart';
@@ -63,7 +62,7 @@ class _ShareListCardState extends State<ShareListCard> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(AppLocalizations.of(context).listSettingsSharingWith, style: Theme.of(context).textTheme.headline6),
+            Text(AppLocalizations.of(context).listSettingsSharingWith, style: Theme.of(context).textTheme.titleLarge),
             SizedBox(height: 12),
             Column(
               mainAxisSize: MainAxisSize.min,
@@ -164,7 +163,7 @@ class _ShareListCardState extends State<ShareListCard> {
                 children: [
                   Text(
                     role.toDisplayString(context),
-                    style: Theme.of(context).textTheme.headline6,
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                   Text(role.toDescription(context))
                 ],
