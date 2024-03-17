@@ -33,7 +33,7 @@ android {
 
     defaultConfig {
         applicationId "de.zwohansel.kaufhansel.kaufhansel_client"
-        minSdkVersion 16
+        minSdkVersion flutter.minSdkVersion
         targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
