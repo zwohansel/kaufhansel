@@ -25,10 +25,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# java & eclipse
+# java & eclipse & intelliJ
 .metadata
 eclipse_workspace/
 bin/
+.idea
 
 #qt & cmake
 CMakeLists.txt.user*
