@@ -4,20 +4,20 @@ import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/utils/input_validation.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class RegistrationForm extends StatefulWidget {
-  final Future<RegistrationResult> Function({String email, @required String password, @required String userName})
+  final Future<RegistrationResult> Function({String? email, required String password, required String userName})
       onRegister;
   final bool requireEmail;
-  final void Function(String email) onEmailChanged;
-  final String initialEmail;
+  final void Function(String email)? onEmailChanged;
+  final String? initialEmail;
   final bool enabled;
-  final List<Widget> extraFormChildren;
+  final List<Widget>? extraFormChildren;
 
   const RegistrationForm({
-    @required this.onRegister,
-    @required this.requireEmail,
+    required this.onRegister,
+    required this.requireEmail,
     this.onEmailChanged,
     this.initialEmail,
     this.enabled = true,
@@ -30,11 +30,11 @@ class RegistrationForm extends StatefulWidget {
 
 class _RegistrationFormState extends State<RegistrationForm> {
   final _formKey = GlobalKey<FormState>();
-  TextEditingController _userNameController;
-  TextEditingController _userEmailAddressController;
-  TextEditingController _passwordController;
-  TextEditingController _passwordConfirmController;
-  TapGestureRecognizer _tapRecognizer;
+  late TextEditingController _userNameController;
+  late TextEditingController _userEmailAddressController;
+  late TextEditingController _passwordController;
+  late TextEditingController _passwordConfirmController;
+  late TapGestureRecognizer _tapRecognizer;
   bool _emailAddressInvalid = false;
   bool _passwordInvalid = false;
   bool _obscurePassword = true;
@@ -47,7 +47,10 @@ class _RegistrationFormState extends State<RegistrationForm> {
 
     _userEmailAddressController = TextEditingController(text: widget.initialEmail);
     _userEmailAddressController.addListener(() {
-      widget?.onEmailChanged(_userEmailAddressController.text);
+      final onEmailChanged = widget.onEmailChanged;
+      if (onEmailChanged != null) {
+        onEmailChanged(_userEmailAddressController.text);
+      }
       if (_emailAddressInvalid) {
         setState(() => _emailAddressInvalid = false);
         _formKey.currentState?.validate();
@@ -98,7 +101,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
           SizedBox(height: 15),
           ElevatedButton(
               child: Text(AppLocalizations.of(context).buttonRegister), onPressed: widget.enabled ? _register : null),
-          if (widget.extraFormChildren != null) ...widget.extraFormChildren,
+          if (widget.extraFormChildren != null) ...(widget.extraFormChildren ?? []),
         ],
       ),
     );
@@ -111,7 +114,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
       textCapitalization: TextCapitalization.sentences,
       decoration: InputDecoration(hintText: AppLocalizations.of(context).userNameHint),
       validator: (userName) {
-        if (userName.trim().isEmpty) {
+        if (userName?.trim().isEmpty ?? true) {
           return AppLocalizations.of(context).userNameInvalid;
         }
         return null;
@@ -151,7 +154,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
       ),
       obscureText: _obscurePassword,
       validator: (password) {
-        if (password.length < 8) {
+        if ((password?.length ?? 0) < 8) {
           return AppLocalizations.of(context).passwordToShort;
         }
         if (_passwordInvalid) {
@@ -171,7 +174,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
       ),
       obscureText: _obscurePassword,
       validator: (password) {
-        if (password.isEmpty || password != _passwordController.text) {
+        if ((password?.isEmpty ?? true) || password != _passwordController.text) {
           return AppLocalizations.of(context).passwordConfirmationInvalid;
         }
         return null;
@@ -183,7 +186,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
   FormField<bool> _buildConsentCheckBox() {
     return FormField<bool>(
       validator: (checked) {
-        if (!checked) {
+        if (checked == null || !checked) {
           return "";
         }
         return null;
@@ -191,7 +194,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
       initialValue: false,
       builder: (FormFieldState<bool> state) {
         final textStyle =
-            state.hasError ? TextStyle(color: Theme.of(context).errorColor) : Theme.of(context).textTheme.bodyText1;
+            state.hasError ? TextStyle(color: Theme.of(context).colorScheme.error) : Theme.of(context).textTheme.bodyLarge;
 
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,12 +214,12 @@ class _RegistrationFormState extends State<RegistrationForm> {
                         text: AppLocalizations.of(context).privacyPolicy,
                         style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
                         recognizer: _tapRecognizer
-                          ..onTap = () => launch(AppLocalizations.of(context).privacyPolicyLink)),
+                          ..onTap = () => launchUrlString(AppLocalizations.of(context).privacyPolicyLink)),
                     TextSpan(text: AppLocalizations.of(context).registrationConsentMiddlePart, style: textStyle),
                     TextSpan(
                         text: AppLocalizations.of(context).disclaimer,
                         style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
-                        recognizer: _tapRecognizer..onTap = () => launch(AppLocalizations.of(context).disclaimerLink)),
+                        recognizer: _tapRecognizer..onTap = () => launchUrlString(AppLocalizations.of(context).disclaimerLink)),
                     TextSpan(text: AppLocalizations.of(context).registrationConsentLastPart, style: textStyle),
                   ],
                 ),
@@ -229,7 +232,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
   }
 
   void _register() async {
-    if (!_formKey.currentState.validate()) {
+    if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
 
@@ -247,10 +250,10 @@ class _RegistrationFormState extends State<RegistrationForm> {
       }
     } else if (result.isEMailAddressInvalid()) {
       setState(() => _emailAddressInvalid = true);
-      _formKey.currentState.validate();
+      _formKey.currentState?.validate();
     } else if (result.isPasswordInvalid()) {
       setState(() => _passwordInvalid = true);
-      _formKey.currentState.validate();
+      _formKey.currentState?.validate();
     } else if (result.isUnknownFailure()) {
       showErrorDialog(context, AppLocalizations.of(context).exceptionRegistrationFailedTryAgainLater);
     }

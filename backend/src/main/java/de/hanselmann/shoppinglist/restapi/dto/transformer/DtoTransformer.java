@@ -28,7 +28,8 @@ public class DtoTransformer {
     }
 
     public ShoppingListItemDto map(ShoppingListItem item) {
-        return new ShoppingListItemDto(item.getId(), item.getName(), item.isChecked(), item.getCategoryName());
+        return new ShoppingListItemDto(Long.toString(item.getId()), item.getName(), item.isChecked(),
+                item.getCategoryName());
     }
 
     public ShoppingListUserReferenceDto map(ShoppingListUser user, long shoppingListId) {
@@ -39,14 +40,15 @@ public class DtoTransformer {
                 .orElseThrow(() -> new IllegalArgumentException("User does not know that list."));
 
         return new ShoppingListUserReferenceDto(
-                user.getId(),
+                Long.toString(user.getId()),
                 user.getUsername(),
                 user.getEmailAddress(),
                 role);
     }
 
     public ShoppingListUserInfoDto map(ShoppingListUser user, String token) {
-        return new ShoppingListUserInfoDto(user.getId(), token, user.getUsername(), user.getEmailAddress());
+        return new ShoppingListUserInfoDto(Long.toString(user.getId()), token, user.getUsername(),
+                user.getEmailAddress());
     }
 
     public ShoppingListPermissionsDto map(ShoppingListRole userRole) {
@@ -57,7 +59,7 @@ public class DtoTransformer {
             ShoppingList list,
             ShoppingListPermissionsDto userPermissions,
             List<ShoppingListUserReferenceDto> otherUsers) {
-        return new ShoppingListInfoDto(list.getId(), list.getName(), userPermissions, otherUsers);
+        return new ShoppingListInfoDto(Long.toString(list.getId()), list.getName(), userPermissions, otherUsers);
     }
 
     public InfoMessageDto map(InfoMessage message) {

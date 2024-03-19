@@ -24,8 +24,8 @@ springBoot {
 }
 
 bootJar {
-	classpath 'public'
-	archiveFileName = "kaufhansel_backend.jar"
+    classpath 'public'
+    archiveFileName = "kaufhansel_backend.jar"
 }
 
 // bootBuildInfo generates the META-INF/build-info.properties from which the BuildInfo bean

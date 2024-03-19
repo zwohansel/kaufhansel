@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
@@ -10,7 +8,7 @@ import 'utils.dart';
 
 void main() {
   const testLocale = Locale("de");
-  AppLocalizations localizations;
+  late AppLocalizations localizations;
 
   setUp(() async {
     localizations = await AppLocalizations.load(testLocale);

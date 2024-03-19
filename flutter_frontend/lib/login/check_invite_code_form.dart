@@ -5,12 +5,12 @@ import 'package:kaufhansel_client/generated/l10n.dart';
 class CheckInviteCodeForm extends StatefulWidget {
   final Future<bool> Function(String) onInviteCode;
   final bool enabled;
-  final List<Widget> extraFormChildren;
-  final String initialCode;
-  final bool initialCodeIsInvalid;
+  final List<Widget>? extraFormChildren;
+  final String? initialCode;
+  final bool? initialCodeIsInvalid;
 
   const CheckInviteCodeForm(
-      {this.onInviteCode, this.enabled = true, this.extraFormChildren, this.initialCode, this.initialCodeIsInvalid});
+      {required this.onInviteCode, this.enabled = true, this.extraFormChildren, this.initialCode, this.initialCodeIsInvalid});
 
   @override
   _CheckInviteCodeFormState createState() => _CheckInviteCodeFormState();
@@ -18,16 +18,17 @@ class CheckInviteCodeForm extends StatefulWidget {
 
 class _CheckInviteCodeFormState extends State<CheckInviteCodeForm> {
   final _formKey = GlobalKey<FormState>();
-  TextEditingController _inviteCodeController;
+  late TextEditingController _inviteCodeController;
   bool _inviteCodeInvalid = false;
 
   @override
   void initState() {
     super.initState();
     _inviteCodeController = TextEditingController();
-    if (widget.initialCode != null) {
+    final initialCode = widget.initialCode;
+    if (initialCode != null) {
       _inviteCodeInvalid = widget.initialCodeIsInvalid ?? false;
-      _inviteCodeController.text = widget.initialCode;
+      _inviteCodeController.text = initialCode;
       // The form key has not current state yet.
       // The state is created after the first render therefore we postpone the validate call.
       SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -69,7 +70,7 @@ class _CheckInviteCodeFormState extends State<CheckInviteCodeForm> {
             decoration: InputDecoration(hintText: AppLocalizations.of(context).invitationCodeHint),
             onFieldSubmitted: (_) => _checkInviteCode(),
             validator: (code) {
-              if (code.trim().isEmpty) {
+              if (code == null || code.trim().isEmpty) {
                 return AppLocalizations.of(context).invitationCodeEmpty;
               } else if (_inviteCodeInvalid) {
                 return AppLocalizations.of(context).invitationCodeInvalid;
@@ -81,14 +82,14 @@ class _CheckInviteCodeFormState extends State<CheckInviteCodeForm> {
           ElevatedButton(
               child: Text(AppLocalizations.of(context).buttonNext),
               onPressed: widget.enabled ? _checkInviteCode : null),
-          if (widget.extraFormChildren != null) ...widget.extraFormChildren,
+          ...(widget.extraFormChildren ?? []),
         ],
       ),
     );
   }
 
   void _checkInviteCode() async {
-    if (!_formKey.currentState.validate()) {
+    if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
     bool valid = await widget.onInviteCode(_inviteCodeController.text);
@@ -96,7 +97,7 @@ class _CheckInviteCodeFormState extends State<CheckInviteCodeForm> {
       setState(() {
         _inviteCodeInvalid = true;
       });
-      _formKey.currentState.validate();
+      _formKey.currentState?.validate();
     }
   }
 }

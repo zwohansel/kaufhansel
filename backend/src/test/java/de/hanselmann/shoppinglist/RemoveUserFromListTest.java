@@ -45,7 +45,7 @@ public class RemoveUserFromListTest {
         assertThat(bobListInfo.getId()).isEqualTo(aliceListInfo.getId());
         assertThat(bobListInfo.getOtherUsers()).hasSize(1);
         assertThat(bobListInfo.getOtherUsers().get(0).getUserEmailAddress()).isEqualTo(LoginTest.ALICE_EMAIL);
-        long aliceId = bobListInfo.getOtherUsers().get(0).getUserId();
+        long aliceId = Long.valueOf(bobListInfo.getOtherUsers().get(0).getUserId());
 
         // Remove Alice from the list
         removeUserFromList(bobClient, bobListInfo, aliceId);

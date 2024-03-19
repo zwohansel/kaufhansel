@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 class EditableTextLabel extends StatefulWidget {
   final String _initialText;
   final Future<bool> Function(String) _onSubmit;
-  final TextStyle _textStyle;
+  final TextStyle? _textStyle;
   final bool _enabled;
 
   const EditableTextLabel(
-      {@required String text,
-      @required Future<bool> Function(String) onSubmit,
-      @required TextStyle textStyle,
+      {required String text,
+      required Future<bool> Function(String) onSubmit,
+      required TextStyle? textStyle,
       bool enabled = true})
       : _initialText = text,
         _onSubmit = onSubmit,

@@ -2,7 +2,6 @@ import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/synced_shoppinglist.dart';
 import 'package:kaufhansel_client/widgets/async_operation_icon_button.dart';
@@ -11,13 +10,13 @@ import 'package:provider/provider.dart';
 
 class ShoppingListItemInput extends StatefulWidget {
   final ScrollController shoppingListScrollController;
-  final String category;
+  final String? category;
   final bool enabled;
   final void Function(String) onChange;
 
   ShoppingListItemInput({
-    @required this.shoppingListScrollController,
-    @required this.onChange,
+    required this.shoppingListScrollController,
+    required this.onChange,
     this.category,
     this.enabled = true,
   });
@@ -119,7 +118,7 @@ class _ShoppingListItemInputState extends State<ShoppingListItemInput> {
     );
   }
 
-  IconButton _buildClearButton() {
+  IconButton? _buildClearButton() {
     if (_focus.hasFocus || _focus.hasPrimaryFocus) {
       return IconButton(
         icon: Icon(Icons.clear, color: Colors.black, size: 20),

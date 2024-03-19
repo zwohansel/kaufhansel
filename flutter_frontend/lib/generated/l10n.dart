@@ -10,28 +10,43 @@ import 'intl/messages_all.dart';
 
 // ignore_for_file: non_constant_identifier_names, lines_longer_than_80_chars
 // ignore_for_file: join_return_with_assignment, prefer_final_in_for_each
-// ignore_for_file: avoid_redundant_argument_values
+// ignore_for_file: avoid_redundant_argument_values, avoid_escaping_inner_quotes
 
 class AppLocalizations {
   AppLocalizations();
-  
-  static AppLocalizations current;
-  
-  static const AppLocalizationDelegate delegate =
-    AppLocalizationDelegate();
+
+  static AppLocalizations? _current;
+
+  static AppLocalizations get current {
+    assert(_current != null,
+        'No instance of AppLocalizations was loaded. Try to initialize the AppLocalizations delegate before accessing AppLocalizations.current.');
+    return _current!;
+  }
+
+  static const AppLocalizationDelegate delegate = AppLocalizationDelegate();
 
   static Future<AppLocalizations> load(Locale locale) {
-    final name = (locale.countryCode?.isEmpty ?? false) ? locale.languageCode : locale.toString();
-    final localeName = Intl.canonicalizedLocale(name); 
+    final name = (locale.countryCode?.isEmpty ?? false)
+        ? locale.languageCode
+        : locale.toString();
+    final localeName = Intl.canonicalizedLocale(name);
     return initializeMessages(localeName).then((_) {
       Intl.defaultLocale = localeName;
-      AppLocalizations.current = AppLocalizations();
-      
-      return AppLocalizations.current;
+      final instance = AppLocalizations();
+      AppLocalizations._current = instance;
+
+      return instance;
     });
-  } 
+  }
 
   static AppLocalizations of(BuildContext context) {
+    final instance = AppLocalizations.maybeOf(context);
+    assert(instance != null,
+        'No instance of AppLocalizations present in the widget tree. Did you add AppLocalizations.delegate in localizationsDelegates?');
+    return instance!;
+  }
+
+  static AppLocalizations? maybeOf(BuildContext context) {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
@@ -1486,7 +1501,8 @@ class AppLocalizations {
   }
 
   /// `Möchtest du {userName} wirklich von {shoppingListName} entfernen?`
-  String listSettingsRemoveUserFromList(Object userName, Object shoppingListName) {
+  String listSettingsRemoveUserFromList(
+      Object userName, Object shoppingListName) {
     return Intl.message(
       'Möchtest du $userName wirklich von $shoppingListName entfernen?',
       name: 'listSettingsRemoveUserFromList',
@@ -1696,7 +1712,8 @@ class AppLocalizations {
   }
 
   /// `Du verwendest vom Kaufhansel immer noch die Version {frontendVersion} ???\n\nDie ist doch schon viel zu alt. Hol dir die neue und viel bessere Version ${backendVersion} von`
-  String exceptionIncompatibleVersion(Object frontendVersion, Object backendVersion) {
+  String exceptionIncompatibleVersion(
+      Object frontendVersion, Object backendVersion) {
     return Intl.message(
       'Du verwendest vom Kaufhansel immer noch die Version $frontendVersion ???\n\nDie ist doch schon viel zu alt. Hol dir die neue und viel bessere Version \$$backendVersion von',
       name: 'exceptionIncompatibleVersion',
@@ -1843,11 +1860,9 @@ class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {
   bool shouldReload(AppLocalizationDelegate old) => false;
 
   bool _isSupported(Locale locale) {
-    if (locale != null) {
-      for (var supportedLocale in supportedLocales) {
-        if (supportedLocale.languageCode == locale.languageCode) {
-          return true;
-        }
+    for (var supportedLocale in supportedLocales) {
+      if (supportedLocale.languageCode == locale.languageCode) {
+        return true;
       }
     }
     return false;

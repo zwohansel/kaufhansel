@@ -39,10 +39,6 @@ class ShoppingListModeSelection extends StatelessWidget {
   Widget build(_) {
     return ToggleButtons(
         borderWidth: 2,
-        fillColor: Theme.of(_context).primaryColor,
-        color: Theme.of(_context).primaryColorDark,
-        selectedColor: Colors.white,
-        hoverColor: Theme.of(_context).secondaryHeaderColor,
         constraints: BoxConstraints.tightFor(height: 40, width: 40),
         children: [
           Tooltip(

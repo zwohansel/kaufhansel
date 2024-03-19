@@ -17,8 +17,8 @@ class InfoCard extends StatefulWidget {
   final Future<void> Function(String) _onChangeShoppingListName;
 
   const InfoCard(this._shoppingListInfo, this._loading, this._setLoading,
-      {@required Future<void> Function() onRemoveAllItems,
-      @required Future<void> Function(String) onChangeShoppingListName})
+      {required Future<void> Function() onRemoveAllItems,
+      required Future<void> Function(String) onChangeShoppingListName})
       : _onRemoveAllItems = onRemoveAllItems,
         _onChangeShoppingListName = onChangeShoppingListName;
 
@@ -38,7 +38,7 @@ class _InfoCardState extends State<InfoCard> {
             children: [
               EditableTextLabel(
                   text: widget._shoppingListInfo.name,
-                  textStyle: Theme.of(context).textTheme.headline5.apply(fontFamilyFallback: ['NotoColorEmoji']),
+                  textStyle: Theme.of(context).textTheme.headlineSmall?.apply(fontFamilyFallback: ['NotoColorEmoji']),
                   enabled: widget._shoppingListInfo.permissions.canEditList,
                   onSubmit: (text) => _submitNewShoppingListName(text)),
               SizedBox(height: 12),
@@ -58,7 +58,7 @@ class _InfoCardState extends State<InfoCard> {
     try {
       final removeItems = await showConfirmDialog(
           context, AppLocalizations.of(context).listSettingsClearListConfirmationText(widget._shoppingListInfo.name));
-      if (removeItems) {
+      if (removeItems ?? false) {
         await widget._onRemoveAllItems();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(AppLocalizations.of(context).listSettingsListCleared(widget._shoppingListInfo.name)),

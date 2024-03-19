@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'package:kaufhansel_client/generated/l10n.dart';
 
-Future<bool> showConfirmDialog(BuildContext context, String text,
-    {String title,
-    String confirmBtnLabel,
-    String cancelBtnLabel,
-    Color confirmBtnColor = Colors.red,
+Future<bool?> showConfirmDialog(BuildContext context, String text,
+    {String? title,
+    String? confirmBtnLabel,
+    String? cancelBtnLabel,
+    Color? confirmBtnColor,
     bool hideCancelBtn = false}) {
   final displayTitle = title == null ? AppLocalizations.of(context).important : title;
   final displayConfirmBtnLabel = confirmBtnLabel == null ? AppLocalizations.of(context).ok : confirmBtnLabel;
@@ -16,7 +16,7 @@ Future<bool> showConfirmDialog(BuildContext context, String text,
     barrierDismissible: false,
     context: context,
     builder: (context) => _ConfirmationDialog(
-        displayTitle, text, displayConfirmBtnLabel, confirmBtnColor, displayCancelBtnLabel, hideCancelBtn),
+        displayTitle, text, displayConfirmBtnLabel, confirmBtnColor ?? Colors.red, displayCancelBtnLabel, hideCancelBtn),
   );
 }
 
@@ -47,7 +47,7 @@ class _ConfirmationDialog extends StatelessWidget {
     }
     buttonRow.add(
       ElevatedButton(
-        style: ElevatedButton.styleFrom(primary: _confirmBtnColor),
+        style: ElevatedButton.styleFrom(backgroundColor: _confirmBtnColor),
         onPressed: () => Navigator.pop(context, true),
         child: Text(_confirmBtnLabel),
       ),

@@ -1,7 +1,7 @@
 package de.hanselmann.shoppinglist.restapi.dto;
 
 public class ShoppingListItemDto {
-    private final long id;
+    private String id;
     private final String name;
     private final boolean checked;
     private final String category;
@@ -10,17 +10,17 @@ public class ShoppingListItemDto {
      * Required to run the test in eclipse
      */
     protected ShoppingListItemDto() {
-        this(0, null, false, null);
+        this("", null, false, null);
     }
 
-    public ShoppingListItemDto(long id, String name, boolean checked, String category) {
+    public ShoppingListItemDto(String id, String name, boolean checked, String category) {
         this.id = id;
         this.name = name;
         this.checked = checked;
         this.category = category;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 

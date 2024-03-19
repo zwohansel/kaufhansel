@@ -1,7 +1,6 @@
 import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/synced_shoppinglist.dart';
@@ -12,8 +11,8 @@ class EditShoppingListItemDialog extends StatefulWidget {
   final List<String> _categories;
 
   const EditShoppingListItemDialog({
-    @required SyncedShoppingListItem item,
-    @required List<String> categories,
+    required SyncedShoppingListItem item,
+    required List<String> categories,
   })  : _item = item,
         _categories = categories;
 
@@ -54,76 +53,84 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
 
     final title = MoreOptionsEditableTextLabel(
       text: widget._item.name,
-      textStyle: theme.textTheme.headline6.apply(fontFamilyFallback: ['NotoColorEmoji']),
+      textStyle: theme.textTheme.titleLarge?.apply(fontFamilyFallback: ['NotoColorEmoji']),
       onEditItemName: (text) => submitNewItemName(text),
       onDelete: onDelete,
       enabled: !_loading,
     );
 
-    final subTitle = Text(AppLocalizations.of(context).categoryChooseOne, style: theme.textTheme.subtitle2);
+    final subTitle = Text(AppLocalizations.of(context).categoryChooseOne, style: theme.textTheme.titleSmall);
 
     final categoryButtons = widget._categories.map((category) {
       final currentItemCategory = widget._item.category == category;
-      final color = currentItemCategory ? Theme.of(context).accentColor : Theme.of(context).unselectedWidgetColor;
+      final color = currentItemCategory ? Theme.of(context).colorScheme.primary : Theme.of(context).unselectedWidgetColor;
       return Padding(
         child: OutlinedButton(
             onPressed: !_loading ? () => setItemCategory(category) : null,
             child: Text(category),
             style: OutlinedButton.styleFrom(
-                textStyle: TextStyle(color: color),
-                primary: color,
+                foregroundColor: color,
                 side: BorderSide(color: color, width: currentItemCategory ? 2.0 : 1.0))),
         padding: EdgeInsets.only(bottom: bottomMargin),
       );
     }).toList();
 
-    final dialogContent = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(padding: EdgeInsets.only(left: 10, right: 10, top: 10), child: title),
-        _buildProgress(),
-        Padding(padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: bottomMargin), child: subTitle),
-        Flexible(
-          child: Padding(
-            padding: EdgeInsets.only(left: 10, right: 10),
-            child: Scrollbar(
-                controller: _scrollController,
-                child: ListView(
-                  shrinkWrap: true,
+    final dialogContent = SizedBox(
+      width: 150,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(padding: EdgeInsets.only(left: 10, right: 10, top: 10), child: title),
+          _buildProgress(),
+          Padding(padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: bottomMargin), child: subTitle),
+          Flexible(
+            child: Padding(
+              padding: EdgeInsets.only(left: 10, right: 10),
+              child: Scrollbar(
                   controller: _scrollController,
-                  children: categoryButtons,
-                )),
+                  child: ListView(
+                    shrinkWrap: true,
+                    controller: _scrollController,
+                    children: categoryButtons,
+                  )),
+            ),
           ),
-        ),
-        Padding(
-          padding: EdgeInsets.only(left: 10, right: 10, bottom: bottomMargin),
-          child: OutlinedButton(
-            onPressed: !_loading ? () => setItemCategory(null) : null,
-            child: Text(AppLocalizations.of(context).categoryNone),
-            style: OutlinedButton.styleFrom(primary: Colors.orange, side: BorderSide(color: Colors.orange)),
+          Padding(
+            padding: EdgeInsets.only(left: 10, right: 10, bottom: bottomMargin),
+            child: OutlinedButton(
+              onPressed: !_loading ? () => setItemCategory(null) : null,
+              child: Text(AppLocalizations.of(context).categoryNone),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: Colors.orange),
+                foregroundColor: Colors.orange
+              ),
+            ),
           ),
-        ),
-        Padding(
-          padding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
-          child: TextField(
-            controller: _newCategoryEditingController,
-            focusNode: _newCategoryEditionFocus,
-            textCapitalization: TextCapitalization.sentences,
-            onSubmitted: (_) => submitNewCategory(),
-            enabled: !_loading,
-            decoration: InputDecoration(
-                labelText: AppLocalizations.of(context).categoryCreateNew,
-                isDense: true,
-                border: OutlineInputBorder(),
-                suffixIcon: IconButton(
-                    icon: Icon(Icons.check), onPressed: !_loading && _newCategoryIsValid ? submitNewCategory : null)),
+          Padding(
+            padding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
+            child: TextField(
+              controller: _newCategoryEditingController,
+              focusNode: _newCategoryEditionFocus,
+              textCapitalization: TextCapitalization.sentences,
+              onSubmitted: (_) => submitNewCategory(),
+              enabled: !_loading,
+              decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context).categoryCreateNew,
+                  isDense: true,
+                  border: OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                      icon: Icon(Icons.check), onPressed: !_loading && _newCategoryIsValid ? submitNewCategory : null)),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
 
-    return Dialog(child: ConstrainedBox(constraints: BoxConstraints(maxWidth: 150), child: dialogContent));
+    return Dialog(child: Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: dialogContent,
+    ));
   }
 
   Future<void> submitNewItemName(String newItemName) async {
@@ -148,7 +155,7 @@ class _EditShoppingListItemDialogState extends State<EditShoppingListItemDialog>
     }
   }
 
-  Future<void> setItemCategory(String category) async {
+  Future<void> setItemCategory(String? category) async {
     if (category == widget._item.category) {
       Navigator.pop(context);
       return;
@@ -196,11 +203,11 @@ class MoreOptionsEditableTextLabel extends StatefulWidget {
   final onDelete;
 
   const MoreOptionsEditableTextLabel(
-      {@required this.text,
-      @required this.textStyle,
-      @required this.enabled,
-      @required this.onEditItemName,
-      @required this.onDelete});
+      {required this.text,
+      required this.textStyle,
+      required this.enabled,
+      required this.onEditItemName,
+      required this.onDelete});
 
   @override
   _MoreOptionsEditableTextLabelState createState() => _MoreOptionsEditableTextLabelState(text);

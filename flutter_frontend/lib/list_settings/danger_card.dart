@@ -16,7 +16,7 @@ class DangerCard extends StatelessWidget {
   final Future<void> Function() _deleteShoppingList;
 
   const DangerCard(this._loading, this._setLoading,
-      {@required ShoppingListInfo shoppingListInfo, @required Future<void> Function() deleteShoppingList})
+      {required ShoppingListInfo shoppingListInfo, required Future<void> Function() deleteShoppingList})
       : _deleteShoppingList = deleteShoppingList,
         _shoppingListInfo = shoppingListInfo;
 
@@ -35,7 +35,10 @@ class DangerCard extends StatelessWidget {
               child: Text(_willDeleteList()
                   ? AppLocalizations.of(context).listSettingsDeleteList
                   : AppLocalizations.of(context).listSettingsLeaveList),
-              style: OutlinedButton.styleFrom(primary: Colors.red),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red,
+                side: BorderSide(color: Colors.red),
+              ),
               onPressed: () => _loading ? null : _onDeleteShoppingList(context),
             ),
             _buildDeleteLeaveBtnExplanation(context),
@@ -52,7 +55,7 @@ class DangerCard extends StatelessWidget {
   }
 
   Widget _buildDeleteLeaveBtnExplanation(BuildContext context) {
-    String explanation;
+    String? explanation;
     if (_willDeleteList() && _shoppingListInfo.users.length > 0) {
       explanation = AppLocalizations.of(context)
           .listSettingsLeaveExplanationOnlyAdmin(ShoppingListRole.ADMIN.toDisplayString(context));
@@ -77,7 +80,7 @@ class DangerCard extends StatelessWidget {
             ? localization.listSettingsDeleteListConfirmationText(_shoppingListInfo.name)
             : localization.listSettingsLeaveListConfirmationText(_shoppingListInfo.name),
       );
-      if (deleteList) {
+      if (deleteList ?? false) {
         await _deleteShoppingList();
         Navigator.pop(context);
       }

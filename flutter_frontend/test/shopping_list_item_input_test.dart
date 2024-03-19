@@ -13,9 +13,9 @@ import 'utils.dart';
 
 void main() {
   const testLocale = Locale("de");
-  AppLocalizations localizations;
+  late AppLocalizations localizations;
   ScrollController scrollController;
-  ShoppingListItemInput itemInput;
+  late ShoppingListItemInput itemInput;
 
   setUp(() async {
     localizations = await AppLocalizations.load(testLocale);
@@ -39,8 +39,8 @@ void main() {
   });
 
   testWidgets("addNewItemIfTextIsValid", (WidgetTester tester) async {
-    final shoppingList = new ShoppingList(new ShoppingListInfo("_id", "_name", null, []), []);
-    final client = RestClientStub(onCreateShoppingListItem: (String shoppingListId, String name, String category) {
+    final shoppingList = new ShoppingList(new ShoppingListInfo("_id", "_name", ShoppingListPermissions(ShoppingListRole.READ_ONLY, false, false, false), []), []);
+    final client = RestClientStub(onCreateShoppingListItem: (String shoppingListId, String name, String? category) {
       expect(shoppingListId, equals("_id"));
       expect(name, equals("New Item"));
       expect(category, isNull);

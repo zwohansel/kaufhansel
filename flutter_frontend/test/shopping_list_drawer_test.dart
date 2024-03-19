@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
@@ -14,7 +12,7 @@ import 'utils.dart';
 
 void main() {
   const testLocale = Locale("de");
-  AppLocalizations localizations;
+  late AppLocalizations localizations;
 
   setUp(() async {
     localizations = await AppLocalizations.load(testLocale);
@@ -93,7 +91,7 @@ void main() {
     final info0 = ShoppingListInfo("0", "List0", ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true), []);
     final info1 = ShoppingListInfo("1", "List1", ShoppingListPermissions(ShoppingListRole.ADMIN, true, true, true), []);
 
-    ShoppingListInfo selectedList;
+    ShoppingListInfo? selectedList;
     final list = SyncedShoppingList(client, ShoppingList(info0, []));
     final drawer = _buildDrawer(
       shoppingLists: [info0, info1],
@@ -229,9 +227,9 @@ ShoppingListInfo buildShoppingListInfo(ShoppingListPermissions permissions) =>
     ShoppingListInfo("id0", "List0", permissions, []);
 
 Widget _buildDrawer({
-  List<ShoppingListInfo> shoppingLists,
-  SyncedShoppingList selectedList,
-  void onShoppingListSelected(ShoppingListInfo info),
+  List<ShoppingListInfo>? shoppingLists,
+  SyncedShoppingList? selectedList,
+  void onShoppingListSelected(ShoppingListInfo info)?,
 }) {
   return ChangeNotifierProvider.value(
       value: selectedList,
@@ -240,13 +238,13 @@ Widget _buildDrawer({
         userInfo: ShoppingListUserInfo("0", "Test", "test@test.de", "token"),
         onRefreshPressed: () {},
         onShoppingListSelected: onShoppingListSelected ?? (info) {},
-        onCreateShoppingList: (name) => null,
-        onDeleteShoppingList: (info) => null,
-        onAddUserToShoppingListIfPresent: (info, user) => null,
-        onChangeShoppingListPermissions: (info, string, role) => null,
-        onRemoveUserFromShoppingList: (info, userRef) => null,
-        onChangeShoppingListName: (info, name) => null,
-        onLogOut: () => null,
-        onDeleteUserAccount: () => null,
+        onCreateShoppingList: (name) async => null,
+        onDeleteShoppingList: (info) async => null,
+        onAddUserToShoppingListIfPresent: (info, user) async => false,
+        onChangeShoppingListPermissions: (info, string, role) async => null,
+        onRemoveUserFromShoppingList: (info, userRef) async => null,
+        onChangeShoppingListName: (info, name) async => null,
+        onLogOut: () async => null,
+        onDeleteUserAccount: () async => null,
       ));
 }

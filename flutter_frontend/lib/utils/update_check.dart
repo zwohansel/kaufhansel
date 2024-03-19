@@ -11,10 +11,10 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../model.dart';
 
 class Update {
-  final SettingsStore _settingsStore;
-  final Version _currentVersion;
-  final Version _latestVersion;
-  final InfoMessage _message;
+  final SettingsStore? _settingsStore;
+  final Version? _currentVersion;
+  final Version? _latestVersion;
+  final InfoMessage? _message;
   bool _messageConfirmed;
 
   Update(this._settingsStore, this._currentVersion, this._latestVersion, this._message, this._messageConfirmed);
@@ -37,65 +37,65 @@ class Update {
     }
 
     // Ignore patch version changes since they only indicate backend changes
-    return _latestVersion.isMoreRecentIgnoringPatchLevelThan(_currentVersion);
+    return _latestVersion?.isMoreRecentIgnoringPatchLevelThan(_currentVersion!) ?? false;
   }
 
   bool isBreakingChange() {
-    return isNewVersionAvailable() && !_latestVersion.isCompatibleTo(_currentVersion);
+    return isNewVersionAvailable() && !_latestVersion!.isCompatibleTo(_currentVersion!);
   }
 
-  Version get currentVersion => _currentVersion;
-  Version get latestVersion => _latestVersion;
+  Version? get currentVersion => _currentVersion;
+  Version? get latestVersion => _latestVersion;
 
   bool hasInfoMessage() {
     return _message != null && !_messageConfirmed;
   }
 
   bool isCritical() {
-    return (hasInfoMessage() && _message.severity == InfoMessageSeverity.CRITICAL) || isBreakingChange();
+    return (hasInfoMessage() && _message?.severity == InfoMessageSeverity.CRITICAL) || isBreakingChange();
   }
 
-  InfoMessage get infoMessage => _message;
+  InfoMessage? get infoMessage => _message;
 
   void confirmMessage() {
     _messageConfirmed = true;
     if (_message != null) {
-      _settingsStore.confirmInfoMessage(_message.messageNumber);
+      _settingsStore?.confirmInfoMessage(_message!.messageNumber);
     }
   }
 }
 
-Future<Optional<Update>> checkForUpdate(
+Future<Update?> checkForUpdate(
   BuildContext context,
   RestClient client,
   SettingsStore store,
-  Version currentVersion,
+  Version? currentVersion,
 ) async {
   while (true) {
     try {
       final backendInfo = await client.getBackendInfo();
       final messageConfirmed =
-          backendInfo.message != null ? await store.isInfoMessageConfirmed(backendInfo.message.messageNumber) : false;
+          backendInfo.message != null ? await store.isInfoMessageConfirmed(backendInfo.message!.messageNumber) : false;
 
-      return Optional(Update(store, currentVersion, backendInfo.version, backendInfo.message, messageConfirmed));
+      return Update(store, currentVersion, backendInfo.version, backendInfo.message, messageConfirmed);
     } on Exception catch (e) {
       log("Failed to fetch backend info.", error: e);
-      if (await _askUserIfWeShouldTryAgain(context)) {
+      if (await _askUserIfWeShouldTryAgain(context) ?? false) {
         await Future.delayed(Duration(seconds: 5)); // Don't let the user DDOS the server
       } else {
-        return Optional.empty();
+        return null;
       }
     }
   }
 }
 
-Future<bool> _askUserIfWeShouldTryAgain(BuildContext context) {
+Future<bool?> _askUserIfWeShouldTryAgain(BuildContext context) {
   final locale = AppLocalizations.of(context);
   return showConfirmDialog(context, locale.exceptionUpdateCheckFailed,
       confirmBtnLabel: locale.tryAgain, cancelBtnLabel: locale.dontCare, confirmBtnColor: null);
 }
 
-Future<Version> getCurrentVersion() async {
+Future<Version?> getCurrentVersion() async {
   try {
     final info = await PackageInfo.fromPlatform();
     return Version.fromString(info.version);

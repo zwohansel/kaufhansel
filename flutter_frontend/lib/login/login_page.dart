@@ -2,10 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/login/check_invite_code_form.dart';
 import 'package:kaufhansel_client/login/email_password_form.dart';
@@ -25,7 +22,7 @@ class LoginPage extends StatefulWidget {
   final Update _update;
   final void Function(ShoppingListUserInfo) _loggedIn;
 
-  const LoginPage({@required void Function(ShoppingListUserInfo) loggedIn, @required Update update, enabled = true})
+  const LoginPage({required void Function(ShoppingListUserInfo) loggedIn, required Update update, enabled = true})
       : _loggedIn = loggedIn,
         _update = update,
         _enabled = enabled;
@@ -47,8 +44,8 @@ class _LoginPageState extends State<LoginPage> {
   _PageMode _pageMode = _PageMode.LOGIN;
   bool _loading = false;
   String _emailAddress = "";
-  String _inviteCode;
-  bool _inviteCodeInvalid = false;
+  String? _inviteCode;
+  bool? _inviteCodeInvalid = false;
   bool _showInfo = true;
 
   @override
@@ -72,11 +69,11 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       Icon(
                         Icons.shopping_cart_outlined,
-                        size: Theme.of(context).textTheme.headline3.fontSize,
+                        size: Theme.of(context).textTheme.displaySmall?.fontSize,
                       ),
                       Text(
                         AppLocalizations.of(context).appTitle,
-                        style: Theme.of(context).textTheme.headline3,
+                        style: Theme.of(context).textTheme.displaySmall,
                       ),
                     ],
                   ),
@@ -127,7 +124,7 @@ class _LoginPageState extends State<LoginPage> {
           messages.add(SizedBox(height: 10));
         }
         messages.add(Text(
-          widget._update.infoMessage.message,
+          widget._update.infoMessage?.message ?? "",
           style: _getInfoMessageTextStyle(),
         ));
       }
@@ -149,18 +146,18 @@ class _LoginPageState extends State<LoginPage> {
                           padding: EdgeInsets.only(top: 10, bottom: 10),
                           child: OutlinedButton(
                               style: OutlinedButton.styleFrom(
-                                  primary: _getInfoMessageBtnColor(),
+                                  backgroundColor: _getInfoMessageBtnColor(),
                                   side: BorderSide(color: _getInfoMessageBtnColor())),
                               onPressed: () => setState(() => _confirmMessage()),
                               child:
-                                  Text(widget._update?.infoMessage?.dismissLabel ?? AppLocalizations.of(context).ok)))
+                                  Text(widget._update.infoMessage?.dismissLabel ?? AppLocalizations.of(context).ok)))
                       : TextButton(
                           style: TextButton.styleFrom(
-                            primary: _getInfoMessageBtnColor(),
+                            backgroundColor: _getInfoMessageBtnColor(),
                             visualDensity: VisualDensity.compact,
                           ),
                           onPressed: () => setState(() => _confirmMessage()),
-                          child: Text(widget._update?.infoMessage?.dismissLabel ?? AppLocalizations.of(context).ok),
+                          child: Text(widget._update.infoMessage?.dismissLabel ?? AppLocalizations.of(context).ok),
                         ),
                 )
               ],
@@ -191,11 +188,11 @@ class _LoginPageState extends State<LoginPage> {
     return Theme.of(context).secondaryHeaderColor;
   }
 
-  TextStyle _getInfoMessageTextStyle() {
+  TextStyle? _getInfoMessageTextStyle() {
     if (widget._update.isCritical()) {
-      return Theme.of(context).textTheme.bodyText1.apply(color: Colors.white);
+      return Theme.of(context).textTheme.bodyLarge?.apply(color: Colors.white);
     }
-    return Theme.of(context).textTheme.bodyText1;
+    return Theme.of(context).textTheme.bodyLarge;
   }
 
   Color _getInfoMessageBtnColor() {
@@ -255,18 +252,19 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final client = RestClientWidget.of(context);
-      ShoppingListUserInfo userInfo = await client.login(email, password);
-      if (userInfo != null) {
-        await SettingsStoreWidget.of(context).saveUserInfo(userInfo);
+      ShoppingListUserInfo? userInfo = await client.login(email, password);
+      final settingsStore = await SettingsStoreWidget.of(context);
+      if (userInfo != null && settingsStore != null) {
+        await settingsStore.saveUserInfo(userInfo);
         widget._loggedIn(userInfo);
       } else {
         showErrorDialog(context, AppLocalizations.of(context).exceptionWrongCredentials);
       }
     } on SocketException catch (e) {
-      if (e.osError.errorCode == 111 && Platform.isLinux || Platform.isAndroid) {
+      if (e.osError?.errorCode == 111 && Platform.isLinux || Platform.isAndroid) {
         showErrorDialog(context, AppLocalizations.of(context).exceptionNoInternet);
       } else {
-        showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralComputerSays + e.osError.message);
+        showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralComputerSays + (e.osError?.message ?? ""));
       }
     } on TimeoutException {
       showErrorDialog(context, AppLocalizations.of(context).exceptionConnectionTimeout);
@@ -344,7 +342,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Future<RegistrationResult> _register({String email, @required String password, @required String userName}) async {
+  Future<RegistrationResult> _register({String? email, required String password, required String userName}) async {
     setState(() => _loading = true);
 
     try {

@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/list_settings/card_style.dart';
 import 'package:kaufhansel_client/list_settings/user_role_tile.dart';
@@ -25,9 +24,9 @@ class ShareListCard extends StatefulWidget {
     this._shoppingListInfo,
     this._loading,
     this._setLoading, {
-    @required Future<bool> Function(String) onAddUserToShoppingListIfPresent,
-    @required Future<void> Function(String, ShoppingListRole) onChangeShoppingListPermissions,
-    @required Future<void> Function(ShoppingListUserReference) onRemoveUserFromShoppingList,
+    required Future<bool> Function(String) onAddUserToShoppingListIfPresent,
+    required Future<void> Function(String, ShoppingListRole) onChangeShoppingListPermissions,
+    required Future<void> Function(ShoppingListUserReference) onRemoveUserFromShoppingList,
   })  : _onAddUserToShoppingListIfPresent = onAddUserToShoppingListIfPresent,
         _onRemoveUserFromShoppingList = onRemoveUserFromShoppingList,
         _onChangeShoppingListPermissions = onChangeShoppingListPermissions;
@@ -63,7 +62,7 @@ class _ShareListCardState extends State<ShareListCard> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(AppLocalizations.of(context).listSettingsSharingWith, style: Theme.of(context).textTheme.headline6),
+            Text(AppLocalizations.of(context).listSettingsSharingWith, style: Theme.of(context).textTheme.titleLarge),
             SizedBox(height: 12),
             Column(
               mainAxisSize: MainAxisSize.min,
@@ -131,10 +130,10 @@ class _ShareListCardState extends State<ShareListCard> {
     );
   }
 
-  Future<ShoppingListRole> _buildPermissionsDialog(BuildContext context, {ShoppingListUserReference user}) {
+  Future<ShoppingListRole?> _buildPermissionsDialog(BuildContext context, {ShoppingListUserReference? user}) {
     final title = user == null
         ? AppLocalizations.of(context).rolesWhich
-        : AppLocalizations.of(context).listSettingsChangeUserRole(user?.userName);
+        : AppLocalizations.of(context).listSettingsChangeUserRole(user.userName);
     return showDialog<ShoppingListRole>(
         context: context,
         builder: (context) => SimpleDialog(
@@ -150,7 +149,7 @@ class _ShareListCardState extends State<ShareListCard> {
                 .toList()));
   }
 
-  Widget _buildRoleOption(BuildContext context, ShoppingListRole role, bool selected, {bool preview}) {
+  Widget _buildRoleOption(BuildContext context, ShoppingListRole role, bool selected, {bool preview = false}) {
     return Container(
         color: selected ? Theme.of(context).highlightColor : null,
         child: SimpleDialogOption(
@@ -164,7 +163,7 @@ class _ShareListCardState extends State<ShareListCard> {
                 children: [
                   Text(
                     role.toDisplayString(context),
-                    style: Theme.of(context).textTheme.headline6,
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                   Text(role.toDescription(context))
                 ],
@@ -176,7 +175,7 @@ class _ShareListCardState extends State<ShareListCard> {
   }
 
   void _onAddUserToShoppingList() async {
-    if (!_addUserToShoppingListFormKey.currentState.validate()) {
+    if (!(_addUserToShoppingListFormKey.currentState?.validate() ?? false)) {
       _addUserToShoppingListFocusNode.requestFocus();
       return;
     }
@@ -204,7 +203,7 @@ class _ShareListCardState extends State<ShareListCard> {
         confirmBtnLabel: AppLocalizations.of(context).listSettingsSendListInvitationYes,
         confirmBtnColor: Theme.of(context).primaryColor,
         title: AppLocalizations.of(context).listSettingsSendListInvitationTitle(emailAddress));
-    if (inviteUser) {
+    if (inviteUser ?? false) {
       try {
         RestClient client = RestClientWidget.of(context);
         await client.sendInvite(emailAddress, shoppingListId: widget._shoppingListInfo.id);
@@ -243,7 +242,7 @@ class _ShareListCardState extends State<ShareListCard> {
     try {
       final removeUser = await showConfirmDialog(context,
           AppLocalizations.of(context).listSettingsRemoveUserFromList(user.userName, widget._shoppingListInfo.name));
-      if (removeUser) {
+      if (removeUser ?? false) {
         await widget._onRemoveUserFromShoppingList(user);
       }
     } on Exception catch (e) {

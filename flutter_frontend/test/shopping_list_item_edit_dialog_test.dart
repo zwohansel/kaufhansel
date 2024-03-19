@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
@@ -13,7 +11,7 @@ import 'utils.dart';
 
 void main() {
   const testLocale = Locale("de");
-  AppLocalizations localizations;
+  late AppLocalizations localizations;
 
   setUp(() async {
     localizations = await AppLocalizations.load(testLocale);
@@ -28,7 +26,7 @@ void main() {
     return SyncedShoppingList(client, list);
   }
 
-  Widget createDialog(SyncedShoppingListItem item, {List<String> categories}) {
+  Widget createDialog(SyncedShoppingListItem item, {List<String>? categories}) {
     return EditShoppingListItemDialog(item: item, categories: categories ?? []);
   }
 
@@ -49,7 +47,7 @@ void main() {
   });
 
   testWidgets('showDialogWithCategoriesAndChooseCategory', (WidgetTester tester) async {
-    ShoppingListItem updatedShoppingListItem;
+    ShoppingListItem? updatedShoppingListItem;
     final client = RestClientStub(onUpdateShoppingListItem: (String shoppingListId, ShoppingListItem item) {
       expect(shoppingListId, equals(listId));
       updatedShoppingListItem = item;
@@ -72,13 +70,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(updatedShoppingListItem, isNotNull);
-    expect(updatedShoppingListItem.category, "Category2");
+    expect(updatedShoppingListItem?.category, "Category2");
     expect(item.category, equals("Category2"));
   });
 
   testWidgets('addNewCategory', (WidgetTester tester) async {
     final newCategoryName = "New category";
-    ShoppingListItem updatedShoppingListItem;
+    ShoppingListItem? updatedShoppingListItem;
     final client = RestClientStub(onUpdateShoppingListItem: (String shoppingListId, ShoppingListItem item) {
       expect(shoppingListId, equals(listId));
       updatedShoppingListItem = item;
@@ -99,13 +97,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(updatedShoppingListItem, isNotNull);
-    expect(updatedShoppingListItem.category, newCategoryName);
+    expect(updatedShoppingListItem?.category, newCategoryName);
     expect(item.category, equals(newCategoryName));
   });
 
   testWidgets('editItemName', (WidgetTester tester) async {
     final newItemName = "New item name";
-    ShoppingListItem updatedShoppingListItem;
+    ShoppingListItem? updatedShoppingListItem;
     final client = RestClientStub(onUpdateShoppingListItem: (String shoppingListId, ShoppingListItem item) {
       expect(shoppingListId, equals(listId));
       updatedShoppingListItem = item;
@@ -132,12 +130,12 @@ void main() {
     await tester.testTextInput.receiveAction(TextInputAction.done);
 
     expect(updatedShoppingListItem, isNotNull);
-    expect(updatedShoppingListItem.name, equals(newItemName));
+    expect(updatedShoppingListItem?.name, equals(newItemName));
     expect(item.name, equals(newItemName));
   });
 
   testWidgets('deleteItem', (WidgetTester tester) async {
-    ShoppingListItem removedItem;
+    ShoppingListItem? removedItem;
     final client = RestClientStub(onDeleteShoppingListItem: (shoppingListId, item) {
       expect(shoppingListId, equals(listId));
       removedItem = item;

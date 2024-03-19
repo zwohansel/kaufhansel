@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/shopping_list_filter_options.dart';
@@ -20,8 +19,8 @@ class ShoppingListPage extends StatefulWidget {
   final List<String> _categories;
   final ShoppingListFilterOption _filter;
   final ShoppingListModeOption mode;
-  final String initialCategory;
-  final void Function(String) onCategoryChanged;
+  final String? initialCategory;
+  final void Function(String)? onCategoryChanged;
   final Future<void> Function() onRefresh;
   final Update update;
 
@@ -31,8 +30,8 @@ class ShoppingListPage extends StatefulWidget {
     this.mode = ShoppingListModeOption.DEFAULT,
     this.initialCategory,
     this.onCategoryChanged,
-    @required this.update,
-    @required this.onRefresh,
+    required this.update,
+    required this.onRefresh,
   });
 
   @override
@@ -40,11 +39,11 @@ class ShoppingListPage extends StatefulWidget {
 }
 
 class _ShoppingListPageState extends State<ShoppingListPage> with TickerProviderStateMixin {
-  TabController _tabController;
+  TabController? _tabController;
   bool _showInfoBox = true;
   bool _loading = false;
   bool _doNotShowProgressBarWhileLoading = false;
-  String _filterText;
+  String? _filterText;
   List<ScrollController> _scrollControllers = [];
 
   @override
@@ -67,20 +66,21 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
   void _createTabController() {
     // If we had a controller before dispose it.
     if (_tabController != null) {
-      _tabController.dispose();
+      _tabController?.dispose();
     }
 
+    final initialCategory = widget.initialCategory;
     assert(widget._categories.isNotEmpty, "There must be at least one category.");
-    assert(widget.initialCategory == null || widget._categories.contains(widget.initialCategory),
-        "Invalid initial category.");
-    final initialIndex = widget.initialCategory != null ? widget._categories.indexOf(widget.initialCategory) : 0;
+    assert(initialCategory == null || widget._categories.contains(initialCategory), "Invalid initial category.");
+    final initialIndex = initialCategory != null ? widget._categories.indexOf(initialCategory) : 0;
     _tabController = TabController(length: widget._categories.length, initialIndex: initialIndex, vsync: this);
-    _tabController.addListener(this._tabControllerChanged);
+    _tabController?.addListener(this._tabControllerChanged);
   }
 
   void _tabControllerChanged() {
-    if (!_tabController.indexIsChanging && widget.onCategoryChanged != null) {
-      widget.onCategoryChanged(widget._categories[_tabController.index]);
+    final onCategoryChanged = widget.onCategoryChanged;
+    if (!(_tabController?.indexIsChanging ?? false) && onCategoryChanged != null) {
+      onCategoryChanged(widget._categories[_tabController?.index ?? 0]);
     }
   }
 
@@ -99,7 +99,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _tabController?.dispose();
     _scrollControllers.forEach((controller) => controller.dispose());
     super.dispose();
   }
@@ -157,7 +157,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
     }
 
     return Container(
-      color: widget.update.isCritical() ? Colors.redAccent.shade400 : Theme.of(context).primaryColorDark,
+      color: widget.update.isCritical() ? Colors.blueAccent : Theme.of(context).primaryColorDark,
       child: Padding(
         padding: EdgeInsets.only(left: 10, top: 5, right: 10, bottom: 5),
         child: Column(
@@ -174,13 +174,13 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
     );
   }
 
-  Widget _buildInfoMessage() {
+  Widget? _buildInfoMessage() {
     if (!widget.update.hasInfoMessage()) {
       return null;
     }
 
-    final critical = widget.update.infoMessage.severity == InfoMessageSeverity.CRITICAL;
-    final message = widget.update.infoMessage.message;
+    final critical = widget.update.infoMessage?.severity == InfoMessageSeverity.CRITICAL;
+    final message = widget.update.infoMessage?.message ?? "";
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -200,7 +200,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
     );
   }
 
-  Widget _buildNewVersionAvailable() {
+  Widget? _buildNewVersionAvailable() {
     if (!widget.update.isNewVersionAvailable()) {
       return null;
     }
@@ -231,7 +231,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
                 child: Link(
                   AppLocalizations.of(context).downloadLink,
                   text: AppLocalizations.of(context).newerVersionAvailable(widget.update.latestVersion.toString()),
-                  style: TextStyle(color: Colors.white, decoration: TextDecoration.underline),
+                  style: TextStyle(color: Colors.white),
                 ),
               ),
               ...obligatoryUpdateInfo,
@@ -243,13 +243,15 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
   }
 
   Widget _buildDismissButton() {
-    final dismissLabelText = widget.update?.infoMessage?.dismissLabel ?? AppLocalizations.of(context).ok;
+    final dismissLabelText = widget.update.infoMessage?.dismissLabel ?? AppLocalizations.of(context).ok;
 
     return Align(
       alignment: Alignment.bottomRight,
       child: OutlinedButton(
         style: TextButton.styleFrom(
-            visualDensity: VisualDensity.compact, primary: Colors.white, side: BorderSide(color: Colors.white30)),
+            visualDensity: VisualDensity.compact,
+            backgroundColor: Colors.white,
+            side: BorderSide(color: Colors.white30)),
         onPressed: () => setState(() {
           widget.update.confirmMessage();
           _showInfoBox = false;
@@ -282,7 +284,12 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
       },
       child: SizedBox(
         width: double.infinity,
-        child: Tab(text: category),
+        child: Tab(
+          child: Text(
+            category,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white),
+          ),
+        ),
       ),
     );
   }
@@ -296,8 +303,8 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
     return Container(
         child: Material(
             child: ShoppingListItemInput(
-              shoppingListScrollController: _scrollControllers[_tabController.index],
-              category: widget._categories[_tabController.index],
+              shoppingListScrollController: _scrollControllers[_tabController?.index ?? 0],
+              category: widget._categories[_tabController?.index ?? 0],
               enabled: !_loading,
               onChange: (text) => setState(() => _filterText = text),
             ),

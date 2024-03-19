@@ -24,16 +24,17 @@ jobs:
         working-directory: flutter_frontend
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Fetch everything
 
       - name: Set kaufhansel_version environment variable
         run: echo "kaufhansel_version=$(git describe --abbrev=0 --tags | grep -Eo '[0-9]+\.[0-9]+\.[0-9]')" >> $GITHUB_ENV
 
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v4
         with:
-          java-version: '12.x'
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: Install Build Tools
         run: sudo apt-get update && sudo apt-get install ninja-build pkg-config libgtk-3-dev libblkid-dev liblzma-dev lcov
@@ -45,10 +46,10 @@ jobs:
           base64 -d ${{runner.workspace}}/upload_key_base64 > ${{runner.workspace}}/kaufhansel/flutter_frontend/android/upload_key.jks
 
       - name: Build Flutter Frontend
-        uses: subosito/flutter-action@v1.4.0
+        uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          flutter-version: '2.0.5'
+          flutter-version: '3.19.1'
       - run: flutter config --enable-linux-desktop
       - run: flutter pub get
       - run: flutter test --coverage
@@ -66,7 +67,7 @@ jobs:
           path-to-lcov: ${{runner.workspace}}/kaufhansel/flutter_frontend/coverage/lcov_filtered.info
           base-path: ${{runner.workspace}}/kaufhansel/flutter_frontend/
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: frontend-android
           path: |
@@ -75,10 +76,10 @@ jobs:
             ${{runner.workspace}}/kaufhansel/flutter_frontend/build/app/outputs/mapping/release/mapping.txt
           if-no-files-found: error
           
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: frontend-linux
-          path: ${{runner.workspace}}/kaufhansel/flutter_frontend/build/linux/release/bundle/
+          path: ${{runner.workspace}}/kaufhansel/flutter_frontend/build/linux/x64/release/bundle/
           if-no-files-found: error
 
 
@@ -88,28 +89,22 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set kaufhansel_version environment variable
         run: echo "kaufhansel_version=$(git describe --abbrev=0 --tags | grep -Eo '[0-9]+\.[0-9]+\.[0-9]')" >> $GITHUB_ENV
 
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v4
         with:
-          java-version: '11.x'
-          
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '12'
-
-      - name: Install Build Tools
-        run: sudo npm install -g yarn
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: Build Backend
         run: ./gradlew -PbackendVersion=${{env.kaufhansel_version}} bundle
         
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: backend
           path: |
@@ -140,42 +135,43 @@ jobs:
           KAUFHANSEL_DEPLOY_USER: ${{ secrets.KAUFHANSEL_DEPLOY_USER }}
 
       - name: Download backend
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: backend
 
       - name: Download android frontend
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: frontend-android
 
       - name: Download linux frontend
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: frontend-linux
           path: frontend-linux/
 
       - name: Deploy
         run: |
-          rsync build/libs/kaufhansel_backend.jar deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/kaufhansel_backend.jar
+          rsync kaufhansel_backend.jar deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/kaufhansel_backend.jar
 
-          ssh deploy 'mkdir -p /home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads'
+          ssh deploy "mkdir -p /home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads"
           rsync flutter-apk/app-release.apk deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads/kaufhansel.apk
 
           mv frontend-linux kaufhansel-linux
           zip -r kaufhansel-linux.zip kaufhansel-linux/
           rsync kaufhansel-linux.zip deploy:/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel/downloads/kaufhansel-linux.zip
 
-          ssh deploy 'docker stop kaufhansel || true'
-          ssh deploy 'docker run --detach --rm --name kaufhansel --log-driver=journald --network $KAUFHANSEL_DOCKER_NETWORK -e KAUFHANSEL_MAIL_SERVER_HOST=$KAUFHANSEL_MAIL_SERVER_HOST -e KAUFHANSEL_MAIL_SERVER_PORT=$KAUFHANSEL_MAIL_SERVER_PORT -e KAUFHANSEL_MAIL_USERNAME=$KAUFHANSEL_MAIL_USERNAME -e KAUFHANSEL_MAIL_PASSWORD=$KAUFHANSEL_MAIL_PASSWORD -e KAUFHANSEL_TOKEN_SECRET=$KAUFHANSEL_TOKEN_SECRET --volume "/home/$KAUFHANSEL_DEPLOY_USER/kaufhansel:/kaufhansel" eclipse-temurin:11 java -jar /kaufhansel/kaufhansel_backend.jar'
+          ssh deploy "docker stop kaufhansel || true"
+          ssh deploy "docker rm kaufhansel || true"
+          ssh deploy "docker run --detach --name kaufhansel --restart unless-stopped --log-driver=journald --network $KAUFHANSEL_DOCKER_NETWORK -e KAUFHANSEL_MAIL_SERVER_HOST=$KAUFHANSEL_MAIL_SERVER_HOST -e KAUFHANSEL_MAIL_SERVER_PORT=$KAUFHANSEL_MAIL_SERVER_PORT -e KAUFHANSEL_MAIL_USERNAME=$KAUFHANSEL_MAIL_USERNAME -e KAUFHANSEL_MAIL_PASSWORD=$KAUFHANSEL_MAIL_PASSWORD -e KAUFHANSEL_TOKEN_SECRET=$KAUFHANSEL_TOKEN_SECRET --volume /home/$KAUFHANSEL_DEPLOY_USER/kaufhansel:/kaufhansel --workdir /kaufhansel eclipse-temurin:17 java -jar kaufhansel_backend.jar"
         env:
           KAUFHANSEL_MAIL_USERNAME: ${{ secrets.KAUFHANSEL_MAIL_USERNAME }}
           KAUFHANSEL_MAIL_PASSWORD: ${{ secrets.KAUFHANSEL_MAIL_PASSWORD }}
           KAUFHANSEL_TOKEN_SECRET: ${{ secrets.KAUFHANSEL_TOKEN_SECRET }}
           KAUFHANSEL_DEPLOY_USER: ${{ secrets.KAUFHANSEL_DEPLOY_USER }}
-          KAUFHANSEL_DOCKER_NETWORK: ${{ env.KAUFHANSEL_DOCKER_NETWORK }}
-          KAUFHANSEL_MAIL_SERVER_HOST: ${{ env.KAUFHANSEL_MAIL_SERVER_HOST }}
-          KAUFHANSEL_MAIL_SERVER_PORT: ${{ env.KAUFHANSEL_MAIL_SERVER_PORT }}
+          KAUFHANSEL_DOCKER_NETWORK: ${{ vars.KAUFHANSEL_DOCKER_NETWORK }}
+          KAUFHANSEL_MAIL_SERVER_HOST: ${{ vars.KAUFHANSEL_MAIL_SERVER_HOST }}
+          KAUFHANSEL_MAIL_SERVER_PORT: ${{ vars.KAUFHANSEL_MAIL_SERVER_PORT }}
 
       - uses: r0adkll/upload-google-play@v1
         with:

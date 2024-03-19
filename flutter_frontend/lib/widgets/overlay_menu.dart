@@ -7,15 +7,15 @@ class OverlayMenuButton extends StatefulWidget {
   final GlobalKey _overlayKey = LabeledGlobalKey("de.zwohansel.kaufhansel.customOverlayWidget");
 
   final Widget _button;
-  final Widget _buttonOpen;
+  final Widget? _buttonOpen;
   final Widget _child;
   final double _heightOffset;
   final double _widthOffset;
 
   OverlayMenuButton(
-      {@required Widget button,
-      @required Widget child,
-      Widget buttonOpen,
+      {required Widget button,
+      required Widget child,
+      Widget? buttonOpen,
       double heightOffset = 0,
       double widthOffset = 0})
       : _button = button,
@@ -29,7 +29,7 @@ class OverlayMenuButton extends StatefulWidget {
 }
 
 class _OverlayMenuButtonState extends State<OverlayMenuButton> {
-  OverlayEntry _overlayEntry;
+  late OverlayEntry _overlayEntry;
   bool _isOpen = false;
 
   @override
@@ -73,8 +73,9 @@ class _OverlayMenuButtonState extends State<OverlayMenuButton> {
   }
 
   Widget _buildButton() {
-    if (widget._buttonOpen != null && _isOpen) {
-      return widget._buttonOpen;
+    final buttonOpen = widget._buttonOpen;
+    if (buttonOpen != null && _isOpen) {
+      return buttonOpen;
     } else {
       return widget._button;
     }
@@ -99,9 +100,9 @@ class _OverlayMenu extends StatelessWidget {
   final double widthOffset;
 
   _OverlayMenu(
-      {@required Widget child,
-      @required GlobalKey overlayKey,
-      @required VoidCallback onBarrierClicked,
+      {required Widget child,
+      required GlobalKey overlayKey,
+      required VoidCallback onBarrierClicked,
       double heightOffset = 0,
       double widthOffset = 0})
       : _child = child,
@@ -114,9 +115,10 @@ class _OverlayMenu extends StatelessWidget {
   Widget build(context) {
     final double padding = 12.0;
     final double borderRadius = 4.0;
-    RenderBox renderBox = _overlayKey.currentContext.findRenderObject();
-    Size buttonSize = renderBox.size;
-    Offset buttonPosition = renderBox.localToGlobal(Offset.zero);
+    RenderObject? renderObject = _overlayKey.currentContext?.findRenderObject();
+    RenderBox? renderBox = renderObject as RenderBox?;
+    Size buttonSize = renderBox?.size ?? Size(0, 0);
+    Offset buttonPosition = renderBox?.localToGlobal(Offset.zero) ?? Offset.zero;
     double calculatedWidthOffset = (widthOffset != 0) ? (widthOffset + 2 * padding + 2 * borderRadius) : 0;
 
     final theme = Theme.of(context);

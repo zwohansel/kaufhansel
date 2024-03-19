@@ -2,7 +2,7 @@ package de.hanselmann.shoppinglist.restapi.dto;
 
 public class SendListInviteDto {
     private String emailAddress;
-    private Long shoppingListId;
+    private String shoppingListId;
 
     public String getEmailAddress() {
         return emailAddress;
@@ -12,12 +12,12 @@ public class SendListInviteDto {
         this.emailAddress = emailAddress;
     }
 
-    public Long getShoppingListId() {
+    public String getShoppingListId() {
         return shoppingListId;
     }
 
     public void setShoppingListId(Long shoppingListId) {
-        this.shoppingListId = shoppingListId;
+        this.shoppingListId = Long.toString(shoppingListId);
     }
 
 }

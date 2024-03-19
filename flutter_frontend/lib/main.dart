@@ -2,7 +2,6 @@ import 'dart:developer' as developer;
 import 'dart:math';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -32,20 +31,44 @@ void main() {
 }
 
 class App extends StatelessWidget {
-  static const _serverUrl = kDebugMode ? "https://localhost:8080/api/" : "https://zwohansel.de/kaufhansel/api/";
+  static const _serverUrl = "https://zwohansel.de/kaufhansel/api/";
   static final _restClient = RestClient(Uri.parse(_serverUrl));
   static final _settingsStore = SettingsStore();
 
   @override
   Widget build(BuildContext context) {
+    var colorScheme = ColorScheme.fromSeed(seedColor: Colors.green, brightness: Brightness.light);
+    var textTheme = TextTheme();
     return MaterialApp(
         // locale can be set here:
         // locale: Locale("de"),
-        localizationsDelegates: [AppLocalizations.delegate, GlobalMaterialLocalizations.delegate],
+        localizationsDelegates: [AppLocalizations.delegate, ...GlobalMaterialLocalizations.delegates],
         supportedLocales: [const Locale('de', '')],
         debugShowCheckedModeBanner: false,
         onGenerateTitle: (BuildContext context) => AppLocalizations.of(context).appTitle,
-        theme: ThemeData(primarySwatch: Colors.green, fontFamily: 'Roboto'),
+        theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: colorScheme,
+            appBarTheme: AppBarTheme(
+                color: colorScheme.primary,
+                actionsIconTheme: IconThemeData(color: Colors.white),
+                iconTheme: IconThemeData(color: Colors.white)),
+            textTheme: textTheme,
+            outlinedButtonTheme: OutlinedButtonThemeData(
+              style: ButtonStyle(
+                shape: MaterialStateProperty.all(
+                  const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
+                ),
+              ),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ButtonStyle(
+                shape: MaterialStateProperty.all(
+                  const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
+                ),
+              ),
+            ),
+            cardTheme: CardTheme(color: Colors.white)),
         home: ShoppingListApp(
           client: _restClient,
           settingsStore: _settingsStore,
@@ -57,9 +80,9 @@ class App extends StatelessWidget {
 class ShoppingListApp extends StatefulWidget {
   final RestClient client;
   final SettingsStore settingsStore;
-  final Future<Version> Function() currentVersion;
+  final Future<Version?> Function() currentVersion;
 
-  const ShoppingListApp({@required this.client, @required this.settingsStore, @required this.currentVersion});
+  const ShoppingListApp({required this.client, required this.settingsStore, required this.currentVersion});
 
   @override
   _ShoppingListAppState createState() => _ShoppingListAppState();
@@ -71,14 +94,14 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   GlobalKey<ScaffoldState> _drawerKey = new GlobalKey();
 
-  String _error;
-  List<ShoppingListInfo> _shoppingListInfos;
-  ShoppingListInfo _currentShoppingListInfo; // TODO: unnecessary, also contained in _currentShoppingList
-  SyncedShoppingList _currentShoppingList;
-  List<String> _currentShoppingListCategories;
-  String _currentShoppingListCategory;
-  ShoppingListUserInfo _userInfo;
-  bool _initializing;
+  String? _error;
+  List<ShoppingListInfo>? _shoppingListInfos;
+  ShoppingListInfo? _currentShoppingListInfo; // TODO: unnecessary, also contained in _currentShoppingList
+  SyncedShoppingList? _currentShoppingList;
+  List<String> _currentShoppingListCategories = [];
+  String? _currentShoppingListCategory;
+  ShoppingListUserInfo? _userInfo;
+  bool _initializing = false;
   Update _update = Update.none();
 
   void initState() {
@@ -93,10 +116,12 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   void _asyncInit() async {
     try {
-      Version currentVersion = await widget.currentVersion();
-      final updateOpt = await checkForUpdate(context, widget.client, widget.settingsStore, currentVersion);
-      updateOpt.ifPresent((update) => setState(() => _update = update));
-      if (!updateOpt.isPresent() || !updateOpt.get.isBreakingChange()) {
+      Version? currentVersion = await widget.currentVersion();
+      final update = await checkForUpdate(context, widget.client, widget.settingsStore, currentVersion);
+      if (update != null) {
+        setState(() => _update = update);
+      }
+      if (update == null || !update.isBreakingChange()) {
         await _loadUserInfo();
       }
     } finally {
@@ -106,8 +131,10 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   Future<void> _loadUserInfo() async {
     try {
-      final userInfoOpt = await widget.settingsStore.getUserInfo();
-      userInfoOpt.ifPresent(_logIn);
+      final userInfo = await widget.settingsStore.getUserInfo();
+      if (userInfo != null) {
+        _logIn(userInfo);
+      }
     } on Exception catch (e) {
       developer.log("Could not read user info from store.", error: e);
     }
@@ -121,8 +148,8 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   void _logIn(ShoppingListUserInfo userInfo) async {
     widget.client.setAuthenticationToken(userInfo.token);
     setState(() => _userInfo = userInfo);
-    Optional<ShoppingListInfo> activeShoppingList = await widget.settingsStore.getActiveShoppingList();
-    _fetchShoppingListInfos(activeShoppingList: activeShoppingList.orElse(null));
+    final activeShoppingList = await widget.settingsStore.getActiveShoppingList();
+    _fetchShoppingListInfos(activeShoppingList);
   }
 
   Future<void> _logOut() async {
@@ -136,8 +163,11 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   }
 
   Future<void> _deleteUserAccount() async {
-    await widget.client.deleteAccount(_userInfo.id);
-    await _logOut();
+    final userInfo = _userInfo;
+    if (userInfo != null) {
+      await widget.client.deleteAccount(userInfo.id);
+      await _logOut();
+    }
   }
 
   void _setFilter(ShoppingListFilterOption nextFilter) {
@@ -167,10 +197,10 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   Future<void> _createShoppingList(String shoppingListName) async {
     ShoppingListInfo info = await widget.client.createShoppingList(shoppingListName);
     setState(() {
-      _shoppingListInfos.add(info);
+      _shoppingListInfos?.add(info);
     });
     if (_currentShoppingListInfo == null) {
-      _currentShoppingListInfo = _shoppingListInfos.first;
+      _currentShoppingListInfo = _shoppingListInfos?.first;
       _fetchCurrentShoppingList();
     }
   }
@@ -179,18 +209,18 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     await widget.client.deleteShoppingList(info.id);
     await widget.settingsStore.removeActiveShoppingList();
     setState(() {
-      _shoppingListInfos.remove(info);
+      _shoppingListInfos?.remove(info);
     });
     if (_currentShoppingListInfo?.id == info.id) {
-      _currentShoppingListInfo = _shoppingListInfos.isNotEmpty ? _shoppingListInfos.first : null;
+      _currentShoppingListInfo = _shoppingListInfos?.isNotEmpty ?? false ? _shoppingListInfos?.first : null;
       _fetchCurrentShoppingList();
     }
   }
 
   Future<bool> _addUserToShoppingList(ShoppingListInfo info, String userEmailAddress) async {
     final userReference = await widget.client.addUserToShoppingList(info.id, userEmailAddress);
-    if (userReference.isPresent()) {
-      info.addUserToShoppingList(userReference.get);
+    if (userReference != null) {
+      info.addUserToShoppingList(userReference);
       return true;
     } else {
       return false;
@@ -213,7 +243,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     info.updateShoppingListName(newName);
   }
 
-  void _fetchShoppingListInfos({ShoppingListInfo activeShoppingList}) async {
+  void _fetchShoppingListInfos(ShoppingListInfo? activeShoppingList) async {
     final oldShoppingList = _currentShoppingList;
     final oldCategory = _currentShoppingListCategory;
     setState(() {
@@ -226,11 +256,11 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       final lists = await widget.client.getShoppingLists();
       setState(() {
         _shoppingListInfos = lists;
-        _currentShoppingListInfo = activeShoppingList ??
-            lists.firstWhere(
-              (list) => list.id == oldShoppingList?.info?.id,
-              orElse: () => lists.firstOrNull,
-            );
+        _currentShoppingListInfo =
+            activeShoppingList ?? lists.where((list) => list.id == oldShoppingList?.info.id).firstOrNull;
+        if (_currentShoppingListInfo == null) {
+          _currentShoppingListInfo = lists.firstOrNull;
+        }
         _fetchCurrentShoppingList(initialCategory: oldCategory);
       });
     } on Exception catch (e) {
@@ -245,17 +275,17 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   }
 
   void _clearCurrentShoppingListState() {
-    _shoppingListInfos = null;
+    _shoppingListInfos = [];
     _currentShoppingList = null;
-    _currentShoppingListCategories = null;
+    _currentShoppingListCategories = [];
     _currentShoppingListCategory = null;
   }
 
-  void _fetchCurrentShoppingList({String initialCategory}) async {
+  void _fetchCurrentShoppingList({String? initialCategory}) async {
     final oldShoppingList = _currentShoppingList;
     setState(() {
       _currentShoppingList = null;
-      _currentShoppingListCategories = null;
+      _currentShoppingListCategories = [];
       _currentShoppingListCategory = null;
       _error = null;
     });
@@ -264,20 +294,21 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     await _refreshCurrentShoppingList(initialCategory: initialCategory);
   }
 
-  void disposeShoppingListAfterNextFrame(SyncedShoppingList list) {
+  void disposeShoppingListAfterNextFrame(SyncedShoppingList? list) {
     if (list != null) {
       SchedulerBinding.instance.addPostFrameCallback((timeStamp) => list.dispose());
     }
   }
 
-  Future<void> _refreshCurrentShoppingList({String initialCategory}) async {
-    if (_currentShoppingListInfo == null) {
+  Future<void> _refreshCurrentShoppingList({String? initialCategory}) async {
+    final currentInfo = _currentShoppingListInfo;
+    if (currentInfo == null) {
       return;
     }
 
     try {
-      final items = await widget.client.fetchShoppingList(_currentShoppingListInfo.id);
-      final shoppingList = SyncedShoppingList(widget.client, new ShoppingList(_currentShoppingListInfo, items));
+      final items = await widget.client.fetchShoppingList(currentInfo.id);
+      final shoppingList = SyncedShoppingList(widget.client, new ShoppingList(currentInfo, items));
       final oldShoppingList = _currentShoppingList;
       setState(() {
         _currentShoppingList = shoppingList;
@@ -287,7 +318,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
         } else {
           _currentShoppingListCategory = _currentShoppingListCategories.first;
         }
-        _currentShoppingList.addListener(setCurrentShoppingListCategories);
+        _currentShoppingList?.addListener(setCurrentShoppingListCategories);
       });
       disposeShoppingListAfterNextFrame(oldShoppingList);
     } on Exception catch (e) {
@@ -307,13 +338,13 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     }
 
     final listEq = const ListEquality().equals;
-    final nextCategories = _currentShoppingList.getAllCategories();
+    final nextCategories = _currentShoppingList?.getAllCategories() ?? [];
     if (listEq(nextCategories, _currentShoppingListCategories)) {
       return;
     }
 
     var nextCategory = _currentShoppingListCategory;
-    if (!nextCategories.contains(nextCategory)) {
+    if (nextCategory != null && !nextCategories.contains(nextCategory)) {
       final lastCategoryIndex = _currentShoppingListCategories.indexOf(nextCategory);
       // If the category no longer exists choose the category that tool the place of the removed category
       // or the one left to it.
@@ -345,10 +376,10 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(AppLocalizations.of(context).shoppingListFilterTitle, style: Theme.of(context).textTheme.caption),
+          Text(AppLocalizations.of(context).shoppingListFilterTitle, style: Theme.of(context).textTheme.bodySmall),
           ShoppingListFilterSelection(context, (nextFilter) => _setFilter(nextFilter), _filter),
           SizedBox(height: 8),
-          Text(AppLocalizations.of(context).shoppingListModeTitle, style: Theme.of(context).textTheme.caption),
+          Text(AppLocalizations.of(context).shoppingListModeTitle, style: Theme.of(context).textTheme.bodySmall),
           ShoppingListModeSelection(context, (nextMode) => _setMode(nextMode), _mode),
         ],
       ),
@@ -384,13 +415,13 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
                   IconButton(
                       icon: Icon(Icons.menu),
                       splashRadius: 23,
-                      onPressed: () => _drawerKey.currentState.openEndDrawer()),
+                      onPressed: () => _drawerKey.currentState?.openEndDrawer()),
                 ],
                 title: ShoppingListTitle(_currentShoppingListCategory),
                 shadowColor: Colors.transparent,
               ),
               endDrawer: ShoppingListDrawer(
-                onRefreshPressed: _fetchShoppingListInfos,
+                onRefreshPressed: () => _fetchShoppingListInfos(null),
                 shoppingListInfos: _shoppingListInfos ?? [],
                 onShoppingListSelected: _selectShoppingList,
                 onCreateShoppingList: _createShoppingList,
@@ -399,7 +430,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
                 onRemoveUserFromShoppingList: _removeUserFromShoppingList,
                 onChangeShoppingListPermissions: _changeShoppingListPermissions,
                 onChangeShoppingListName: _changeShoppingListName,
-                userInfo: _userInfo,
+                userInfo: _userInfo!,
                 onLogOut: _logOut,
                 onDeleteUserAccount: _deleteUserAccount,
               ),
@@ -419,19 +450,20 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   void _handleRetry() {
     if (_shoppingListInfos == null) {
-      _fetchShoppingListInfos();
+      _fetchShoppingListInfos(null);
     } else if (_currentShoppingList == null) {
       _fetchCurrentShoppingList();
     }
   }
 
   Widget _buildShoppingList(BuildContext context) {
+    final shoppingListInfos = _shoppingListInfos;
     if (_error != null) {
       return _buildErrorView(context);
-    } else if (_shoppingListInfos == null) {
+    } else if (shoppingListInfos == null) {
       return Center(child: CircularProgressIndicator());
     } else if (_currentShoppingList == null) {
-      if (_shoppingListInfos.isEmpty) {
+      if (shoppingListInfos.isEmpty) {
         return Center(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -442,13 +474,14 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
                 child: Text(
                   AppLocalizations.of(context).shoppingListEmpty,
                   style: TextStyle(
-                      fontFamilyFallback: ["NotoColorEmoji"], fontSize: Theme.of(context).textTheme.headline2.fontSize),
+                      fontFamilyFallback: ["NotoColorEmoji"],
+                      fontSize: Theme.of(context).textTheme.displayMedium?.fontSize),
                   textAlign: TextAlign.center,
                 ),
               ),
               Text(
                 AppLocalizations.of(context).shoppingListEmptyText,
-                style: Theme.of(context).textTheme.headline6,
+                style: Theme.of(context).textTheme.titleLarge,
                 textAlign: TextAlign.center,
               ),
             ],
@@ -485,7 +518,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
           Padding(
               child: Text(
                 AppLocalizations.of(context).shoppingListError,
-                style: Theme.of(context).textTheme.headline6,
+                style: Theme.of(context).textTheme.titleLarge,
                 textAlign: TextAlign.center,
               ),
               padding: EdgeInsets.only(left: 20, right: 20, bottom: 10)),
@@ -499,21 +532,22 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   }
 
   List<Widget> _openOtherList() {
-    if (_currentShoppingListInfo == null) {
+    final currentShoppingListInfo = _currentShoppingListInfo;
+    if (currentShoppingListInfo == null) {
       return [];
     }
 
     return [
       Padding(
           child: Text(
-            AppLocalizations.of(context).shoppingListNotPresent(_currentShoppingListInfo.name),
-            style: Theme.of(context).textTheme.headline6,
+            AppLocalizations.of(context).shoppingListNotPresent(currentShoppingListInfo.name),
+            style: Theme.of(context).textTheme.titleLarge,
             textAlign: TextAlign.center,
           ),
           padding: EdgeInsets.only(left: 20, right: 20, bottom: 10)),
       Padding(
           child: ElevatedButton(
-              onPressed: () => _drawerKey.currentState.openEndDrawer(),
+              onPressed: () => _drawerKey.currentState?.openEndDrawer(),
               child: Text(AppLocalizations.of(context).shoppingListOpenOther)),
           padding: EdgeInsets.all(10))
     ];

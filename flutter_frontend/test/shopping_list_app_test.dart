@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
@@ -35,7 +33,7 @@ final Type dropdownButtonType = DropdownButton<String>(
 
 void main() {
   const testLocale = Locale("de");
-  AppLocalizations localizations;
+  late AppLocalizations localizations;
 
   final Version version = Version(1, 0, 0);
 
@@ -72,7 +70,7 @@ void main() {
           return [ShoppingListInfo("1", "TestList", adminPermissions, [])];
         },
         onFetchShoppingList: (id) => backendItems,
-        onCreateShoppingListItem: (String shoppingListId, String name, String category) {
+        onCreateShoppingListItem: (String shoppingListId, String name, String? category) {
           expect(shoppingListId, equals("1"));
           expect(name, equals(nameOfNewItem));
           expect(category, equals(categoryOfNewItem));
@@ -132,7 +130,7 @@ void main() {
           return [ShoppingListInfo("1", "TestList", adminPermissions, [])];
         },
         onFetchShoppingList: (id) => backendItems,
-        onCreateShoppingListItem: (String shoppingListId, String name, String category) {
+        onCreateShoppingListItem: (String shoppingListId, String name, String? category) {
           expect(shoppingListId, equals("1"));
           expect(name, equals(nameOfNewItem));
           expect(category, isNull);
@@ -365,7 +363,7 @@ void main() {
     final item2 = ShoppingListItem("3", "C", true, null);
     List<ShoppingListItem> backendItems = [item0, item1, item2];
 
-    String uncheckedCategory;
+    String? uncheckedCategory;
 
     final client = RestClientStub(
       onGetBackendInfo: () => BackendInfo(version, null),
@@ -463,7 +461,7 @@ void main() {
     final item2 = ShoppingListItem("3", "C", true, null);
     List<ShoppingListItem> backendItems = [item0, item1, item2];
 
-    String removedCategory;
+    String? removedCategory;
 
     final client = RestClientStub(
       onGetBackendInfo: () => BackendInfo(version, null),
@@ -539,8 +537,8 @@ void main() {
     final item2 = ShoppingListItem("3", "C", true, null);
     List<ShoppingListItem> backendItems = [item0, item1, item2];
 
-    String renamedCategory;
-    String newNameOfRenamedCategory;
+    String? renamedCategory;
+    String? newNameOfRenamedCategory;
 
     final client = RestClientStub(
       onGetBackendInfo: () => BackendInfo(version, null),
@@ -624,8 +622,10 @@ void main() {
   });
 
   testWidgets("Remove all categories", (WidgetTester tester) async {
-    final item0 = ShoppingListItem("1", "A", true, "Category1");
-    final item1 = ShoppingListItem("2", "B", false, "Category2");
+    final item0Category = "Category1";
+    final item1Category = "Category2";
+    final item0 = ShoppingListItem("1", "A", true, item0Category);
+    final item1 = ShoppingListItem("2", "B", false, item1Category);
     final item2 = ShoppingListItem("3", "C", true, null);
     List<ShoppingListItem> backendItems = [item0, item1, item2];
 
@@ -649,8 +649,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // check that we find an item for each category
-    expect(find.widgetWithText(CheckboxListTile, item0.category), findsOneWidget);
-    expect(find.widgetWithText(CheckboxListTile, item1.category), findsOneWidget);
+    expect(find.widgetWithText(CheckboxListTile, item0Category), findsOneWidget);
+    expect(find.widgetWithText(CheckboxListTile, item1Category), findsOneWidget);
 
     // open drawer
     final drawerIcon = find.widgetWithIcon(IconButton, Icons.menu);
@@ -689,8 +689,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // check that we no longer find the categories
-    expect(find.widgetWithText(CheckboxListTile, item0.category), findsNothing);
-    expect(find.widgetWithText(CheckboxListTile, item1.category), findsNothing);
+    expect(find.widgetWithText(CheckboxListTile, item0Category), findsNothing);
+    expect(find.widgetWithText(CheckboxListTile, item1Category), findsNothing);
 
     // but we still find the items (not obscured by a dialog or the drawer)
     expect(find.widgetWithText(CheckboxListTile, item0.name).hitTestable(), findsOneWidget);
@@ -936,7 +936,7 @@ void main() {
     final oldListName = "TestList";
     final newListName = "NewListName";
 
-    String renamedListName;
+    String? renamedListName;
     final client = RestClientStub(
       onGetBackendInfo: () => BackendInfo(version, null),
       onGetShoppingLists: () => [ShoppingListInfo(listId, oldListName, adminPermissions, [])],
@@ -1213,7 +1213,7 @@ void main() {
       onGetBackendInfo: () => BackendInfo(version, null),
       onGetShoppingLists: () => [ShoppingListInfo(listId, "Test List", adminPermissions, [])],
       onFetchShoppingList: (id) => [],
-      onSendInvite: (String emailAddress, {String shoppingListId}) {
+      onSendInvite: (String emailAddress, {String? shoppingListId}) {
         expect(shoppingListId, listId);
         expect(emailAddress, equals(otherUserEMail));
         otherUserInvited = true;
