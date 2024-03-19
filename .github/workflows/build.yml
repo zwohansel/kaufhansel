@@ -79,7 +79,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: frontend-linux
-          path: ${{runner.workspace}}/kaufhansel/flutter_frontend/build/linux/release/bundle/
+          path: ${{runner.workspace}}/kaufhansel/flutter_frontend/build/linux/x64/release/bundle/
           if-no-files-found: error
 
 
