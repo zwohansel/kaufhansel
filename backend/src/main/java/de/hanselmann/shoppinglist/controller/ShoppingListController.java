@@ -18,7 +18,6 @@ import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.restapi.ShoppingListApi;
 import de.hanselmann.shoppinglist.restapi.dto.AddUserToShoppingListDto;
-import de.hanselmann.shoppinglist.restapi.dto.DeleteItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.MoveShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListDto;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListItemDto;
@@ -162,13 +161,6 @@ public class ShoppingListController implements ShoppingListApi {
     @Override
     public ResponseEntity<Void> deleteShoppingListItem(long id, long itemId) {
         shoppingListService.deleteItemWithId(id, itemId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PreAuthorize("@shoppingListGuard.canEditItemsInShoppingList(#id)")
-    @Override
-    public ResponseEntity<Void> deleteCheckedShoppingListItems(long id, DeleteItemDto deleteItemDto) {
-        shoppingListService.deleteCheckedItems(id, deleteItemDto.getOfCategory().orElse(null));
         return ResponseEntity.noContent().build();
     }
 

@@ -36,11 +36,6 @@ class SyncedShoppingList extends ChangeNotifier {
         .forEach((item) => item.checked = false);
   }
 
-  Future<void> deleteCheckedItems({String? ofCategory}) async {
-    await _client.deleteCheckedShoppingListItems(_list.id, ofCategory);
-    _list.removeItemsWhere((item) => item.checked && (ofCategory == null || item.category == ofCategory));
-  }
-
   Future<void> renameCategory(String oldCategoryName, String newCategoryName) async {
     await _client.renameCategory(_list.id, oldCategoryName, newCategoryName);
     _list.items.where((item) => item.category == oldCategoryName).forEach((item) => item.category = newCategoryName);

@@ -159,11 +159,6 @@ class RestClientStub implements RestClient {
   }
 
   @override
-  Future<void> deleteCheckedShoppingListItems(String shoppingListId, String? ofCategory) {
-    throw UnimplementedError();
-  }
-
-  @override
   Future<void> deleteShoppingListItem(String shoppingListId, ShoppingListItem item) async {
     if (onDeleteShoppingListItem == null) throw UnimplementedError();
     return _tryCall(() => onDeleteShoppingListItem!(shoppingListId, item));

@@ -242,16 +242,6 @@ public class ShoppingListService {
     }
 
     @Transactional
-    public void deleteCheckedItems(long listId, String ofCategory) {
-        if (ofCategory == null) {
-            itemsRepository.deleteByListIdAndChecked(listId, true);
-        } else {
-            categoriesRepository.findByNameAndListId(ofCategory, listId).ifPresent(
-                    category -> itemsRepository.deleteByListIdAndCheckedAndCategory(listId, true, category));
-        }
-    }
-
-    @Transactional
     public boolean moveShoppingListItem(long listId, long itemId, int targetIndex) {
         if (targetIndex < 0) {
             return false;

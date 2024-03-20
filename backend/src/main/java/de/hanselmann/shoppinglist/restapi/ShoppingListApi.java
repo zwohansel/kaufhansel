@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import de.hanselmann.shoppinglist.restapi.dto.AddUserToShoppingListDto;
-import de.hanselmann.shoppinglist.restapi.dto.DeleteItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.MoveShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListDto;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListItemDto;
@@ -77,11 +76,6 @@ public interface ShoppingListApi {
     ResponseEntity<Void> deleteShoppingListItem(
             @PathVariable long id,
             @PathVariable long itemId);
-
-    @DeleteMapping("/shoppinglist/{id}/checkeditems")
-    ResponseEntity<Void> deleteCheckedShoppingListItems(
-            @PathVariable long id,
-            @RequestBody DeleteItemDto deleteItemDto);
 
     @PutMapping("/shoppinglist/{id}/item/{itemId}")
     ResponseEntity<Void> updateShoppingListItem(

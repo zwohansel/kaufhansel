@@ -173,25 +173,6 @@ class RestClient {
     }
   }
 
-  Future<void> deleteCheckedShoppingListItems(String shoppingListId, String? ofCategory) async {
-    final body = jsonEncode({'ofCategory': ofCategory});
-    var request =
-        await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/checkeditems")).timeout(_timeout);
-    request.headers.contentType = ContentType.json;
-    _addAuthHeader(request);
-    request.write(body);
-    var response = await request.close().timeout(_timeout);
-
-    if (response.statusCode != 204) {
-      _invokeCallbackIfUnauthenticated(response);
-      throw HttpResponseException(
-        response.statusCode,
-        message:
-            "Failed to delete items of category ${ofCategory != null ? ofCategory : "ALL"} in list $shoppingListId",
-      );
-    }
-  }
-
   Future<void> updateShoppingListItem(String shoppingListId, ShoppingListItem item) async {
     final body = jsonEncode({'name': item.name, 'checked': item.checked, 'category': item.category});
 

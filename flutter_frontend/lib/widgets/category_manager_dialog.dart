@@ -106,25 +106,9 @@ class _CategoryManagerState extends State<CategoryManager> {
         Text(AppLocalizations.of(context).manageCategoriesAction, style: Theme.of(context).textTheme.bodySmall),
         SizedBox(height: 10),
         _buildUncheck(context),
-        _buildRemoveChecked(context),
         _buildRemoveCategory(context),
         _buildRename(context),
       ];
-    }
-  }
-
-  Widget _buildRemoveChecked(BuildContext context) {
-    if (!widget.list.info.permissions.canEditItems) {
-      return Container();
-    } else if (_selectedCategory == CATEGORY_ALL) {
-      return _buildDialogOption(context, AppLocalizations.of(context).manageCategoriesRemoveChecked,
-          Icons.delete_outlined, () => widget.list.deleteCheckedItems());
-    } else {
-      return _buildDialogOption(
-          context,
-          AppLocalizations.of(context).manageCategoriesRemoveCheckedFromCategory(_selectedCategory ?? ""),
-          Icons.delete_outlined,
-          () => widget.list.deleteCheckedItems(ofCategory: _selectedCategory));
     }
   }
 
