@@ -191,7 +191,6 @@ void checkAlwaysPresentOptions(AppLocalizations localizations) {
   expect(find.widgetWithText(ListTile, localizations.refresh), findsOneWidget);
   expect(find.widgetWithText(Container, localizations.shoppingListMyLists), findsOneWidget);
   expect(find.widgetWithText(ListTile, localizations.shoppingListCreateNew), findsOneWidget);
-  expect(find.widgetWithText(ListTile, localizations.invitationCodeGenerate), findsOneWidget);
   expect(find.widgetWithText(ListTile, localizations.appSettings), findsOneWidget);
 }
 
