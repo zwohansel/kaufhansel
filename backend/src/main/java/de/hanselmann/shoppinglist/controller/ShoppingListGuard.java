@@ -73,4 +73,8 @@ public class ShoppingListGuard {
                 .anyMatch(permission -> permission.getRole().canEditList());
     }
 
+    public boolean canDeleteUser(long id) {
+        return checkAccessForCurrentUser(user -> user.getId() == id);
+    }
+
 }

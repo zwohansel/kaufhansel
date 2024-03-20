@@ -70,7 +70,7 @@ public class ShoppingListService {
     private ShoppingList createShoppingListForCurrentUserImpl(String name) {
         final var currentTime = LocalDateTime.now();
         final ShoppingListUser user = userService.getCurrentUser();
-        var shoppingList = new ShoppingList(name, user, currentTime);
+        var shoppingList = new ShoppingList(name, currentTime);
         var permission = new ShoppingListPermission(ShoppingListRole.ADMIN, user, shoppingList, currentTime);
         shoppingList.addPermission(permission);
         user.addPermission(permission);

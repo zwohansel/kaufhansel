@@ -15,8 +15,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
@@ -35,10 +33,6 @@ public class ShoppingList {
     @Column(name = "CREATED_AT", nullable = false)
     private LocalDateTime createdAt;
 
-    @ManyToOne
-    @JoinColumn(name = "CREATED_BY", nullable = false)
-    private ShoppingListUser createdBy;
-
     @OneToMany(mappedBy = "list", cascade = CascadeType.REMOVE)
     @OrderBy("position")
     private List<ShoppingListItem> items = new ArrayList<>();
@@ -52,9 +46,8 @@ public class ShoppingList {
     protected ShoppingList() {
     }
 
-    public ShoppingList(String name, ShoppingListUser createdBy, LocalDateTime createdAt) {
+    public ShoppingList(String name, LocalDateTime createdAt) {
         this.name = name;
-        this.createdBy = createdBy;
         this.createdAt = createdAt;
     }
 

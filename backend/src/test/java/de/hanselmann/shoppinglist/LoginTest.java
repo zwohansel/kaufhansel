@@ -12,6 +12,16 @@ import de.hanselmann.shoppinglist.testutils.WebServerTestWithTestUser;
 
 @WebServerTestWithTestUser
 public class LoginTest {
+    public static class LoggedInUser {
+        public final ShoppingListUserInfoDto info;
+        public final WebTestClient client;
+
+        LoggedInUser(ShoppingListUserInfoDto info, WebTestClient client) {
+            this.info = info;
+            this.client = client;
+        }
+    }
+
     private static final String PATH = "/api/user/login";
     public static final String ALICE_EMAIL = "alice@hansel.test";
     private static final String ALICE_PASSWORD = "alice";
@@ -24,20 +34,33 @@ public class LoginTest {
     private WebTestClient webClient;
 
     public static WebTestClient loginAsAlice(WebTestClient webClient) {
+        return loginAsAliceWithInfo(webClient).client;
+    }
+
+    public static LoggedInUser loginAsAliceWithInfo(WebTestClient webClient) {
         return loginAs(webClient, ALICE_EMAIL, ALICE_PASSWORD);
     }
 
     public static WebTestClient loginAsBob(WebTestClient webClient) {
+        return loginAsBobWithInfo(webClient).client;
+    }
+
+    public static LoggedInUser loginAsBobWithInfo(WebTestClient webClient) {
         return loginAs(webClient, BOB_EMAIL, BOB_PASSWORD);
     }
 
     public static WebTestClient loginAsEve(WebTestClient webClient) {
+        return loginAsEveWithInfo(webClient).client;
+    }
+
+    public static LoggedInUser loginAsEveWithInfo(WebTestClient webClient) {
         return loginAs(webClient, EVE_EMAIL, EVE_PASSWORD);
     }
 
-    public static WebTestClient loginAs(WebTestClient webClient, String userEmail, String userPassword) {
-        String token = login(webClient, userEmail, userPassword).getToken();
-        return webClient.mutate().defaultHeader("AUTHORIZATION", "Bearer " + token).build();
+    public static LoggedInUser loginAs(WebTestClient webClient, String userEmail, String userPassword) {
+        ShoppingListUserInfoDto info = login(webClient, userEmail, userPassword);
+        WebTestClient client = webClient.mutate().defaultHeader("AUTHORIZATION", "Bearer " + info.getToken()).build();
+        return new LoggedInUser(info, client);
     }
 
     public static ShoppingListUserInfoDto login(WebTestClient webClient, String userEmail, String userPassword) {

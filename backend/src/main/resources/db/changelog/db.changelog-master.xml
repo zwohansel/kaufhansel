@@ -155,4 +155,18 @@
             </column>
         </createTable>
     </changeSet>
+    <changeSet author="ZwoHansel" id="1">
+        <!-- Removes the CreatedBy column from lists which causes problems when deleting a user who shares a list
+             with another user that he created. In that the user cannot be deleted because that would leave the 
+             CREATED_BY reference dangling. The list cannot be deleted as well as that would create a dangling
+             reference in the permissions of the other user.
+             Since SQLite does not support dropping a column with a foreign key constraint, the whole table
+             must first be cloned, then dropped and finally the clone must be renamed to the original table name. -->
+        <sql dbms="sqlite">
+            CREATE TABLE LISTS_COPY (ID INTEGER NOT NULL, NAME TEXT NOT NULL, CREATED_AT date NOT NULL, CONSTRAINT PK_LIST_ID PRIMARY KEY (ID));
+            INSERT INTO LISTS_COPY (ID, NAME, CREATED_AT) SELECT ID, NAME, CREATED_AT FROM LISTS;
+            DROP TABLE LISTS;
+            ALTER TABLE LISTS_COPY RENAME TO LISTS;
+        </sql>
+    </changeSet>
 </databaseChangeLog>

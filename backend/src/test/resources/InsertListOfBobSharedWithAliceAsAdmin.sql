@@ -3,4 +3,4 @@ VALUES ('Bobs List', '2021-01-01 08:00:00.00');
 
 INSERT INTO LIST_PERMISSIONS (USER_ID, LIST_ID, ROLE, CREATED_AT) VALUES
 ((SELECT ID FROM USERS WHERE EMAIL = 'bob@hansel.test'), (SELECT last_insert_rowid()), 'ADMIN', '2021-01-01 08:00:00.00'),
-((SELECT ID FROM USERS WHERE EMAIL = 'alice@hansel.test'), (SELECT last_insert_rowid()), 'CHECK_ONLY', '2021-01-01 08:00:00.00');
+((SELECT ID FROM USERS WHERE EMAIL = 'alice@hansel.test'), (SELECT last_insert_rowid()), 'ADMIN', '2021-01-01 08:00:00.00');
