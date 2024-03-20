@@ -108,6 +108,7 @@ public class UserController implements UserApi {
                     Long.valueOf(sendInvite.getShoppingListId()));
             return success ? ResponseEntity.noContent().build() : ResponseEntity.badRequest().build();
         } catch (Exception e) {
+            LOGGER.error("Failed to send list invite", e);
             return ResponseEntity.badRequest().build();
         }
     }
