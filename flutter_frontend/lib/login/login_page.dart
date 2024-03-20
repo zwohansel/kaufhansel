@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
-import 'package:kaufhansel_client/login/check_invite_code_form.dart';
 import 'package:kaufhansel_client/login/email_password_form.dart';
 import 'package:kaufhansel_client/login/registration_form.dart';
 import 'package:kaufhansel_client/login/request_password_reset_form.dart';
@@ -33,9 +32,7 @@ class LoginPage extends StatefulWidget {
 
 enum _PageMode {
   LOGIN,
-  CHECK_INVITE,
-  REGISTRATION_FULL,
-  REGISTRATION_WITHOUT_EMAIL,
+  REGISTRATION,
   RESET_PASSWORD_REQUEST,
   RESET_PASSWORD
 }
@@ -45,7 +42,6 @@ class _LoginPageState extends State<LoginPage> {
   bool _loading = false;
   String _emailAddress = "";
   String? _inviteCode;
-  bool? _inviteCodeInvalid = false;
   bool _showInfo = true;
 
   @override
@@ -206,10 +202,7 @@ class _LoginPageState extends State<LoginPage> {
     switch (_pageMode) {
       case _PageMode.LOGIN:
         return _buildLoginForm();
-      case _PageMode.CHECK_INVITE:
-        return _buildCheckInviteCodeForm();
-      case _PageMode.REGISTRATION_FULL:
-      case _PageMode.REGISTRATION_WITHOUT_EMAIL:
+      case _PageMode.REGISTRATION:
         return _buildRegistrationForm();
       case _PageMode.RESET_PASSWORD_REQUEST:
         return _buildRequestPasswordResetForm();
@@ -236,7 +229,7 @@ class _LoginPageState extends State<LoginPage> {
         SizedBox(height: 10),
         OutlinedButton(
           child: Text(AppLocalizations.of(context).buttonRegister),
-          onPressed: _isLoading() ? null : () => setState(() => _pageMode = _PageMode.CHECK_INVITE),
+          onPressed: _isLoading() ? null : () => setState(() => _pageMode = _PageMode.REGISTRATION),
         ),
         SizedBox(height: 10),
         OutlinedButton(
@@ -277,60 +270,17 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Widget _buildCheckInviteCodeForm() {
-    return CheckInviteCodeForm(
-      onInviteCode: _checkInviteCode,
-      initialCode: _inviteCode,
-      initialCodeIsInvalid: _inviteCodeInvalid,
-      enabled: !_isLoading(),
-      extraFormChildren: [
-        SizedBox(height: 10),
-        OutlinedButton(
-          child: Text(AppLocalizations.of(context).buttonBackToLogin),
-          onPressed: _isLoading() ? null : _goBackToLogin,
-        )
-      ],
-    );
-  }
-
-  Future<bool> _checkInviteCode(String code) async {
-    setState(() => _loading = true);
-    try {
-      RegistrationProcessType registrationProcessType = await RestClientWidget.of(context).checkInviteCode(code);
-      if (registrationProcessType == RegistrationProcessType.INVALID) {
-        return false;
-      }
-      setState(() {
-        if (registrationProcessType == RegistrationProcessType.FULL_REGISTRATION) {
-          _pageMode = _PageMode.REGISTRATION_FULL;
-        } else {
-          _pageMode = _PageMode.REGISTRATION_WITHOUT_EMAIL;
-        }
-        _inviteCodeInvalid = null;
-        _inviteCode = code;
-      });
-      return true;
-    } on Exception catch (e) {
-      log("Could not get registration process type", error: e);
-      showErrorDialogForException(context, e, altText: AppLocalizations.of(context).exceptionGeneralTryAgainLater);
-      return false;
-    } finally {
-      setState(() => _loading = false);
-    }
-  }
-
   void _goBackToLogin() {
     setState(() {
       _pageMode = _PageMode.LOGIN;
       _inviteCode = null;
-      _inviteCodeInvalid = null;
     });
   }
 
   Widget _buildRegistrationForm() {
     return RegistrationForm(
       onRegister: _register,
-      requireEmail: _pageMode == _PageMode.REGISTRATION_FULL,
+      requireEmail: _pageMode == _PageMode.REGISTRATION,
       onEmailChanged: (email) => setState(() => _emailAddress = email),
       extraFormChildren: [
         SizedBox(height: 10),
@@ -357,14 +307,6 @@ class _LoginPageState extends State<LoginPage> {
         setState(() {
           _pageMode = _PageMode.LOGIN;
           _inviteCode = null;
-          _inviteCodeInvalid = false;
-        });
-      }
-
-      if (registration.isInviteCodeInvalid()) {
-        setState(() {
-          _pageMode = _PageMode.CHECK_INVITE;
-          _inviteCodeInvalid = true;
         });
       }
 

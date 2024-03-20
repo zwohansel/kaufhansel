@@ -4,7 +4,6 @@ import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/settings/app_settings.dart';
 import 'package:kaufhansel_client/synced_shoppinglist.dart';
 import 'package:kaufhansel_client/widgets/category_manager_dialog.dart';
-import 'package:kaufhansel_client/widgets/invite_dialog.dart';
 import 'package:kaufhansel_client/widgets/text_input_dialog.dart';
 import 'package:provider/provider.dart';
 
@@ -75,19 +74,6 @@ class ShoppingListDrawer extends StatelessWidget {
                   onConfirm: onCreateShoppingList),
             ),
             _buildMenuCategoryItem(context, AppLocalizations.of(context).appTitle),
-            ListTile(
-              // tileColor: Theme.of(context).primaryColorLight,
-              leading: Icon(Icons.person_add),
-              title: Text(AppLocalizations.of(context).invitationCodeGenerate),
-              onTap: () {
-                final RestClient client = RestClientWidget.of(context);
-                showDialog(
-                    context: context,
-                    builder: (context) {
-                      return InviteDialog(client);
-                    });
-              },
-            ),
             ListTile(
               leading: Icon(Icons.settings),
               title: Text(AppLocalizations.of(context).appSettings),

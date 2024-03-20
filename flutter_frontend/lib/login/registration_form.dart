@@ -193,8 +193,9 @@ class _RegistrationFormState extends State<RegistrationForm> {
       },
       initialValue: false,
       builder: (FormFieldState<bool> state) {
-        final textStyle =
-            state.hasError ? TextStyle(color: Theme.of(context).colorScheme.error) : Theme.of(context).textTheme.bodyLarge;
+        final textStyle = state.hasError
+            ? TextStyle(color: Theme.of(context).colorScheme.error)
+            : Theme.of(context).textTheme.bodyLarge;
 
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,7 +220,8 @@ class _RegistrationFormState extends State<RegistrationForm> {
                     TextSpan(
                         text: AppLocalizations.of(context).disclaimer,
                         style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
-                        recognizer: _tapRecognizer..onTap = () => launchUrlString(AppLocalizations.of(context).disclaimerLink)),
+                        recognizer: _tapRecognizer
+                          ..onTap = () => launchUrlString(AppLocalizations.of(context).disclaimerLink)),
                     TextSpan(text: AppLocalizations.of(context).registrationConsentLastPart, style: textStyle),
                   ],
                 ),
@@ -265,7 +267,9 @@ class _RegistrationFormState extends State<RegistrationForm> {
       duration: Duration(seconds: 15),
       action: SnackBarAction(
         label: AppLocalizations.of(context).ok,
-        onPressed: () => ScaffoldMessenger.of(context).removeCurrentSnackBar(),
+        onPressed: () => {
+          if (mounted) {ScaffoldMessenger.of(context).removeCurrentSnackBar()}
+        },
       ),
     ));
   }

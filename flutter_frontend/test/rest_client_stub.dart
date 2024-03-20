@@ -36,7 +36,6 @@ class RestClientStub implements RestClient {
   final void Function(String shoppingListId, String userId)? onRemoveUserFromShoppingList;
 
   final List<User> _users = [];
-  final Map<String, RegistrationProcessType> _inviteCodes = {};
   VoidCallback? _onUnauthenticated;
 
   RestClientStub(
@@ -61,10 +60,6 @@ class RestClientStub implements RestClient {
 
   void addUser(User user) => _users.add(user);
 
-  void addInviteCode(String code, RegistrationProcessType type) {
-    _inviteCodes[code] = type;
-  }
-
   set onUnauthenticated(VoidCallback onUnauthenticated) => _onUnauthenticated = onUnauthenticated;
 
   @override
@@ -84,22 +79,13 @@ class RestClientStub implements RestClient {
   }
 
   @override
-  Future<RegistrationProcessType> checkInviteCode(String? inviteCode) async {
-    return _inviteCodes[inviteCode] ?? RegistrationProcessType.INVALID;
-  }
-
-  @override
   Future<RegistrationResult> register(String userName, String password, String? inviteCode,
       {String? emailAddress}) async {
     if (onRegister == null) {
       return RegistrationResult(RegistrationResultStatus.FAILURE);
     }
-
-    final type = await checkInviteCode(inviteCode);
-    if (type == RegistrationProcessType.FULL_REGISTRATION && emailAddress != null && emailAddress.isNotEmpty) {
+    if (emailAddress != null && emailAddress.isNotEmpty) {
       return onRegister!(userName, password, emailAddress: emailAddress);
-    } else if (type == RegistrationProcessType.WITHOUT_EMAIL) {
-      return onRegister!(userName, password);
     }
     return RegistrationResult(RegistrationResultStatus.FAILURE);
   }
@@ -162,11 +148,6 @@ class RestClientStub implements RestClient {
   Future<void> deleteShoppingListItem(String shoppingListId, ShoppingListItem item) async {
     if (onDeleteShoppingListItem == null) throw UnimplementedError();
     return _tryCall(() => onDeleteShoppingListItem!(shoppingListId, item));
-  }
-
-  @override
-  Future<String> generateInviteCode() {
-    throw UnimplementedError();
   }
 
   @override

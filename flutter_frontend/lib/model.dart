@@ -411,30 +411,11 @@ class ShoppingListUserInfo {
   String get token => _token;
 }
 
-enum RegistrationProcessType { INVALID, FULL_REGISTRATION, WITHOUT_EMAIL }
-
-const Map<String, RegistrationProcessType> _strToType = {
-  'INVALID': RegistrationProcessType.INVALID,
-  'FULL_REGISTRATION': RegistrationProcessType.FULL_REGISTRATION,
-  'WITHOUT_EMAIL': RegistrationProcessType.WITHOUT_EMAIL,
-};
-
-extension RegistrationProcessTypes on RegistrationProcessType {
-  static RegistrationProcessType fromString(String typeStr) {
-    final type = _strToType[typeStr];
-    if (type == null) {
-      return RegistrationProcessType.INVALID;
-    }
-    return type;
-  }
-}
-
-enum RegistrationResultStatus { SUCCESS, EMAIL_INVALID, INVITE_CODE_INVALID, PASSWORD_INVALID, FAILURE }
+enum RegistrationResultStatus { SUCCESS, EMAIL_INVALID, PASSWORD_INVALID, FAILURE }
 
 const Map<String, RegistrationResultStatus> _strToStatus = {
   'SUCCESS': RegistrationResultStatus.SUCCESS,
   'EMAIL_INVALID': RegistrationResultStatus.EMAIL_INVALID,
-  'INVITE_CODE_INVALID': RegistrationResultStatus.INVITE_CODE_INVALID,
   'PASSWORD_INVALID': RegistrationResultStatus.PASSWORD_INVALID,
 };
 
@@ -462,8 +443,6 @@ class RegistrationResult {
   }
 
   bool isSuccess() => _status == RegistrationResultStatus.SUCCESS;
-
-  bool isInviteCodeInvalid() => _status == RegistrationResultStatus.INVITE_CODE_INVALID;
 
   bool isEMailAddressInvalid() => _status == RegistrationResultStatus.EMAIL_INVALID;
 

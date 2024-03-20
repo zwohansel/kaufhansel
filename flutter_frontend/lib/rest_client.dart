@@ -382,19 +382,6 @@ class RestClient {
     }
   }
 
-  Future<RegistrationProcessType> checkInviteCode(String inviteCode) async {
-    var request = await _httpClient.getUrl(_serverUrl.resolve("user/register/type/$inviteCode")).timeout(_timeout);
-    var response = await request.close().timeout(_timeout);
-
-    if (response.statusCode == 200) {
-      final String decoded = await response.transform(utf8.decoder).join();
-      final Map<String, dynamic> json = jsonDecode(decoded);
-      return RegistrationProcessTypes.fromString(json.get('type'));
-    } else {
-      throw HttpResponseException(response.statusCode, message: "Failed to check invite code.");
-    }
-  }
-
   Future<RegistrationResult> register(String userName, String password, String? inviteCode,
       {String? emailAddress}) async {
     final body = jsonEncode(
@@ -411,21 +398,6 @@ class RestClient {
     } else {
       throw HttpResponseException(response.statusCode,
           message: "Failed to register user $emailAddress with name $userName and invite code $inviteCode.");
-    }
-  }
-
-  Future<String> generateInviteCode() async {
-    var request = await _httpClient.getUrl(_serverUrl.resolve("user/invite")).timeout(_timeout);
-    _addAuthHeader(request);
-    var response = await request.close().timeout(_timeout);
-
-    if (response.statusCode == 200) {
-      final String decoded = await response.transform(utf8.decoder).join();
-      final Map<String, dynamic> json = jsonDecode(decoded);
-      return json.get('code');
-    } else {
-      _invokeCallbackIfUnauthenticated(response);
-      throw HttpResponseException(response.statusCode, message: "Failed to generate invite code.");
     }
   }
 

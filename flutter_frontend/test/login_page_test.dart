@@ -68,8 +68,7 @@ void main() {
     expect(find.text(localizations.exceptionWrongCredentials), findsOneWidget);
   });
 
-  testWidgets('fullRegistration', (WidgetTester tester) async {
-    final inviteCode = "INV1T3";
+  testWidgets('registration', (WidgetTester tester) async {
     final expectedEmail = "new@user.de";
     final expectedUser = "NewUser";
     final expectedPassword = "12345678";
@@ -84,9 +83,6 @@ void main() {
       return RegistrationResult(RegistrationResultStatus.SUCCESS);
     });
 
-    // Add invite code for full registration
-    client.addInviteCode(inviteCode, RegistrationProcessType.FULL_REGISTRATION);
-
     final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: Update.none());
 
     await tester.pumpWidget(await makeTestableWidget(loginPage, restClient: client, locale: testLocale));
@@ -94,13 +90,6 @@ void main() {
 
     // Press register button
     await tester.tap(find.widgetWithText(OutlinedButton, localizations.buttonRegister));
-    await tester.pumpAndSettle();
-
-    // Enter invite code
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.invitationCodeHint, text: inviteCode);
-
-    // Press next button
-    await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonNext));
     await tester.pumpAndSettle();
 
     // Enter email, user name, password and password confirmation
@@ -128,133 +117,10 @@ void main() {
     expect(find.text(localizations.activationLinkSent(expectedEmail)), findsOneWidget);
   });
 
-  testWidgets('registrationWithoutEMail', (WidgetTester tester) async {
-    final inviteCode = "INV1T3";
-    final expectedUser = "NewUser";
-    final expectedPassword = "12345678";
-
-    String? actualUserName;
-    String? actualPassword;
-    final RestClientStub client = new RestClientStub(onRegister: (userName, password, {emailAddress}) {
-      actualUserName = userName;
-      actualPassword = password;
-      return RegistrationResult(RegistrationResultStatus.SUCCESS);
-    });
-
-    // Add invite code for full registration
-    client.addInviteCode(inviteCode, RegistrationProcessType.WITHOUT_EMAIL);
-
-    final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: Update.none());
-
-    await tester.pumpWidget(await makeTestableWidget(loginPage, restClient: client, locale: testLocale));
-    await tester.pumpAndSettle();
-
-    // Press register button
-    await tester.tap(find.widgetWithText(OutlinedButton, localizations.buttonRegister));
-    await tester.pumpAndSettle();
-
-    // Enter invite code
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.invitationCodeHint, text: inviteCode);
-
-    // Press next button
-    await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonNext));
-    await tester.pumpAndSettle();
-
-    // There should be no input field for the email address
-    expect(find.widgetWithText(TextFormField, localizations.emailHint), findsNothing);
-
-    // Enter user name, password and password confirmation
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.userNameHint, text: expectedUser);
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.passwordHint, text: expectedPassword);
-    await enterTextIntoFormField(tester,
-        fieldLabelOrHint: localizations.passwordConfirmationHint, text: expectedPassword);
-
-    // Check consent checkbox
-    await tester.tap(find.byType(Checkbox));
-
-    // Press register button
-    final registerBtn = find.widgetWithText(ElevatedButton, localizations.buttonRegister);
-    await tester.ensureVisible(registerBtn);
-    await tester.tap(registerBtn);
-    await tester.pumpAndSettle();
-
-    // Check that onRegister was called with the expected information
-    expect(actualUserName, equals(expectedUser));
-    expect(actualPassword, equals(expectedPassword));
-
-    // Check that the registration success message is shown
-    expect(find.text(localizations.registrationSuccessful), findsOneWidget);
-  });
-
-  testWidgets('registrationWithInvalidInviteCode', (WidgetTester tester) async {
-    final RestClientStub client = new RestClientStub();
-
-    final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: Update.none());
-
-    await tester.pumpWidget(await makeTestableWidget(loginPage, restClient: client, locale: testLocale));
-    await tester.pumpAndSettle();
-
-    // Press register button
-    await tester.tap(find.widgetWithText(OutlinedButton, localizations.buttonRegister));
-    await tester.pumpAndSettle();
-
-    // Enter invite code
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.invitationCodeHint, text: "INVALIDCODE");
-
-    // Press next button
-    await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonNext));
-    await tester.pumpAndSettle();
-
-    expect(find.text(localizations.invitationCodeInvalid), findsOneWidget);
-  });
-
-  testWidgets('registrationWhenInviteCodeInvalidatedAfterFirstCheck', (WidgetTester tester) async {
-    final RestClientStub client = new RestClientStub(onRegister: (userName, password, {emailAddress}) {
-      return RegistrationResult(RegistrationResultStatus.INVITE_CODE_INVALID);
-    });
-    final inviteCode = "INVIT3";
-    client.addInviteCode(inviteCode, RegistrationProcessType.FULL_REGISTRATION);
-
-    final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: Update.none());
-
-    await tester.pumpWidget(await makeTestableWidget(loginPage, restClient: client, locale: testLocale));
-    await tester.pumpAndSettle();
-
-    // Press register button
-    await tester.tap(find.widgetWithText(OutlinedButton, localizations.buttonRegister));
-    await tester.pumpAndSettle();
-
-    // Enter invite code
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.invitationCodeHint, text: inviteCode);
-
-    // Press next button
-    await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonNext));
-    await tester.pumpAndSettle();
-
-    // Enter email, user name, password and password confirmation
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.emailHint, text: "test@test.de");
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.userNameHint, text: "Test");
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.passwordHint, text: "12345678");
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.passwordConfirmationHint, text: "12345678");
-
-    // Check consent checkbox
-    await tester.tap(find.byType(Checkbox));
-
-    // Press register button
-    final registerBtn = find.widgetWithText(ElevatedButton, localizations.buttonRegister);
-    await tester.ensureVisible(registerBtn);
-    await tester.tap(registerBtn);
-    await tester.pumpAndSettle();
-
-    expect(find.text(localizations.invitationCodeInvalid), findsOneWidget);
-  });
-
   testWidgets('registrationWithAlreadyUsedEMail', (WidgetTester tester) async {
     final RestClientStub client = new RestClientStub(onRegister: (userName, password, {emailAddress}) {
       return RegistrationResult(RegistrationResultStatus.EMAIL_INVALID);
     });
-    final inviteCode = "INVIT3";
-    client.addInviteCode(inviteCode, RegistrationProcessType.FULL_REGISTRATION);
 
     final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: Update.none());
 
@@ -263,13 +129,6 @@ void main() {
 
     // Press register button
     await tester.tap(find.widgetWithText(OutlinedButton, localizations.buttonRegister));
-    await tester.pumpAndSettle();
-
-    // Enter invite code
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.invitationCodeHint, text: inviteCode);
-
-    // Press next button
-    await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonNext));
     await tester.pumpAndSettle();
 
     // Enter email, user name, password and password confirmation
@@ -294,8 +153,6 @@ void main() {
     final RestClientStub client = new RestClientStub(onRegister: (userName, password, {emailAddress}) {
       return RegistrationResult(RegistrationResultStatus.FAILURE);
     });
-    final inviteCode = "INVIT3";
-    client.addInviteCode(inviteCode, RegistrationProcessType.FULL_REGISTRATION);
 
     final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: Update.none());
 
@@ -304,13 +161,6 @@ void main() {
 
     // Press register button
     await tester.tap(find.widgetWithText(OutlinedButton, localizations.buttonRegister));
-    await tester.pumpAndSettle();
-
-    // Enter invite code
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.invitationCodeHint, text: inviteCode);
-
-    // Press next button
-    await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonNext));
     await tester.pumpAndSettle();
 
     // Enter email, user name, password and password confirmation
@@ -335,8 +185,6 @@ void main() {
     final RestClientStub client = new RestClientStub(onRegister: (userName, password, {emailAddress}) {
       return RegistrationResult(RegistrationResultStatus.SUCCESS);
     });
-    final inviteCode = "INVIT3";
-    client.addInviteCode(inviteCode, RegistrationProcessType.FULL_REGISTRATION);
 
     final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: Update.none());
 
@@ -345,13 +193,6 @@ void main() {
 
     // Press register button
     await tester.tap(find.widgetWithText(OutlinedButton, localizations.buttonRegister));
-    await tester.pumpAndSettle();
-
-    // Enter invite code
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.invitationCodeHint, text: inviteCode);
-
-    // Press next button
-    await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonNext));
     await tester.pumpAndSettle();
 
     // Enter email, user name, password and password confirmation
@@ -376,8 +217,6 @@ void main() {
     final RestClientStub client = new RestClientStub(onRegister: (userName, password, {emailAddress}) {
       return RegistrationResult(RegistrationResultStatus.SUCCESS);
     });
-    final inviteCode = "INVIT3";
-    client.addInviteCode(inviteCode, RegistrationProcessType.FULL_REGISTRATION);
 
     final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: Update.none());
 
@@ -386,13 +225,6 @@ void main() {
 
     // Press register button
     await tester.tap(find.widgetWithText(OutlinedButton, localizations.buttonRegister));
-    await tester.pumpAndSettle();
-
-    // Enter invite code
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.invitationCodeHint, text: inviteCode);
-
-    // Press next button
-    await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonNext));
     await tester.pumpAndSettle();
 
     // Enter email, user name, password and password confirmation
@@ -417,8 +249,6 @@ void main() {
     final RestClientStub client = new RestClientStub(onRegister: (userName, password, {emailAddress}) {
       return RegistrationResult(RegistrationResultStatus.PASSWORD_INVALID);
     });
-    final inviteCode = "INVIT3";
-    client.addInviteCode(inviteCode, RegistrationProcessType.FULL_REGISTRATION);
 
     final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: Update.none());
 
@@ -427,13 +257,6 @@ void main() {
 
     // Press register button
     await tester.tap(find.widgetWithText(OutlinedButton, localizations.buttonRegister));
-    await tester.pumpAndSettle();
-
-    // Enter invite code
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.invitationCodeHint, text: inviteCode);
-
-    // Press next button
-    await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonNext));
     await tester.pumpAndSettle();
 
     // Enter email, user name, password and password confirmation
@@ -458,8 +281,6 @@ void main() {
     final RestClientStub client = new RestClientStub(onRegister: (userName, password, {emailAddress}) {
       return RegistrationResult(RegistrationResultStatus.SUCCESS);
     });
-    final inviteCode = "INVIT3";
-    client.addInviteCode(inviteCode, RegistrationProcessType.FULL_REGISTRATION);
 
     final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: Update.none());
 
@@ -468,13 +289,6 @@ void main() {
 
     // Press register button
     await tester.tap(find.widgetWithText(OutlinedButton, localizations.buttonRegister));
-    await tester.pumpAndSettle();
-
-    // Enter invite code
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.invitationCodeHint, text: inviteCode);
-
-    // Press next button
-    await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonNext));
     await tester.pumpAndSettle();
 
     // Enter email, user name, password and password confirmation
@@ -499,8 +313,6 @@ void main() {
     final RestClientStub client = new RestClientStub(onRegister: (userName, password, {emailAddress}) {
       return RegistrationResult(RegistrationResultStatus.SUCCESS);
     });
-    final inviteCode = "INVIT3";
-    client.addInviteCode(inviteCode, RegistrationProcessType.FULL_REGISTRATION);
 
     final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: Update.none());
 
@@ -509,13 +321,6 @@ void main() {
 
     // Press register button
     await tester.tap(find.widgetWithText(OutlinedButton, localizations.buttonRegister));
-    await tester.pumpAndSettle();
-
-    // Enter invite code
-    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.invitationCodeHint, text: inviteCode);
-
-    // Press next button
-    await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonNext));
     await tester.pumpAndSettle();
 
     // Enter email, user name, password and password confirmation
