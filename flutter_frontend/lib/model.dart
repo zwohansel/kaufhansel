@@ -193,8 +193,8 @@ class ShoppingList extends ChangeNotifier {
 enum ShoppingListRole { ADMIN, READ_WRITE, CHECK_ONLY, READ_ONLY }
 
 const Map<String, ShoppingListRole> _strToRole = {
-  'ShoppingListRole.ADMIN': ShoppingListRole.ADMIN,
   'ADMIN': ShoppingListRole.ADMIN,
+  'ShoppingListRole.ADMIN': ShoppingListRole.ADMIN,
   'READ_WRITE': ShoppingListRole.READ_WRITE,
   'ShoppingListRole.READ_WRITE': ShoppingListRole.READ_WRITE,
   'CHECK_ONLY': ShoppingListRole.CHECK_ONLY,

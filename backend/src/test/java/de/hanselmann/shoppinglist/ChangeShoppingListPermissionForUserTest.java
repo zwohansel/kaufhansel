@@ -72,6 +72,25 @@ public class ChangeShoppingListPermissionForUserTest {
     @Sql("/InsertBob.sql")
     @Sql("/InsertListOfBobSharedWithAliceAsReadOnly.sql")
     @Sql("/InsertTestItemIntoBobsList.sql")
+    public void elevateAliceFromReadOnlyToAdmin() {
+        WebTestClient bobClient = LoginTest.loginAsBob(webClient);
+        ShoppingListInfoDto bobListInfo = GetListsEndpointTest.getSingleList(bobClient);
+
+        assertThat(bobListInfo.getOtherUsers()).hasSize(1);
+        assertThat(bobListInfo.getOtherUsers().get(0).getUserEmailAddress()).isEqualTo(LoginTest.ALICE_EMAIL);
+        long aliceId = Long.valueOf(bobListInfo.getOtherUsers().get(0).getUserId());
+
+        // Change alice permission from read-only to admin
+        ShoppingListPermissionsUpdateDto permissionDto = new ShoppingListPermissionsUpdateDto();
+        permissionDto.setUserId(Long.toString(aliceId));
+        permissionDto.setRole(ShoppingListRole.ADMIN);
+        changeUserPermission(bobClient, bobListInfo, permissionDto);
+    }
+
+    @Test
+    @Sql("/InsertBob.sql")
+    @Sql("/InsertListOfBobSharedWithAliceAsReadOnly.sql")
+    @Sql("/InsertTestItemIntoBobsList.sql")
     public void canNotRevokeAdminRole() {
         WebTestClient bobClient = LoginTest.loginAsBob(webClient);
         ShoppingListInfoDto bobListInfo = GetListsEndpointTest.getSingleList(bobClient);
