@@ -22,11 +22,14 @@ import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 import 'package:kaufhansel_client/utils/update_check.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
 import 'package:kaufhansel_client/widgets/overlay_menu.dart';
+import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
 
 import 'model.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initLocalStorage();
   runApp(App());
 }
 
@@ -50,25 +53,25 @@ class App extends StatelessWidget {
             useMaterial3: true,
             colorScheme: colorScheme,
             appBarTheme: AppBarTheme(
-                color: colorScheme.primary,
+                backgroundColor: colorScheme.primary,
                 actionsIconTheme: IconThemeData(color: Colors.white),
                 iconTheme: IconThemeData(color: Colors.white)),
             textTheme: textTheme,
             outlinedButtonTheme: OutlinedButtonThemeData(
               style: ButtonStyle(
-                shape: MaterialStateProperty.all(
+                shape: WidgetStateProperty.all(
                   const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
                 ),
               ),
             ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ButtonStyle(
-                shape: MaterialStateProperty.all(
+                shape: WidgetStateProperty.all(
                   const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
                 ),
               ),
             ),
-            cardTheme: CardTheme(color: Colors.white)),
+            cardTheme: CardThemeData(color: Colors.white)),
         home: ShoppingListApp(
           client: _restClient,
           settingsStore: _settingsStore,

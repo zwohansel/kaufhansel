@@ -120,7 +120,6 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
       case ShoppingListModeOption.SHOPPING:
         return null;
       case ShoppingListModeOption.DEFAULT:
-      default:
         return AsyncOperationIconButton(
             icon: Icon(Icons.edit), loading: false, onPressed: _allowInput() ? () => _editItem(item) : null);
     }

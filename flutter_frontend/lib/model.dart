@@ -213,7 +213,7 @@ extension ShoppingListRoles on ShoppingListRole {
   }
 
   String toRoleString() {
-    final roleStr = _strToRole.entries.where((entry) => entry.value == this ).firstOrNull?.key;
+    final roleStr = _strToRole.entries.where((entry) => entry.value == this).firstOrNull?.key;
     if (roleStr == null) {
       throw Exception("No role string for $this");
     }
@@ -230,8 +230,6 @@ extension ShoppingListRoles on ShoppingListRole {
         return AppLocalizations.of(context).roleCheckOnlyName;
       case ShoppingListRole.READ_ONLY:
         return AppLocalizations.of(context).roleReadOnlyName;
-      default:
-        return AppLocalizations.of(context).exceptionFatal;
     }
   }
 
@@ -245,8 +243,6 @@ extension ShoppingListRoles on ShoppingListRole {
         return AppLocalizations.of(context).roleCheckOnlyDescription;
       case ShoppingListRole.READ_ONLY:
         return AppLocalizations.of(context).roleReadOnlyDescription;
-      default:
-        return AppLocalizations.of(context).exceptionFatal;
     }
   }
 
@@ -260,8 +256,6 @@ extension ShoppingListRoles on ShoppingListRole {
         return Icons.assignment_turned_in_outlined;
       case ShoppingListRole.READ_ONLY:
         return Icons.remove_red_eye_outlined;
-      default:
-        return Icons.radio_button_off_outlined;
     }
   }
 

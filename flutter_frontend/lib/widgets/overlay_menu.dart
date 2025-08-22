@@ -136,7 +136,7 @@ class _OverlayMenu extends StatelessWidget {
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
+                  color: Colors.grey.withValues(alpha: 0.5),
                   spreadRadius: 3,
                   blurRadius: 4,
                   offset: Offset(0, 3),

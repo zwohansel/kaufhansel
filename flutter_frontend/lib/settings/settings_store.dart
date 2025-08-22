@@ -1,4 +1,4 @@
-import 'dart:developer';
+import 'dart:convert';
 
 import 'package:kaufhansel_client/model.dart';
 import 'package:localstorage/localstorage.dart';
@@ -8,51 +8,36 @@ const _infoMessageConfirmedStorageKey = "infoMessageConfirmed";
 const _lastActiveShoppingListKey = "lastActiveShoppingListId";
 
 class SettingsStore {
-  final LocalStorage _storage = new LocalStorage('kaufhansel_settings');
-
   Future<void> removeAll() async {
-    _storage.clear();
+    localStorage.clear();
   }
 
   Future<ShoppingListUserInfo?> getUserInfo() async {
-    if (!await _storage.ready) {
-      return null;
-    }
-    final userInfoJson = _storage.getItem(_userInfoStorageKey);
+    final userInfoJson = localStorage.getItem(_userInfoStorageKey);
     if (userInfoJson == null) {
       return null;
     }
-    return ShoppingListUserInfo.fromJson(userInfoJson);
+    return ShoppingListUserInfo.fromJson(jsonDecode(userInfoJson));
   }
 
   Future<void> saveUserInfo(ShoppingListUserInfo info) async {
-    if (await _storage.ready) {
-      await _storage.setItem(_userInfoStorageKey, info);
-    } else {
-      log("Could not save user info: Storage not writeable.");
-    }
+    localStorage.setItem(_userInfoStorageKey, jsonEncode(info));
   }
 
   Future<void> removeUserInfo() async {
-    if (!await _storage.ready) {
-      throw Exception("Failed to remove user info: Storage not writeable");
-    }
-    await _storage.deleteItem(_userInfoStorageKey);
+    localStorage.removeItem(_userInfoStorageKey);
   }
 
   Future<void> confirmInfoMessage(int messageNumber) async {
-    if (await _storage.ready) {
-      await _storage.setItem(_infoMessageConfirmedStorageKey, messageNumber);
-    } else {
-      log("Could not confirm info message: Storage not writeable.");
-    }
+    localStorage.setItem(_infoMessageConfirmedStorageKey, messageNumber.toString());
   }
 
   Future<bool> isInfoMessageConfirmed(int messageNumber) async {
-    if (!await _storage.ready) {
+    final confirmedMessageNumberStr = localStorage.getItem(_infoMessageConfirmedStorageKey);
+    if (confirmedMessageNumberStr == null) {
       return false;
     }
-    final confirmedMessageNumber = _storage.getItem(_infoMessageConfirmedStorageKey);
+    final confirmedMessageNumber = int.tryParse(confirmedMessageNumberStr);
     if (confirmedMessageNumber == null) {
       return false;
     }
@@ -60,28 +45,18 @@ class SettingsStore {
   }
 
   Future<void> saveActiveShoppingList(ShoppingListInfo shoppingListInfo) async {
-    if (await _storage.ready) {
-      await _storage.setItem(_lastActiveShoppingListKey, shoppingListInfo);
-    } else {
-      log("Could not save active shopping list id: Storage not writeable.");
-    }
+    localStorage.setItem(_lastActiveShoppingListKey, jsonEncode(shoppingListInfo));
   }
 
   Future<void> removeActiveShoppingList() async {
-    if (!await _storage.ready) {
-      throw Exception("Failed to remove active shopping list info: Storage not writeable");
-    }
-    await _storage.deleteItem(_lastActiveShoppingListKey);
+    localStorage.removeItem(_lastActiveShoppingListKey);
   }
 
   Future<ShoppingListInfo?> getActiveShoppingList() async {
-    if (!await _storage.ready) {
-      return null;
-    }
-    final lastActiveShoppingList = _storage.getItem(_lastActiveShoppingListKey);
+    final lastActiveShoppingList = localStorage.getItem(_lastActiveShoppingListKey);
     if (lastActiveShoppingList == null) {
       return null;
     }
-    return ShoppingListInfo.fromJson(lastActiveShoppingList);
+    return ShoppingListInfo.fromJson(jsonDecode(lastActiveShoppingList));
   }
 }

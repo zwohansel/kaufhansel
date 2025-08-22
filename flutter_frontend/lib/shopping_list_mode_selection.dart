@@ -16,7 +16,6 @@ class ShoppingListModeSelection extends StatelessWidget {
       case ShoppingListModeOption.EDITING:
         return [false, false, true];
       case ShoppingListModeOption.DEFAULT:
-      default:
         return [true, false, false];
     }
   }

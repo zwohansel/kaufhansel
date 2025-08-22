@@ -30,12 +30,7 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
-enum _PageMode {
-  LOGIN,
-  REGISTRATION,
-  RESET_PASSWORD_REQUEST,
-  RESET_PASSWORD
-}
+enum _PageMode { LOGIN, REGISTRATION, RESET_PASSWORD_REQUEST, RESET_PASSWORD }
 
 class _LoginPageState extends State<LoginPage> {
   _PageMode _pageMode = _PageMode.LOGIN;
@@ -145,8 +140,7 @@ class _LoginPageState extends State<LoginPage> {
                                   backgroundColor: _getInfoMessageBtnColor(),
                                   side: BorderSide(color: _getInfoMessageBtnColor())),
                               onPressed: () => setState(() => _confirmMessage()),
-                              child:
-                                  Text(widget._update.infoMessage?.dismissLabel ?? AppLocalizations.of(context).ok)))
+                              child: Text(widget._update.infoMessage?.dismissLabel ?? AppLocalizations.of(context).ok)))
                       : TextButton(
                           style: TextButton.styleFrom(
                             backgroundColor: _getInfoMessageBtnColor(),
@@ -208,10 +202,6 @@ class _LoginPageState extends State<LoginPage> {
         return _buildRequestPasswordResetForm();
       case _PageMode.RESET_PASSWORD:
         return _buildResetPasswordForm();
-      default:
-        return Container(
-          child: Text(AppLocalizations.of(context).exceptionFatal),
-        );
     }
   }
 
@@ -257,7 +247,8 @@ class _LoginPageState extends State<LoginPage> {
       if (e.osError?.errorCode == 111 && Platform.isLinux || Platform.isAndroid) {
         showErrorDialog(context, AppLocalizations.of(context).exceptionNoInternet);
       } else {
-        showErrorDialog(context, AppLocalizations.of(context).exceptionGeneralComputerSays + (e.osError?.message ?? ""));
+        showErrorDialog(
+            context, AppLocalizations.of(context).exceptionGeneralComputerSays + (e.osError?.message ?? ""));
       }
     } on TimeoutException {
       showErrorDialog(context, AppLocalizations.of(context).exceptionConnectionTimeout);

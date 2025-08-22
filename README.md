@@ -10,8 +10,7 @@ Supported Platforms: Linux, Android
 
 The Stack:
 
-* Backend: Springboot + MongoDB
-* Web-Frontend: React + Typescript + GraphQL
+* Backend: Springboot + SQLite
 * App-Frontend: Flutter
 
 ### Getting started
@@ -57,14 +56,6 @@ Lets start with the backend first:
    ```
 3. Open ``flutter_frontend/coverage/lcov_report/index.html``
 
-#### Web-Frontend
-
-> Work in progress
-
-
-[Aria Roles](https://github.com/A11yance/aria-query#elements-to-roles)
-
-[Testing Library](https://github.com/testing-library/jest-dom)
 
 ### Deployment
 

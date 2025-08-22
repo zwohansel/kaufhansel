@@ -16,7 +16,6 @@ class ShoppingListFilterSelection extends StatelessWidget {
       case ShoppingListFilterOption.CHECKED:
         return [false, false, true];
       case ShoppingListFilterOption.ALL:
-      default:
         return [true, false, false];
     }
   }

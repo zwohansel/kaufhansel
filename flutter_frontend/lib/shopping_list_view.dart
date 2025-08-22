@@ -120,7 +120,6 @@ class ShoppingListView extends StatelessWidget {
       case ShoppingListFilterOption.UNCHECKED:
         return !item.checked;
       case ShoppingListFilterOption.ALL:
-      default:
         return true;
     }
   }
