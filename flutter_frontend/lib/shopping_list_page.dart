@@ -111,7 +111,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
         _buildInfoBox(),
         Container(
             decoration: BoxDecoration(color: Theme.of(context).primaryColor, boxShadow: [
-              BoxShadow(color: Colors.grey.withOpacity(0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
+              BoxShadow(color: Colors.grey.withValues(alpha: 0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
             ]),
             child: Material(
                 type: MaterialType.transparency,
@@ -310,7 +310,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
             ),
             type: MaterialType.transparency),
         decoration: BoxDecoration(color: Colors.white, boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
+          BoxShadow(color: Colors.grey.withValues(alpha: 0.5), spreadRadius: 3, blurRadius: 4, offset: Offset(0, 3))
         ]));
   }
 

@@ -295,4 +295,7 @@ class ScrollPositionStub implements ScrollPosition {
   @override
   // TODO: implement extentTotal
   double get extentTotal => throw UnimplementedError();
+
+  @override
+  bool get shouldIgnorePointer => throw UnimplementedError();
 }
