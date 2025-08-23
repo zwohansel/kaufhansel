@@ -437,7 +437,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
                 onLogOut: _logOut,
                 onDeleteUserAccount: _deleteUserAccount,
               ),
-              body: _buildShoppingList(context),
+              body: SafeArea(child: _buildShoppingList(context)),
             ),
           );
         },
