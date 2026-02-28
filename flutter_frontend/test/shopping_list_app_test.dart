@@ -110,9 +110,10 @@ void main() {
     await tester.tap(allTab);
     await tester.pumpAndSettle();
 
-    expect(find.widgetWithText(CheckboxListTile, item0.name), findsOneWidget);
-    expect(find.widgetWithText(CheckboxListTile, item1.name), findsOneWidget);
-    expect(find.widgetWithText(CheckboxListTile, nameOfNewItem), findsOneWidget);
+    // In ALL category, items should be ListTile (not CheckboxListTile)
+    expect(find.widgetWithText(ListTile, item0.name), findsOneWidget);
+    expect(find.widgetWithText(ListTile, item1.name), findsOneWidget);
+    expect(find.widgetWithText(ListTile, nameOfNewItem), findsOneWidget);
   });
 
   testWidgets('Add item to new category', (WidgetTester tester) async {
@@ -149,8 +150,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // Check that we only see the initial item
-    expect(find.widgetWithText(CheckboxListTile, item0.name), findsOneWidget);
-    expect(find.widgetWithText(CheckboxListTile, categoryOfNewItem), findsNothing);
+    expect(find.widgetWithText(ListTile, item0.name), findsOneWidget);
+    expect(find.widgetWithText(ListTile, categoryOfNewItem), findsNothing);
 
     // Add a new item
     await enterText(
@@ -163,7 +164,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Find list tile of new item
-    final newItem = find.widgetWithText(CheckboxListTile, nameOfNewItem);
+    final newItem = find.widgetWithText(ListTile, nameOfNewItem);
     expect(newItem, findsOneWidget);
 
     // Find edit icon in tile of the item
@@ -258,8 +259,9 @@ void main() {
     await tester.tap(allTab);
     await tester.pumpAndSettle();
 
-    expect(find.widgetWithText(CheckboxListTile, item0.name), findsOneWidget);
-    expect(find.widgetWithText(CheckboxListTile, item1.name), findsOneWidget);
+    // In ALL category, items should be ListTile (not CheckboxListTile)
+    expect(find.widgetWithText(ListTile, item0.name), findsOneWidget);
+    expect(find.widgetWithText(ListTile, item1.name), findsOneWidget);
   });
 
   testWidgets('Refresh list using swipe to refresh', (WidgetTester tester) async {
@@ -279,17 +281,18 @@ void main() {
     await tester.pumpWidget(await makeTestableShoppingListApp(client));
     await tester.pumpAndSettle();
 
-    expect(find.widgetWithText(CheckboxListTile, item0.name), findsOneWidget);
-    expect(find.widgetWithText(CheckboxListTile, item1.name), findsNothing);
+    // In ALL category, items should be ListTile (not CheckboxListTile)
+    expect(find.widgetWithText(ListTile, item0.name), findsOneWidget);
+    expect(find.widgetWithText(ListTile, item1.name), findsNothing);
 
     // add item1 to the backend and trigger a refresh by pulling down the list
     backendItems.add(item1);
 
-    await tester.fling(find.widgetWithText(CheckboxListTile, item0.name), Offset(0, 300), 1000);
+    await tester.fling(find.widgetWithText(ListTile, item0.name), Offset(0, 300), 1000);
     await tester.pumpAndSettle();
 
-    expect(find.widgetWithText(CheckboxListTile, item0.name), findsOneWidget);
-    expect(find.widgetWithText(CheckboxListTile, item1.name), findsOneWidget);
+    expect(find.widgetWithText(ListTile, item0.name), findsOneWidget);
+    expect(find.widgetWithText(ListTile, item1.name), findsOneWidget);
   });
 
   testWidgets("Uncheck all items", (WidgetTester tester) async {
@@ -381,6 +384,12 @@ void main() {
     await tester.pumpWidget(await makeTestableShoppingListApp(client));
     await tester.pumpAndSettle();
 
+    // Switch to the specific category tab to check checkbox states
+    final categoryTab = find.widgetWithText(Tab, categoryToUncheck);
+    expect(categoryTab, findsOneWidget);
+    await tester.tap(categoryTab);
+    await tester.pumpAndSettle();
+
     // check that item0 is checked
     final item0Tile = find.widgetWithText(CheckboxListTile, item0.name);
     expect(item0Tile, findsOneWidget);
@@ -437,12 +446,14 @@ void main() {
 
     // check that both items of the category are now unchecked and not obscured by a modal dialog or the drawer
     {
+      final item0Tile = find.widgetWithText(CheckboxListTile, item0.name);
       expect(item0Tile.hitTestable(), findsOneWidget);
       final item0TileWidget = item0Tile.evaluate().first.widget;
       expect(item0TileWidget, isInstanceOf<CheckboxListTile>());
       expect((item0TileWidget as CheckboxListTile).value, isFalse);
     }
     {
+      final item1Tile = find.widgetWithText(CheckboxListTile, item1.name);
       expect(item1Tile.hitTestable(), findsOneWidget);
       final item1TileWidget = item1Tile.evaluate().first.widget;
       expect(item1TileWidget, isInstanceOf<CheckboxListTile>());
@@ -480,7 +491,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Check that we find two items with the category
-    expect(find.widgetWithText(CheckboxListTile, categoryToRemove), findsNWidgets(2));
+    expect(find.widgetWithText(ListTile, categoryToRemove), findsNWidgets(2));
 
     // open drawer
     final drawerIcon = find.widgetWithIcon(IconButton, Icons.menu);
@@ -519,10 +530,10 @@ void main() {
     await tester.pumpAndSettle();
 
     // check that we no longer find an item with that category...
-    expect(find.widgetWithText(CheckboxListTile, categoryToRemove), findsNothing);
+    expect(find.widgetWithText(ListTile, categoryToRemove), findsNothing);
 
     // ...but there should still be 3 items (not obscured by a dialog or the drawer)
-    expect(find.byType(CheckboxListTile).hitTestable(), findsNWidgets(3));
+    expect(find.byType(ListTile).hitTestable(), findsNWidgets(3));
 
     expect(removedCategory, isNotNull,
         reason: "This is probably because the onRemoveCategory callback of the RestClient was not called.");
@@ -558,7 +569,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // check that we find two items with the category
-    expect(find.widgetWithText(CheckboxListTile, categoryToRename), findsNWidgets(2));
+    expect(find.widgetWithText(ListTile, categoryToRename), findsNWidgets(2));
 
     // open drawer
     final drawerIcon = find.widgetWithIcon(IconButton, Icons.menu);
@@ -611,9 +622,9 @@ void main() {
     await tester.pumpAndSettle();
 
     // check that we no longer find an item with the old category name...
-    expect(find.widgetWithText(CheckboxListTile, categoryToRename), findsNothing);
+    expect(find.widgetWithText(ListTile, categoryToRename), findsNothing);
     // ...but two with the new category name (not obscured by a dialog or the drawer)
-    expect(find.widgetWithText(CheckboxListTile, newCategoryName).hitTestable(), findsNWidgets(2));
+    expect(find.widgetWithText(ListTile, newCategoryName).hitTestable(), findsNWidgets(2));
 
     expect(renamedCategory, isNotNull,
         reason: "This is probably because the onRenameCategory callback of the RestClient was not called.");
@@ -649,8 +660,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // check that we find an item for each category
-    expect(find.widgetWithText(CheckboxListTile, item0Category), findsOneWidget);
-    expect(find.widgetWithText(CheckboxListTile, item1Category), findsOneWidget);
+    expect(find.widgetWithText(ListTile, item0Category), findsOneWidget);
+    expect(find.widgetWithText(ListTile, item1Category), findsOneWidget);
 
     // open drawer
     final drawerIcon = find.widgetWithIcon(IconButton, Icons.menu);
@@ -689,13 +700,13 @@ void main() {
     await tester.pumpAndSettle();
 
     // check that we no longer find the categories
-    expect(find.widgetWithText(CheckboxListTile, item0Category), findsNothing);
-    expect(find.widgetWithText(CheckboxListTile, item1Category), findsNothing);
+    expect(find.widgetWithText(ListTile, item0Category), findsNothing);
+    expect(find.widgetWithText(ListTile, item1Category), findsNothing);
 
     // but we still find the items (not obscured by a dialog or the drawer)
-    expect(find.widgetWithText(CheckboxListTile, item0.name).hitTestable(), findsOneWidget);
-    expect(find.widgetWithText(CheckboxListTile, item1.name).hitTestable(), findsOneWidget);
-    expect(find.widgetWithText(CheckboxListTile, item2.name).hitTestable(), findsOneWidget);
+    expect(find.widgetWithText(ListTile, item0.name).hitTestable(), findsOneWidget);
+    expect(find.widgetWithText(ListTile, item1.name).hitTestable(), findsOneWidget);
+    expect(find.widgetWithText(ListTile, item2.name).hitTestable(), findsOneWidget);
 
     expect(removedAllCategories, isTrue,
         reason: "This is probably because the onRemoveCategory callback of the RestClient was not called.");
@@ -782,7 +793,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Find list tile of new item
-    final itemTile = find.widgetWithText(CheckboxListTile, item.name);
+    final itemTile = find.widgetWithText(ListTile, item.name);
     expect(itemTile, findsOneWidget);
 
     // Find edit icon in tile of the item
@@ -823,7 +834,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Find list tile of new item
-    final itemTile = find.widgetWithText(CheckboxListTile, item.name);
+    final itemTile = find.widgetWithText(ListTile, item.name);
     expect(itemTile, findsOneWidget);
 
     // Find edit icon in tile of the item
@@ -876,7 +887,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Find list tile of new item
-    final itemTile = find.widgetWithText(CheckboxListTile, item.name);
+    final itemTile = find.widgetWithText(ListTile, item.name);
     expect(itemTile, findsOneWidget);
 
     // Find edit icon in tile of the item
@@ -1029,8 +1040,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // check that both items are visible
-    expect(find.widgetWithText(CheckboxListTile, item0.name), findsOneWidget);
-    expect(find.widgetWithText(CheckboxListTile, item1.name), findsOneWidget);
+    expect(find.widgetWithText(ListTile, item0.name), findsOneWidget);
+    expect(find.widgetWithText(ListTile, item1.name), findsOneWidget);
 
     // open drawer
     final drawerIcon = find.widgetWithIcon(IconButton, Icons.menu);

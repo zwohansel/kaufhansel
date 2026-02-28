@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/model.dart';
-import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_page.dart';
 import 'package:kaufhansel_client/synced_shoppinglist.dart';
 import 'package:kaufhansel_client/utils/semantic_versioning.dart';
@@ -35,7 +34,6 @@ void main() {
 
     final page = ShoppingListPage(
       list.getAllCategories(),
-      ShoppingListFilterOption.ALL,
       update: update,
       onRefresh: () async => null,
     );

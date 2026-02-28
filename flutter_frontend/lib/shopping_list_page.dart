@@ -3,9 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/rest_client.dart';
-import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_item_input.dart';
-import 'package:kaufhansel_client/shopping_list_mode.dart';
 import 'package:kaufhansel_client/shopping_list_view.dart';
 import 'package:kaufhansel_client/synced_shoppinglist.dart';
 import 'package:kaufhansel_client/utils/update_check.dart';
@@ -17,17 +15,15 @@ import 'model.dart';
 
 class ShoppingListPage extends StatefulWidget {
   final List<String> _categories;
-  final ShoppingListFilterOption _filter;
-  final ShoppingListModeOption mode;
+  final bool editMode;
   final String? initialCategory;
   final void Function(String)? onCategoryChanged;
   final Future<void> Function() onRefresh;
   final Update update;
 
   ShoppingListPage(
-    this._categories,
-    this._filter, {
-    this.mode = ShoppingListModeOption.DEFAULT,
+    this._categories, {
+    this.editMode = false,
     this.initialCategory,
     this.onCategoryChanged,
     required this.update,
@@ -130,9 +126,8 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
                 category: widget._categories[i],
                 scrollController: _scrollControllers[i],
                 enabled: !_loading,
-                filter: widget._filter,
                 filterText: _filterText,
-                mode: widget.mode,
+                editMode: widget.editMode,
                 onRefresh: _refreshList,
                 onItemMoved: _moveItem,
               )

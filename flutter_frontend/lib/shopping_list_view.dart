@@ -1,7 +1,6 @@
 import 'package:animated_list_plus/animated_list_plus.dart';
 import 'package:animated_list_plus/transitions.dart';
 import 'package:flutter/material.dart';
-import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_item_tile.dart';
 import 'package:kaufhansel_client/shopping_list_mode.dart';
 import 'package:kaufhansel_client/synced_shoppinglist.dart';
@@ -12,22 +11,20 @@ import 'model.dart';
 
 class ShoppingListView extends StatelessWidget {
   ShoppingListView(
-      {required this.filter,
-      required this.scrollController,
+      {required this.scrollController,
       required this.onRefresh,
       required this.onItemMoved,
       this.category,
-      this.mode = ShoppingListModeOption.DEFAULT,
+      this.editMode = false,
       this.enabled = true,
       String? filterText})
       : filterText = filterText?.trim().toLowerCase();
 
-  final ShoppingListFilterOption filter;
   final ScrollController scrollController;
   final Future<void> Function() onRefresh;
   final void Function(List<SyncedShoppingListItem> items, int oldIndex, int newIndex) onItemMoved;
   final String? category;
-  final ShoppingListModeOption mode;
+  final bool editMode;
   final bool enabled;
   final String? filterText;
 
@@ -70,7 +67,7 @@ class ShoppingListView extends StatelessWidget {
       );
     };
 
-    if (mode == ShoppingListModeOption.EDITING && canEditItems) {
+    if (editMode && canEditItems) {
       return ImplicitlyAnimatedReorderableList<SyncedShoppingListItem>(
         controller: scrollController,
         items: visibleItems.toList(),
@@ -99,32 +96,19 @@ class ShoppingListView extends StatelessWidget {
       final orderedItems = [...uncheckedItems, ...checkedItems];
 
       return ImplicitlyAnimatedList<SyncedShoppingListItem>(
-        physics: const AlwaysScrollableScrollPhysics(), // allow overscroll to trigger refresh indicator
+        physics: const AlwaysScrollableScrollPhysics(),
+        // allow overscroll to trigger refresh indicator
         controller: scrollController,
-        items: orderedItems,
+        items: category == CATEGORY_ALL ? visibleItems.toList() : orderedItems,
         areItemsTheSame: (a, b) => a.id == b.id,
-        spawnIsolate: false, // see above
+        spawnIsolate: false,
+        // see above
         itemBuilder: itemBuilder,
       );
     }
   }
 
   bool _isItemVisible(SyncedShoppingListItem item) {
-    return _matchesFilterMode(item) && _matchesFilterString(item);
-  }
-
-  bool _matchesFilterMode(SyncedShoppingListItem item) {
-    switch (filter) {
-      case ShoppingListFilterOption.CHECKED:
-        return item.checked;
-      case ShoppingListFilterOption.UNCHECKED:
-        return !item.checked;
-      case ShoppingListFilterOption.ALL:
-        return true;
-    }
-  }
-
-  bool _matchesFilterString(SyncedShoppingListItem item) {
     final text = filterText;
     if (text == null || text.isEmpty) {
       return true;
@@ -133,6 +117,12 @@ class ShoppingListView extends StatelessWidget {
   }
 
   Widget _createListTileForItem(SyncedShoppingListItem item) {
+    ShoppingListModeOption mode = ShoppingListModeOption.DEFAULT;
+    if (editMode) {
+      mode = ShoppingListModeOption.EDITING;
+    } else if (category != CATEGORY_ALL) {
+      mode = ShoppingListModeOption.SHOPPING;
+    }
     return ChangeNotifierProvider<SyncedShoppingListItem>.value(
         value: item,
         key: ValueKey(item.id),

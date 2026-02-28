@@ -2,12 +2,10 @@ import 'dart:developer';
 
 import 'package:animated_list_plus/animated_list_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/shopping_list_item_edit_dialog.dart';
 import 'package:kaufhansel_client/shopping_list_mode.dart';
 import 'package:kaufhansel_client/synced_shoppinglist.dart';
 import 'package:kaufhansel_client/widgets/async_operation_icon_button.dart';
-import 'package:kaufhansel_client/widgets/error_dialog.dart';
 import 'package:provider/provider.dart';
 
 class ShoppingListItemTile extends StatefulWidget {
@@ -35,7 +33,6 @@ class ShoppingListItemTile extends StatefulWidget {
 
 class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
   bool _loading = false;
-  bool _deleting = false;
 
   @override
   Widget build(BuildContext context) {
@@ -60,39 +57,36 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
         ));
       }
 
-      if (widget._mode == ShoppingListModeOption.EDITING && widget._canEditItems) {
+      if (widget._mode == ShoppingListModeOption.DEFAULT) {
         return ListTile(
           title: Wrap(children: titleElements),
           trailing: _buildActionButton(item),
-          enabled: _allowInput(),
-          onTap: () => widget._canEditItems ? _editItem(item) : null,
         );
+      } else if (widget._mode == ShoppingListModeOption.EDITING && widget._canEditItems) {
+        return CheckboxListTile(
+            title: Wrap(children: titleElements),
+            controlAffinity: ListTileControlAffinity.leading,
+            secondary: _buildActionButton(item),
+            value: item.checked,
+            onChanged: _allowInput() && widget._canEditItems ? (checked) => _checkItem(item, checked ?? false) : null);
       } else {
         if (widget._canCheckItems) {
-          return buildCheckboxListTitle(titleElements, item);
+          return CheckboxListTile(
+            title: Wrap(children: titleElements),
+            controlAffinity: ListTileControlAffinity.leading,
+            secondary: _buildActionButton(item),
+            value: item.checked,
+            onChanged: _allowInput() ? (checked) => _checkItem(item, checked ?? false) : null,
+          );
         } else {
-          return buildListTile(titleElements, item);
+          return ListTile(
+            title: Wrap(children: titleElements),
+            leading: item.checked ? Icon(Icons.check_box_outlined) : Icon(Icons.check_box_outline_blank),
+            trailing: _buildActionButton(item),
+          );
         }
       }
     });
-  }
-
-  CheckboxListTile buildCheckboxListTitle(List<Widget> titleElements, SyncedShoppingListItem item) {
-    return CheckboxListTile(
-      title: Wrap(children: titleElements),
-      controlAffinity: ListTileControlAffinity.leading,
-      secondary: _buildActionButton(item),
-      value: item.checked,
-      onChanged: _allowInput() ? (checked) => _checkItem(item, checked ?? false) : null,
-    );
-  }
-
-  ListTile buildListTile(List<Widget> titleElements, SyncedShoppingListItem item) {
-    return ListTile(
-      title: Wrap(children: titleElements),
-      leading: item.checked ? Icon(Icons.check_box_outlined) : Icon(Icons.check_box_outline_blank),
-      trailing: _buildActionButton(item),
-    );
   }
 
   bool _allowInput() {
@@ -109,38 +103,14 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
         return Wrap(
           children: [
             AsyncOperationIconButton(
-              icon: Icon(Icons.delete),
-              loading: _deleting,
-              onPressed: _allowInput() ? () => _deleteItem(item) : null,
-            ),
+                icon: Icon(Icons.edit), loading: false, onPressed: _allowInput() ? () => _editItem(item) : null),
             SizedBox(width: 5),
             Handle(child: SizedBox(width: 48, height: 48, child: Center(child: Icon(Icons.drag_handle))))
           ],
         );
-      case ShoppingListModeOption.SHOPPING:
-        return null;
-      case ShoppingListModeOption.DEFAULT:
+      default:
         return AsyncOperationIconButton(
             icon: Icon(Icons.edit), loading: false, onPressed: _allowInput() ? () => _editItem(item) : null);
-    }
-  }
-
-  void _deleteItem(SyncedShoppingListItem item) async {
-    setState(() {
-      _loading = true;
-      _deleting = true;
-    });
-    try {
-      await item.delete();
-    } on Exception catch (e) {
-      log("Could not remove item", error: e);
-      showErrorDialogForException(context, e,
-          altText: AppLocalizations.of(context).exceptionDeleteItemFailed(item.name));
-    } finally {
-      setState(() {
-        _loading = false;
-        _deleting = false;
-      });
     }
   }
 

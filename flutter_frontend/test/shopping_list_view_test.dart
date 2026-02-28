@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaufhansel_client/model.dart';
-import 'package:kaufhansel_client/shopping_list_filter_options.dart';
 import 'package:kaufhansel_client/shopping_list_item_tile.dart';
 import 'package:kaufhansel_client/shopping_list_view.dart';
 import 'package:kaufhansel_client/synced_shoppinglist.dart';
@@ -34,7 +33,6 @@ void main() {
     );
 
     final view = ShoppingListView(
-      filter: ShoppingListFilterOption.ALL,
       scrollController: scrollController,
       onRefresh: () async => null,
       onItemMoved: (items, oldIndex, newIndex) {},

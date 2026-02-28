@@ -11,17 +11,12 @@ import 'package:kaufhansel_client/rest_client.dart';
 import 'package:kaufhansel_client/settings/settings_store.dart';
 import 'package:kaufhansel_client/settings/settings_store_widget.dart';
 import 'package:kaufhansel_client/shopping_list_drawer.dart';
-import 'package:kaufhansel_client/shopping_list_filter_options.dart';
-import 'package:kaufhansel_client/shopping_list_filter_selection.dart';
-import 'package:kaufhansel_client/shopping_list_mode.dart';
-import 'package:kaufhansel_client/shopping_list_mode_selection.dart';
 import 'package:kaufhansel_client/shopping_list_page.dart';
 import 'package:kaufhansel_client/shopping_list_title.dart';
 import 'package:kaufhansel_client/synced_shoppinglist.dart';
 import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 import 'package:kaufhansel_client/utils/update_check.dart';
 import 'package:kaufhansel_client/widgets/error_dialog.dart';
-import 'package:kaufhansel_client/widgets/overlay_menu.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:provider/provider.dart';
 
@@ -92,9 +87,6 @@ class ShoppingListApp extends StatefulWidget {
 }
 
 class _ShoppingListAppState extends State<ShoppingListApp> {
-  ShoppingListFilterOption _filter = ShoppingListFilterOption.ALL;
-  ShoppingListModeOption _mode = ShoppingListModeOption.DEFAULT;
-
   GlobalKey<ScaffoldState> _drawerKey = new GlobalKey();
 
   String? _error;
@@ -103,6 +95,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   SyncedShoppingList? _currentShoppingList;
   List<String> _currentShoppingListCategories = [];
   String? _currentShoppingListCategory;
+  bool _editMode = false;
   ShoppingListUserInfo? _userInfo;
   bool _initializing = false;
   Update _update = Update.none();
@@ -171,14 +164,6 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       await widget.client.deleteAccount(userInfo.id);
       await _logOut();
     }
-  }
-
-  void _setFilter(ShoppingListFilterOption nextFilter) {
-    setState(() => _filter = nextFilter);
-  }
-
-  void _setMode(ShoppingListModeOption nextMode) {
-    setState(() => _mode = nextMode);
   }
 
   void _setCurrentShoppingListCategory(String nextCategory) {
@@ -371,32 +356,6 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     );
   }
 
-  Widget _buildOverlayMenuButton() {
-    return OverlayMenuButton(
-      widthOffset: (3 * 40.0), // ToggleButton width
-      button: _buildModeMenuButton(),
-      buttonOpen: Icon(Icons.close),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(AppLocalizations.of(context).shoppingListFilterTitle, style: Theme.of(context).textTheme.bodySmall),
-          ShoppingListFilterSelection(context, (nextFilter) => _setFilter(nextFilter), _filter),
-          SizedBox(height: 8),
-          Text(AppLocalizations.of(context).shoppingListModeTitle, style: Theme.of(context).textTheme.bodySmall),
-          ShoppingListModeSelection(context, (nextMode) => _setMode(nextMode), _mode),
-        ],
-      ),
-    );
-  }
-
-  Icon _buildModeMenuButton() {
-    if (_mode != ShoppingListModeOption.DEFAULT || _filter != ShoppingListFilterOption.ALL) {
-      return Icon(Icons.filter_alt);
-    } else {
-      return Icon(Icons.filter_alt_outlined);
-    }
-  }
-
   Widget _buildContent(BuildContext context) {
     if (_isLoggedIn()) {
       return ChangeNotifierProvider.value(
@@ -414,7 +373,9 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               key: _drawerKey,
               appBar: AppBar(
                 actions: [
-                  _buildOverlayMenuButton(),
+                  IconButton(
+                      onPressed: () => setState(() => _editMode = !_editMode),
+                      icon: _editMode ? Icon(Icons.close) : Icon(Icons.mode_outlined)),
                   IconButton(
                       icon: Icon(Icons.menu),
                       splashRadius: 23,
@@ -496,8 +457,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     } else {
       return ShoppingListPage(
         _currentShoppingListCategories,
-        _filter,
-        mode: _mode,
+        editMode: _editMode,
         initialCategory: _currentShoppingListCategory,
         onCategoryChanged: _setCurrentShoppingListCategory,
         update: _update,
