@@ -16,5 +16,4 @@ out/
 ### eclipse ###
 .attach_*
 
-### mongo db ###
-mongodb_data/
+
