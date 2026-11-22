@@ -41,9 +41,9 @@ public class SchedulingService {
     }
 
     @Scheduled(cron = "0 0 4 * * *") // every night at 4:00:00am
-    public void cleanupInvalidTokens() {
-        int numberDeleted = tokenService.deleteInvalidTokens();
-        LOGGER.info("Deleted {} invalid tokens", numberDeleted);
+    public void cleanupExpiredTokens() {
+        int numberDeleted = tokenService.deleteExpiredTokens();
+        LOGGER.info("Deleted {} expired tokens", numberDeleted);
     }
 
     @Scheduled(fixedDelay = 1000 * 60 * 15, initialDelay = 1000 * 15)

@@ -169,4 +169,14 @@
             ALTER TABLE LISTS_COPY RENAME TO LISTS;
         </sql>
     </changeSet>
+    <changeSet author="ZwoHansel" id="2">
+        <!-- Tokens are either short lived access tokens that authenticate the requests of a user
+             or long lived refresh tokens with which a new access token can be obtained.
+             All tokens that exist at the time of this change are access tokens. -->
+        <addColumn tableName="TOKENS">
+            <column name="TYPE" type="text" defaultValue="ACCESS">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

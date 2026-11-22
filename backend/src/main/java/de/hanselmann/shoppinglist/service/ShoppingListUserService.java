@@ -17,6 +17,7 @@ import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
 import de.hanselmann.shoppinglist.security.AuthenticatedToken;
+import de.hanselmann.shoppinglist.security.TokenService;
 
 @Service
 public class ShoppingListUserService {
@@ -25,15 +26,18 @@ public class ShoppingListUserService {
     private final PasswordEncoder passwordEncoder;
     private final EMailService emailService;
     private final TimeService timeService;
+    private final TokenService tokenService;
 
     @Autowired
     public ShoppingListUserService(ShoppingListUserRepository userRepository, CodeGenerator codeGenerator,
-            PasswordEncoder passwordEncoder, EMailService emailService, TimeService timeService) {
+            PasswordEncoder passwordEncoder, EMailService emailService, TimeService timeService,
+            TokenService tokenService) {
         this.userRepository = userRepository;
         this.codeGenerator = codeGenerator;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.timeService = timeService;
+        this.tokenService = tokenService;
     }
 
     public ShoppingListUser getCurrentUser() {
@@ -129,6 +133,8 @@ public class ShoppingListUserService {
             user.setPassword(passwordEncoder.encode(password));
             user.clearPasswordResetCode();
             userRepository.save(user);
+            // Whoever knew the old password must not stay logged in
+            tokenService.deleteTokensOfUser(user);
             emailService.sendPasswortSuccessfullyChangedMail(user);
             return true;
         }

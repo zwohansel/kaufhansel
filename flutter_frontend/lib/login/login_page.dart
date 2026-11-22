@@ -235,11 +235,12 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final client = RestClientWidget.of(context);
-      ShoppingListUserInfo? userInfo = await client.login(email, password);
+      LoginResult? login = await client.login(email, password);
       final settingsStore = await SettingsStoreWidget.of(context);
-      if (userInfo != null && settingsStore != null) {
-        await settingsStore.saveUserInfo(userInfo);
-        widget._loggedIn(userInfo);
+      if (login != null && settingsStore != null) {
+        await settingsStore.saveUserInfo(login.userInfo);
+        await settingsStore.saveRefreshToken(login.refreshToken);
+        widget._loggedIn(login.userInfo);
       } else {
         showErrorDialog(context, AppLocalizations.of(context).exceptionWrongCredentials);
       }

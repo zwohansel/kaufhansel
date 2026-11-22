@@ -108,6 +108,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
       _logOut();
     };
+    widget.client.onTokenExpired = _renewAuthenticationToken;
   }
 
   void _asyncInit() async {
@@ -136,19 +137,42 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
     }
   }
 
+  /// Obtains a new authentication token with the stored refresh token.
+  Future<ShoppingListUserInfo?> _renewAuthenticationToken() async {
+    final refreshToken = await widget.settingsStore.getRefreshToken();
+    if (refreshToken == null) {
+      return null;
+    }
+
+    final userInfo = await widget.client.refreshAuthenticationToken(refreshToken);
+    if (userInfo == null) {
+      // The refresh token is no longer valid: the user has to log in again.
+      developer.log("Could not renew the authentication token: the stored refresh token was rejected.");
+      await widget.settingsStore.removeRefreshToken();
+      return null;
+    }
+
+    await widget.settingsStore.saveUserInfo(userInfo);
+    if (mounted) {
+      setState(() => _userInfo = userInfo);
+    }
+    return userInfo;
+  }
+
   bool _isLoggedIn() {
     // if userInfo == null, no user is logged in
     return _userInfo != null;
   }
 
   void _logIn(ShoppingListUserInfo userInfo) async {
-    widget.client.setAuthenticationToken(userInfo.token);
+    widget.client.setAuthenticationToken(userInfo.token, userInfo.tokenExpiresAt);
     setState(() => _userInfo = userInfo);
     final activeShoppingList = await widget.settingsStore.getActiveShoppingList();
     _fetchShoppingListInfos(activeShoppingList);
   }
 
   Future<void> _logOut() async {
+    await _revokeRefreshToken();
     widget.client.logOut();
     await widget.settingsStore.removeAll();
     setState(() {
@@ -156,6 +180,20 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       _clearCurrentShoppingListState();
       _error = null;
     });
+  }
+
+  /// Invalidates the refresh token on the server so that it cannot be used
+  /// by anyone who gets hold of it. Logging out must work without a connection
+  /// to the server as well.
+  Future<void> _revokeRefreshToken() async {
+    try {
+      final refreshToken = await widget.settingsStore.getRefreshToken();
+      if (refreshToken != null) {
+        await widget.client.revokeRefreshToken(refreshToken);
+      }
+    } on Exception catch (e) {
+      developer.log("Could not revoke the refresh token.", error: e);
+    }
   }
 
   Future<void> _deleteUserAccount() async {

@@ -9,6 +9,10 @@ import 'package:kaufhansel_client/settings/settings_store_widget.dart';
 import 'rest_client_stub.dart';
 import 'settings_store_stub.dart';
 
+/// An expiration date that lies far enough in the future that the client does not
+/// try to refresh the authentication token.
+final tokenExpiresAt = DateTime.now().toUtc().add(const Duration(days: 365));
+
 Future<Widget> makeBasicTestableWidget(Widget child, {Locale? locale}) async {
   final supportedLocale = locale ?? Locale("de");
   return MediaQuery(

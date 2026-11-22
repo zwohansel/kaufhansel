@@ -22,7 +22,7 @@ void main() {
     final RestClientStub client = new RestClientStub();
 
     // Create a registered user
-    final user = new User(new ShoppingListUserInfo("12345", "TestUser", "test@test.de", "token"), "testpassword");
+    final user = new User(new ShoppingListUserInfo("12345", "TestUser", "test@test.de", "token", tokenExpiresAt), "testpassword");
     client.addUser(user);
 
     ShoppingListUserInfo? loggedInUserInfo;
@@ -41,6 +41,29 @@ void main() {
 
     // Login callback should have been called with the expected user info
     expect(loggedInUserInfo, equals(user.info));
+  });
+
+  testWidgets('SuccessfulLoginStoresRefreshToken', (WidgetTester tester) async {
+    final RestClientStub client = new RestClientStub();
+    final SettingsStoreStub store = new SettingsStoreStub();
+
+    final user = new User(new ShoppingListUserInfo("12345", "TestUser", "test@test.de", "token", tokenExpiresAt), "testpassword",
+        refreshToken: "theRefreshToken");
+    client.addUser(user);
+
+    final LoginPage loginPage = new LoginPage(loggedIn: (info) {}, update: Update.none());
+
+    await tester.pumpWidget(await makeTestableWidget(loginPage, restClient: client, store: store, locale: testLocale));
+    await tester.pumpAndSettle();
+
+    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.emailHint, text: user.info.emailAddress);
+    await enterTextIntoFormField(tester, fieldLabelOrHint: localizations.passwordHint, text: user.password);
+
+    await tester.tap(find.widgetWithText(ElevatedButton, localizations.buttonLogin));
+    await tester.pumpAndSettle();
+
+    // The refresh token is required to obtain a new token once the current one has expired
+    expect(await store.getRefreshToken(), equals("theRefreshToken"));
   });
 
   testWidgets('InvalidLoginInformation', (WidgetTester tester) async {

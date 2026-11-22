@@ -388,21 +388,59 @@ class ShoppingListUserInfo {
   final String _username;
   final String _emailAddress;
   final String _token;
+  final DateTime _tokenExpiresAt;
 
-  ShoppingListUserInfo(this._id, this._username, this._emailAddress, this._token);
+  ShoppingListUserInfo(this._id, this._username, this._emailAddress, this._token, this._tokenExpiresAt);
 
   factory ShoppingListUserInfo.fromJson(Map<String, dynamic> json) {
-    return new ShoppingListUserInfo(json.get('id'), json.get('username'), json.get('emailAddress'), json.get('token'));
+    return new ShoppingListUserInfo(json.get('id'), json.get('username'), json.get('emailAddress'), json.get('token'),
+        _dateTimeFromSecondsSinceEpoch(json.get('tokenExpiresAt')));
   }
 
   Map<String, dynamic> toJson() {
-    return {'id': id, 'username': username, 'emailAddress': emailAddress, 'token': token};
+    return {
+      'id': id,
+      'username': username,
+      'emailAddress': emailAddress,
+      'token': token,
+      'tokenExpiresAt': _secondsSinceEpoch(tokenExpiresAt)
+    };
   }
 
   String get id => _id;
   String get username => _username;
   String get emailAddress => _emailAddress;
   String get token => _token;
+
+  /// The point in time at which [token] expires and a new one has to be obtained.
+  DateTime get tokenExpiresAt => _tokenExpiresAt;
+}
+
+DateTime _dateTimeFromSecondsSinceEpoch(int secondsSinceEpoch) {
+  return DateTime.fromMillisecondsSinceEpoch(secondsSinceEpoch * 1000, isUtc: true);
+}
+
+int _secondsSinceEpoch(DateTime dateTime) {
+  return dateTime.millisecondsSinceEpoch ~/ 1000;
+}
+
+/// The result of a successful login: the user info including a short lived authentication
+/// token and the long lived refresh token with which a new authentication token
+/// can be obtained once the current one has expired.
+class LoginResult {
+  final ShoppingListUserInfo _userInfo;
+  final String _refreshToken;
+
+  LoginResult(this._userInfo, this._refreshToken);
+
+  factory LoginResult.fromJson(Map<String, dynamic> json) {
+    return LoginResult(ShoppingListUserInfo.fromJson(json), json.get('refreshToken'));
+  }
+
+  ShoppingListUserInfo get userInfo => _userInfo;
+
+  /// Must never be written to an insecure storage.
+  String get refreshToken => _refreshToken;
 }
 
 enum RegistrationResultStatus { SUCCESS, EMAIL_INVALID, PASSWORD_INVALID, FAILURE }

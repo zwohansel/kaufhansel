@@ -41,10 +41,10 @@ void main() {
     localizations = await AppLocalizations.load(testLocale);
   });
 
-  Future<Widget> makeTestableShoppingListApp(RestClient restClient) {
-    final store = SettingsStoreStub();
+  Future<Widget> makeTestableShoppingListApp(RestClient restClient, {SettingsStoreStub? settingsStore}) {
+    final store = settingsStore ?? SettingsStoreStub();
     // Store a user info obj so that we start in a logged in state
-    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234"));
+    store.saveUserInfo(ShoppingListUserInfo("1", "test", "test@test.de", "1234", tokenExpiresAt));
 
     return makeBasicTestableWidget(
         ShoppingListApp(
@@ -1331,5 +1331,81 @@ void main() {
     // check that the add user to list endpoint was called
     expect(otherUserRemoved, isTrue,
         reason: "This is probably because the onRemoveUserFromShoppingList callback of the RestClient was not called.");
+  });
+
+  RestClientStub makeClientWithUser({String refreshToken = "refreshToken"}) {
+    final client = RestClientStub(
+      onGetBackendInfo: () => BackendInfo(version, null),
+      onGetShoppingLists: () => [],
+    );
+    client.addUser(User(ShoppingListUserInfo("1", "test", "test@test.de", "1234", tokenExpiresAt), "testpassword",
+        refreshToken: refreshToken, refreshedToken: "newToken"));
+    return client;
+  }
+
+  testWidgets('Renew expired token with the stored refresh token', (WidgetTester tester) async {
+    final client = makeClientWithUser();
+
+    final store = SettingsStoreStub();
+    store.saveRefreshToken("refreshToken");
+
+    await tester.pumpWidget(await makeTestableShoppingListApp(client, settingsStore: store));
+    await tester.pumpAndSettle();
+
+    expect((await client.expireToken())?.token, equals("newToken"));
+    await tester.pumpAndSettle();
+
+    // The new token must be stored so that it survives a restart of the app
+    expect((await store.getUserInfo())?.token, equals("newToken"));
+    // The user must stay logged in
+    expect(find.widgetWithText(ElevatedButton, localizations.buttonLogin), findsNothing);
+  });
+
+  testWidgets('Do not renew expired token if no refresh token is stored', (WidgetTester tester) async {
+    final client = makeClientWithUser();
+    final store = SettingsStoreStub();
+
+    await tester.pumpWidget(await makeTestableShoppingListApp(client, settingsStore: store));
+    await tester.pumpAndSettle();
+
+    expect(await client.expireToken(), isNull);
+  });
+
+  testWidgets('Discard the stored refresh token if it is rejected', (WidgetTester tester) async {
+    final client = makeClientWithUser();
+
+    final store = SettingsStoreStub();
+    store.saveRefreshToken("outdatedRefreshToken");
+
+    await tester.pumpWidget(await makeTestableShoppingListApp(client, settingsStore: store));
+    await tester.pumpAndSettle();
+
+    expect(await client.expireToken(), isNull);
+    expect(await store.getRefreshToken(), isNull);
+  });
+
+  testWidgets('Revoke the refresh token on logout', (WidgetTester tester) async {
+    final client = makeClientWithUser();
+
+    final store = SettingsStoreStub();
+    store.saveRefreshToken("refreshToken");
+
+    await tester.pumpWidget(await makeTestableShoppingListApp(client, settingsStore: store));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.menu));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ListTile, localizations.appSettings));
+    // The app settings read the app version which never completes in a test:
+    // pump the route transition instead of waiting for the page to settle.
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.tap(find.widgetWithText(OutlinedButton, localizations.appSettingsLogOut));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(client.isRefreshTokenRevoked("refreshToken"), isTrue);
+    expect(await store.getRefreshToken(), isNull);
+    checkIsLoginPage(localizations);
   });
 }

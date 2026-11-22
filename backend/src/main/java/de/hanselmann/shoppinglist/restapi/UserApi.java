@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import de.hanselmann.shoppinglist.restapi.dto.LoginDto;
+import de.hanselmann.shoppinglist.restapi.dto.RefreshTokenDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationDataDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationResultDto;
 import de.hanselmann.shoppinglist.restapi.dto.RequestUserPasswordResetDto;
@@ -22,6 +23,14 @@ public interface UserApi {
     @PostMapping("/login")
     ResponseEntity<ShoppingListUserInfoDto> login(
             @RequestBody LoginDto loginDto);
+
+    @PostMapping("/token/refresh")
+    ResponseEntity<ShoppingListUserInfoDto> refreshAccessToken(
+            @RequestBody RefreshTokenDto refreshToken);
+
+    @PostMapping("/token/revoke")
+    ResponseEntity<Void> revokeRefreshToken(
+            @RequestBody RefreshTokenDto refreshToken);
 
     @PostMapping("/register")
     ResponseEntity<RegistrationResultDto> register(

@@ -234,7 +234,7 @@ Widget _buildDrawer({
       value: selectedList,
       child: ShoppingListDrawer(
         shoppingListInfos: shoppingLists ?? [],
-        userInfo: ShoppingListUserInfo("0", "Test", "test@test.de", "token"),
+        userInfo: ShoppingListUserInfo("0", "Test", "test@test.de", "token", tokenExpiresAt),
         onRefreshPressed: () {},
         onShoppingListSelected: onShoppingListSelected ?? (info) {},
         onCreateShoppingList: (name) async => null,

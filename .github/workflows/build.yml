@@ -37,7 +37,7 @@ jobs:
           java-version: '21'
 
       - name: Install Build Tools
-        run: sudo apt-get update && sudo apt-get install ninja-build pkg-config libgtk-3-dev libblkid-dev liblzma-dev lcov
+        run: sudo apt-get update && sudo apt-get install ninja-build pkg-config libgtk-3-dev libblkid-dev liblzma-dev libsecret-1-dev lcov
 
       - name: Prepare Android Upload Key
         run: |
@@ -199,11 +199,10 @@ jobs:
 
           ssh deploy "docker stop kaufhansel || true"
           ssh deploy "docker rm kaufhansel || true"
-          ssh deploy "docker run --detach --name kaufhansel --restart unless-stopped --log-driver=journald --network $KAUFHANSEL_DOCKER_NETWORK -e KAUFHANSEL_MAIL_SERVER_HOST=$KAUFHANSEL_MAIL_SERVER_HOST -e KAUFHANSEL_MAIL_SERVER_PORT=$KAUFHANSEL_MAIL_SERVER_PORT -e KAUFHANSEL_MAIL_USERNAME=$KAUFHANSEL_MAIL_USERNAME -e KAUFHANSEL_MAIL_PASSWORD=$KAUFHANSEL_MAIL_PASSWORD -e KAUFHANSEL_TOKEN_SECRET=$KAUFHANSEL_TOKEN_SECRET --volume /home/$KAUFHANSEL_DEPLOY_USER/kaufhansel:/kaufhansel --workdir /kaufhansel eclipse-temurin:17 java -jar kaufhansel_backend.jar"
+          ssh deploy "docker run --detach --name kaufhansel --restart unless-stopped --log-driver=journald --network $KAUFHANSEL_DOCKER_NETWORK -e KAUFHANSEL_MAIL_SERVER_HOST=$KAUFHANSEL_MAIL_SERVER_HOST -e KAUFHANSEL_MAIL_SERVER_PORT=$KAUFHANSEL_MAIL_SERVER_PORT -e KAUFHANSEL_MAIL_USERNAME=$KAUFHANSEL_MAIL_USERNAME -e KAUFHANSEL_MAIL_PASSWORD=$KAUFHANSEL_MAIL_PASSWORD --volume /home/$KAUFHANSEL_DEPLOY_USER/kaufhansel:/kaufhansel --workdir /kaufhansel eclipse-temurin:17 java -jar kaufhansel_backend.jar"
         env:
           KAUFHANSEL_MAIL_USERNAME: ${{ secrets.KAUFHANSEL_MAIL_USERNAME }}
           KAUFHANSEL_MAIL_PASSWORD: ${{ secrets.KAUFHANSEL_MAIL_PASSWORD }}
-          KAUFHANSEL_TOKEN_SECRET: ${{ secrets.KAUFHANSEL_TOKEN_SECRET }}
           KAUFHANSEL_DEPLOY_USER: ${{ secrets.KAUFHANSEL_DEPLOY_USER }}
           KAUFHANSEL_DOCKER_NETWORK: ${{ vars.KAUFHANSEL_DOCKER_NETWORK }}
           KAUFHANSEL_MAIL_SERVER_HOST: ${{ vars.KAUFHANSEL_MAIL_SERVER_HOST }}

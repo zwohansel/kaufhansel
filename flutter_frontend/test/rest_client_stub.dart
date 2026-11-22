@@ -3,15 +3,28 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
 
+import 'utils.dart';
+
 class User {
   final ShoppingListUserInfo _info;
   final String _password;
+  final String _refreshToken;
+
+  /// The authentication token the user gets when he refreshes his token
+  final String _refreshedToken;
 
   ShoppingListUserInfo get info => _info;
 
   String get password => _password;
 
-  User(this._info, this._password);
+  String get refreshToken => _refreshToken;
+
+  ShoppingListUserInfo get refreshedInfo =>
+      ShoppingListUserInfo(_info.id, _info.username, _info.emailAddress, _refreshedToken, tokenExpiresAt);
+
+  User(this._info, this._password, {String refreshToken = "refreshToken", String refreshedToken = "refreshedToken"})
+      : _refreshToken = refreshToken,
+        _refreshedToken = refreshedToken;
 }
 
 class RestClientStub implements RestClient {
@@ -36,7 +49,9 @@ class RestClientStub implements RestClient {
   final void Function(String shoppingListId, String userId)? onRemoveUserFromShoppingList;
 
   final List<User> _users = [];
+  final List<String> _revokedRefreshTokens = [];
   VoidCallback? _onUnauthenticated;
+  TokenRefresh? _onTokenExpired;
 
   RestClientStub(
       {this.onRegister,
@@ -63,20 +78,48 @@ class RestClientStub implements RestClient {
   set onUnauthenticated(VoidCallback onUnauthenticated) => _onUnauthenticated = onUnauthenticated;
 
   @override
+  set onTokenExpired(TokenRefresh onTokenExpired) => _onTokenExpired = onTokenExpired;
+
+  /// Simulates an expired authentication token: returns the user info containing
+  /// the newly obtained token or null if no new token could be obtained.
+  Future<ShoppingListUserInfo?> expireToken() async => await _onTokenExpired?.call();
+
+  @override
   Future<BackendInfo> getBackendInfo() async {
     if (onGetBackendInfo == null) throw UnimplementedError();
     return onGetBackendInfo!();
   }
 
   @override
-  Future<ShoppingListUserInfo?> login(String userEmail, String password) async {
+  Future<LoginResult?> login(String userEmail, String password) async {
     for (final user in _users) {
       if (user.info.emailAddress == userEmail && user.password == password) {
-        return user.info;
+        _revokedRefreshTokens.remove(user.refreshToken);
+        return LoginResult(user.info, user.refreshToken);
       }
     }
     return null;
   }
+
+  @override
+  Future<ShoppingListUserInfo?> refreshAuthenticationToken(String refreshToken) async {
+    if (_revokedRefreshTokens.contains(refreshToken)) {
+      return null;
+    }
+    for (final user in _users) {
+      if (user.refreshToken == refreshToken) {
+        return user.refreshedInfo;
+      }
+    }
+    return null;
+  }
+
+  @override
+  Future<void> revokeRefreshToken(String refreshToken) async {
+    _revokedRefreshTokens.add(refreshToken);
+  }
+
+  bool isRefreshTokenRevoked(String refreshToken) => _revokedRefreshTokens.contains(refreshToken);
 
   @override
   Future<RegistrationResult> register(String userName, String password, String? inviteCode,
@@ -198,7 +241,7 @@ class RestClientStub implements RestClient {
   }
 
   @override
-  void setAuthenticationToken(String token) {}
+  void setAuthenticationToken(String token, DateTime expiresAt) {}
 
   @override
   Future<void> updateShoppingListItem(String shoppingListId, ShoppingListItem item) async {

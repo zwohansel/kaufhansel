@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -39,10 +40,20 @@ class RestClientWidget extends InheritedWidget {
   bool updateShouldNotify(covariant InheritedWidget oldWidget) => true;
 }
 
+/// Returns the user info containing a freshly obtained authentication token
+/// or null if no new token could be obtained.
+typedef TokenRefresh = Future<ShoppingListUserInfo?> Function();
+
 class RestClient {
+  /// A token is refreshed if it expires within this duration.
+  static const _refreshTokenBefore = Duration(minutes: 30);
+
   late HttpClient _httpClient;
   String? _token;
+  DateTime? _tokenExpiration;
+  Future<ShoppingListUserInfo?>? _pendingTokenRefresh;
   VoidCallback _onUnauthenticated = () {};
+  TokenRefresh? _onTokenExpired;
   final Uri _serverUrl;
   final Duration _timeout = Duration(seconds: 10);
 
@@ -56,26 +67,53 @@ class RestClient {
   /// (e.g. the auth token has expired or the login was never performed).
   set onUnauthenticated(VoidCallback onUnauthenticated) => _onUnauthenticated = onUnauthenticated;
 
+  /// Set a callback that is called before a request is sent if the authentication token has expired
+  /// or is about to expire. The callback must return a new token or null if no new token could be obtained.
+  set onTokenExpired(TokenRefresh onTokenExpired) => _onTokenExpired = onTokenExpired;
+
   void _init() {
     _httpClient = HttpClient();
     //accept self signed certificates in debug mode
     _httpClient.badCertificateCallback = (cert, host, port) => kDebugMode;
   }
 
-  void setAuthenticationToken(String token) {
+  void setAuthenticationToken(String token, DateTime expiresAt) {
     _token = token;
+    _tokenExpiration = expiresAt;
   }
 
   void logOut() {
     _token = null;
+    _tokenExpiration = null;
     _httpClient.close(force: true);
     _init();
   }
 
-  Future<ShoppingListUserInfo?> login(String userEmail, String password) async {
+  /// Returns null if the credentials are invalid.
+  Future<LoginResult?> login(String userEmail, String password) async {
     final body = jsonEncode({'emailAddress': userEmail, 'password': password});
 
     final request = await _httpClient.postUrl(_serverUrl.resolve("user/login"));
+    request.headers.contentType = ContentType.json;
+    request.write(body);
+    final response = await request.close().timeout(_timeout);
+
+    if (response.statusCode == 200) {
+      final String decoded = await response.transform(utf8.decoder).join();
+      return new LoginResult.fromJson(jsonDecode(decoded));
+    } else if (response.statusCode == 401) {
+      return null;
+    } else {
+      throw HttpResponseException(response.statusCode, message: "Failed to get user info for $userEmail");
+    }
+  }
+
+  /// Obtains a new authentication token for the owner of the given [refreshToken].
+  /// Returns null if the refresh token is no longer valid.
+  Future<ShoppingListUserInfo?> refreshAuthenticationToken(String refreshToken) async {
+    final body = jsonEncode({'refreshToken': refreshToken});
+
+    final request = await _httpClient.postUrl(_serverUrl.resolve("user/token/refresh"));
     request.headers.contentType = ContentType.json;
     request.write(body);
     final response = await request.close().timeout(_timeout);
@@ -86,13 +124,28 @@ class RestClient {
     } else if (response.statusCode == 401) {
       return null;
     } else {
-      throw HttpResponseException(response.statusCode, message: "Failed to get user info for $userEmail");
+      throw HttpResponseException(response.statusCode, message: "Failed to refresh the authentication token");
+    }
+  }
+
+  /// Invalidates the given [refreshToken] so that it can no longer be used to obtain
+  /// a new authentication token.
+  Future<void> revokeRefreshToken(String refreshToken) async {
+    final body = jsonEncode({'refreshToken': refreshToken});
+
+    final request = await _httpClient.postUrl(_serverUrl.resolve("user/token/revoke"));
+    request.headers.contentType = ContentType.json;
+    request.write(body);
+    final response = await request.close().timeout(_timeout);
+
+    if (response.statusCode != 204) {
+      throw HttpResponseException(response.statusCode, message: "Failed to revoke the refresh token");
     }
   }
 
   Future<List<ShoppingListInfo>> getShoppingLists() async {
     var request = await _httpClient.getUrl(_serverUrl.resolve("shoppinglists")).timeout(_timeout);
-    _addAuthHeader(request);
+    await _addAuthHeader(request);
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode == 200) {
@@ -111,14 +164,44 @@ class RestClient {
     }
   }
 
-  void _addAuthHeader(HttpClientRequest request) {
+  Future<void> _addAuthHeader(HttpClientRequest request) async {
+    await _refreshTokenIfExpired();
     request.headers.add(HttpHeaders.authorizationHeader, "Bearer $_token");
+  }
+
+  /// Obtains a new token if the current one has expired or expires soon.
+  /// Concurrent requests share the same refresh attempt.
+  Future<void> _refreshTokenIfExpired() async {
+    final onTokenExpired = _onTokenExpired;
+    if (_token == null || onTokenExpired == null || !_isTokenExpired()) {
+      return;
+    }
+
+    try {
+      final userInfo = await (_pendingTokenRefresh ??= onTokenExpired());
+      if (userInfo != null) {
+        setAuthenticationToken(userInfo.token, userInfo.tokenExpiresAt);
+      }
+    } on Exception catch (e) {
+      // Send the request with the expired token: the server decides whether it is still valid.
+      developer.log("Could not refresh the authentication token.", error: e);
+    } finally {
+      _pendingTokenRefresh = null;
+    }
+  }
+
+  bool _isTokenExpired() {
+    final expiration = _tokenExpiration;
+    if (expiration == null) {
+      return false;
+    }
+    return DateTime.now().toUtc().isAfter(expiration.subtract(_refreshTokenBefore));
   }
 
   Future<List<ShoppingListItem>> fetchShoppingList(String shoppingListId) async {
     var request = await _httpClient.getUrl(_serverUrl.resolve("shoppinglist/$shoppingListId")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
-    _addAuthHeader(request);
+    await _addAuthHeader(request);
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode == 200) {
@@ -141,7 +224,7 @@ class RestClient {
 
     var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
-    _addAuthHeader(request);
+    await _addAuthHeader(request);
     request.write(body);
     var response = await request.close().timeout(_timeout);
 
@@ -161,7 +244,7 @@ class RestClient {
     var request = await _httpClient
         .deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/item/${item.id}"))
         .timeout(_timeout);
-    _addAuthHeader(request);
+    await _addAuthHeader(request);
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
@@ -179,7 +262,7 @@ class RestClient {
     var request =
         await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/item/${item.id}")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
-    _addAuthHeader(request);
+    await _addAuthHeader(request);
     request.write(body);
     var response = await request.close().timeout(_timeout);
 
@@ -198,7 +281,7 @@ class RestClient {
     var request =
         await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/moveitem")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
-    _addAuthHeader(request);
+    await _addAuthHeader(request);
     request.write(body);
     var response = await request.close().timeout(_timeout);
 
@@ -216,7 +299,7 @@ class RestClient {
 
     var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
-    _addAuthHeader(request);
+    await _addAuthHeader(request);
     request.write(body);
     var response = await request.close().timeout(_timeout);
 
@@ -232,7 +315,7 @@ class RestClient {
 
   Future<void> deleteShoppingList(String shoppingListId) async {
     var request = await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId")).timeout(_timeout);
-    _addAuthHeader(request);
+    await _addAuthHeader(request);
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
@@ -246,7 +329,7 @@ class RestClient {
     final body = jsonEncode({'emailAddress': userEmailAddress});
     var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/user")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
-    _addAuthHeader(request);
+    await _addAuthHeader(request);
     request.write(body);
     var response = await request.close().timeout(_timeout);
 
@@ -267,7 +350,7 @@ class RestClient {
   Future<void> removeUserFromShoppingList(String shoppingListId, String userId) async {
     var request =
         await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/user/$userId")).timeout(_timeout);
-    _addAuthHeader(request);
+    await _addAuthHeader(request);
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
@@ -284,7 +367,7 @@ class RestClient {
     var request =
         await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/uncheckitems")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
-    _addAuthHeader(request);
+    await _addAuthHeader(request);
     request.write(body);
     var response = await request.close().timeout(_timeout);
 
@@ -302,7 +385,7 @@ class RestClient {
     var request =
         await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/removecategory")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
-    _addAuthHeader(request);
+    await _addAuthHeader(request);
     request.write(body);
     var response = await request.close().timeout(_timeout);
 
@@ -319,7 +402,7 @@ class RestClient {
     var request =
         await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/renamecategory")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
-    _addAuthHeader(request);
+    await _addAuthHeader(request);
     request.write(body);
     var response = await request.close().timeout(_timeout);
 
@@ -334,7 +417,7 @@ class RestClient {
 
   Future<void> removeAllItems(String shoppingListId) async {
     var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/clear")).timeout(_timeout);
-    _addAuthHeader(request);
+    await _addAuthHeader(request);
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {
@@ -352,7 +435,7 @@ class RestClient {
     var request =
         await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/permissions")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
-    _addAuthHeader(request);
+    await _addAuthHeader(request);
     request.write(body);
     var response = await request.close().timeout(_timeout);
 
@@ -372,7 +455,7 @@ class RestClient {
     final body = jsonEncode({'name': newName});
     var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/name")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
-    _addAuthHeader(request);
+    await _addAuthHeader(request);
     request.write(body);
     var response = await request.close().timeout(_timeout);
 
@@ -406,7 +489,7 @@ class RestClient {
 
     var request = await _httpClient.postUrl(_serverUrl.resolve("user/invite")).timeout(_timeout);
     request.headers.contentType = ContentType.json;
-    _addAuthHeader(request);
+    await _addAuthHeader(request);
     request.write(body);
     var response = await request.close().timeout(_timeout);
 
@@ -463,7 +546,7 @@ class RestClient {
 
   Future<void> deleteAccount(String userId) async {
     var request = await _httpClient.deleteUrl(_serverUrl.resolve("user/$userId")).timeout(_timeout);
-    _addAuthHeader(request);
+    await _addAuthHeader(request);
     var response = await request.close().timeout(_timeout);
 
     if (response.statusCode != 204) {

@@ -14,8 +14,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
+import de.hanselmann.shoppinglist.model.Token;
 import de.hanselmann.shoppinglist.restapi.UserApi;
 import de.hanselmann.shoppinglist.restapi.dto.LoginDto;
+import de.hanselmann.shoppinglist.restapi.dto.RefreshTokenDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationDataDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationResultDto;
 import de.hanselmann.shoppinglist.restapi.dto.RequestUserPasswordResetDto;
@@ -60,9 +62,25 @@ public class UserController implements UserApi {
         return userService.findByEmailAddress(loginDto.getEmailAddress())
                 .filter(user -> passwordEncoder.matches(loginDto.getPassword(), user.getPassword()))
                 .map(user -> {
-                    String token = tokenService.generateToken(user);
-                    return ResponseEntity.ok(dtoTransformer.map(user, token));
+                    Token accessToken = tokenService.generateAccessToken(user);
+                    Token refreshToken = tokenService.generateRefreshToken(user);
+                    return ResponseEntity.ok(dtoTransformer.map(user, accessToken, refreshToken.getValue()));
                 }).orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+    }
+
+    @Override
+    public ResponseEntity<ShoppingListUserInfoDto> refreshAccessToken(RefreshTokenDto refreshToken) {
+        return tokenService.useRefreshToken(refreshToken.getRefreshToken())
+                .map(user -> ResponseEntity.ok(dtoTransformer.map(user, tokenService.generateAccessToken(user), null)))
+                .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+    }
+
+    @Override
+    public ResponseEntity<Void> revokeRefreshToken(RefreshTokenDto refreshToken) {
+        // Knowing the refresh token is enough to revoke it: a user who logs out
+        // must be able to do so even if his access token has already expired.
+        tokenService.deleteRefreshToken(refreshToken.getRefreshToken());
+        return ResponseEntity.noContent().build();
     }
 
     @Override

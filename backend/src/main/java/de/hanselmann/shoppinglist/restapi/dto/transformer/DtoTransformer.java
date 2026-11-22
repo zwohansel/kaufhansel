@@ -1,5 +1,6 @@
 package de.hanselmann.shoppinglist.restapi.dto.transformer;
 
+import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,6 +13,7 @@ import de.hanselmann.shoppinglist.model.ShoppingListItem;
 import de.hanselmann.shoppinglist.model.ShoppingListPermission;
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.model.ShoppingListUser;
+import de.hanselmann.shoppinglist.model.Token;
 import de.hanselmann.shoppinglist.restapi.dto.InfoDto.InfoMessageDto;
 import de.hanselmann.shoppinglist.restapi.dto.InfoDto.SeverityDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
@@ -46,8 +48,13 @@ public class DtoTransformer {
                 role);
     }
 
-    public ShoppingListUserInfoDto map(ShoppingListUser user, String token) {
-        return new ShoppingListUserInfoDto(Long.toString(user.getId()), token, user.getUsername(),
+    public ShoppingListUserInfoDto map(ShoppingListUser user, Token accessToken, String refreshToken) {
+        return new ShoppingListUserInfoDto(
+                Long.toString(user.getId()),
+                accessToken.getValue(),
+                accessToken.getExpirationDate().atZone(ZoneId.systemDefault()).toEpochSecond(),
+                refreshToken,
+                user.getUsername(),
                 user.getEmailAddress());
     }
 

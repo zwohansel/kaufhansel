@@ -4,8 +4,24 @@ import 'package:kaufhansel_client/settings/settings_store.dart';
 class SettingsStoreStub implements SettingsStore {
   int? _confirmedMessageNumber;
   ShoppingListUserInfo? _userInfo;
+  String? _refreshToken;
 
   int? get confirmedMessageNumber => _confirmedMessageNumber;
+
+  @override
+  Future<String?> getRefreshToken() async {
+    return _refreshToken;
+  }
+
+  @override
+  Future<void> saveRefreshToken(String refreshToken) async {
+    _refreshToken = refreshToken;
+  }
+
+  @override
+  Future<void> removeRefreshToken() async {
+    _refreshToken = null;
+  }
 
   @override
   Future<void> confirmInfoMessage(int messageNumber) async {
@@ -48,5 +64,7 @@ class SettingsStoreStub implements SettingsStore {
 
   @override
   Future<void> removeAll() async {
+    _userInfo = null;
+    _refreshToken = null;
   }
 }

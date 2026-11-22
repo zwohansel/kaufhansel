@@ -34,6 +34,7 @@ dependencies:
   package_info_plus: '>=5.0.0'
   localstorage: '>=4.0.0'
   animated_list_plus: '>=0.4.3'
+  flutter_secure_storage: ^11.2.0
 
 dev_dependencies:
   flutter_test:
