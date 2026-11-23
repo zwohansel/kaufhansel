@@ -81,8 +81,8 @@ class SyncedShoppingList extends ChangeNotifier {
     _list.moveItem(item._item, newIndex);
     try {
       await _client.moveShoppingListItem(_list.id, item._item, newIndex);
-    } on HttpResponseException {
-      // Undo the move if the request fails
+    } on Exception {
+      // Undo the move if the request fails.
       _list.moveItem(item._item, oldIndex);
       rethrow;
     }

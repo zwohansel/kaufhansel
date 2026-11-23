@@ -15,15 +15,21 @@ class ShoppingListItemTile extends StatefulWidget {
   final bool _canEditItems;
   final bool _canCheckItems;
 
+  /// Whether the tile sits inside a reorderable list. Only then may it offer a
+  /// drag handle: the handle needs the reorderable list as an ancestor.
+  final bool _reorderable;
+
   const ShoppingListItemTile(
       {bool showUserCategory = false,
       ShoppingListModeOption mode = ShoppingListModeOption.DEFAULT,
       bool enabled = true,
+      bool reorderable = false,
       required bool canEditItems,
       required bool canCheckItems})
       : _showUserCategory = showUserCategory,
         _mode = mode,
         _enabled = enabled,
+        _reorderable = reorderable,
         _canEditItems = canEditItems,
         _canCheckItems = canCheckItems;
 
@@ -104,8 +110,10 @@ class _ShoppingListItemTileState extends State<ShoppingListItemTile> {
           children: [
             AsyncOperationIconButton(
                 icon: Icon(Icons.edit), loading: false, onPressed: _allowInput() ? () => _editItem(item) : null),
-            SizedBox(width: 5),
-            Handle(child: SizedBox(width: 48, height: 48, child: Center(child: Icon(Icons.drag_handle))))
+            if (widget._reorderable) ...[
+              SizedBox(width: 5),
+              Handle(child: SizedBox(width: 48, height: 48, child: Center(child: Icon(Icons.drag_handle))))
+            ]
           ],
         );
       default:

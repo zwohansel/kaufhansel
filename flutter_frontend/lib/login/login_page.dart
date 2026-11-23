@@ -1,6 +1,4 @@
-import 'dart:async';
 import 'dart:developer';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:kaufhansel_client/generated/l10n.dart';
@@ -244,15 +242,12 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         showErrorDialog(context, AppLocalizations.of(context).exceptionWrongCredentials);
       }
-    } on SocketException catch (e) {
-      if (e.osError?.errorCode == 111 && Platform.isLinux || Platform.isAndroid) {
-        showErrorDialog(context, AppLocalizations.of(context).exceptionNoInternet);
+    } on NoConnectionException catch (e) {
+      if (e.isTimeout()) {
+        showErrorDialog(context, AppLocalizations.of(context).exceptionConnectionTimeout);
       } else {
-        showErrorDialog(
-            context, AppLocalizations.of(context).exceptionGeneralComputerSays + (e.osError?.message ?? ""));
+        showErrorDialog(context, AppLocalizations.of(context).exceptionNoInternet);
       }
-    } on TimeoutException {
-      showErrorDialog(context, AppLocalizations.of(context).exceptionConnectionTimeout);
     } on Exception catch (e) {
       log("Could not login", error: e);
       showErrorDialogForException(context, e,

@@ -10,6 +10,25 @@ class AppLocalizationsDe extends AppLocalizations {
   AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
+  String get exceptionMoveItemNeedsConnection =>
+      'Verschieben geht nur mit Internetverbindung.';
+
+  @override
+  String get offlineTooltip => 'Keine Internetverbindung';
+
+  @override
+  String get offlineMessage =>
+      'Hups, Du hast keine Internetverbindung. Hast Du Deine Rechnung nicht bezahlt? Wir bewahren Deine Änderungen für dich auf...';
+
+  @override
+  String offlinePendingChanges(Object count) {
+    return 'Aufbewahrte Änderungen: $count';
+  }
+
+  @override
+  String get offlineThanks => 'Danke Kaufhansel';
+
+  @override
   String get appTitle => 'Kaufhansel';
 
   @override

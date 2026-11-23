@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:math';
 
 import 'package:collection/collection.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -13,6 +15,8 @@ import 'package:kaufhansel_client/settings/settings_store_widget.dart';
 import 'package:kaufhansel_client/shopping_list_drawer.dart';
 import 'package:kaufhansel_client/shopping_list_page.dart';
 import 'package:kaufhansel_client/shopping_list_title.dart';
+import 'package:kaufhansel_client/sync/sync_status.dart';
+import 'package:kaufhansel_client/sync/syncing_rest_client.dart';
 import 'package:kaufhansel_client/synced_shoppinglist.dart';
 import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 import 'package:kaufhansel_client/utils/update_check.dart';
@@ -30,53 +34,62 @@ void main() async {
 
 class App extends StatelessWidget {
   static const _serverUrl = "https://zwohansel.de/kaufhansel/api/";
-  static final _restClient = RestClient(Uri.parse(_serverUrl));
   static final _settingsStore = SettingsStore();
+  static final _client = SyncingRestClient(
+    RestClient(
+      Uri.parse(_serverUrl),
+      probeInterval: Duration(seconds: 15),
+      systemHasNetwork: Connectivity().onConnectivityChanged.map(_hasNetwork),
+    ),
+    _settingsStore,
+  );
+
+  static bool _hasNetwork(List<ConnectivityResult> results) =>
+      results.any((result) => result != ConnectivityResult.none);
 
   @override
   Widget build(BuildContext context) {
     var colorScheme = ColorScheme.fromSeed(seedColor: Colors.green, brightness: Brightness.light);
     var textTheme = TextTheme();
     return MaterialApp(
-        // locale can be set here:
-        // locale: Locale("de"),
-        localizationsDelegates: [AppLocalizations.delegate, ...GlobalMaterialLocalizations.delegates],
-        supportedLocales: [const Locale('de', '')],
-        debugShowCheckedModeBanner: false,
-        onGenerateTitle: (BuildContext context) => AppLocalizations.of(context).appTitle,
-        theme: ThemeData(
-            useMaterial3: true,
-            colorScheme: colorScheme,
-            appBarTheme: AppBarTheme(
-                backgroundColor: colorScheme.primary,
-                actionsIconTheme: IconThemeData(color: Colors.white),
-                iconTheme: IconThemeData(color: Colors.white)),
-            textTheme: textTheme,
-            outlinedButtonTheme: OutlinedButtonThemeData(
-              style: ButtonStyle(
-                shape: WidgetStateProperty.all(
-                  const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
-                ),
-              ),
+      // locale can be set here:
+      // locale: Locale("de"),
+      localizationsDelegates: [AppLocalizations.delegate, ...GlobalMaterialLocalizations.delegates],
+      supportedLocales: [const Locale('de', '')],
+      debugShowCheckedModeBanner: false,
+      onGenerateTitle: (BuildContext context) => AppLocalizations.of(context).appTitle,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: colorScheme,
+        appBarTheme: AppBarTheme(
+          backgroundColor: colorScheme.primary,
+          actionsIconTheme: IconThemeData(color: Colors.white),
+          iconTheme: IconThemeData(color: Colors.white),
+        ),
+        textTheme: textTheme,
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: ButtonStyle(
+            shape: WidgetStateProperty.all(
+              const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
             ),
-            elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ButtonStyle(
-                shape: WidgetStateProperty.all(
-                  const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
-                ),
-              ),
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ButtonStyle(
+            shape: WidgetStateProperty.all(
+              const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
             ),
-            cardTheme: CardThemeData(color: Colors.white)),
-        home: ShoppingListApp(
-          client: _restClient,
-          settingsStore: _settingsStore,
-          currentVersion: getCurrentVersion,
-        ));
+          ),
+        ),
+        cardTheme: CardThemeData(color: Colors.white),
+      ),
+      home: ShoppingListApp(client: _client, settingsStore: _settingsStore, currentVersion: getCurrentVersion),
+    );
   }
 }
 
 class ShoppingListApp extends StatefulWidget {
-  final RestClient client;
+  final SyncingRestClient client;
   final SettingsStore settingsStore;
   final Future<Version?> Function() currentVersion;
 
@@ -88,6 +101,10 @@ class ShoppingListApp extends StatefulWidget {
 
 class _ShoppingListAppState extends State<ShoppingListApp> {
   GlobalKey<ScaffoldState> _drawerKey = new GlobalKey();
+
+  AppLifecycleListener? _lifecycleListener;
+
+  SyncStatus get _syncStatus => widget.client.status;
 
   String? _error;
   List<ShoppingListInfo>? _shoppingListInfos;
@@ -102,6 +119,9 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
   void initState() {
     super.initState();
+    _syncStatus.addListener(_syncStatusChanged);
+    _lifecycleListener = AppLifecycleListener(onResume: _appResumed);
+
     _initializing = true;
     _asyncInit();
     widget.client.onUnauthenticated = () {
@@ -109,6 +129,36 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       _logOut();
     };
     widget.client.onTokenExpired = _renewAuthenticationToken;
+  }
+
+  @override
+  void dispose() {
+    _lifecycleListener?.dispose();
+    _syncStatus.removeListener(_syncStatusChanged);
+    super.dispose();
+  }
+
+  void _syncStatusChanged() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
+    // Whenever the connection comes back the list is refreshed, which also
+    // sends whatever was changed in the meantime. Refreshing is worthwhile even
+    // without local changes: somebody else may have changed the list while we
+    // could not see it.
+    if (_syncStatus.online) {
+      _refreshCurrentShoppingList(initialCategory: _currentShoppingListCategory);
+    }
+  }
+
+  void _appResumed() {
+    // Automatically refresh the shopping list when the app resumes.
+    // This also causes the SyncingRestClient to sync pending changes back to
+    // the server in case the device was offline before the app was paused.
+    if (_syncStatus.online) {
+      _refreshCurrentShoppingList(initialCategory: _currentShoppingListCategory);
+    }
   }
 
   void _asyncInit() async {
@@ -259,7 +309,10 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
   }
 
   Future<void> _changeShoppingListPermissions(
-      ShoppingListInfo info, String affectedUserId, ShoppingListRole newRole) async {
+    ShoppingListInfo info,
+    String affectedUserId,
+    ShoppingListRole newRole,
+  ) async {
     final userReference = await widget.client.changeShoppingListPermissions(info.id, affectedUserId, newRole);
     info.updateShoppingListUser(userReference);
   }
@@ -347,6 +400,9 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
         _currentShoppingList?.addListener(setCurrentShoppingListCategories);
       });
       disposeShoppingListAfterNextFrame(oldShoppingList);
+    } on NoConnectionException catch (e) {
+      // The user must not loose the list when offline
+      developer.log("Could not refresh the shopping list without a connection.", error: e);
     } on Exception catch (e) {
       developer.log("Failed to fetch shopping list.", error: e);
       if (e is HttpResponseException && e.isUnauthenticated()) {
@@ -411,13 +467,16 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
               key: _drawerKey,
               appBar: AppBar(
                 actions: [
+                  ..._buildOfflineIndicator(context),
                   IconButton(
-                      onPressed: () => setState(() => _editMode = !_editMode),
-                      icon: _editMode ? Icon(Icons.close) : Icon(Icons.mode_outlined)),
+                    onPressed: () => setState(() => _editMode = !_editMode),
+                    icon: _editMode ? Icon(Icons.close) : Icon(Icons.mode_outlined),
+                  ),
                   IconButton(
-                      icon: Icon(Icons.menu),
-                      splashRadius: 23,
-                      onPressed: () => _drawerKey.currentState?.openEndDrawer()),
+                    icon: Icon(Icons.menu),
+                    splashRadius: 23,
+                    onPressed: () => _drawerKey.currentState?.openEndDrawer(),
+                  ),
                 ],
                 title: ShoppingListTitle(_currentShoppingListCategory),
                 shadowColor: Colors.transparent,
@@ -443,11 +502,7 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       );
     }
 
-    return LoginPage(
-      loggedIn: _logIn,
-      enabled: !_initializing,
-      update: _update,
-    );
+    return LoginPage(loggedIn: _logIn, enabled: !_initializing, update: _update);
   }
 
   void _handleRetry() {
@@ -476,8 +531,9 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
                 child: Text(
                   AppLocalizations.of(context).shoppingListEmpty,
                   style: TextStyle(
-                      fontFamilyFallback: ["NotoColorEmoji"],
-                      fontSize: Theme.of(context).textTheme.displayMedium?.fontSize),
+                    fontFamilyFallback: ["NotoColorEmoji"],
+                    fontSize: Theme.of(context).textTheme.displayMedium?.fontSize,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -496,12 +552,50 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
       return ShoppingListPage(
         _currentShoppingListCategories,
         editMode: _editMode,
+        // Syncing order changes is complex therefore it's disabled when the client is offline
+        reorderingEnabled: !_syncStatus.isOutOfSync,
         initialCategory: _currentShoppingListCategory,
         onCategoryChanged: _setCurrentShoppingListCategory,
         update: _update,
         onRefresh: () async => _refreshCurrentShoppingList(initialCategory: _currentShoppingListCategory),
       );
     }
+  }
+
+  List<Widget> _buildOfflineIndicator(BuildContext context) {
+    if (!_syncStatus.isOutOfSync) {
+      return [];
+    }
+
+    return [
+      IconButton(
+        icon: Icon(Icons.cloud_off),
+        // The app bar theme paints the actions white.
+        color: Colors.amber,
+        splashRadius: 23,
+        tooltip: AppLocalizations.of(context).offlineTooltip,
+        onPressed: () => _showOfflineDialog(context),
+      ),
+    ];
+  }
+
+  void _showOfflineDialog(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+    showCustomErrorDialog(
+      context,
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!_syncStatus.online) Text(localizations.offlineMessage, textAlign: TextAlign.center),
+          if (_syncStatus.hasPendingChanges) ...[
+            if (!_syncStatus.online) SizedBox(height: 12),
+            Text(localizations.offlinePendingChanges(_syncStatus.numPendingChanges), textAlign: TextAlign.center),
+          ],
+        ],
+      ),
+      localizations.offlineThanks,
+      emoji: "🙈",
+    );
   }
 
   Widget _buildErrorView(BuildContext context) {
@@ -517,16 +611,18 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
             padding: EdgeInsets.all(20),
           ),
           Padding(
-              child: Text(
-                AppLocalizations.of(context).shoppingListError,
-                style: Theme.of(context).textTheme.titleLarge,
-                textAlign: TextAlign.center,
-              ),
-              padding: EdgeInsets.only(left: 20, right: 20, bottom: 10)),
+            child: Text(
+              AppLocalizations.of(context).shoppingListError,
+              style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
+            padding: EdgeInsets.only(left: 20, right: 20, bottom: 10),
+          ),
           ..._openOtherList(),
           Padding(
-              child: ElevatedButton(child: Text(AppLocalizations.of(context).tryAgain), onPressed: _handleRetry),
-              padding: EdgeInsets.all(10))
+            child: ElevatedButton(child: Text(AppLocalizations.of(context).tryAgain), onPressed: _handleRetry),
+            padding: EdgeInsets.all(10),
+          ),
         ],
       ),
     );
@@ -540,17 +636,20 @@ class _ShoppingListAppState extends State<ShoppingListApp> {
 
     return [
       Padding(
-          child: Text(
-            AppLocalizations.of(context).shoppingListNotPresent(currentShoppingListInfo.name),
-            style: Theme.of(context).textTheme.titleLarge,
-            textAlign: TextAlign.center,
-          ),
-          padding: EdgeInsets.only(left: 20, right: 20, bottom: 10)),
+        child: Text(
+          AppLocalizations.of(context).shoppingListNotPresent(currentShoppingListInfo.name),
+          style: Theme.of(context).textTheme.titleLarge,
+          textAlign: TextAlign.center,
+        ),
+        padding: EdgeInsets.only(left: 20, right: 20, bottom: 10),
+      ),
       Padding(
-          child: ElevatedButton(
-              onPressed: () => _drawerKey.currentState?.openEndDrawer(),
-              child: Text(AppLocalizations.of(context).shoppingListOpenOther)),
-          padding: EdgeInsets.all(10))
+        child: ElevatedButton(
+          onPressed: () => _drawerKey.currentState?.openEndDrawer(),
+          child: Text(AppLocalizations.of(context).shoppingListOpenOther),
+        ),
+        padding: EdgeInsets.all(10),
+      ),
     ];
   }
 }

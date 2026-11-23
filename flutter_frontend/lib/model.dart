@@ -37,6 +37,11 @@ class ShoppingListItem extends ChangeNotifier {
     return ShoppingListItem(json.get('id'), json.get('name'), json.get('checked'), json.getOpt('category'));
   }
 
+  Map<String, dynamic> toJson() {
+    assert(_category != CATEGORY_ALL, "The virtual category $CATEGORY_ALL must never be stored on an item.");
+    return {'id': _id, 'name': _name, 'checked': _checked, 'category': _category};
+  }
+
   ShoppingListItem copy() {
     return ShoppingListItem(_id, _name, _checked, _category);
   }

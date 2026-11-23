@@ -7,6 +7,9 @@ Future<void> showErrorDialogForException(BuildContext context, Exception e, {Str
   if (e is HttpResponseException && e.isUnauthenticated()) {
     return showErrorDialog(context, localization.exceptionUnAuthenticated, closeLabel: localization.willLoginAgain);
   }
+  if (e is NoConnectionException) {
+    return showErrorDialog(context, localization.exceptionNoInternet);
+  }
   return showErrorDialog(context, altText ?? localization.exceptionUnknown(e));
 }
 

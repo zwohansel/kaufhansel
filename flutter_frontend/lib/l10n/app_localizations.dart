@@ -94,6 +94,36 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('de')];
 
+  /// No description provided for @exceptionMoveItemNeedsConnection.
+  ///
+  /// In de, this message translates to:
+  /// **'Verschieben geht nur mit Internetverbindung.'**
+  String get exceptionMoveItemNeedsConnection;
+
+  /// No description provided for @offlineTooltip.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Internetverbindung'**
+  String get offlineTooltip;
+
+  /// No description provided for @offlineMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Hups, Du hast keine Internetverbindung. Hast Du Deine Rechnung nicht bezahlt? Wir bewahren Deine Änderungen für dich auf...'**
+  String get offlineMessage;
+
+  /// No description provided for @offlinePendingChanges.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufbewahrte Änderungen: {count}'**
+  String offlinePendingChanges(Object count);
+
+  /// No description provided for @offlineThanks.
+  ///
+  /// In de, this message translates to:
+  /// **'Danke Kaufhansel'**
+  String get offlineThanks;
+
   /// No description provided for @appTitle.
   ///
   /// In de, this message translates to:

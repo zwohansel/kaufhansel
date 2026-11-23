@@ -1,4 +1,15 @@
 {
+  "exceptionMoveItemNeedsConnection": "Verschieben geht nur mit Internetverbindung.",
+  "offlineTooltip": "Keine Internetverbindung",
+  "offlineMessage": "Hups, Du hast keine Internetverbindung. Hast Du Deine Rechnung nicht bezahlt? Wir bewahren Deine \u00c4nderungen f\u00fcr dich auf...",
+  "offlinePendingChanges": "Aufbewahrte \u00c4nderungen: {count}",
+  "@offlinePendingChanges": {
+    "type": "text",
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "offlineThanks": "Danke Kaufhansel",
   "appTitle": "Kaufhansel",
   "downloadLink": "https://zwohansel.de/kaufhansel/download",
   "downloadLinkPromotion": "Die Downloads gibts hier: ",

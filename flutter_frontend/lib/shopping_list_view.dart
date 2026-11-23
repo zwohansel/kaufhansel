@@ -17,6 +17,7 @@ class ShoppingListView extends StatelessWidget {
       this.category,
       this.editMode = false,
       this.enabled = true,
+      this.reorderingEnabled = true,
       String? filterText})
       : filterText = filterText?.trim().toLowerCase();
 
@@ -26,6 +27,9 @@ class ShoppingListView extends StatelessWidget {
   final String? category;
   final bool editMode;
   final bool enabled;
+
+  /// Whether items may be dragged into a different position.
+  final bool reorderingEnabled;
   final String? filterText;
 
   @override
@@ -47,13 +51,14 @@ class ShoppingListView extends StatelessWidget {
 
   Widget _buildListView(BuildContext context, List<SyncedShoppingListItem> items, bool canEditItems) {
     final visibleItems = items.where(_isItemVisible);
+    final reorderable = editMode && canEditItems && reorderingEnabled;
     final Decoration dividerDecoration = BoxDecoration(
       border: Border(
         bottom: Divider.createBorderSide(context),
       ),
     );
     final itemBuilder = (BuildContext context, Animation<double> animation, SyncedShoppingListItem item, int i) {
-      final tile = _createListTileForItem(item);
+      final tile = _createListTileForItem(item, reorderable);
       return SizeFadeTransition(
         animation: animation,
         curve: Curves.easeInOut,
@@ -67,10 +72,22 @@ class ShoppingListView extends StatelessWidget {
       );
     };
 
+    final List<SyncedShoppingListItem> itemsInDisplayOrder;
     if (editMode && canEditItems) {
+      itemsInDisplayOrder = visibleItems.toList();
+    } else if (category == CATEGORY_ALL) {
+      itemsInDisplayOrder = visibleItems.toList();
+    } else {
+      itemsInDisplayOrder = [
+        ...visibleItems.where((item) => !item.checked),
+        ...visibleItems.where((item) => item.checked)
+      ];
+    }
+
+    if (reorderable) {
       return ImplicitlyAnimatedReorderableList<SyncedShoppingListItem>(
         controller: scrollController,
-        items: visibleItems.toList(),
+        items: itemsInDisplayOrder,
         areItemsTheSame: (a, b) => a.id == b.id,
         // Disable computation of the diff in an isolate (thread).
         // A SyncedShoppingListItem can not be moved to an isolate because it is a ChangeNotifier
@@ -91,15 +108,11 @@ class ShoppingListView extends StatelessWidget {
         onReorderFinished: (item, oldIndex, newIndex, newItems) => onItemMoved(items, oldIndex, newIndex),
       );
     } else {
-      final checkedItems = visibleItems.where((item) => item.checked);
-      final uncheckedItems = visibleItems.where((item) => !item.checked);
-      final orderedItems = [...uncheckedItems, ...checkedItems];
-
       return ImplicitlyAnimatedList<SyncedShoppingListItem>(
         physics: const AlwaysScrollableScrollPhysics(),
         // allow overscroll to trigger refresh indicator
         controller: scrollController,
-        items: category == CATEGORY_ALL ? visibleItems.toList() : orderedItems,
+        items: itemsInDisplayOrder,
         areItemsTheSame: (a, b) => a.id == b.id,
         spawnIsolate: false,
         // see above
@@ -116,7 +129,7 @@ class ShoppingListView extends StatelessWidget {
     return item.name.toLowerCase().contains(text);
   }
 
-  Widget _createListTileForItem(SyncedShoppingListItem item) {
+  Widget _createListTileForItem(SyncedShoppingListItem item, bool reorderable) {
     ShoppingListModeOption mode = ShoppingListModeOption.DEFAULT;
     if (editMode) {
       mode = ShoppingListModeOption.EDITING;
@@ -131,6 +144,7 @@ class ShoppingListView extends StatelessWidget {
             builder: (context, permissions, child) => ShoppingListItemTile(
                   mode: mode,
                   enabled: enabled,
+                  reorderable: reorderable,
                   showUserCategory: category == CATEGORY_ALL,
                   canCheckItems: permissions.canCheckItems,
                   canEditItems: permissions.canEditItems,

@@ -4,6 +4,7 @@ import 'package:kaufhansel_client/generated/l10n.dart';
 import 'package:kaufhansel_client/main.dart';
 import 'package:kaufhansel_client/model.dart';
 import 'package:kaufhansel_client/rest_client.dart';
+import 'package:kaufhansel_client/sync/syncing_rest_client.dart';
 import 'package:kaufhansel_client/utils/semantic_versioning.dart';
 
 import 'rest_client_stub.dart';
@@ -48,7 +49,7 @@ void main() {
 
     return makeBasicTestableWidget(
         ShoppingListApp(
-          client: restClient,
+          client: SyncingRestClient(restClient, store),
           settingsStore: store,
           currentVersion: () async => version,
         ),

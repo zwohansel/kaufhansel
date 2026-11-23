@@ -1,6 +1,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import 'intl/messages_all.dart';
 
 // **************************************************************************
@@ -18,8 +19,10 @@ class AppLocalizations {
   static AppLocalizations? _current;
 
   static AppLocalizations get current {
-    assert(_current != null,
-        'No instance of AppLocalizations was loaded. Try to initialize the AppLocalizations delegate before accessing AppLocalizations.current.');
+    assert(
+      _current != null,
+      'No instance of AppLocalizations was loaded. Try to initialize the AppLocalizations delegate before accessing AppLocalizations.current.',
+    );
     return _current!;
   }
 
@@ -41,8 +44,10 @@ class AppLocalizations {
 
   static AppLocalizations of(BuildContext context) {
     final instance = AppLocalizations.maybeOf(context);
-    assert(instance != null,
-        'No instance of AppLocalizations present in the widget tree. Did you add AppLocalizations.delegate in localizationsDelegates?');
+    assert(
+      instance != null,
+      'No instance of AppLocalizations present in the widget tree. Did you add AppLocalizations.delegate in localizationsDelegates?',
+    );
     return instance!;
   }
 
@@ -50,14 +55,59 @@ class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  /// `Kaufhansel`
-  String get appTitle {
+  /// `Verschieben geht nur mit Internetverbindung.`
+  String get exceptionMoveItemNeedsConnection {
     return Intl.message(
-      'Kaufhansel',
-      name: 'appTitle',
+      'Verschieben geht nur mit Internetverbindung.',
+      name: 'exceptionMoveItemNeedsConnection',
       desc: '',
       args: [],
     );
+  }
+
+  /// `Keine Internetverbindung`
+  String get offlineTooltip {
+    return Intl.message(
+      'Keine Internetverbindung',
+      name: 'offlineTooltip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hups, Du hast keine Internetverbindung. Hast Du Deine Rechnung nicht bezahlt? Wir bewahren Deine Änderungen für dich auf...`
+  String get offlineMessage {
+    return Intl.message(
+      'Hups, Du hast keine Internetverbindung. Hast Du Deine Rechnung nicht bezahlt? Wir bewahren Deine Änderungen für dich auf...',
+      name: 'offlineMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Aufbewahrte Änderungen: {count}`
+  String offlinePendingChanges(Object count) {
+    return Intl.message(
+      'Aufbewahrte Änderungen: $count',
+      name: 'offlinePendingChanges',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Danke Kaufhansel`
+  String get offlineThanks {
+    return Intl.message(
+      'Danke Kaufhansel',
+      name: 'offlineThanks',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Kaufhansel`
+  String get appTitle {
+    return Intl.message('Kaufhansel', name: 'appTitle', desc: '', args: []);
   }
 
   /// `https://zwohansel.de/kaufhansel/download`
@@ -152,12 +202,7 @@ class AppLocalizations {
 
   /// `🤷‍♂️`
   String get manShrugging {
-    return Intl.message(
-      '🤷‍♂️',
-      name: 'manShrugging',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('🤷‍♂️', name: 'manShrugging', desc: '', args: []);
   }
 
   /// `Ist dann halt schon so...`
@@ -172,72 +217,37 @@ class AppLocalizations {
 
   /// `Achtung!`
   String get important {
-    return Intl.message(
-      'Achtung!',
-      name: 'important',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Achtung!', name: 'important', desc: '', args: []);
   }
 
   /// `Ok`
   String get ok {
-    return Intl.message(
-      'Ok',
-      name: 'ok',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Ok', name: 'ok', desc: '', args: []);
   }
 
   /// `Ja`
   String get yes {
-    return Intl.message(
-      'Ja',
-      name: 'yes',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Ja', name: 'yes', desc: '', args: []);
   }
 
   /// `Nein`
   String get no {
-    return Intl.message(
-      'Nein',
-      name: 'no',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Nein', name: 'no', desc: '', args: []);
   }
 
   /// `Abbrechen`
   String get cancel {
-    return Intl.message(
-      'Abbrechen',
-      name: 'cancel',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Abbrechen', name: 'cancel', desc: '', args: []);
   }
 
   /// `Schließen`
   String get close {
-    return Intl.message(
-      'Schließen',
-      name: 'close',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Schließen', name: 'close', desc: '', args: []);
   }
 
   /// `Egal`
   String get dontCare {
-    return Intl.message(
-      'Egal',
-      name: 'dontCare',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Egal', name: 'dontCare', desc: '', args: []);
   }
 
   /// `Mach ich sofort`
@@ -262,22 +272,12 @@ class AppLocalizations {
 
   /// `Auffrischen`
   String get refresh {
-    return Intl.message(
-      'Auffrischen',
-      name: 'refresh',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Auffrischen', name: 'refresh', desc: '', args: []);
   }
 
   /// `Allgemein`
   String get general {
-    return Intl.message(
-      'Allgemein',
-      name: 'general',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Allgemein', name: 'general', desc: '', args: []);
   }
 
   /// `App-Einstellungen`
@@ -482,12 +482,7 @@ class AppLocalizations {
 
   /// `Email-Adresse`
   String get emailHint {
-    return Intl.message(
-      'Email-Adresse',
-      name: 'emailHint',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Email-Adresse', name: 'emailHint', desc: '', args: []);
   }
 
   /// `Gib eine gültige Email-Adresse ein`
@@ -512,12 +507,7 @@ class AppLocalizations {
 
   /// `Kennwort`
   String get passwordHint {
-    return Intl.message(
-      'Kennwort',
-      name: 'passwordHint',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Kennwort', name: 'passwordHint', desc: '', args: []);
   }
 
   /// `Gib dein Kennwort richtig ein`
@@ -732,12 +722,7 @@ class AppLocalizations {
 
   /// `Nutzername`
   String get userNameHint {
-    return Intl.message(
-      'Nutzername',
-      name: 'userNameHint',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Nutzername', name: 'userNameHint', desc: '', args: []);
   }
 
   /// `Gib einen Nutzernamen ein`
@@ -752,12 +737,7 @@ class AppLocalizations {
 
   /// `Anmelden`
   String get buttonLogin {
-    return Intl.message(
-      'Anmelden',
-      name: 'buttonLogin',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Anmelden', name: 'buttonLogin', desc: '', args: []);
   }
 
   /// `Registrieren`
@@ -802,12 +782,7 @@ class AppLocalizations {
 
   /// `Weiter`
   String get buttonNext {
-    return Intl.message(
-      'Weiter',
-      name: 'buttonNext',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Weiter', name: 'buttonNext', desc: '', args: []);
   }
 
   /// `Zurück zur Anmeldung`
@@ -1042,22 +1017,12 @@ class AppLocalizations {
 
   /// `Umbenennen`
   String get itemRename {
-    return Intl.message(
-      'Umbenennen',
-      name: 'itemRename',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Umbenennen', name: 'itemRename', desc: '', args: []);
   }
 
   /// `Löschen`
   String get itemRemove {
-    return Intl.message(
-      'Löschen',
-      name: 'itemRemove',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Löschen', name: 'itemRemove', desc: '', args: []);
   }
 
   /// `Wähle eine Kategorie`
@@ -1072,12 +1037,7 @@ class AppLocalizations {
 
   /// `Keine`
   String get categoryNone {
-    return Intl.message(
-      'Keine',
-      name: 'categoryNone',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Keine', name: 'categoryNone', desc: '', args: []);
   }
 
   /// `Neue Kategorie`
@@ -1502,7 +1462,9 @@ class AppLocalizations {
 
   /// `Möchtest du {userName} wirklich von {shoppingListName} entfernen?`
   String listSettingsRemoveUserFromList(
-      Object userName, Object shoppingListName) {
+    Object userName,
+    Object shoppingListName,
+  ) {
     return Intl.message(
       'Möchtest du $userName wirklich von $shoppingListName entfernen?',
       name: 'listSettingsRemoveUserFromList',
@@ -1713,7 +1675,9 @@ class AppLocalizations {
 
   /// `Du verwendest vom Kaufhansel immer noch die Version {frontendVersion} ???\n\nDie ist doch schon viel zu alt. Hol dir die neue und viel bessere Version ${backendVersion} von`
   String exceptionIncompatibleVersion(
-      Object frontendVersion, Object backendVersion) {
+    Object frontendVersion,
+    Object backendVersion,
+  ) {
     return Intl.message(
       'Du verwendest vom Kaufhansel immer noch die Version $frontendVersion ???\n\nDie ist doch schon viel zu alt. Hol dir die neue und viel bessere Version \$$backendVersion von',
       name: 'exceptionIncompatibleVersion',
@@ -1847,9 +1811,7 @@ class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {
   const AppLocalizationDelegate();
 
   List<Locale> get supportedLocales {
-    return const <Locale>[
-      Locale.fromSubtags(languageCode: 'de'),
-    ];
+    return const <Locale>[Locale.fromSubtags(languageCode: 'de')];
   }
 
   @override

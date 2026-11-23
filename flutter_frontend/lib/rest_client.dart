@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:kaufhansel_client/sync/connection_status.dart';
 
 import 'model.dart';
 
@@ -15,11 +17,32 @@ class HttpResponseException implements Exception {
 
   factory HttpResponseException.unAuthenticated() => HttpResponseException(401, message: "Unauthenticated");
 
+  int get statusCode => _statusCode;
+
   bool isUnauthenticated() => _statusCode == 401;
+
+  bool isNotFound() => _statusCode == 404;
 
   @override
   String toString() {
     return "$_message - HTTP status code: $_statusCode";
+  }
+}
+
+/// Thrown if a request could not be delivered to the server at all because
+/// there is no usable network connection (or the server cannot be reached).
+class NoConnectionException implements Exception {
+  final Object? _cause;
+
+  NoConnectionException([this._cause]);
+
+  /// True if the server did not answer in time, as opposed to not being
+  /// reachable at all.
+  bool isTimeout() => _cause is TimeoutException;
+
+  @override
+  String toString() {
+    return "No connection to the server${_cause == null ? "" : " - $_cause"}";
   }
 }
 
@@ -44,6 +67,14 @@ class RestClientWidget extends InheritedWidget {
 /// or null if no new token could be obtained.
 typedef TokenRefresh = Future<ShoppingListUserInfo?> Function();
 
+/// The status code and the already decoded body of a server response.
+class _Response {
+  final int statusCode;
+  final String body;
+
+  _Response(this.statusCode, this.body);
+}
+
 class RestClient {
   /// A token is refreshed if it expires within this duration.
   static const _refreshTokenBefore = Duration(minutes: 30);
@@ -54,14 +85,27 @@ class RestClient {
   Future<ShoppingListUserInfo?>? _pendingTokenRefresh;
   VoidCallback _onUnauthenticated = () {};
   TokenRefresh? _onTokenExpired;
+  late final ConnectionStatus _connection;
   final Uri _serverUrl;
   final Duration _timeout = Duration(seconds: 10);
 
   /// Creates a new rest client that sends its request to the given [_serverUrl].
-  RestClient(this._serverUrl) {
+  ///
+  /// While the server cannot be reached it is probed every [probeInterval] so
+  /// that [connection] notices on its own once it is back. Pass nothing to
+  /// disable probing. [systemHasNetwork] makes the probing follow the operating
+  /// system's idea of connectivity, which is quicker than the interval and
+  /// leaves a device without a network alone.
+  RestClient(this._serverUrl, {Duration? probeInterval, Stream<bool>? systemHasNetwork}) {
+    // getBackendInfo needs no authentication and is cheap.
+    _connection = ConnectionStatus(() async => await getBackendInfo(),
+        probeInterval: probeInterval, systemHasNetwork: systemHasNetwork);
     _httpClient = HttpClient();
     _init();
   }
+
+  /// Tells whether the server is currently reachable.
+  ConnectionStatus get connection => _connection;
 
   /// Set a callback that is called if a request fails because the user is not authenticated [onUnauthenticated]
   /// (e.g. the auth token has expired or the login was never performed).
@@ -89,18 +133,49 @@ class RestClient {
     _init();
   }
 
+  /// Sends a request to [path] and returns the status code together with the
+  /// response body.
+  ///
+  /// Throws a [NoConnectionException] if the request could not be delivered at all.
+  Future<_Response> _send(String method, String path, {Object? body, bool authenticated = true}) async {
+    try {
+      final request = await _httpClient.openUrl(method, _serverUrl.resolve(path)).timeout(_timeout);
+      if (body != null) {
+        request.headers.contentType = ContentType.json;
+      }
+      if (authenticated) {
+        await _addAuthHeader(request);
+      }
+      if (body != null) {
+        request.write(jsonEncode(body));
+      }
+      final response = await request.close().timeout(_timeout);
+      final decoded = await response.transform(utf8.decoder).join();
+      _connection.reportSuccess();
+      return _Response(response.statusCode, decoded);
+    } on TimeoutException catch (e) {
+      throw _noConnection(e);
+    } on IOException catch (e) {
+      // Covers SocketException (no route, DNS failure, connection refused),
+      // HandshakeException/TlsException and HttpException (connection closed
+      // while the response was being read).
+      throw _noConnection(e);
+    }
+  }
+
+  NoConnectionException _noConnection(Object cause) {
+    developer.log("Could not reach the server.", error: cause);
+    _connection.reportFailure();
+    return NoConnectionException(cause);
+  }
+
   /// Returns null if the credentials are invalid.
   Future<LoginResult?> login(String userEmail, String password) async {
-    final body = jsonEncode({'emailAddress': userEmail, 'password': password});
-
-    final request = await _httpClient.postUrl(_serverUrl.resolve("user/login"));
-    request.headers.contentType = ContentType.json;
-    request.write(body);
-    final response = await request.close().timeout(_timeout);
+    final response = await _send("POST", "user/login",
+        body: {'emailAddress': userEmail, 'password': password}, authenticated: false);
 
     if (response.statusCode == 200) {
-      final String decoded = await response.transform(utf8.decoder).join();
-      return new LoginResult.fromJson(jsonDecode(decoded));
+      return new LoginResult.fromJson(jsonDecode(response.body));
     } else if (response.statusCode == 401) {
       return null;
     } else {
@@ -111,16 +186,11 @@ class RestClient {
   /// Obtains a new authentication token for the owner of the given [refreshToken].
   /// Returns null if the refresh token is no longer valid.
   Future<ShoppingListUserInfo?> refreshAuthenticationToken(String refreshToken) async {
-    final body = jsonEncode({'refreshToken': refreshToken});
-
-    final request = await _httpClient.postUrl(_serverUrl.resolve("user/token/refresh"));
-    request.headers.contentType = ContentType.json;
-    request.write(body);
-    final response = await request.close().timeout(_timeout);
+    final response =
+        await _send("POST", "user/token/refresh", body: {'refreshToken': refreshToken}, authenticated: false);
 
     if (response.statusCode == 200) {
-      final String decoded = await response.transform(utf8.decoder).join();
-      return new ShoppingListUserInfo.fromJson(jsonDecode(decoded));
+      return new ShoppingListUserInfo.fromJson(jsonDecode(response.body));
     } else if (response.statusCode == 401) {
       return null;
     } else {
@@ -131,12 +201,8 @@ class RestClient {
   /// Invalidates the given [refreshToken] so that it can no longer be used to obtain
   /// a new authentication token.
   Future<void> revokeRefreshToken(String refreshToken) async {
-    final body = jsonEncode({'refreshToken': refreshToken});
-
-    final request = await _httpClient.postUrl(_serverUrl.resolve("user/token/revoke"));
-    request.headers.contentType = ContentType.json;
-    request.write(body);
-    final response = await request.close().timeout(_timeout);
+    final response =
+        await _send("POST", "user/token/revoke", body: {'refreshToken': refreshToken}, authenticated: false);
 
     if (response.statusCode != 204) {
       throw HttpResponseException(response.statusCode, message: "Failed to revoke the refresh token");
@@ -144,13 +210,10 @@ class RestClient {
   }
 
   Future<List<ShoppingListInfo>> getShoppingLists() async {
-    var request = await _httpClient.getUrl(_serverUrl.resolve("shoppinglists")).timeout(_timeout);
-    await _addAuthHeader(request);
-    var response = await request.close().timeout(_timeout);
+    final response = await _send("GET", "shoppinglists");
 
     if (response.statusCode == 200) {
-      final String decoded = await response.transform(utf8.decoder).join();
-      List<dynamic> lists = jsonDecode(decoded);
+      List<dynamic> lists = jsonDecode(response.body);
       return lists.map((json) => ShoppingListInfo.fromJson(json)).toList();
     } else {
       _invokeCallbackIfUnauthenticated(response);
@@ -158,7 +221,7 @@ class RestClient {
     }
   }
 
-  void _invokeCallbackIfUnauthenticated(HttpClientResponse response) {
+  void _invokeCallbackIfUnauthenticated(_Response response) {
     if (response.statusCode == 401) {
       _onUnauthenticated();
     }
@@ -199,14 +262,10 @@ class RestClient {
   }
 
   Future<List<ShoppingListItem>> fetchShoppingList(String shoppingListId) async {
-    var request = await _httpClient.getUrl(_serverUrl.resolve("shoppinglist/$shoppingListId")).timeout(_timeout);
-    request.headers.contentType = ContentType.json;
-    await _addAuthHeader(request);
-    var response = await request.close().timeout(_timeout);
+    final response = await _send("GET", "shoppinglist/$shoppingListId");
 
     if (response.statusCode == 200) {
-      final String decoded = await response.transform(utf8.decoder).join();
-      List<dynamic> items = jsonDecode(decoded);
+      List<dynamic> items = jsonDecode(response.body);
       return items.map((e) => ShoppingListItem.fromJson(e)).toList();
     } else if (response.statusCode == 404) {
       throw HttpResponseException(
@@ -220,17 +279,11 @@ class RestClient {
   }
 
   Future<ShoppingListItem> createShoppingListItem(String shoppingListId, String name, String? category) async {
-    final body = jsonEncode({'name': name, 'category': category});
-
-    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId")).timeout(_timeout);
-    request.headers.contentType = ContentType.json;
-    await _addAuthHeader(request);
-    request.write(body);
-    var response = await request.close().timeout(_timeout);
+    final response =
+        await _send("POST", "shoppinglist/$shoppingListId", body: {'name': name, 'category': category});
 
     if (response.statusCode == 200) {
-      final decoded = await response.transform(utf8.decoder).join();
-      return ShoppingListItem.fromJson(jsonDecode(decoded));
+      return ShoppingListItem.fromJson(jsonDecode(response.body));
     } else {
       _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(
@@ -241,11 +294,7 @@ class RestClient {
   }
 
   Future<void> deleteShoppingListItem(String shoppingListId, ShoppingListItem item) async {
-    var request = await _httpClient
-        .deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/item/${item.id}"))
-        .timeout(_timeout);
-    await _addAuthHeader(request);
-    var response = await request.close().timeout(_timeout);
+    final response = await _send("DELETE", "shoppinglist/$shoppingListId/item/${item.id}");
 
     if (response.statusCode != 204) {
       _invokeCallbackIfUnauthenticated(response);
@@ -257,14 +306,8 @@ class RestClient {
   }
 
   Future<void> updateShoppingListItem(String shoppingListId, ShoppingListItem item) async {
-    final body = jsonEncode({'name': item.name, 'checked': item.checked, 'category': item.category});
-
-    var request =
-        await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/item/${item.id}")).timeout(_timeout);
-    request.headers.contentType = ContentType.json;
-    await _addAuthHeader(request);
-    request.write(body);
-    var response = await request.close().timeout(_timeout);
+    final response = await _send("PUT", "shoppinglist/$shoppingListId/item/${item.id}",
+        body: {'name': item.name, 'checked': item.checked, 'category': item.category});
 
     if (response.statusCode != 204) {
       _invokeCallbackIfUnauthenticated(response);
@@ -276,14 +319,8 @@ class RestClient {
   }
 
   Future<void> moveShoppingListItem(String shoppingListId, ShoppingListItem item, int targetIndex) async {
-    final body = jsonEncode({'itemId': item.id, 'targetIndex': targetIndex});
-
-    var request =
-        await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/moveitem")).timeout(_timeout);
-    request.headers.contentType = ContentType.json;
-    await _addAuthHeader(request);
-    request.write(body);
-    var response = await request.close().timeout(_timeout);
+    final response = await _send("PUT", "shoppinglist/$shoppingListId/moveitem",
+        body: {'itemId': item.id, 'targetIndex': targetIndex});
 
     if (response.statusCode != 204) {
       _invokeCallbackIfUnauthenticated(response);
@@ -295,17 +332,10 @@ class RestClient {
   }
 
   Future<ShoppingListInfo> createShoppingList(String shoppingListName) async {
-    final body = jsonEncode({'name': shoppingListName});
-
-    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist")).timeout(_timeout);
-    request.headers.contentType = ContentType.json;
-    await _addAuthHeader(request);
-    request.write(body);
-    var response = await request.close().timeout(_timeout);
+    final response = await _send("POST", "shoppinglist", body: {'name': shoppingListName});
 
     if (response.statusCode == 200) {
-      final String decoded = await response.transform(utf8.decoder).join();
-      return ShoppingListInfo.fromJson(jsonDecode(decoded));
+      return ShoppingListInfo.fromJson(jsonDecode(response.body));
     } else {
       _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(response.statusCode,
@@ -314,9 +344,7 @@ class RestClient {
   }
 
   Future<void> deleteShoppingList(String shoppingListId) async {
-    var request = await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId")).timeout(_timeout);
-    await _addAuthHeader(request);
-    var response = await request.close().timeout(_timeout);
+    final response = await _send("DELETE", "shoppinglist/$shoppingListId");
 
     if (response.statusCode != 204) {
       _invokeCallbackIfUnauthenticated(response);
@@ -324,18 +352,12 @@ class RestClient {
     }
   }
 
-  Future<ShoppingListUserReference?> addUserToShoppingList(
-      String shoppingListId, String userEmailAddress) async {
-    final body = jsonEncode({'emailAddress': userEmailAddress});
-    var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/user")).timeout(_timeout);
-    request.headers.contentType = ContentType.json;
-    await _addAuthHeader(request);
-    request.write(body);
-    var response = await request.close().timeout(_timeout);
+  Future<ShoppingListUserReference?> addUserToShoppingList(String shoppingListId, String userEmailAddress) async {
+    final response =
+        await _send("PUT", "shoppinglist/$shoppingListId/user", body: {'emailAddress': userEmailAddress});
 
     if (response.statusCode == 200) {
-      final String decoded = await response.transform(utf8.decoder).join();
-      return ShoppingListUserReference.fromJson(jsonDecode(decoded));
+      return ShoppingListUserReference.fromJson(jsonDecode(response.body));
     } else if (response.statusCode == 404) {
       return null;
     } else {
@@ -348,10 +370,7 @@ class RestClient {
   }
 
   Future<void> removeUserFromShoppingList(String shoppingListId, String userId) async {
-    var request =
-        await _httpClient.deleteUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/user/$userId")).timeout(_timeout);
-    await _addAuthHeader(request);
-    var response = await request.close().timeout(_timeout);
+    final response = await _send("DELETE", "shoppinglist/$shoppingListId/user/$userId");
 
     if (response.statusCode != 204) {
       _invokeCallbackIfUnauthenticated(response);
@@ -363,13 +382,8 @@ class RestClient {
   }
 
   Future<void> uncheckItems(String shoppingListId, {String? ofCategory}) async {
-    final body = jsonEncode({'category': ofCategory});
-    var request =
-        await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/uncheckitems")).timeout(_timeout);
-    request.headers.contentType = ContentType.json;
-    await _addAuthHeader(request);
-    request.write(body);
-    var response = await request.close().timeout(_timeout);
+    final response =
+        await _send("PUT", "shoppinglist/$shoppingListId/uncheckitems", body: {'category': ofCategory});
 
     if (response.statusCode != 204) {
       _invokeCallbackIfUnauthenticated(response);
@@ -381,13 +395,8 @@ class RestClient {
   }
 
   Future<void> removeCategory(String shoppingListId, {String? category}) async {
-    final body = jsonEncode({'category': category});
-    var request =
-        await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/removecategory")).timeout(_timeout);
-    request.headers.contentType = ContentType.json;
-    await _addAuthHeader(request);
-    request.write(body);
-    var response = await request.close().timeout(_timeout);
+    final response =
+        await _send("PUT", "shoppinglist/$shoppingListId/removecategory", body: {'category': category});
 
     if (response.statusCode != 204) {
       throw HttpResponseException(
@@ -398,13 +407,8 @@ class RestClient {
   }
 
   Future<void> renameCategory(String shoppingListId, String oldCategoryName, String newCategoryName) async {
-    final body = jsonEncode({'oldCategory': oldCategoryName, 'newCategory': newCategoryName});
-    var request =
-        await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/renamecategory")).timeout(_timeout);
-    request.headers.contentType = ContentType.json;
-    await _addAuthHeader(request);
-    request.write(body);
-    var response = await request.close().timeout(_timeout);
+    final response = await _send("PUT", "shoppinglist/$shoppingListId/renamecategory",
+        body: {'oldCategory': oldCategoryName, 'newCategory': newCategoryName});
 
     if (response.statusCode != 204) {
       _invokeCallbackIfUnauthenticated(response);
@@ -416,9 +420,7 @@ class RestClient {
   }
 
   Future<void> removeAllItems(String shoppingListId) async {
-    var request = await _httpClient.postUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/clear")).timeout(_timeout);
-    await _addAuthHeader(request);
-    var response = await request.close().timeout(_timeout);
+    final response = await _send("POST", "shoppinglist/$shoppingListId/clear");
 
     if (response.statusCode != 204) {
       _invokeCallbackIfUnauthenticated(response);
@@ -431,17 +433,11 @@ class RestClient {
 
   Future<ShoppingListUserReference> changeShoppingListPermissions(
       String shoppingListId, String affectedUserId, ShoppingListRole newRole) async {
-    final body = jsonEncode({'userId': affectedUserId, 'role': newRole.toRoleString()});
-    var request =
-        await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/permissions")).timeout(_timeout);
-    request.headers.contentType = ContentType.json;
-    await _addAuthHeader(request);
-    request.write(body);
-    var response = await request.close().timeout(_timeout);
+    final response = await _send("PUT", "shoppinglist/$shoppingListId/permissions",
+        body: {'userId': affectedUserId, 'role': newRole.toRoleString()});
 
     if (response.statusCode == 200) {
-      final String decoded = await response.transform(utf8.decoder).join();
-      return ShoppingListUserReference.fromJson(jsonDecode(decoded));
+      return ShoppingListUserReference.fromJson(jsonDecode(response.body));
     } else {
       _invokeCallbackIfUnauthenticated(response);
       throw HttpResponseException(
@@ -452,12 +448,7 @@ class RestClient {
   }
 
   Future<void> changeShoppingListName(String shoppingListId, String newName) async {
-    final body = jsonEncode({'name': newName});
-    var request = await _httpClient.putUrl(_serverUrl.resolve("shoppinglist/$shoppingListId/name")).timeout(_timeout);
-    request.headers.contentType = ContentType.json;
-    await _addAuthHeader(request);
-    request.write(body);
-    var response = await request.close().timeout(_timeout);
+    final response = await _send("PUT", "shoppinglist/$shoppingListId/name", body: {'name': newName});
 
     if (response.statusCode != 204) {
       _invokeCallbackIfUnauthenticated(response);
@@ -467,17 +458,12 @@ class RestClient {
 
   Future<RegistrationResult> register(String userName, String password, String? inviteCode,
       {String? emailAddress}) async {
-    final body = jsonEncode(
-        {'userName': userName, 'emailAddress': emailAddress, 'password': password, 'inviteCode': inviteCode});
-
-    var request = await _httpClient.postUrl(_serverUrl.resolve("user/register")).timeout(_timeout);
-    request.headers.contentType = ContentType.json;
-    request.write(body);
-    var response = await request.close().timeout(_timeout);
+    final response = await _send("POST", "user/register",
+        body: {'userName': userName, 'emailAddress': emailAddress, 'password': password, 'inviteCode': inviteCode},
+        authenticated: false);
 
     if (response.statusCode == 200) {
-      final String decoded = await response.transform(utf8.decoder).join();
-      return RegistrationResult.fromJson(jsonDecode(decoded));
+      return RegistrationResult.fromJson(jsonDecode(response.body));
     } else {
       throw HttpResponseException(response.statusCode,
           message: "Failed to register user $emailAddress with name $userName and invite code $inviteCode.");
@@ -485,13 +471,8 @@ class RestClient {
   }
 
   Future<void> sendInvite(String emailAddress, {String? shoppingListId}) async {
-    final body = jsonEncode({'emailAddress': emailAddress, 'shoppingListId': shoppingListId});
-
-    var request = await _httpClient.postUrl(_serverUrl.resolve("user/invite")).timeout(_timeout);
-    request.headers.contentType = ContentType.json;
-    await _addAuthHeader(request);
-    request.write(body);
-    var response = await request.close().timeout(_timeout);
+    final response = await _send("POST", "user/invite",
+        body: {'emailAddress': emailAddress, 'shoppingListId': shoppingListId});
 
     if (response.statusCode != 204) {
       _invokeCallbackIfUnauthenticated(response);
@@ -501,24 +482,18 @@ class RestClient {
   }
 
   Future<BackendInfo> getBackendInfo() async {
-    var request = await _httpClient.getUrl(_serverUrl.resolve("info")).timeout(_timeout);
-    var response = await request.close().timeout(_timeout);
+    final response = await _send("GET", "info", authenticated: false);
 
     if (response.statusCode == 200) {
-      final String decoded = await response.transform(utf8.decoder).join();
-      return BackendInfo.fromJson(jsonDecode(decoded));
+      return BackendInfo.fromJson(jsonDecode(response.body));
     } else {
       throw HttpResponseException(response.statusCode, message: "Failed to get backend info.");
     }
   }
 
   Future<void> requestPasswordReset(String emailAddress) async {
-    final body = jsonEncode({'emailAddress': emailAddress});
-
-    var request = await _httpClient.postUrl(_serverUrl.resolve("user/password/requestreset")).timeout(_timeout);
-    request.headers.contentType = ContentType.json;
-    request.write(body);
-    var response = await request.close().timeout(_timeout);
+    final response = await _send("POST", "user/password/requestreset",
+        body: {'emailAddress': emailAddress}, authenticated: false);
 
     if (response.statusCode != 200) {
       throw HttpResponseException(
@@ -529,12 +504,8 @@ class RestClient {
   }
 
   Future<void> resetPassword(String emailAddress, String resetCode, String password) async {
-    final body = jsonEncode({'emailAddress': emailAddress, 'resetCode': resetCode, 'password': password});
-
-    var request = await _httpClient.postUrl(_serverUrl.resolve("user/password/reset")).timeout(_timeout);
-    request.headers.contentType = ContentType.json;
-    request.write(body);
-    var response = await request.close().timeout(_timeout);
+    final response = await _send("POST", "user/password/reset",
+        body: {'emailAddress': emailAddress, 'resetCode': resetCode, 'password': password}, authenticated: false);
 
     if (response.statusCode != 200) {
       throw HttpResponseException(
@@ -545,9 +516,7 @@ class RestClient {
   }
 
   Future<void> deleteAccount(String userId) async {
-    var request = await _httpClient.deleteUrl(_serverUrl.resolve("user/$userId")).timeout(_timeout);
-    await _addAuthHeader(request);
-    var response = await request.close().timeout(_timeout);
+    final response = await _send("DELETE", "user/$userId");
 
     if (response.statusCode != 204) {
       _invokeCallbackIfUnauthenticated(response);

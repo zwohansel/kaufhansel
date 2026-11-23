@@ -16,6 +16,7 @@ import 'model.dart';
 class ShoppingListPage extends StatefulWidget {
   final List<String> _categories;
   final bool editMode;
+  final bool reorderingEnabled;
   final String? initialCategory;
   final void Function(String)? onCategoryChanged;
   final Future<void> Function() onRefresh;
@@ -24,6 +25,7 @@ class ShoppingListPage extends StatefulWidget {
   ShoppingListPage(
     this._categories, {
     this.editMode = false,
+    this.reorderingEnabled = true,
     this.initialCategory,
     this.onCategoryChanged,
     required this.update,
@@ -128,6 +130,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
                 enabled: !_loading,
                 filterText: _filterText,
                 editMode: widget.editMode,
+                reorderingEnabled: widget.reorderingEnabled,
                 onRefresh: _refreshList,
                 onItemMoved: _moveItem,
               )
@@ -317,10 +320,13 @@ class _ShoppingListPageState extends State<ShoppingListPage> with TickerProvider
     final SyncedShoppingList list = Provider.of<SyncedShoppingList>(context, listen: false);
     try {
       await list.moveItemsInSubList(itemsOfThisList, oldIndexInThisList, newIndexInThisList);
-    } on HttpResponseException catch (e) {
+    } on Exception catch (e) {
       log("Could not move item from $oldIndexInThisList to $newIndexInThisList", error: e);
+      final message = e is NoConnectionException
+          ? AppLocalizations.of(context).exceptionMoveItemNeedsConnection
+          : AppLocalizations.of(context).exceptionMoveItemFailed;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).exceptionMoveItemFailed), duration: Duration(seconds: 2)),
+        SnackBar(content: Text(message), duration: Duration(seconds: 2)),
       );
     } finally {
       setState(() => _loading = false);
