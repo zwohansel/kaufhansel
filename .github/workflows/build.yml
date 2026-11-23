@@ -102,7 +102,8 @@ jobs:
           java-version: '25'
 
       - name: Build Backend
-        run: ./gradlew -PbackendVersion=${{env.kaufhansel_version}} bundle
+        run: ./gradlew -PbackendVersion=${{env.kaufhansel_version}} build
+        working-directory: backend
         
       - uses: actions/upload-artifact@v4
         with:

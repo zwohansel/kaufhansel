@@ -3,6 +3,7 @@ package de.hanselmann.shoppinglist.service;
 import java.text.MessageFormat;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -16,10 +17,12 @@ public class EMailService {
     private static final String SENDER_EMAIL_ADDRESS = "noreply.kaufhansel@zwohansel.de";
     private static final String EMAIL_FOOTER = "\nDeine ZwoHansel\n\nhttps://www.zwohansel.de";
     private final JavaMailSender emailSender;
+    private final String baseUrl;
 
     @Autowired
-    public EMailService(JavaMailSender emailSender) {
+    public EMailService(JavaMailSender emailSender, @Value("${kaufhansel.base-url}") String baseUrl) {
         this.emailSender = emailSender;
+        this.baseUrl = baseUrl;
     }
 
     public void sendRegistrationActivationMail(PendingRegistration pendingRegistration) {
@@ -30,11 +33,12 @@ public class EMailService {
         message.setText(MessageFormat.format(
                 "Hi {0},"
                         + "\n\nfolge dem Link um deine Registrierung beim Kaufhansel abzuschließen:"
-                        + "\nhttps://zwohansel.de/kaufhansel/api/user/activate/{1}"
+                        + "\n{2}/api/user/activate/{1}"
                         + "\n\nViel Spaß mit dem Kaufhansel."
                         + EMAIL_FOOTER,
                 pendingRegistration.getUserName(),
-                pendingRegistration.getActivationCode()));
+                pendingRegistration.getActivationCode(),
+                baseUrl));
         emailSender.send(message);
     }
 

@@ -1,7 +1,0 @@
-task bundleBackend {
-    dependsOn ':backend:build'
-}
-
-task bundle {
-    dependsOn bundleBackend
-}

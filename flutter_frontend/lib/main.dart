@@ -33,7 +33,10 @@ void main() async {
 }
 
 class App extends StatelessWidget {
-  static const _serverUrl = "https://zwohansel.de/kaufhansel/api/";
+  static const _serverUrl = String.fromEnvironment(
+    "KAUFHANSEL_SERVER_URL",
+    defaultValue: "https://zwohansel.de/kaufhansel/api/",
+  );
   static final _settingsStore = SettingsStore();
   static final _client = SyncingRestClient(
     RestClient(
