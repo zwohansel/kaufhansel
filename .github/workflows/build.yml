@@ -220,6 +220,6 @@ jobs:
           inAppUpdatePriority: 2
           status: completed
           #userFraction: 0.33
-          whatsNewDirectory: distribution/whatsnew
+          whatsNewDirectory: distribution/whatsnew/${{ github.ref_name }}
           mappingFile: mapping/release/mapping.txt
 
