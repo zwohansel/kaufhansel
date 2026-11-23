@@ -153,6 +153,8 @@ jobs:
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/v')
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh/
@@ -217,6 +219,6 @@ jobs:
           inAppUpdatePriority: 2
           status: completed
           #userFraction: 0.33
-          #whatsNewDirectory: distribution/whatsnew
+          whatsNewDirectory: distribution/whatsnew
           mappingFile: mapping/release/mapping.txt
 
