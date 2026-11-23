@@ -74,20 +74,19 @@ class _CreateTextInputDialogState extends State<_TextInputDialog> {
               decoration: InputDecoration(hintText: widget.hintText),
             ),
             SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            OverflowBar(
+              alignment: MainAxisAlignment.end,
+              spacing: 10,
+              overflowAlignment: OverflowBarAlignment.center,
+              overflowSpacing: 10,
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    child: Text(widget.cancelBtnLabel),
-                    onPressed: _loading ? null : () => Navigator.pop(context),
-                  ),
+                OutlinedButton(
+                  child: Text(widget.cancelBtnLabel),
+                  onPressed: _loading ? null : () => Navigator.pop(context),
                 ),
-                SizedBox(width: 10),
-                Expanded(
-                    child: ElevatedButton(
-                        onPressed: (_isInputValid && !_loading) ? _onConfirm : null,
-                        child: Text(widget.confirmBtnLabel)))
+                ElevatedButton(
+                    onPressed: (_isInputValid && !_loading) ? _onConfirm : null,
+                    child: Text(widget.confirmBtnLabel))
               ],
             )
           ],

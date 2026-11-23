@@ -53,7 +53,7 @@ jobs:
       - run: flutter config --enable-linux-desktop
       - run: flutter pub get
       - run: flutter test --coverage
-      - run: flutter build linux --release --split-debug-info=build/debuginfo/linux/
+      - run: flutter build linux --release --split-debug-info=build/debuginfo/linux/ --build-name ${{env.kaufhansel_version}} --build-number $GITHUB_RUN_NUMBER
       - run: flutter build apk --release --split-debug-info=build/debuginfo/android/ --build-name ${{env.kaufhansel_version}} --build-number $GITHUB_RUN_NUMBER
       - run: flutter build appbundle --release --split-debug-info=build/debuginfo/android/ --build-name ${{env.kaufhansel_version}} --build-number $GITHUB_RUN_NUMBER
         
