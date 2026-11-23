@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,23 +18,23 @@ public class UpdateListItemEndpointTest {
     private static final String PATH = "/api/shoppinglist/{id}/item/{itemId}";
 
     @Autowired
-    private WebTestClient webClient;
+    private RestTestClient webClient;
 
-    public static void updateListItem(WebTestClient webClient,
+    public static void updateListItem(RestTestClient webClient,
                                       ShoppingListInfoDto list,
                                       ShoppingListItemDto item,
                                       ShoppingListItemUpdateDto update) {
         requestUpdateListItem(webClient, list, item, update).expectStatus().is2xxSuccessful();
     }
 
-    public static WebTestClient.ResponseSpec requestUpdateListItem(WebTestClient webClient,
+    public static RestTestClient.ResponseSpec requestUpdateListItem(RestTestClient webClient,
                                                                    ShoppingListInfoDto list,
                                                                    ShoppingListItemDto item,
                                                                    ShoppingListItemUpdateDto update) {
         return webClient.put()
                 .uri(PATH, list.getId(), item.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(update)
+                .body(update)
                 .exchange();
     }
 
@@ -42,7 +42,7 @@ public class UpdateListItemEndpointTest {
     @Sql("/InsertAliceList.sql")
     @Sql("/InsertTestItemIntoAliceList.sql")
     public void updateNameOfExistingListItem() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         ShoppingListItemDto item = GetListItemsEndpointTest.getSingleListItem(client, list);
 
@@ -60,7 +60,7 @@ public class UpdateListItemEndpointTest {
     @Sql("/InsertAliceList.sql")
     @Sql("/InsertTestItemIntoAliceList.sql")
     public void updateCategoryOfExistingListItemWithoutCategory() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         ShoppingListItemDto item = GetListItemsEndpointTest.getSingleListItem(client, list);
         assertThat(item.getCategory()).as("Item has no category before update.").isNull();
@@ -80,7 +80,7 @@ public class UpdateListItemEndpointTest {
     @Sql("/InsertAliceList.sql")
     @Sql("/InsertTestItemIntoAliceList.sql")
     public void updateCategoryFailsIfOldCategoryIsNullOrBlank() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         ShoppingListItemDto item = GetListItemsEndpointTest.getSingleListItem(client, list);
         assertThat(item.getCategory()).as("Item has no category before update.").isNull();
@@ -100,7 +100,7 @@ public class UpdateListItemEndpointTest {
     @Sql("/InsertAliceList.sql")
     @Sql("/InsertTestItemIntoAliceList.sql")
     public void toggleItemCheckedState() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         ShoppingListItemDto item = GetListItemsEndpointTest.getSingleListItem(client, list);
         assertThat(item.isChecked()).as("Item is not checked before update.").isFalse();
@@ -126,7 +126,7 @@ public class UpdateListItemEndpointTest {
     @Sql("/InsertListOfBobSharedWithAliceAsReadOnly.sql")
     @Sql("/InsertTestItemIntoBobsList.sql")
     public void updateNameOfExistingListItemFailsIfPermissionIsReadOnly() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         ShoppingListItemDto item = GetListItemsEndpointTest.getSingleListItem(client, list);
 

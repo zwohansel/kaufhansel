@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
+import org.springframework.test.web.servlet.client.RestTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient.ResponseSpec;
 
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
@@ -23,9 +23,9 @@ public class UncheckListItemsEndpointTest {
     private static final String PATH = "/api/shoppinglist/{id}/uncheckitems";
 
     @Autowired
-    private WebTestClient webClient;
+    private RestTestClient webClient;
 
-    public static void uncheckItems(WebTestClient webClient,
+    public static void uncheckItems(RestTestClient webClient,
             ShoppingListInfoDto list,
             UncheckShoppingListItemsDto uncheckDto) {
         requestUncheckItems(webClient, list, uncheckDto)
@@ -33,24 +33,24 @@ public class UncheckListItemsEndpointTest {
                 .is2xxSuccessful();
     }
 
-    public static ResponseSpec requestUncheckItems(WebTestClient webClient,
+    public static ResponseSpec requestUncheckItems(RestTestClient webClient,
             ShoppingListInfoDto list,
             UncheckShoppingListItemsDto uncheckDto) {
         return webClient.put()
                 .uri(PATH, list.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(uncheckDto)
+                .body(uncheckDto)
                 .exchange();
     }
 
-    public static ResponseSpec requestUncheckAllItems(WebTestClient webClient, ShoppingListInfoDto list) {
+    public static ResponseSpec requestUncheckAllItems(RestTestClient webClient, ShoppingListInfoDto list) {
         return requestUncheckItems(webClient, list, new UncheckShoppingListItemsDto());
     }
 
     @Test
     @Sql("/InsertAliceList.sql")
     public void allItemsAreUncheckedIfNotCategoryIsSpecified() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         // Create checked items, each with a different category
@@ -72,7 +72,7 @@ public class UncheckListItemsEndpointTest {
     @Test
     @Sql("/InsertAliceList.sql")
     public void onlyItemsOfTheSpecifiedCategoryAreUnchecked() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         final String categoryOne = "Category 1";

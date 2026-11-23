@@ -6,18 +6,18 @@ import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemUpdateDto;
-import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 public class ListItemBuilder {
-    private final WebTestClient client;
+    private final RestTestClient client;
     private final ShoppingListInfoDto list;
 
-    private ListItemBuilder(WebTestClient client, ShoppingListInfoDto list) {
+    private ListItemBuilder(RestTestClient client, ShoppingListInfoDto list) {
         this.client = client;
         this.list = list;
     }
 
-    public static ListItemBuilder forList(WebTestClient webClient, ShoppingListInfoDto list) {
+    public static ListItemBuilder forList(RestTestClient webClient, ShoppingListInfoDto list) {
         return new ListItemBuilder(webClient, list);
     }
 
@@ -45,7 +45,7 @@ public class ListItemBuilder {
         }
 
         public ListItemBuilder add() {
-            final WebTestClient webClient = ListItemBuilder.this.client;
+            final RestTestClient webClient = ListItemBuilder.this.client;
             final ShoppingListInfoDto list = ListItemBuilder.this.list;
 
             var newItem = new NewShoppingListItemDto();

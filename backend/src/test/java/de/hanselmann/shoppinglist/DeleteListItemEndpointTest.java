@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListItemDto;
@@ -18,16 +18,16 @@ public class DeleteListItemEndpointTest {
     private static final String PATH = "/api/shoppinglist/{id}/item/{itemId}";
 
     @Autowired
-    private WebTestClient webClient;
+    private RestTestClient webClient;
 
-    public static void deleteListItem(WebTestClient webClient,
+    public static void deleteListItem(RestTestClient webClient,
             ShoppingListInfoDto list,
             ShoppingListItemDto item) {
         requestDeleteListItem(webClient, Long.valueOf(list.getId()), Long.valueOf(item.getId())).expectStatus()
                 .is2xxSuccessful();
     }
 
-    public static WebTestClient.ResponseSpec requestDeleteListItem(WebTestClient webClient,
+    public static RestTestClient.ResponseSpec requestDeleteListItem(RestTestClient webClient,
             long listId,
             long itemId) {
         return webClient.delete().uri(PATH, listId, itemId).exchange();
@@ -37,7 +37,7 @@ public class DeleteListItemEndpointTest {
     @Sql("/InsertAliceList.sql")
     @Sql("/InsertTestItemIntoAliceList.sql")
     public void deleteExistingListItem() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         ShoppingListItemDto item = GetListItemsEndpointTest.getSingleListItem(client, list);
 
@@ -49,7 +49,7 @@ public class DeleteListItemEndpointTest {
     @Test
     @Sql("/InsertAliceList.sql")
     public void deleteItemItemThatIsNotPresentInList() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         requestDeleteListItem(client, Long.valueOf(list.getId()), 0).expectStatus().is2xxSuccessful();
     }
@@ -59,7 +59,7 @@ public class DeleteListItemEndpointTest {
     @Sql("/InsertListOfBobSharedWithAliceAsReadOnly.sql")
     @Sql("/InsertTestItemIntoBobsList.sql")
     public void deleteItemFailsIfPermissionIsReadOnly() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
         ShoppingListItemDto item = GetListItemsEndpointTest.getSingleListItem(client, list);
 

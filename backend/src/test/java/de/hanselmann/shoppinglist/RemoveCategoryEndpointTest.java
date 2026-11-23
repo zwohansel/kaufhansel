@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 import de.hanselmann.shoppinglist.restapi.dto.RemoveShoppingListCategoryDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
@@ -19,15 +19,15 @@ public class RemoveCategoryEndpointTest {
     private static final String PATH = "/api/shoppinglist/{id}/removecategory";
 
     @Autowired
-    private WebTestClient webClient;
+    private RestTestClient webClient;
 
-    public static void removeCategory(WebTestClient webClient,
+    public static void removeCategory(RestTestClient webClient,
             ShoppingListInfoDto list,
             RemoveShoppingListCategoryDto removeDto) {
         webClient.put()
                 .uri(PATH, list.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(removeDto)
+                .body(removeDto)
                 .exchange()
                 .expectStatus()
                 .is2xxSuccessful();
@@ -36,7 +36,7 @@ public class RemoveCategoryEndpointTest {
     @Test
     @Sql("/InsertAliceList.sql")
     public void removeAllCategoriesIfNoCategoryIsSpecified() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         // Create list items with different categories
@@ -57,7 +57,7 @@ public class RemoveCategoryEndpointTest {
     @Test
     @Sql("/InsertAliceList.sql")
     public void removesOnlySpecifiedCategory() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         final String categoryOne = "Category 1";

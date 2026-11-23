@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 import de.hanselmann.shoppinglist.restapi.dto.RenameShoppingListCategoryDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
@@ -18,14 +18,14 @@ public class RenameCategoryEndpointTest {
     private static final String PATH = "/api/shoppinglist/{id}/renamecategory";
 
     @Autowired
-    private WebTestClient webClient;
+    private RestTestClient webClient;
 
-    public static void renameCategory(WebTestClient webClient, ShoppingListInfoDto list,
+    public static void renameCategory(RestTestClient webClient, ShoppingListInfoDto list,
             RenameShoppingListCategoryDto renameDto) {
         webClient.put()
                 .uri(PATH, list.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(renameDto)
+                .body(renameDto)
                 .exchange()
                 .expectStatus()
                 .is2xxSuccessful();
@@ -34,7 +34,7 @@ public class RenameCategoryEndpointTest {
     @Test
     @Sql("/InsertAliceList.sql")
     public void renamesCategoryIfNewCategoryNameIsNotPresent() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         final String oldCategoryName = "OldName";
@@ -54,7 +54,7 @@ public class RenameCategoryEndpointTest {
     @Test
     @Sql("/InsertAliceList.sql")
     public void mergeCategoryIfNewCategoryNameIsAlreadyPresent() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         final String oldCategoryName = "OldName";

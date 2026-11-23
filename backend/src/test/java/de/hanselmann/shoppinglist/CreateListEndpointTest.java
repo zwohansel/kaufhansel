@@ -7,7 +7,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListDto;
@@ -20,9 +20,9 @@ public class CreateListEndpointTest {
     private static final String PATH = "/api/shoppinglist";
 
     @Autowired
-    private WebTestClient webClient;
+    private RestTestClient webClient;
 
-    public static ShoppingListInfoDto createList(WebTestClient client, String name) {
+    public static ShoppingListInfoDto createList(RestTestClient client, String name) {
         return requestCreateList(client, name)
                 .expectStatus()
                 .is2xxSuccessful()
@@ -30,19 +30,19 @@ public class CreateListEndpointTest {
                 .returnResult().getResponseBody();
     }
 
-    public static WebTestClient.ResponseSpec requestCreateList(WebTestClient client, String name) {
+    public static RestTestClient.ResponseSpec requestCreateList(RestTestClient client, String name) {
         NewShoppingListDto newListDto = new NewShoppingListDto();
         newListDto.setName(name);
         return client.post()
                 .uri(PATH)
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(newListDto)
+                .body(newListDto)
                 .exchange();
     }
 
     @Test
     public void createsNewList() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
 
         final String newListName = "New Shopping List";
         ShoppingListInfoDto createdList = createList(client, newListName);
@@ -66,7 +66,7 @@ public class CreateListEndpointTest {
 
     @Test
     public void returnsBadRequestIfNoNameIsGiven() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         requestCreateList(client, null).expectStatus().isBadRequest();
 
         // Check that no list has been created
@@ -75,7 +75,7 @@ public class CreateListEndpointTest {
 
     @Test
     public void returnsBadRequestIfEmptyNameIsGiven() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         requestCreateList(client, "").expectStatus().isBadRequest();
 
         // Check that no list has been created
@@ -84,7 +84,7 @@ public class CreateListEndpointTest {
 
     @Test
     public void returnsBadRequestIfBlankNameIsGiven() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         requestCreateList(client, " \t\n ").expectStatus().isBadRequest();
 
         // Check that no list has been created

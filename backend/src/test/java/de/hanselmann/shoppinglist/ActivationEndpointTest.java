@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,8 +15,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
+import org.springframework.test.web.servlet.client.RestTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient.ResponseSpec;
 
 import de.hanselmann.shoppinglist.model.PendingRegistration;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationDataDto;
@@ -33,7 +33,7 @@ public class ActivationEndpointTest {
     private static final String PATH = "/api/user/activate/{code}";
 
     @Autowired
-    private WebTestClient webClient;
+    private RestTestClient webClient;
 
     @RegisterExtension
     static SmtpGreenMailServerExtension mailServer = new SmtpGreenMailServerExtension();
@@ -60,7 +60,7 @@ public class ActivationEndpointTest {
 
     }
 
-    public static ResponseSpec activateUser(WebTestClient webClient, String activationCode) {
+    public static ResponseSpec activateUser(RestTestClient webClient, String activationCode) {
         return webClient.get()
                 .uri(PATH, activationCode)
                 .exchange();

@@ -1,3 +1,2 @@
 rootProject.name = 'shopping_list'
 include 'backend'
-include 'frontend'

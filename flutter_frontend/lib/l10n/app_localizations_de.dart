@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -507,7 +508,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String listSettingsRemoveUserFromList(
-      Object userName, Object shoppingListName) {
+    Object userName,
+    Object shoppingListName,
+  ) {
     return 'Möchtest du $userName wirklich von $shoppingListName entfernen?';
   }
 
@@ -593,7 +596,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String exceptionIncompatibleVersion(
-      Object frontendVersion, Object backendVersion) {
+    Object frontendVersion,
+    Object backendVersion,
+  ) {
     return 'Du verwendest vom Kaufhansel immer noch die Version $frontendVersion ???\n\nDie ist doch schon viel zu alt. Hol dir die neue und viel bessere Version \$$backendVersion von';
   }
 

@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 import de.hanselmann.shoppinglist.restapi.dto.NewShoppingListItemDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
@@ -20,14 +20,14 @@ public class AddListItemEndpointTest {
     private static final String PATH = "/api/shoppinglist/{id}";
 
     @Autowired
-    private WebTestClient webClient;
+    private RestTestClient webClient;
 
-    public static ShoppingListItemDto addListItem(WebTestClient webClient, ShoppingListInfoDto list,
+    public static ShoppingListItemDto addListItem(RestTestClient webClient, ShoppingListInfoDto list,
             NewShoppingListItemDto newItem) {
         return webClient.post()
                 .uri(PATH, list.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(newItem)
+                .body(newItem)
                 .exchange()
                 .expectStatus()
                 .is2xxSuccessful()
@@ -39,7 +39,7 @@ public class AddListItemEndpointTest {
     @Test
     @Sql("/InsertAliceList.sql")
     public void addNewShoppingListItemWithoutCategory() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         var newItem = new NewShoppingListItemDto();
@@ -62,7 +62,7 @@ public class AddListItemEndpointTest {
     @Test
     @Sql("/InsertAliceList.sql")
     public void addNewShoppingListItemWithCategory() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         var newItem = new NewShoppingListItemDto();
@@ -86,7 +86,7 @@ public class AddListItemEndpointTest {
     @Test
     @Sql("/InsertAliceList.sql")
     public void shoppingListItemsAreReturnedInTheOrderOfCreation() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(client);
 
         var newItem1 = new NewShoppingListItemDto();

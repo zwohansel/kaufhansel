@@ -7,7 +7,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.testutils.WebServerTestWithTestUser;
@@ -17,12 +17,12 @@ public class DeleteListEndpointTest {
     private static final String PATH = "/api/shoppinglist/{id}";
 
     @Autowired
-    private WebTestClient webClient;
+    private RestTestClient webClient;
 
     @Test
     @Sql("/InsertAliceList.sql")
     public void deleteShoppingListDeletesExistingList() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         List<ShoppingListInfoDto> lists = GetListsEndpointTest.getLists(client);
 
         client.delete()
@@ -36,7 +36,7 @@ public class DeleteListEndpointTest {
 
     @Test
     public void deleteShoppingListFailsIfListDoesNotExist() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         client.delete()
                 .uri(PATH, 1234)
                 .exchange()

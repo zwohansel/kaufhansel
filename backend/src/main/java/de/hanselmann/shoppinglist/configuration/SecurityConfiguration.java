@@ -2,52 +2,53 @@ package de.hanselmann.shoppinglist.configuration;
 
 import de.hanselmann.shoppinglist.security.AuthenticationService;
 import de.hanselmann.shoppinglist.security.AuthenticationTokenFilter;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.DispatcherType;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+@Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
-public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+@EnableMethodSecurity(proxyTargetClass = true)
+public class SecurityConfiguration {
 
-    private final AuthenticationService authenticationService;
-
-    @Autowired
-    public SecurityConfiguration(AuthenticationService authenticationService) {
-        this.authenticationService = authenticationService;
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationService authenticationService) {
+        return new ProviderManager(authenticationService);
     }
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(authenticationService);
-    }
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-                .authorizeRequests()
-                .antMatchers(
-                        "/api/user/login",
-                        "/api/user/register/**",
-                        "/api/user/activate/**",
-                        "/api/user/password/**",
-                        "/api/user/token/**",
-                        "/api/info")
-                .permitAll()
-                .and()
-                .authorizeRequests()
-                .anyRequest()
-                .authenticated()
-                .and()
-                .exceptionHandling()
-                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
-
-        http.addFilterBefore(new AuthenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager)
+            throws Exception {
+        return http.csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(requests -> requests
+                        // Only the initial request is authorized, error pages and async
+                        // dispatches of an already authorized request are not.
+                        .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.ASYNC)
+                        .permitAll()
+                        .requestMatchers(
+                                "/api/user/login",
+                                "/api/user/register/**",
+                                "/api/user/activate/**",
+                                "/api/user/password/**",
+                                "/api/user/token/**",
+                                "/api/info")
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated())
+                .exceptionHandling(handling -> handling
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .addFilterBefore(new AuthenticationTokenFilter(authenticationManager),
+                        UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
 }

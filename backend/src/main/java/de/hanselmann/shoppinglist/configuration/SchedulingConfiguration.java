@@ -1,6 +1,6 @@
 package de.hanselmann.shoppinglist.configuration;
 
-import org.springframework.boot.task.TaskSchedulerBuilder;
+import org.springframework.boot.task.ThreadPoolTaskSchedulerBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -18,7 +18,7 @@ public class SchedulingConfiguration {
      * websockets
      */
     @Bean
-    public ThreadPoolTaskScheduler taskScheduler(TaskSchedulerBuilder builder) {
+    public ThreadPoolTaskScheduler taskScheduler(ThreadPoolTaskSchedulerBuilder builder) {
         return builder.build();
     }
 

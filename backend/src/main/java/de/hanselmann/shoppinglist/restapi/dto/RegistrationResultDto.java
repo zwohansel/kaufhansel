@@ -1,5 +1,8 @@
 package de.hanselmann.shoppinglist.restapi.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class RegistrationResultDto {
     public enum Status {
         SUCCESS,
@@ -26,11 +29,8 @@ public class RegistrationResultDto {
 
     private final Status status;
 
-    protected RegistrationResultDto() {
-        this(null);
-    }
-
-    private RegistrationResultDto(Status status) {
+    @JsonCreator
+    private RegistrationResultDto(@JsonProperty("status") Status status) {
         this.status = status;
     }
 

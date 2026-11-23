@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
+import org.springframework.test.web.servlet.client.RestTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient.ResponseSpec;
 
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
@@ -18,20 +18,20 @@ public class ChangeShoppingListPermissionForUserTest {
     private static final String PATH = "/api/shoppinglist/{id}/permissions";
 
     @Autowired
-    private WebTestClient webClient;
+    private RestTestClient webClient;
 
-    public static void changeUserPermission(WebTestClient webClient, ShoppingListInfoDto list,
+    public static void changeUserPermission(RestTestClient webClient, ShoppingListInfoDto list,
             ShoppingListPermissionsUpdateDto permissionDto) {
         requestChangeUserPermission(webClient, list, permissionDto)
                 .expectStatus()
                 .is2xxSuccessful();
     }
 
-    private static ResponseSpec requestChangeUserPermission(WebTestClient webClient, ShoppingListInfoDto list,
+    private static ResponseSpec requestChangeUserPermission(RestTestClient webClient, ShoppingListInfoDto list,
             ShoppingListPermissionsUpdateDto permissionDto) {
         return webClient.put()
                 .uri(PATH, list.getId())
-                .bodyValue(permissionDto)
+                .body(permissionDto)
                 .exchange();
     }
 
@@ -40,10 +40,10 @@ public class ChangeShoppingListPermissionForUserTest {
     @Sql("/InsertListOfBobSharedWithAliceAsReadOnly.sql")
     @Sql("/InsertTestItemIntoBobsList.sql")
     public void elevateAliceFromReadOnlyToCheckOnly() {
-        WebTestClient bobClient = LoginTest.loginAsBob(webClient);
+        RestTestClient bobClient = LoginTest.loginAsBob(webClient);
         ShoppingListInfoDto bobListInfo = GetListsEndpointTest.getSingleList(bobClient);
 
-        WebTestClient aliceClient = LoginTest.loginAsAlice(webClient);
+        RestTestClient aliceClient = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto aliceListInfo = GetListsEndpointTest.getSingleList(aliceClient);
 
         // Alice should not be able to uncheck all list items
@@ -73,7 +73,7 @@ public class ChangeShoppingListPermissionForUserTest {
     @Sql("/InsertListOfBobSharedWithAliceAsReadOnly.sql")
     @Sql("/InsertTestItemIntoBobsList.sql")
     public void elevateAliceFromReadOnlyToAdmin() {
-        WebTestClient bobClient = LoginTest.loginAsBob(webClient);
+        RestTestClient bobClient = LoginTest.loginAsBob(webClient);
         ShoppingListInfoDto bobListInfo = GetListsEndpointTest.getSingleList(bobClient);
 
         assertThat(bobListInfo.getOtherUsers()).hasSize(1);
@@ -92,7 +92,7 @@ public class ChangeShoppingListPermissionForUserTest {
     @Sql("/InsertListOfBobSharedWithAliceAsReadOnly.sql")
     @Sql("/InsertTestItemIntoBobsList.sql")
     public void canNotRevokeAdminRole() {
-        WebTestClient bobClient = LoginTest.loginAsBob(webClient);
+        RestTestClient bobClient = LoginTest.loginAsBob(webClient);
         ShoppingListInfoDto bobListInfo = GetListsEndpointTest.getSingleList(bobClient);
 
         assertThat(bobListInfo.getOtherUsers()).hasSize(1);

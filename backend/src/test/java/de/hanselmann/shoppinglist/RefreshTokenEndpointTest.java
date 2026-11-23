@@ -12,8 +12,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
+import org.springframework.test.web.servlet.client.RestTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient.ResponseSpec;
 
 import de.hanselmann.shoppinglist.repository.ShoppingListUserRepository;
 import de.hanselmann.shoppinglist.restapi.dto.RefreshTokenDto;
@@ -32,7 +32,7 @@ public class RefreshTokenEndpointTest {
     private static final String LISTS_PATH = "/api/shoppinglists";
 
     @Autowired
-    private WebTestClient webClient;
+    private RestTestClient webClient;
 
     @Autowired
     private ShoppingListUserRepository userRepository;
@@ -75,7 +75,7 @@ public class RefreshTokenEndpointTest {
         dto.setRefreshToken(refreshToken);
         return webClient.post()
                 .uri(path)
-                .bodyValue(dto)
+                .body(dto)
                 .exchange();
     }
 
@@ -211,7 +211,7 @@ public class RefreshTokenEndpointTest {
         requestReset.setEmailAddress(LoginTest.ALICE_EMAIL);
         webClient.post()
                 .uri("/api/user/password/requestreset")
-                .bodyValue(requestReset)
+                .body(requestReset)
                 .exchange()
                 .expectStatus().is2xxSuccessful();
 
@@ -225,7 +225,7 @@ public class RefreshTokenEndpointTest {
         reset.setPassword("newAlicePassword");
         webClient.post()
                 .uri("/api/user/password/reset")
-                .bodyValue(reset)
+                .body(reset)
                 .exchange()
                 .expectStatus().is2xxSuccessful();
 

@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
+import org.springframework.test.web.servlet.client.RestTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient.ResponseSpec;
 
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
 import de.hanselmann.shoppinglist.testutils.WebServerTestWithTestUser;
@@ -16,16 +16,16 @@ public class RemoveUserFromListTest {
     private static final String PATH = "/api/shoppinglist/{id}/user/{userId}";
 
     @Autowired
-    private WebTestClient webClient;
+    private RestTestClient webClient;
 
-    public static void removeUserFromList(WebTestClient webClient, ShoppingListInfoDto list,
+    public static void removeUserFromList(RestTestClient webClient, ShoppingListInfoDto list,
             long userId) {
         requestRemoveUserFromList(webClient, list, userId)
                 .expectStatus()
                 .is2xxSuccessful();
     }
 
-    private static ResponseSpec requestRemoveUserFromList(WebTestClient webClient, ShoppingListInfoDto list,
+    private static ResponseSpec requestRemoveUserFromList(RestTestClient webClient, ShoppingListInfoDto list,
             long userId) {
         return webClient.delete()
                 .uri(PATH, list.getId(), userId)
@@ -36,10 +36,10 @@ public class RemoveUserFromListTest {
     @Sql("/InsertBob.sql")
     @Sql("/InsertListOfBobSharedWithAliceAsReadOnly.sql")
     public void removedCanNotSeeList() {
-        WebTestClient bobClient = LoginTest.loginAsBob(webClient);
+        RestTestClient bobClient = LoginTest.loginAsBob(webClient);
         ShoppingListInfoDto bobListInfo = GetListsEndpointTest.getSingleList(bobClient);
 
-        WebTestClient aliceClient = LoginTest.loginAsAlice(webClient);
+        RestTestClient aliceClient = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto aliceListInfo = GetListsEndpointTest.getSingleList(aliceClient);
 
         assertThat(bobListInfo.getId()).isEqualTo(aliceListInfo.getId());

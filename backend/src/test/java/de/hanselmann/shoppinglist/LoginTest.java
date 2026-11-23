@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 import de.hanselmann.shoppinglist.restapi.dto.LoginDto;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListUserInfoDto;
@@ -14,9 +14,9 @@ import de.hanselmann.shoppinglist.testutils.WebServerTestWithTestUser;
 public class LoginTest {
     public static class LoggedInUser {
         public final ShoppingListUserInfoDto info;
-        public final WebTestClient client;
+        public final RestTestClient client;
 
-        LoggedInUser(ShoppingListUserInfoDto info, WebTestClient client) {
+        LoggedInUser(ShoppingListUserInfoDto info, RestTestClient client) {
             this.info = info;
             this.client = client;
         }
@@ -31,39 +31,39 @@ public class LoginTest {
     private static final String EVE_PASSWORD = "eve";
 
     @Autowired
-    private WebTestClient webClient;
+    private RestTestClient webClient;
 
-    public static WebTestClient loginAsAlice(WebTestClient webClient) {
+    public static RestTestClient loginAsAlice(RestTestClient webClient) {
         return loginAsAliceWithInfo(webClient).client;
     }
 
-    public static LoggedInUser loginAsAliceWithInfo(WebTestClient webClient) {
+    public static LoggedInUser loginAsAliceWithInfo(RestTestClient webClient) {
         return loginAs(webClient, ALICE_EMAIL, ALICE_PASSWORD);
     }
 
-    public static WebTestClient loginAsBob(WebTestClient webClient) {
+    public static RestTestClient loginAsBob(RestTestClient webClient) {
         return loginAsBobWithInfo(webClient).client;
     }
 
-    public static LoggedInUser loginAsBobWithInfo(WebTestClient webClient) {
+    public static LoggedInUser loginAsBobWithInfo(RestTestClient webClient) {
         return loginAs(webClient, BOB_EMAIL, BOB_PASSWORD);
     }
 
-    public static WebTestClient loginAsEve(WebTestClient webClient) {
+    public static RestTestClient loginAsEve(RestTestClient webClient) {
         return loginAsEveWithInfo(webClient).client;
     }
 
-    public static LoggedInUser loginAsEveWithInfo(WebTestClient webClient) {
+    public static LoggedInUser loginAsEveWithInfo(RestTestClient webClient) {
         return loginAs(webClient, EVE_EMAIL, EVE_PASSWORD);
     }
 
-    public static LoggedInUser loginAs(WebTestClient webClient, String userEmail, String userPassword) {
+    public static LoggedInUser loginAs(RestTestClient webClient, String userEmail, String userPassword) {
         ShoppingListUserInfoDto info = login(webClient, userEmail, userPassword);
-        WebTestClient client = webClient.mutate().defaultHeader("AUTHORIZATION", "Bearer " + info.getToken()).build();
+        RestTestClient client = webClient.mutate().defaultHeader("AUTHORIZATION", "Bearer " + info.getToken()).build();
         return new LoggedInUser(info, client);
     }
 
-    public static ShoppingListUserInfoDto login(WebTestClient webClient, String userEmail, String userPassword) {
+    public static ShoppingListUserInfoDto login(RestTestClient webClient, String userEmail, String userPassword) {
         LoginDto loginDto = new LoginDto();
         loginDto.setEmailAddress(userEmail);
         loginDto.setPassword(userPassword);
@@ -75,10 +75,10 @@ public class LoginTest {
                 .getResponseBody();
     }
 
-    private static WebTestClient.ResponseSpec login(WebTestClient webClient, LoginDto loginDto) {
+    private static RestTestClient.ResponseSpec login(RestTestClient webClient, LoginDto loginDto) {
         return webClient.post()
                 .uri(PATH)
-                .bodyValue(loginDto)
+                .body(loginDto)
                 .exchange();
     }
 

@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
+import org.springframework.test.web.servlet.client.RestTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient.ResponseSpec;
 
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.restapi.dto.AddUserToShoppingListDto;
@@ -20,9 +20,9 @@ public class AddUserToListTest {
     private static final String PATH = "/api/shoppinglist/{id}/user";
 
     @Autowired
-    private WebTestClient webClient;
+    private RestTestClient webClient;
 
-    public static ShoppingListUserReferenceDto addUserToList(WebTestClient webClient, ShoppingListInfoDto list,
+    public static ShoppingListUserReferenceDto addUserToList(RestTestClient webClient, ShoppingListInfoDto list,
             String userEmail) {
         return requestAddUserToList(webClient, list, userEmail)
                 .expectStatus()
@@ -32,14 +32,14 @@ public class AddUserToListTest {
                 .getResponseBody();
     }
 
-    private static ResponseSpec requestAddUserToList(WebTestClient webClient, ShoppingListInfoDto list,
+    private static ResponseSpec requestAddUserToList(RestTestClient webClient, ShoppingListInfoDto list,
             String userEmail) {
         AddUserToShoppingListDto addUserDto = new AddUserToShoppingListDto();
         addUserDto.setEmailAddress(userEmail);
         return webClient.put()
                 .uri(PATH, list.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(addUserDto)
+                .body(addUserDto)
                 .exchange();
     }
 
@@ -47,7 +47,7 @@ public class AddUserToListTest {
     @Sql("/InsertAliceList.sql")
     @Sql("/InsertBob.sql")
     public void addingBobToAliceListsGrantsBobReadWritePermissions() {
-        WebTestClient aliceClient = LoginTest.loginAsAlice(webClient);
+        RestTestClient aliceClient = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(aliceClient);
 
         // Add other user to the list
@@ -62,8 +62,8 @@ public class AddUserToListTest {
     @Sql("/InsertTestItemIntoAliceList.sql")
     @Sql("/InsertBob.sql")
     public void bobCanReadAliceListAfterHeWasAdded() {
-        WebTestClient aliceClient = LoginTest.loginAsAlice(webClient);
-        WebTestClient bobsClient = LoginTest.loginAsBob(webClient);
+        RestTestClient aliceClient = LoginTest.loginAsAlice(webClient);
+        RestTestClient bobsClient = LoginTest.loginAsBob(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(aliceClient);
 
         // Other user has no access to the list before he is added
@@ -84,18 +84,18 @@ public class AddUserToListTest {
     @Sql("/InsertBob.sql")
     @Sql("/InsertEve.sql")
     public void bobCanNotAddEveToAliceList() {
-        WebTestClient aliceClient = LoginTest.loginAsAlice(webClient);
+        RestTestClient aliceClient = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(aliceClient);
         addUserToList(aliceClient, list, LoginTest.BOB_EMAIL);
 
-        WebTestClient bobsClient = LoginTest.loginAsBob(webClient);
+        RestTestClient bobsClient = LoginTest.loginAsBob(webClient);
         requestAddUserToList(bobsClient, list, LoginTest.EVE_EMAIL).expectStatus().is4xxClientError();
     }
 
     @Test
     @Sql("/InsertAliceList.sql")
     public void canNotAddUnknownUser() {
-        WebTestClient aliceClient = LoginTest.loginAsAlice(webClient);
+        RestTestClient aliceClient = LoginTest.loginAsAlice(webClient);
         ShoppingListInfoDto list = GetListsEndpointTest.getSingleList(aliceClient);
 
         requestAddUserToList(aliceClient, list, "foo@bar.test").expectStatus().is4xxClientError();

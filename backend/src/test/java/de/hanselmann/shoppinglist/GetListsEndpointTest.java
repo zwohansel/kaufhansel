@@ -6,8 +6,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 import de.hanselmann.shoppinglist.model.ShoppingListRole;
 import de.hanselmann.shoppinglist.restapi.dto.ShoppingListInfoDto;
@@ -17,25 +18,30 @@ import de.hanselmann.shoppinglist.testutils.WebServerTestWithTestUser;
 @WebServerTestWithTestUser
 public class GetListsEndpointTest {
     private static final String PATH = "/api/shoppinglists";
+    private static final ParameterizedTypeReference<List<ShoppingListInfoDto>> LIST_INFO_LIST = new ParameterizedTypeReference<>() {
+    };
 
     @Autowired
-    private WebTestClient webClient;
+    private RestTestClient webClient;
 
-    public static List<ShoppingListInfoDto> getLists(WebTestClient webClient) {
+    public static List<ShoppingListInfoDto> getLists(RestTestClient webClient) {
         return requestLists(webClient).returnResult().getResponseBody();
     }
 
-    private static WebTestClient.ListBodySpec<ShoppingListInfoDto> requestLists(WebTestClient webClient) {
+    private static RestTestClient.BodySpec<List<ShoppingListInfoDto>, ?> requestLists(RestTestClient webClient) {
         return webClient.get()
                 .uri(PATH)
                 .exchange()
                 .expectStatus()
                 .is2xxSuccessful()
-                .expectBodyList(ShoppingListInfoDto.class);
+                .expectBody(LIST_INFO_LIST);
     }
 
-    public static ShoppingListInfoDto getSingleList(WebTestClient webClient) {
-        return requestLists(webClient).hasSize(1).returnResult().getResponseBody().get(0);
+    public static ShoppingListInfoDto getSingleList(RestTestClient webClient) {
+        return requestLists(webClient).value(lists -> assertThat(lists).hasSize(1))
+                .returnResult()
+                .getResponseBody()
+                .get(0);
     }
 
     @Test
@@ -49,19 +55,19 @@ public class GetListsEndpointTest {
 
     @Test
     public void shoppingListEndpointReturnsEmptyListIfUserHasNoLists() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         client.get()
                 .uri(PATH)
                 .exchange().expectStatus()
                 .is2xxSuccessful()
-                .expectBodyList(ShoppingListInfoDto.class)
-                .hasSize(0);
+                .expectBody(LIST_INFO_LIST)
+                .value(lists -> assertThat(lists).isEmpty());
     }
 
     @Test
     @Sql("/InsertAliceList.sql")
     public void shoppingListEndpointReturnsExistingList() {
-        WebTestClient client = LoginTest.loginAsAlice(webClient);
+        RestTestClient client = LoginTest.loginAsAlice(webClient);
         List<ShoppingListInfoDto> lists = getLists(client);
 
         assertThat(lists).as("Response body contains single list info object").singleElement();

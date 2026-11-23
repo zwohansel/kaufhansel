@@ -6,9 +6,9 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.mail.Message.RecipientType;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.Message.RecipientType;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationDataDto;
 import de.hanselmann.shoppinglist.restapi.dto.RegistrationResultDto;
@@ -29,7 +29,7 @@ public class RegisterEndpointTest {
     private static final String PATH = "/api/user/register";
 
     @Autowired
-    private WebTestClient webClient;
+    private RestTestClient webClient;
 
     @RegisterExtension
     static SmtpGreenMailServerExtension mailServer = new SmtpGreenMailServerExtension();
@@ -39,11 +39,11 @@ public class RegisterEndpointTest {
         mailServer.registerMailProperties(registry);
     }
 
-    public static RegistrationResultDto registerUser(WebTestClient webClient, RegistrationDataDto registrationData) {
+    public static RegistrationResultDto registerUser(RestTestClient webClient, RegistrationDataDto registrationData) {
         return webClient.post()
                 .uri(PATH)
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(registrationData)
+                .body(registrationData)
                 .exchange()
                 .expectStatus()
                 .is2xxSuccessful()

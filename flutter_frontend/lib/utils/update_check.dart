@@ -60,7 +60,7 @@ class Update {
   void confirmMessage() {
     _messageConfirmed = true;
     if (_message != null) {
-      _settingsStore?.confirmInfoMessage(_message!.messageNumber);
+      _settingsStore?.confirmInfoMessage(_message.messageNumber);
     }
   }
 }

@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
+import org.springframework.test.web.servlet.client.RestTestClient;
+import org.springframework.test.web.servlet.client.RestTestClient.ResponseSpec;
 
 import de.hanselmann.shoppinglist.LoginTest.LoggedInUser;
 import de.hanselmann.shoppinglist.repository.ShoppingListRepository;
@@ -25,15 +25,15 @@ public class DeleteUserTest {
     public ShoppingListRepository listRepository;
 
     @Autowired
-    private WebTestClient webClient;
+    private RestTestClient webClient;
 
-    public static void deleteUser(WebTestClient webClient, long userId) {
+    public static void deleteUser(RestTestClient webClient, long userId) {
         requestDeleteUser(webClient, userId)
                 .expectStatus()
                 .is2xxSuccessful();
     }
 
-    private static ResponseSpec requestDeleteUser(WebTestClient webClient, long userId) {
+    private static ResponseSpec requestDeleteUser(RestTestClient webClient, long userId) {
         return webClient.delete()
                 .uri(PATH, userId)
                 .exchange();
@@ -63,7 +63,7 @@ public class DeleteUserTest {
     @Sql("/InsertListOfBobSharedWithAliceAsAdmin.sql")
     public void sharedListIsNotDeletedIfAnotherAdminIsPresent() {
         LoggedInUser bob = LoginTest.loginAsBobWithInfo(webClient);
-        WebTestClient aliceClient = LoginTest.loginAsAlice(webClient);
+        RestTestClient aliceClient = LoginTest.loginAsAlice(webClient);
         // Delete admin bob
         deleteUser(bob.client, Long.valueOf(bob.info.getId()));
 
@@ -78,7 +78,7 @@ public class DeleteUserTest {
     @Sql("/InsertListOfBobSharedWithAliceAsReadWrite.sql")
     public void sharedListIsDeletedIfNoOtherAdminIsPresent() {
         LoggedInUser bob = LoginTest.loginAsBobWithInfo(webClient);
-        WebTestClient aliceClient = LoginTest.loginAsAlice(webClient);
+        RestTestClient aliceClient = LoginTest.loginAsAlice(webClient);
         // Delete admin bob
         deleteUser(bob.client, Long.valueOf(bob.info.getId()));
         // Assert that alice can no longer fetch the list...
@@ -89,7 +89,7 @@ public class DeleteUserTest {
     @Sql("/InsertEve.sql")
     public void userCannotBeDeletedByOtherUser() {
         LoggedInUser alice = LoginTest.loginAsAliceWithInfo(webClient);
-        WebTestClient eve = LoginTest.loginAsEve(webClient);
+        RestTestClient eve = LoginTest.loginAsEve(webClient);
 
         requestDeleteUser(eve, Long.valueOf(alice.info.getId())).expectStatus().isForbidden();
     }
